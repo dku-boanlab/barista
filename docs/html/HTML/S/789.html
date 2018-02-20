@@ -1,0 +1,186 @@
+<html>
+<head>
+<title>cbench/openflow/secchan/fail-open.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1141.html'>secchan</a>/fail-open.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L63'>[^]</a><a href='#L143'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L63' title='Defined at 63.'>fail_open_periodic_cb</a>
+<li><a href='#L97' title='Defined at 97.'>fail_open_wait_cb</a>
+<li><a href='#L106' title='Defined at 106.'>fail_open_local_packet_cb</a>
+<li><a href='#L120' title='Defined at 120.'>fail_open_status_cb</a>
+<li><a href='#L143' title='Defined at 143.'>fail_open_start</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008, 2009 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> *</font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> *</font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> "<a href='786.html'>fail-open.h</a>"
+<a name='L36'>  36 <font color='darkred'>#include</font> &lt;arpa/inet.h&gt;
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;stddef.h&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;string.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> "<a href='875.html'>learning-switch.h</a>"
+<a name='L40'>  40 <font color='darkred'>#include</font> "<a href='814.html'>netdev.h</a>"
+<a name='L41'>  41 <font color='darkred'>#include</font> "<a href='860.html'>packets.h</a>"
+<a name='L42'>  42 <font color='darkred'>#include</font> "<a href='793.html'>port-watcher.h</a>"
+<a name='L43'>  43 <font color='darkred'>#include</font> "<a href='883.html'>rconn.h</a>"
+<a name='L44'>  44 <font color='darkred'>#include</font> "<a href='806.html'>secchan.h</a>"
+<a name='L45'>  45 <font color='darkred'>#include</font> "<a href='796.html'>status.h</a>"
+<a name='L46'>  46 <font color='darkred'>#include</font> "<a href='809.html'>stp-secchan.h</a>"
+<a name='L47'>  47 <font color='darkred'>#include</font> "<a href='812.html'>timeval.h</a>"
+<a name='L48'>  48 
+<a name='L49'>  49 <font color='darkred'>#define</font> <a href='../R/1643.html' title='Multiple refered from 13 places.'>THIS_MODULE</a> VLM_fail_open
+<a name='L50'>  50 <font color='darkred'>#include</font> "<a href='859.html'>vlog.h</a>"
+<a name='L51'>  51 
+<a name='L52'>  52 <b>struct</b> <a href='../R/2993.html' title='Multiple refered from 5 places.'>fail_open_data</a> <font color='red'>{</font>
+<a name='L53'>  53     <b>const</b> <b>struct</b> <a href='../D/9512.html' title='Multiple defined in 2 places.'>settings</a> *<a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>;
+<a name='L54'>  54     <b>struct</b> <a href='../S/849.html#L79' title='Defined at 79 in cbench/openflow/lib/rconn.c.'>rconn</a> *<a href='../Y/4200.html' title='Multiple used in 35 places.'>local_rconn</a>;
+<a name='L55'>  55     <b>struct</b> <a href='../S/849.html#L79' title='Defined at 79 in cbench/openflow/lib/rconn.c.'>rconn</a> *<a href='../Y/6374.html' title='Multiple used in 47 places.'>remote_rconn</a>;
+<a name='L56'>  56     <b>struct</b> <a href='../S/884.html#L67' title='Defined at 67 in cbench/openflow/lib/learning-switch.c.'>lswitch</a> *<a href='../S/884.html#L67' title='Defined at 67 in cbench/openflow/lib/learning-switch.c.'>lswitch</a>;
+<a name='L57'>  57     <b>int</b> <a href='../Y/4073.html' title='Multiple used in 4 places.'>last_disconn_secs</a>;
+<a name='L58'>  58     <a href='../Y/7369.html' title='Multiple used in 80 places.'>time_t</a> <a href='../Y/1649.html' title='Multiple used in 4 places.'>boot_deadline</a>;
+<a name='L59'>  59 <font color='red'>}</font>;
+<a name='L60'>  60 
+<a name='L61'>  61 <i><font color='green'>/* Causes 'r' to enter or leave fail-open mode, if appropriate. */</font></i>
+<a name='L62'>  62 <b>static</b> <b>void</b>
+<a name='L63'>  63 <a href='../S/789.html#L137' title='Refered from 137 in cbench/openflow/secchan/fail-open.c.'>fail_open_periodic_cb</a>(<b>void</b> *<a href='../Y/2986.html' title='Multiple used in 8 places.'>fail_open_</a>)
+<a name='L64'>  64 <font color='red'>{</font>
+<a name='L65'>  65     <b>struct</b> <a href='../S/789.html#L52' title='Defined at 52 in cbench/openflow/secchan/fail-open.c.'>fail_open_data</a> *<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a> = <a href='../Y/2986.html' title='Multiple used in 8 places.'>fail_open_</a>;
+<a name='L66'>  66     <b>int</b> <a href='../Y/2410.html' title='Multiple used in 8 places.'>disconn_secs</a>;
+<a name='L67'>  67     <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/5465.html' title='Multiple used in 21 places.'>open</a>;
+<a name='L68'>  68 
+<a name='L69'>  69     <b>if</b> (<a href='../S/902.html#L108' title='Defined at 108 in cbench/openflow/lib/timeval.c.'>time_now</a>() &lt; <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/1649.html' title='Multiple used in 4 places.'>boot_deadline</a>) <font color='red'>{</font>
+<a name='L70'>  70         <b>return</b>;
+<a name='L71'>  71     <font color='red'>}</font>
+<a name='L72'>  72     <a href='../Y/2410.html' title='Multiple used in 8 places.'>disconn_secs</a> = <a href='../S/849.html#L635' title='Defined at 635 in cbench/openflow/lib/rconn.c.'>rconn_failure_duration</a>(<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/6374.html' title='Multiple used in 47 places.'>remote_rconn</a>);
+<a name='L73'>  73     <a href='../Y/5465.html' title='Multiple used in 21 places.'>open</a> = <a href='../Y/2410.html' title='Multiple used in 8 places.'>disconn_secs</a> &gt;= <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>-&gt;<a href='../Y/5919.html' title='Multiple used in 16 places.'>probe_interval</a> * 3;
+<a name='L74'>  74     <b>if</b> (<a href='../Y/5465.html' title='Multiple used in 21 places.'>open</a> != (<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../S/884.html#L67' title='Defined at 67 in cbench/openflow/lib/learning-switch.c.'>lswitch</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>)) <font color='red'>{</font>
+<a name='L75'>  75         <b>if</b> (!<a href='../Y/5465.html' title='Multiple used in 21 places.'>open</a>) <font color='red'>{</font>
+<a name='L76'>  76             <a href='../S/859.html#L151' title='Defined at 151 in cbench/openflow/lib/vlog.h.'>VLOG_WARN</a>("No longer in fail-open mode");
+<a name='L77'>  77             <a href='../S/884.html#L147' title='Defined at 147 in cbench/openflow/lib/learning-switch.c.'>lswitch_destroy</a>(<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../S/884.html#L67' title='Defined at 67 in cbench/openflow/lib/learning-switch.c.'>lswitch</a>);
+<a name='L78'>  78             <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../S/884.html#L67' title='Defined at 67 in cbench/openflow/lib/learning-switch.c.'>lswitch</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L79'>  79         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L80'>  80             <a href='../S/859.html#L151' title='Defined at 151 in cbench/openflow/lib/vlog.h.'>VLOG_WARN</a>("Could not connect to controller for %d seconds, "
+<a name='L81'>  81                       "failing open", <a href='../Y/2410.html' title='Multiple used in 8 places.'>disconn_secs</a>);
+<a name='L82'>  82             <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../S/884.html#L67' title='Defined at 67 in cbench/openflow/lib/learning-switch.c.'>lswitch</a> = <a href='../S/884.html#L125' title='Defined at 125 in cbench/openflow/lib/learning-switch.c.'>lswitch_create</a>(<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/4200.html' title='Multiple used in 35 places.'>local_rconn</a>, <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>,
+<a name='L83'>  83                                                 <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>-&gt;<a href='../Y/4374.html' title='Multiple used in 24 places.'>max_idle</a>);
+<a name='L84'>  84             <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/4073.html' title='Multiple used in 4 places.'>last_disconn_secs</a> = <a href='../Y/2410.html' title='Multiple used in 8 places.'>disconn_secs</a>;
+<a name='L85'>  85         <font color='red'>}</font>
+<a name='L86'>  86     <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../Y/5465.html' title='Multiple used in 21 places.'>open</a> &amp;&amp; <a href='../Y/2410.html' title='Multiple used in 8 places.'>disconn_secs</a> &gt; <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/4073.html' title='Multiple used in 4 places.'>last_disconn_secs</a> + 60) <font color='red'>{</font>
+<a name='L87'>  87         <a href='../S/859.html#L152' title='Defined at 152 in cbench/openflow/lib/vlog.h.'>VLOG_INFO</a>("Still in fail-open mode after %d seconds disconnected "
+<a name='L88'>  88                   "from controller", <a href='../Y/2410.html' title='Multiple used in 8 places.'>disconn_secs</a>);
+<a name='L89'>  89         <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/4073.html' title='Multiple used in 4 places.'>last_disconn_secs</a> = <a href='../Y/2410.html' title='Multiple used in 8 places.'>disconn_secs</a>;
+<a name='L90'>  90     <font color='red'>}</font>
+<a name='L91'>  91     <b>if</b> (<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../S/884.html#L67' title='Defined at 67 in cbench/openflow/lib/learning-switch.c.'>lswitch</a>) <font color='red'>{</font>
+<a name='L92'>  92         <a href='../S/884.html#L158' title='Defined at 158 in cbench/openflow/lib/learning-switch.c.'>lswitch_run</a>(<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../S/884.html#L67' title='Defined at 67 in cbench/openflow/lib/learning-switch.c.'>lswitch</a>, <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/4200.html' title='Multiple used in 35 places.'>local_rconn</a>);
+<a name='L93'>  93     <font color='red'>}</font>
+<a name='L94'>  94 <font color='red'>}</font>
+<a name='L95'>  95 
+<a name='L96'>  96 <b>static</b> <b>void</b>
+<a name='L97'>  97 <a href='../S/789.html#L138' title='Refered from 138 in cbench/openflow/secchan/fail-open.c.'>fail_open_wait_cb</a>(<b>void</b> *<a href='../Y/2986.html' title='Multiple used in 8 places.'>fail_open_</a>)
+<a name='L98'>  98 <font color='red'>{</font>
+<a name='L99'>  99     <b>struct</b> <a href='../S/789.html#L52' title='Defined at 52 in cbench/openflow/secchan/fail-open.c.'>fail_open_data</a> *<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a> = <a href='../Y/2986.html' title='Multiple used in 8 places.'>fail_open_</a>;
+<a name='L100'> 100     <b>if</b> (<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../S/884.html#L67' title='Defined at 67 in cbench/openflow/lib/learning-switch.c.'>lswitch</a>) <font color='red'>{</font>
+<a name='L101'> 101         <a href='../S/884.html#L243' title='Defined at 243 in cbench/openflow/lib/learning-switch.c.'>lswitch_wait</a>(<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../S/884.html#L67' title='Defined at 67 in cbench/openflow/lib/learning-switch.c.'>lswitch</a>);
+<a name='L102'> 102     <font color='red'>}</font>
+<a name='L103'> 103 <font color='red'>}</font>
+<a name='L104'> 104 
+<a name='L105'> 105 <b>static</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a>
+<a name='L106'> 106 <a href='../S/789.html#L135' title='Refered from 135 in cbench/openflow/secchan/fail-open.c.'>fail_open_local_packet_cb</a>(<b>struct</b> <a href='../Y/6355.html' title='Multiple used in 23 places.'>relay</a> *<a href='../Y/6224.html' title='Multiple used in 137 places.'>r</a>, <b>void</b> *<a href='../Y/2986.html' title='Multiple used in 8 places.'>fail_open_</a>)
+<a name='L107'> 107 <font color='red'>{</font>
+<a name='L108'> 108     <b>struct</b> <a href='../S/789.html#L52' title='Defined at 52 in cbench/openflow/secchan/fail-open.c.'>fail_open_data</a> *<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a> = <a href='../Y/2986.html' title='Multiple used in 8 places.'>fail_open_</a>;
+<a name='L109'> 109     <b>if</b> (<a href='../S/849.html#L624' title='Defined at 624 in cbench/openflow/lib/rconn.c.'>rconn_is_connected</a>(<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/6374.html' title='Multiple used in 47 places.'>remote_rconn</a>) || !<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../S/884.html#L67' title='Defined at 67 in cbench/openflow/lib/learning-switch.c.'>lswitch</a>) <font color='red'>{</font>
+<a name='L110'> 110         <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L111'> 111     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L112'> 112         <a href='../S/884.html#L261' title='Defined at 261 in cbench/openflow/lib/learning-switch.c.'>lswitch_process_packet</a>(<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../S/884.html#L67' title='Defined at 67 in cbench/openflow/lib/learning-switch.c.'>lswitch</a>, <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/4200.html' title='Multiple used in 35 places.'>local_rconn</a>,
+<a name='L113'> 113                                <a href='../Y/6224.html' title='Multiple used in 137 places.'>r</a>-&gt;<a href='../Y/3535.html' title='Multiple used in 20 places.'>halves</a>[<a href='../S/806.html#L101' title='Defined at 101 in cbench/openflow/secchan/secchan.h.'>HALF_LOCAL</a>].<a href='../Y/6545.html' title='Multiple used in 38 places.'>rxbuf</a>);
+<a name='L114'> 114         <a href='../S/849.html#L438' title='Defined at 438 in cbench/openflow/lib/rconn.c.'>rconn_run</a>(<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/4200.html' title='Multiple used in 35 places.'>local_rconn</a>);
+<a name='L115'> 115         <b>return</b> <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>;
+<a name='L116'> 116     <font color='red'>}</font>
+<a name='L117'> 117 <font color='red'>}</font>
+<a name='L118'> 118 
+<a name='L119'> 119 <b>static</b> <b>void</b>
+<a name='L120'> 120 <a href='../S/789.html#L157' title='Refered from 157 in cbench/openflow/secchan/fail-open.c.'>fail_open_status_cb</a>(<b>struct</b> <a href='../Y/7042.html' title='Multiple used in 16 places.'>status_reply</a> *<a href='../Y/6927.html' title='Multiple used in 71 places.'>sr</a>, <b>void</b> *<a href='../Y/2986.html' title='Multiple used in 8 places.'>fail_open_</a>)
+<a name='L121'> 121 <font color='red'>{</font>
+<a name='L122'> 122     <b>struct</b> <a href='../S/789.html#L52' title='Defined at 52 in cbench/openflow/secchan/fail-open.c.'>fail_open_data</a> *<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a> = <a href='../Y/2986.html' title='Multiple used in 8 places.'>fail_open_</a>;
+<a name='L123'> 123     <b>const</b> <b>struct</b> <a href='../D/9512.html' title='Multiple defined in 2 places.'>settings</a> *<a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a> = <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>;
+<a name='L124'> 124     <b>int</b> <a href='../Y/7479.html' title='Multiple used in 3 places.'>trigger_duration</a> = <a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>-&gt;<a href='../Y/5919.html' title='Multiple used in 16 places.'>probe_interval</a> * 3;
+<a name='L125'> 125     <b>int</b> <a href='../Y/2218.html' title='Multiple used in 3 places.'>cur_duration</a> = <a href='../S/849.html#L635' title='Defined at 635 in cbench/openflow/lib/rconn.c.'>rconn_failure_duration</a>(<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/6374.html' title='Multiple used in 47 places.'>remote_rconn</a>);
+<a name='L126'> 126 
+<a name='L127'> 127     <a href='../S/805.html#L208' title='Defined at 208 in cbench/openflow/secchan/status.c.'>status_reply_put</a>(<a href='../Y/6927.html' title='Multiple used in 71 places.'>sr</a>, "trigger-duration=%d", <a href='../Y/7479.html' title='Multiple used in 3 places.'>trigger_duration</a>);
+<a name='L128'> 128     <a href='../S/805.html#L208' title='Defined at 208 in cbench/openflow/secchan/status.c.'>status_reply_put</a>(<a href='../Y/6927.html' title='Multiple used in 71 places.'>sr</a>, "current-duration=%d", <a href='../Y/2218.html' title='Multiple used in 3 places.'>cur_duration</a>);
+<a name='L129'> 129     <a href='../S/805.html#L208' title='Defined at 208 in cbench/openflow/secchan/status.c.'>status_reply_put</a>(<a href='../Y/6927.html' title='Multiple used in 71 places.'>sr</a>, "triggered=%s",
+<a name='L130'> 130                      <a href='../Y/2218.html' title='Multiple used in 3 places.'>cur_duration</a> &gt;= <a href='../Y/7479.html' title='Multiple used in 3 places.'>trigger_duration</a> ? "true" : "false");
+<a name='L131'> 131     <a href='../S/805.html#L208' title='Defined at 208 in cbench/openflow/secchan/status.c.'>status_reply_put</a>(<a href='../Y/6927.html' title='Multiple used in 71 places.'>sr</a>, "max-idle=%d", <a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>-&gt;<a href='../Y/4374.html' title='Multiple used in 24 places.'>max_idle</a>);
+<a name='L132'> 132 <font color='red'>}</font>
+<a name='L133'> 133 
+<a name='L134'> 134 <b>static</b> <b>struct</b> <a href='../S/806.html#L119' title='Defined at 119 in cbench/openflow/secchan/secchan.h.'>hook_class</a> <a href='../Y/2987.html' title='Multiple used in 2 places.'>fail_open_hook_class</a> = <font color='red'>{</font>
+<a name='L135'> 135     <a href='../S/789.html#L106' title='Defined at 106 in cbench/openflow/secchan/fail-open.c.'>fail_open_local_packet_cb</a>,  <i><font color='green'>/* local_packet_cb */</font></i>
+<a name='L136'> 136     <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>,                       <i><font color='green'>/* remote_packet_cb */</font></i>
+<a name='L137'> 137     <a href='../S/789.html#L63' title='Defined at 63 in cbench/openflow/secchan/fail-open.c.'>fail_open_periodic_cb</a>,      <i><font color='green'>/* periodic_cb */</font></i>
+<a name='L138'> 138     <a href='../S/789.html#L97' title='Defined at 97 in cbench/openflow/secchan/fail-open.c.'>fail_open_wait_cb</a>,          <i><font color='green'>/* wait_cb */</font></i>
+<a name='L139'> 139     <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>,                       <i><font color='green'>/* closing_cb */</font></i>
+<a name='L140'> 140 <font color='red'>}</font>;
+<a name='L141'> 141 
+<a name='L142'> 142 <b>void</b>
+<a name='L143'> 143 <a href='../R/2996.html' title='Multiple refered from 2 places.'>fail_open_start</a>(<b>struct</b> <a href='../Y/6627.html' title='Multiple used in 24 places.'>secchan</a> *<a href='../Y/6627.html' title='Multiple used in 24 places.'>secchan</a>, <b>const</b> <b>struct</b> <a href='../Y/6714.html' title='Multiple used in 49 places.'>settings</a> *<a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>,
+<a name='L144'> 144                 <b>struct</b> <a href='../Y/7199.html' title='Multiple used in 16 places.'>switch_status</a> *<a href='../Y/6948.html' title='Multiple used in 32 places.'>ss</a>,
+<a name='L145'> 145                 <b>struct</b> <a href='../Y/6260.html' title='Multiple used in 129 places.'>rconn</a> *<a href='../Y/4200.html' title='Multiple used in 35 places.'>local_rconn</a>, <b>struct</b> <a href='../Y/6260.html' title='Multiple used in 129 places.'>rconn</a> *<a href='../Y/6374.html' title='Multiple used in 47 places.'>remote_rconn</a>)
+<a name='L146'> 146 <font color='red'>{</font>
+<a name='L147'> 147     <b>struct</b> <a href='../S/789.html#L52' title='Defined at 52 in cbench/openflow/secchan/fail-open.c.'>fail_open_data</a> *<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a> = <a href='../D/10153.html' title='Multiple defined in 2 places.'>xmalloc</a>(<b>sizeof</b> *<a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>);
+<a name='L148'> 148     <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a> = <a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>;
+<a name='L149'> 149     <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/4200.html' title='Multiple used in 35 places.'>local_rconn</a> = <a href='../Y/4200.html' title='Multiple used in 35 places.'>local_rconn</a>;
+<a name='L150'> 150     <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/6374.html' title='Multiple used in 47 places.'>remote_rconn</a> = <a href='../Y/6374.html' title='Multiple used in 47 places.'>remote_rconn</a>;
+<a name='L151'> 151     <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../S/884.html#L67' title='Defined at 67 in cbench/openflow/lib/learning-switch.c.'>lswitch</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L152'> 152     <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/1649.html' title='Multiple used in 4 places.'>boot_deadline</a> = <a href='../S/902.html#L108' title='Defined at 108 in cbench/openflow/lib/timeval.c.'>time_now</a>() + <a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>-&gt;<a href='../Y/5919.html' title='Multiple used in 16 places.'>probe_interval</a> * 3;
+<a name='L153'> 153     <b>if</b> (<a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>-&gt;<a href='../Y/2666.html' title='Multiple used in 6 places.'>enable_stp</a>) <font color='red'>{</font>
+<a name='L154'> 154         <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>-&gt;<a href='../Y/1649.html' title='Multiple used in 4 places.'>boot_deadline</a> += <a href='../S/809.html#L39' title='Defined at 39 in cbench/openflow/secchan/stp-secchan.h.'>STP_EXTRA_BOOT_TIME</a>;
+<a name='L155'> 155     <font color='red'>}</font>
+<a name='L156'> 156     <a href='../S/805.html#L191' title='Defined at 191 in cbench/openflow/secchan/status.c.'>switch_status_register_category</a>(<a href='../Y/6948.html' title='Multiple used in 32 places.'>ss</a>, "fail-open",
+<a name='L157'> 157                                     <a href='../S/789.html#L120' title='Defined at 120 in cbench/openflow/secchan/fail-open.c.'>fail_open_status_cb</a>, <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>);
+<a name='L158'> 158     <a href='../S/801.html#L330' title='Defined at 330 in cbench/openflow/secchan/secchan.c.'>add_hook</a>(<a href='../S/801.html#L80' title='Defined at 80 in cbench/openflow/secchan/secchan.c.'>secchan</a>, &amp;<a href='../Y/2987.html' title='Multiple used in 2 places.'>fail_open_hook_class</a>, <a href='../Y/2985.html' title='Multiple used in 33 places.'>fail_open</a>);
+<a name='L159'> 159 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L63'>[^]</a><a href='#L143'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

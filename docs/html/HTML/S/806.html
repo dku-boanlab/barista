@@ -1,0 +1,154 @@
+<html>
+<head>
+<title>cbench/openflow/secchan/secchan.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1141.html'>secchan</a>/secchan.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/294.html' title='Multiple included from 11 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> *</font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> *</font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#ifndef</font> <a href='../S/806.html#L35' title='Defined at 35 in cbench/openflow/secchan/secchan.h.'>SECCHAN_H</a>
+<a name='L35'>  35 <font color='darkred'>#define</font> <a href='../S/806.html#L34' title='Refered from 34 in cbench/openflow/secchan/secchan.h.'>SECCHAN_H</a> 1
+<a name='L36'>  36 
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;regex.h&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;stdbool.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> &lt;stddef.h&gt;
+<a name='L40'>  40 <font color='darkred'>#include</font> "<a href='916.html'>list.h</a>"
+<a name='L41'>  41 <font color='darkred'>#include</font> "<a href='860.html'>packets.h</a>"
+<a name='L42'>  42 
+<a name='L43'>  43 <b>struct</b> <a href='../S/801.html#L80' title='Defined at 80 in cbench/openflow/secchan/secchan.c.'>secchan</a>;
+<a name='L44'>  44 
+<a name='L45'>  45 <i><font color='green'>/* Behavior when the connection to the controller fails. */</font></i>
+<a name='L46'>  46 <b>enum</b> <a href='../R/2992.html' title='Multiple refered from 5 places.'>fail_mode</a> <font color='red'>{</font>
+<a name='L47'>  47     <a href='../R/590.html' title='Multiple refered from 3 places.'>FAIL_OPEN</a>,                  <i><font color='green'>/* Act as learning switch. */</font></i>
+<a name='L48'>  48     <a href='../S/801.html#L661' title='Refered from 661 in cbench/openflow/secchan/secchan.c.'>FAIL_CLOSED</a>                 <i><font color='green'>/* Drop all packets. */</font></i>
+<a name='L49'>  49 <font color='red'>}</font>;
+<a name='L50'>  50 
+<a name='L51'>  51 <i><font color='green'>/* Maximum number of management connection listeners. */</font></i>
+<a name='L52'>  52 <font color='darkred'>#define</font> <a href='../R/881.html' title='Multiple refered from 4 places.'>MAX_MGMT</a> 8
+<a name='L53'>  53 
+<a name='L54'>  54 <font color='darkred'>#define</font> <a href='../R/868.html' title='Multiple refered from 6 places.'>MAX_CONTROLLERS</a> 3
+<a name='L55'>  55 
+<a name='L56'>  56 <i><font color='green'>/* Settings that may be configured by the user. */</font></i>
+<a name='L57'>  57 <b>struct</b> <a href='../R/4440.html' title='Multiple refered from 35 places.'>settings</a> <font color='red'>{</font>
+<a name='L58'>  58     <i><font color='green'>/* Overall mode of operation. */</font></i>
+<a name='L59'>  59     <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../S/811.html#L51' title='Defined at 51 in cbench/openflow/secchan/discovery.c.'>discovery</a>;           <i><font color='green'>/* Discover the controller automatically? */</font></i>
+<a name='L60'>  60     <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/3769.html' title='Multiple used in 62 places.'>in_band</a>;             <i><font color='green'>/* Connect to controller in-band? */</font></i>
+<a name='L61'>  61 
+<a name='L62'>  62     <i><font color='green'>/* Related vconns and network devices. */</font></i>
+<a name='L63'>  63     <b>const</b> <b>char</b> *<a href='../Y/2526.html' title='Multiple used in 33 places.'>dp_name</a>;        <i><font color='green'>/* Local datapath. */</font></i>
+<a name='L64'>  64     <b>int</b> <a href='../Y/4969.html' title='Multiple used in 6 places.'>num_controllers</a>;        <i><font color='green'>/* Number of configured controllers. */</font></i>
+<a name='L65'>  65     <b>const</b> <b>char</b> *<a href='../Y/2120.html' title='Multiple used in 14 places.'>controller_names</a>[<a href='../S/806.html#L54' title='Defined at 54 in cbench/openflow/secchan/secchan.h.'>MAX_CONTROLLERS</a>]; <i><font color='green'>/* Controllers (if not discovery mode). */</font></i>
+<a name='L66'>  66     <b>const</b> <b>char</b> *<a href='../Y/4171.html' title='Multiple used in 4 places.'>listener_names</a>[<a href='../S/806.html#L52' title='Defined at 52 in cbench/openflow/secchan/secchan.h.'>MAX_MGMT</a>]; <i><font color='green'>/* Listen for mgmt connections. */</font></i>
+<a name='L67'>  67     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4597.html' title='Multiple used in 33 places.'>n_listeners</a>;          <i><font color='green'>/* Number of mgmt connection listeners. */</font></i>
+<a name='L68'>  68     <b>const</b> <b>char</b> *<a href='../Y/4499.html' title='Multiple used in 5 places.'>monitor_name</a>;   <i><font color='green'>/* Listen for traffic monitor connections. */</font></i>
+<a name='L69'>  69 
+<a name='L70'>  70     <i><font color='green'>/* Failure behavior. */</font></i>
+<a name='L71'>  71     <b>enum</b> <a href='../S/806.html#L46' title='Defined at 46 in cbench/openflow/secchan/secchan.h.'>fail_mode</a> <a href='../S/806.html#L46' title='Defined at 46 in cbench/openflow/secchan/secchan.h.'>fail_mode</a>; <i><font color='green'>/* Act as learning switch if no controller? */</font></i>
+<a name='L72'>  72     <b>int</b> <a href='../Y/4374.html' title='Multiple used in 24 places.'>max_idle</a>;             <i><font color='green'>/* Idle time for flows in fail-open mode. */</font></i>
+<a name='L73'>  73     <b>int</b> <a href='../Y/5919.html' title='Multiple used in 16 places.'>probe_interval</a>;       <i><font color='green'>/* # seconds idle before sending echo request. */</font></i>
+<a name='L74'>  74     <b>int</b> <a href='../Y/4361.html' title='Multiple used in 22 places.'>max_backoff</a>;          <i><font color='green'>/* Max # seconds between connection attempts. */</font></i>
+<a name='L75'>  75 
+<a name='L76'>  76     <i><font color='green'>/* Packet-in rate-limiting. */</font></i>
+<a name='L77'>  77     <b>int</b> <a href='../Y/6243.html' title='Multiple used in 12 places.'>rate_limit</a>;           <i><font color='green'>/* Tokens added to bucket per second. */</font></i>
+<a name='L78'>  78     <b>int</b> <a href='../Y/1723.html' title='Multiple used in 10 places.'>burst_limit</a>;          <i><font color='green'>/* Maximum number token bucket size. */</font></i>
+<a name='L79'>  79 
+<a name='L80'>  80     <i><font color='green'>/* Discovery behavior. */</font></i>
+<a name='L81'>  81     <a href='../Y/6330.html' title='Multiple used in 3 places.'>regex_t</a> <a href='../Y/1269.html' title='Multiple used in 10 places.'>accept_controller_regex</a>;  <i><font color='green'>/* Controller vconns to accept. */</font></i>
+<a name='L82'>  82     <b>const</b> <b>char</b> *<a href='../Y/1268.html' title='Multiple used in 8 places.'>accept_controller_re</a>; <i><font color='green'>/* String version of regex. */</font></i>
+<a name='L83'>  83     <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/7659.html' title='Multiple used in 7 places.'>update_resolv_conf</a>;          <i><font color='green'>/* Update /etc/resolv.conf? */</font></i>
+<a name='L84'>  84 
+<a name='L85'>  85     <i><font color='green'>/* Spanning tree protocol. */</font></i>
+<a name='L86'>  86     <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/2666.html' title='Multiple used in 6 places.'>enable_stp</a>;
+<a name='L87'>  87 
+<a name='L88'>  88     <i><font color='green'>/* Emergency flow protection/restoration behavior. */</font></i>
+<a name='L89'>  89     <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/2657.html' title='Multiple used in 14 places.'>emerg_flow</a>;
+<a name='L90'>  90 <font color='red'>}</font>;
+<a name='L91'>  91 
+<a name='L92'>  92 <b>struct</b> <a href='../R/3190.html' title='Multiple refered from 6 places.'>half</a> <font color='red'>{</font>
+<a name='L93'>  93     <b>struct</b> <a href='../S/849.html#L79' title='Defined at 79 in cbench/openflow/lib/rconn.c.'>rconn</a> *<a href='../S/849.html#L79' title='Defined at 79 in cbench/openflow/lib/rconn.c.'>rconn</a>;
+<a name='L94'>  94     <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> *<a href='../Y/6545.html' title='Multiple used in 38 places.'>rxbuf</a>;
+<a name='L95'>  95     <b>int</b> <a href='../Y/4623.html' title='Multiple used in 13 places.'>n_txq</a>;                  <i><font color='green'>/* No. of packets queued for tx on 'rconn'. */</font></i>
+<a name='L96'>  96 <font color='red'>}</font>;
+<a name='L97'>  97 
+<a name='L98'>  98 <b>struct</b> <a href='../R/4346.html' title='Multiple refered from 15 places.'>relay</a> <font color='red'>{</font>
+<a name='L99'>  99     <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>;
+<a name='L100'> 100 
+<a name='L101'> 101 <font color='darkred'>#define</font> <a href='../R/658.html' title='Multiple refered from 10 places.'>HALF_LOCAL</a> 0
+<a name='L102'> 102 <font color='darkred'>#define</font> <a href='../R/659.html' title='Multiple refered from 7 places.'>HALF_REMOTE</a> 1
+<a name='L103'> 103     <b>struct</b> <a href='../S/806.html#L92' title='Defined at 92 in cbench/openflow/secchan/secchan.h.'>half</a> <a href='../Y/3535.html' title='Multiple used in 20 places.'>halves</a>[2];
+<a name='L104'> 104 
+<a name='L105'> 105     <i><font color='green'>/* The secchan has a primary connection (relay) to an OpenFlow controller.</font></i>
+<a name='L106'> 106 <i><font color='green'>     * This primary connection actually makes two connections to the datapath:</font></i>
+<a name='L107'> 107 <i><font color='green'>     * one for OpenFlow requests and responses, and one that is only used for</font></i>
+<a name='L108'> 108 <i><font color='green'>     * receiving asynchronous events such as 'ofp_packet_in' events.  This</font></i>
+<a name='L109'> 109 <i><font color='green'>     * design keeps replies to OpenFlow requests from being dropped by the</font></i>
+<a name='L110'> 110 <i><font color='green'>     * kernel due to a flooded network device.</font></i>
+<a name='L111'> 111 <i><font color='green'>     *</font></i>
+<a name='L112'> 112 <i><font color='green'>     * The secchan may also have any number of secondary "management"</font></i>
+<a name='L113'> 113 <i><font color='green'>     * connections (relays).  These connections do not receive asychronous</font></i>
+<a name='L114'> 114 <i><font color='green'>     * events and thus have a null 'async_rconn'. */</font></i>
+<a name='L115'> 115     <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/3930.html' title='Multiple used in 6 places.'>is_mgmt_conn</a>;          <i><font color='green'>/* Is this a management connection? */</font></i>
+<a name='L116'> 116     <b>struct</b> <a href='../S/849.html#L79' title='Defined at 79 in cbench/openflow/lib/rconn.c.'>rconn</a> *<a href='../Y/1504.html' title='Multiple used in 17 places.'>async_rconn</a>;  <i><font color='green'>/* For receiving asynchronous events. */</font></i>
+<a name='L117'> 117 <font color='red'>}</font>;
+<a name='L118'> 118 
+<a name='L119'> 119 <b>struct</b> <a href='../R/3223.html' title='Multiple refered from 10 places.'>hook_class</a> <font color='red'>{</font>
+<a name='L120'> 120     <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> (*<a href='../Y/4195.html' title='Multiple used in 2 places.'>local_packet_cb</a>)(<b>struct</b> <a href='../S/806.html#L98' title='Defined at 98 in cbench/openflow/secchan/secchan.h.'>relay</a> *, <b>void</b> *<a href='../Y/1539.html' title='Multiple used in 86 places.'>aux</a>);
+<a name='L121'> 121     <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> (*<a href='../Y/6372.html' title='Multiple used in 2 places.'>remote_packet_cb</a>)(<b>struct</b> <a href='../S/806.html#L98' title='Defined at 98 in cbench/openflow/secchan/secchan.h.'>relay</a> *, <b>void</b> *<a href='../Y/1539.html' title='Multiple used in 86 places.'>aux</a>);
+<a name='L122'> 122     <b>void</b> (*<a href='../Y/5713.html' title='Multiple used in 3 places.'>periodic_cb</a>)(<b>void</b> *<a href='../Y/1539.html' title='Multiple used in 86 places.'>aux</a>);
+<a name='L123'> 123     <b>void</b> (*<a href='../Y/7838.html' title='Multiple used in 3 places.'>wait_cb</a>)(<b>void</b> *<a href='../Y/1539.html' title='Multiple used in 86 places.'>aux</a>);
+<a name='L124'> 124     <b>void</b> (*closing_cb)(<b>struct</b> <a href='../S/806.html#L98' title='Defined at 98 in cbench/openflow/secchan/secchan.h.'>relay</a> *, <b>void</b> *<a href='../Y/1539.html' title='Multiple used in 86 places.'>aux</a>);
+<a name='L125'> 125 <font color='red'>}</font>;
+<a name='L126'> 126 
+<a name='L127'> 127 <b>void</b> <a href='../S/801.html#L330' title='Defined at 330 in cbench/openflow/secchan/secchan.c.'>add_hook</a>(<b>struct</b> <a href='../Y/6627.html' title='Multiple used in 24 places.'>secchan</a> *, <b>const</b> <b>struct</b> <a href='../Y/3649.html' title='Multiple used in 2 places.'>hook_class</a> *, <b>void</b> *);
+<a name='L128'> 128 
+<a name='L129'> 129 <b>struct</b> <a href='../D/8847.html' title='Multiple defined in 4 places.'>ofp_packet_in</a> *<a href='../S/801.html#L344' title='Defined at 344 in cbench/openflow/secchan/secchan.c.'>get_ofp_packet_in</a>(<b>struct</b> <a href='../Y/6355.html' title='Multiple used in 23 places.'>relay</a> *);
+<a name='L130'> 130 <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../S/801.html#L360' title='Defined at 360 in cbench/openflow/secchan/secchan.c.'>get_ofp_packet_eth_header</a>(<b>struct</b> <a href='../Y/6355.html' title='Multiple used in 23 places.'>relay</a> *, <b>struct</b> <a href='../Y/5229.html' title='Multiple used in 18 places.'>ofp_packet_in</a> **,
+<a name='L131'> 131                                <b>struct</b> <a href='../Y/2787.html' title='Multiple used in 3 places.'>eth_header</a> **);
+<a name='L132'> 132 <b>void</b> <a href='../S/791.html#L260' title='Defined at 260 in cbench/openflow/secchan/in-band.c.'>get_ofp_packet_payload</a>(<b>struct</b> <a href='../Y/5229.html' title='Multiple used in 18 places.'>ofp_packet_in</a> *, <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *);
+<a name='L133'> 133 
+<a name='L134'> 134 
+<a name='L135'> 135 <font color='darkred'>#endif</font> <i><font color='green'>/* secchan.h */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

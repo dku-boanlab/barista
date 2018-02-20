@@ -1,0 +1,89 @@
+<html>
+<head>
+<title>cbench/oflops/context.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1101.html'>oflops</a>/context.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/25.html' title='Multiple included from 29 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <font color='darkred'>#ifndef</font> <a href='../S/59.html#L2' title='Defined at 2 in cbench/oflops/context.h.'>CONTEXT_H</a>
+<a name='L2'>   2 <font color='darkred'>#define</font> <a href='../S/59.html#L1' title='Refered from 1 in cbench/oflops/context.h.'>CONTEXT_H</a>
+<a name='L3'>   3 
+<a name='L4'>   4 <b>struct</b> <a href='../D/8697.html' title='Multiple defined in 2 places.'>oflops_context</a>;
+<a name='L5'>   5 
+<a name='L6'>   6 <font color='darkred'>#include</font> "<a href='69.html'>oflops.h</a>"
+<a name='L7'>   7 <font color='darkred'>#include</font> "<a href='55.html'>test_module.h</a>"
+<a name='L8'>   8 <font color='darkred'>#include</font> "<a href='35.html'>wc_event.h</a>"
+<a name='L9'>   9 <font color='darkred'>#include</font> "<a href='33.html'>channel_info.h</a>"
+<a name='L10'>  10 <font color='darkred'>#include</font> "<a href='39.html'>oflops_snmp.h</a>"
+<a name='L11'>  11 <font color='darkred'>#include</font> &lt;<a href='821.html'>pcap.h</a>&gt;
+<a name='L12'>  12 
+<a name='L13'>  13 <b>typedef</b> <b>struct</b> <a href='../R/3808.html' title='Multiple refered from 21 places.'>oflops_context</a>
+<a name='L14'>  14 <font color='red'>{</font>
+<a name='L15'>  15   <i><font color='green'>//how many tests I watn to run?</font></i>
+<a name='L16'>  16   <b>int</b> <a href='../Y/4621.html' title='Multiple used in 6 places.'>n_tests</a>;
+<a name='L17'>  17   <b>int</b> <a href='../Y/4389.html' title='Multiple used in 6 places.'>max_tests</a>;        <i><font color='green'>// size of the tests array</font></i>
+<a name='L18'>  18   <i><font color='green'>// an array of strings to store the tests</font></i>
+<a name='L19'>  19   <b>struct</b> <a href='../D/9879.html' title='Multiple defined in 2 places.'>test_module</a> ** <a href='../Y/7316.html' title='Multiple used in 9 places.'>tests</a>;
+<a name='L20'>  20   <i><font color='green'>// the test that we are currently handling</font></i>
+<a name='L21'>  21   <b>struct</b> <a href='../D/9879.html' title='Multiple defined in 2 places.'>test_module</a> * <a href='../Y/2226.html' title='Multiple used in 6 places.'>curr_test</a>;
+<a name='L22'>  22   <i><font color='green'>// which is the interface related t ocontrol </font></i>
+<a name='L23'>  23   <b>char</b> * <a href='../Y/2121.html' title='Multiple used in 5 places.'>controller_port</a>;
+<a name='L24'>  24   <i><font color='green'>// the filedescriptor of the socket of </font></i>
+<a name='L25'>  25   <i><font color='green'>// the control connection to the openflow</font></i>
+<a name='L26'>  26   <b>int</b> <a href='../Y/4169.html' title='Multiple used in 9 places.'>listen_fd</a>;
+<a name='L27'>  27   <i><font color='green'>// a list of ports on which I listen for data</font></i>
+<a name='L28'>  28   <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4170.html' title='Multiple used in 18 places.'>listen_port</a>;
+<a name='L29'>  29   <i><font color='green'>// how match data we capture</font></i>
+<a name='L30'>  30   <b>int</b> <a href='../Y/6852.html' title='Multiple used in 12 places.'>snaplen</a>;
+<a name='L31'>  31 
+<a name='L32'>  32   <b>int</b> <a href='../Y/2113.html' title='Multiple used in 48 places.'>control_fd</a>; 
+<a name='L33'>  33   <b>struct</b> <a href='../S/54.html#L4' title='Defined at 4 in cbench/oflops/msgbuf.h.'>msgbuf</a> * <a href='../Y/2114.html' title='Multiple used in 6 places.'>control_outgoing</a>;
+<a name='L34'>  34   <b>int</b> <a href='../Y/4579.html' title='Multiple used in 53 places.'>n_channels</a>;
+<a name='L35'>  35   <b>int</b> <a href='../Y/4364.html' title='Multiple used in 9 places.'>max_channels</a>;
+<a name='L36'>  36   <b>struct</b> <a href='../D/7051.html' title='Multiple defined in 2 places.'>channel_info</a> * <a href='../Y/1859.html' title='Multiple used in 259 places.'>channels</a>;       <i><font color='green'>// control, send, recv,etc.</font></i>
+<a name='L37'>  37   <i><font color='green'>/** Pointers to SNMP channel</font></i>
+<a name='L38'>  38 <i><font color='green'>   */</font></i>
+<a name='L39'>  39   <b>struct</b> <a href='../D/9566.html' title='Multiple defined in 2 places.'>snmp_channel</a>* <a href='../Y/6872.html' title='Multiple used in 26 places.'>snmp_channel_info</a>;
+<a name='L40'>  40   <b>int</b> <a href='../Y/6748.html' title='Multiple used in 5 places.'>should_end</a>;
+<a name='L41'>  41   <b>int</b> <a href='../Y/6747.html' title='Multiple used in 4 places.'>should_continue</a>;
+<a name='L42'>  42   <b>struct</b> <a href='../D/10125.html' title='Multiple defined in 2 places.'>wc_queue</a> * <a href='../Y/7380.html' title='Multiple used in 7 places.'>timers</a>;
+<a name='L43'>  43   <b>int</b> <a href='../Y/2601.html' title='Multiple used in 7 places.'>dump_controller</a>;
+<a name='L44'>  44   <i><font color='green'>/**</font></i>
+<a name='L45'>  45 <i><font color='green'>   * The location to output logging information</font></i>
+<a name='L46'>  46 <i><font color='green'>   */</font></i>
+<a name='L47'>  47   <b>char</b> *<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>; 
+<a name='L48'>  48   <i><font color='green'>/**</font></i>
+<a name='L49'>  49 <i><font color='green'>   * the traffic generation method we choose. </font></i>
+<a name='L50'>  50 <i><font color='green'>   */</font></i>
+<a name='L51'>  51   <b>int</b> <a href='../Y/7457.html' title='Multiple used in 11 places.'>trafficGen</a>;
+<a name='L52'>  52   <i><font color='green'>/**</font></i>
+<a name='L53'>  53 <i><font color='green'>   * The switch cpu mib</font></i>
+<a name='L54'>  54 <i><font color='green'>   */</font></i>
+<a name='L55'>  55   <a href='../Y/5419.html' title='Multiple used in 48 places.'>oid</a> <a href='../Y/2157.html' title='Multiple used in 24 places.'>cpuOID</a>[<a href='../Y/538.html' title='Multiple used in 8 places.'>MAX_OID_LEN</a>];
+<a name='L56'>  56   <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/2159.html' title='Multiple used in 36 places.'>cpuOID_len</a>;
+<a name='L57'>  57 
+<a name='L58'>  58 <font color='red'>}</font> <a href='../R/3808.html' title='Multiple refered from 21 places.'>oflops_context</a>;
+<a name='L59'>  59 
+<a name='L60'>  60 <b>enum</b> trafficGenValues <font color='red'>{</font>
+<a name='L61'>  61   <a href='../S/16.html#L73' title='Refered from 73 in cbench/oflops/traffic_generator.c.'>USER_SPACE</a>=1,
+<a name='L62'>  62   <a href='../R/1421.html' title='Multiple refered from 3 places.'>PKTGEN</a>,
+<a name='L63'>  63 <font color='red'>}</font>;
+<a name='L64'>  64 
+<a name='L65'>  65 <a href='../D/8697.html' title='Multiple defined in 2 places.'>oflops_context</a> * <a href='../S/41.html#L16' title='Defined at 16 in cbench/oflops/context.c.'>oflops_default_context</a>(<b>void</b>);
+<a name='L66'>  66 
+<a name='L67'>  67 <b>int</b> <a href='../S/41.html#L54' title='Defined at 54 in cbench/oflops/context.c.'>reset_context</a>(<a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> * <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>);
+<a name='L68'>  68 
+<a name='L69'>  69 
+<a name='L70'>  70 <font color='darkred'>#endif</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

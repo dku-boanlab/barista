@@ -1,0 +1,122 @@
+<html>
+<head>
+<title>cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/timer.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1126.html'>datapath</a>/<a href='../files/1129.html'>linux-2.6</a>/<a href='../files/1130.html'>compat-2.6</a>/<a href='../files/1131.html'>include</a>/<a href='../files/1133.html'>linux</a>/timer.h</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L37'>[^]</a><a href='#L89'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='321.html#L4' title='Included from 4 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/timer.h.'>INCLUDED FROM</a></h2>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L37' title='Defined at 37.'>__round_jiffies</a>
+<li><a href='#L89' title='Defined at 89.'>round_jiffies</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <font color='darkred'>#ifndef</font> <a href='../S/321.html#L2' title='Defined at 2 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/timer.h.'>__LINUX_TIMER_WRAPPER_H</a>
+<a name='L2'>   2 <font color='darkred'>#define</font> <a href='../S/321.html#L1' title='Refered from 1 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/timer.h.'>__LINUX_TIMER_WRAPPER_H</a> 1
+<a name='L3'>   3 
+<a name='L4'>   4 <font color='darkred'>#include_next</font> &lt;<a href='321.html'>linux/timer.h</a>&gt;
+<a name='L5'>   5 
+<a name='L6'>   6 <font color='darkred'>#include</font> &lt;linux/version.h&gt;
+<a name='L7'>   7 
+<a name='L8'>   8 <font color='darkred'>#ifndef</font> <a href='../S/321.html#L9' title='Defined at 9 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/timer.h.'>RHEL_RELEASE_VERSION</a>
+<a name='L9'>   9 <font color='darkred'>#define</font> <a href='../R/1527.html' title='Multiple refered from 2 places.'>RHEL_RELEASE_VERSION</a>(<a href='../Y/1083.html' title='Multiple used in 11 places.'>X</a>,<a href='../Y/1099.html' title='Multiple used in 6 places.'>Y</a>) ( 0 )
+<a name='L10'>  10 <font color='darkred'>#endif</font>
+<a name='L11'>  11 <font color='darkred'>#if</font> ((<a href='../Y/502.html' title='Multiple used in 39 places.'>LINUX_VERSION_CODE</a> &lt; <a href='../Y/480.html' title='Multiple used in 39 places.'>KERNEL_VERSION</a>(2,6,20)) &amp;&amp; \
+<a name='L12'>  12      (!<b>defined</b>(<a href='../Y/735.html' title='Multiple used in 2 places.'>RHEL_RELEASE_CODE</a>) || \
+<a name='L13'>  13       (<a href='../Y/735.html' title='Multiple used in 2 places.'>RHEL_RELEASE_CODE</a> &lt; <a href='../S/321.html#L9' title='Defined at 9 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/timer.h.'>RHEL_RELEASE_VERSION</a>(5,1))))
+<a name='L14'>  14 
+<a name='L15'>  15 <b>extern</b> <b>unsigned</b> <b>long</b> <b>volatile</b> <a href='../Y/3977.html' title='Multiple used in 7 places.'>jiffies</a>;
+<a name='L16'>  16 
+<a name='L17'>  17 <i><font color='green'>/**</font></i>
+<a name='L18'>  18 <i><font color='green'> * __round_jiffies - function to round jiffies to a full second</font></i>
+<a name='L19'>  19 <i><font color='green'> * @j: the time in (absolute) jiffies that should be rounded</font></i>
+<a name='L20'>  20 <i><font color='green'> * @cpu: the processor number on which the timeout will happen</font></i>
+<a name='L21'>  21 <i><font color='green'> *</font></i>
+<a name='L22'>  22 <i><font color='green'> * __round_jiffies() rounds an absolute time in the future (in jiffies)</font></i>
+<a name='L23'>  23 <i><font color='green'> * up or down to (approximately) full seconds. This is useful for timers</font></i>
+<a name='L24'>  24 <i><font color='green'> * for which the exact time they fire does not matter too much, as long as</font></i>
+<a name='L25'>  25 <i><font color='green'> * they fire approximately every X seconds.</font></i>
+<a name='L26'>  26 <i><font color='green'> *</font></i>
+<a name='L27'>  27 <i><font color='green'> * By rounding these timers to whole seconds, all such timers will fire</font></i>
+<a name='L28'>  28 <i><font color='green'> * at the same time, rather than at various times spread out. The goal</font></i>
+<a name='L29'>  29 <i><font color='green'> * of this is to have the CPU wake up less, which saves power.</font></i>
+<a name='L30'>  30 <i><font color='green'> *</font></i>
+<a name='L31'>  31 <i><font color='green'> * The exact rounding is skewed for each processor to avoid all</font></i>
+<a name='L32'>  32 <i><font color='green'> * processors firing at the exact same time, which could lead</font></i>
+<a name='L33'>  33 <i><font color='green'> * to lock contention or spurious cache line bouncing.</font></i>
+<a name='L34'>  34 <i><font color='green'> *</font></i>
+<a name='L35'>  35 <i><font color='green'> * The return value is the rounded version of the @j parameter.</font></i>
+<a name='L36'>  36 <i><font color='green'> */</font></i>
+<a name='L37'>  37 <b>static</b> <b>inline</b> <b>unsigned</b> <b>long</b> <a href='../S/321.html#L91' title='Refered from 91 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/timer.h.'>__round_jiffies</a>(<b>unsigned</b> <b>long</b> <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>, <b>int</b> <a href='../Y/2154.html' title='Multiple used in 27 places.'>cpu</a>)
+<a name='L38'>  38 <font color='red'>{</font>
+<a name='L39'>  39         <b>int</b> <a href='../Y/6365.html' title='Multiple used in 5 places.'>rem</a>;
+<a name='L40'>  40         <b>unsigned</b> <b>long</b> <a href='../Y/5517.html' title='Multiple used in 4 places.'>original</a> = <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>;
+<a name='L41'>  41 
+<a name='L42'>  42         <i><font color='green'>/*</font></i>
+<a name='L43'>  43 <i><font color='green'>         * We don't want all cpus firing their timers at once hitting the</font></i>
+<a name='L44'>  44 <i><font color='green'>         * same lock or cachelines, so we skew each extra cpu with an extra</font></i>
+<a name='L45'>  45 <i><font color='green'>         * 3 jiffies. This 3 jiffies came originally from the mm/ code which</font></i>
+<a name='L46'>  46 <i><font color='green'>         * already did this.</font></i>
+<a name='L47'>  47 <i><font color='green'>         * The skew is done by adding 3*cpunr, then round, then subtract this</font></i>
+<a name='L48'>  48 <i><font color='green'>         * extra offset again.</font></i>
+<a name='L49'>  49 <i><font color='green'>         */</font></i>
+<a name='L50'>  50         <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a> += <a href='../Y/2154.html' title='Multiple used in 27 places.'>cpu</a> * 3;
+<a name='L51'>  51 
+<a name='L52'>  52         <a href='../Y/6365.html' title='Multiple used in 5 places.'>rem</a> = <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a> % <a href='../Y/439.html' title='Multiple used in 8 places.'>HZ</a>;
+<a name='L53'>  53 
+<a name='L54'>  54         <i><font color='green'>/*</font></i>
+<a name='L55'>  55 <i><font color='green'>         * If the target jiffie is just after a whole second (which can happen</font></i>
+<a name='L56'>  56 <i><font color='green'>         * due to delays of the timer irq, long irq off times etc etc) then</font></i>
+<a name='L57'>  57 <i><font color='green'>         * we should round down to the whole second, not up. Use 1/4th second</font></i>
+<a name='L58'>  58 <i><font color='green'>         * as cutoff for this rounding as an extreme upper bound for this.</font></i>
+<a name='L59'>  59 <i><font color='green'>         */</font></i>
+<a name='L60'>  60         <b>if</b> (<a href='../Y/6365.html' title='Multiple used in 5 places.'>rem</a> &lt; <a href='../Y/439.html' title='Multiple used in 8 places.'>HZ</a>/4) <i><font color='green'>/* round down */</font></i>
+<a name='L61'>  61                 <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a> = <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a> - <a href='../Y/6365.html' title='Multiple used in 5 places.'>rem</a>;
+<a name='L62'>  62         <b>else</b> <i><font color='green'>/* round up */</font></i>
+<a name='L63'>  63                 <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a> = <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a> - <a href='../Y/6365.html' title='Multiple used in 5 places.'>rem</a> + <a href='../Y/439.html' title='Multiple used in 8 places.'>HZ</a>;
+<a name='L64'>  64 
+<a name='L65'>  65         <i><font color='green'>/* now that we have rounded, subtract the extra skew again */</font></i>
+<a name='L66'>  66         <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a> -= <a href='../Y/2154.html' title='Multiple used in 27 places.'>cpu</a> * 3;
+<a name='L67'>  67 
+<a name='L68'>  68         <b>if</b> (<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a> &lt;= <a href='../Y/3977.html' title='Multiple used in 7 places.'>jiffies</a>) <i><font color='green'>/* rounding ate our timeout entirely; */</font></i>
+<a name='L69'>  69                 <b>return</b> <a href='../Y/5517.html' title='Multiple used in 4 places.'>original</a>;
+<a name='L70'>  70         <b>return</b> <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>;
+<a name='L71'>  71 <font color='red'>}</font>
+<a name='L72'>  72 
+<a name='L73'>  73 
+<a name='L74'>  74 <i><font color='green'>/**</font></i>
+<a name='L75'>  75 <i><font color='green'> * round_jiffies - function to round jiffies to a full second</font></i>
+<a name='L76'>  76 <i><font color='green'> * @j: the time in (absolute) jiffies that should be rounded</font></i>
+<a name='L77'>  77 <i><font color='green'> *</font></i>
+<a name='L78'>  78 <i><font color='green'> * round_jiffies() rounds an absolute time in the future (in jiffies)</font></i>
+<a name='L79'>  79 <i><font color='green'> * up or down to (approximately) full seconds. This is useful for timers</font></i>
+<a name='L80'>  80 <i><font color='green'> * for which the exact time they fire does not matter too much, as long as</font></i>
+<a name='L81'>  81 <i><font color='green'> * they fire approximately every X seconds.</font></i>
+<a name='L82'>  82 <i><font color='green'> *</font></i>
+<a name='L83'>  83 <i><font color='green'> * By rounding these timers to whole seconds, all such timers will fire</font></i>
+<a name='L84'>  84 <i><font color='green'> * at the same time, rather than at various times spread out. The goal</font></i>
+<a name='L85'>  85 <i><font color='green'> * of this is to have the CPU wake up less, which saves power.</font></i>
+<a name='L86'>  86 <i><font color='green'> *</font></i>
+<a name='L87'>  87 <i><font color='green'> * The return value is the rounded version of the @j parameter.</font></i>
+<a name='L88'>  88 <i><font color='green'> */</font></i>
+<a name='L89'>  89 <b>static</b> <b>inline</b> <b>unsigned</b> <b>long</b> round_jiffies(<b>unsigned</b> <b>long</b> <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>)
+<a name='L90'>  90 <font color='red'>{</font>
+<a name='L91'>  91         <b>return</b> <a href='../S/321.html#L37' title='Defined at 37 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/timer.h.'>__round_jiffies</a>(<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>, 0);  <i><font color='green'>// FIXME</font></i>
+<a name='L92'>  92 <font color='red'>}</font>
+<a name='L93'>  93 
+<a name='L94'>  94 <font color='darkred'>#endif</font> <i><font color='green'>/* linux kernel &lt; 2.6.20 */</font></i>
+<a name='L95'>  95 
+<a name='L96'>  96 <font color='darkred'>#endif</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L37'>[^]</a><a href='#L89'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

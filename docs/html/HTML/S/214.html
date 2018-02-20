@@ -1,0 +1,88 @@
+<html>
+<head>
+<title>cbench/openflow/hw-lib/skeleton/sample_plat.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1135.html'>hw-lib</a>/<a href='../files/1137.html'>skeleton</a>/sample_plat.h</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L14'>[^]</a><a href='#L38'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='220.html#L35' title='Included from 35 in cbench/openflow/hw-lib/skeleton/of_hw_platform.h.'>INCLUDED FROM</a></h2>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L14' title='Defined at 14.'>of_port_to_hw_port</a>
+<li><a href='#L22' title='Defined at 22.'>of_hw_port_to_of_port</a>
+<li><a href='#L38' title='Defined at 38.'>hw_port_name_to_index</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <font color='darkred'>#ifndef</font> <a href='../S/214.html#L2' title='Defined at 2 in cbench/openflow/hw-lib/skeleton/sample_plat.h.'>SAMPLE_PLAT_H</a>
+<a name='L2'>   2 <font color='darkred'>#define</font> <a href='../S/214.html#L1' title='Refered from 1 in cbench/openflow/hw-lib/skeleton/sample_plat.h.'>SAMPLE_PLAT_H</a> 1
+<a name='L3'>   3 
+<a name='L4'>   4 
+<a name='L5'>   5 <font color='darkred'>#include</font> &lt;string.h&gt;
+<a name='L6'>   6 <font color='darkred'>#include</font> &lt;stdlib.h&gt;
+<a name='L7'>   7 <font color='darkred'>#include</font> &lt;ctype.h&gt;
+<a name='L8'>   8 
+<a name='L9'>   9 <font color='darkred'>#include</font> &lt;<a href='181.html'>openflow/openflow.h</a>&gt;
+<a name='L10'>  10 
+<a name='L11'>  11 <font color='darkred'>#define</font> OF_HW_MAX_PORTS 4
+<a name='L12'>  12 
+<a name='L13'>  13 <b>static</b> <b>inline</b> <b>int</b>
+<a name='L14'>  14 of_port_to_hw_port(<b>int</b> <a href='../Y/5057.html' title='Multiple used in 162 places.'>of_port</a>)
+<a name='L15'>  15 <font color='red'>{</font>
+<a name='L16'>  16     <b>return</b> <a href='../Y/5057.html' title='Multiple used in 162 places.'>of_port</a> - 1;
+<a name='L17'>  17 <font color='red'>}</font>
+<a name='L18'>  18 
+<a name='L19'>  19 
+<a name='L20'>  20 <i><font color='green'>/* Map port to OF port number */</font></i>
+<a name='L21'>  21 <b>static</b> <b>inline</b> <b>int</b>
+<a name='L22'>  22 <a href='../S/219.html#L62' title='Refered from 62 in cbench/openflow/hw-lib/skeleton/txrx.c.'>of_hw_port_to_of_port</a>(<b>int</b> <a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a>)
+<a name='L23'>  23 <font color='red'>{</font>
+<a name='L24'>  24     <b>if</b> ((<a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a> &lt; 0) || (<a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a> &gt; 3)) <font color='red'>{</font>
+<a name='L25'>  25         <b>return</b> -1;
+<a name='L26'>  26     <font color='red'>}</font>
+<a name='L27'>  27 
+<a name='L28'>  28     <b>return</b> <a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a> + 1;
+<a name='L29'>  29 <font color='red'>}</font>
+<a name='L30'>  30 
+<a name='L31'>  31 <font color='darkred'>#define</font> <a href='../R/1817.html' title='Multiple refered from 3 places.'>_IS_DIGIT</a>(<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>) ((<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>) &gt;= '0' &amp;&amp; (<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>) &lt;= '9')
+<a name='L32'>  32 
+<a name='L33'>  33 <i><font color='green'>/* Map name to hw port number:  N =&gt; N-1</font></i>
+<a name='L34'>  34 <i><font color='green'>   ge0 =&gt; 0 where "ge" can be any string and 0 can be any number</font></i>
+<a name='L35'>  35 <i><font color='green'>*/</font></i>
+<a name='L36'>  36 
+<a name='L37'>  37 <b>static</b> <b>inline</b> <b>int</b>
+<a name='L38'>  38 <a href='../S/210.html#L268' title='Refered from 268 in cbench/openflow/hw-lib/skeleton/port.c.'>hw_port_name_to_index</a>(<b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>)
+<a name='L39'>  39 <font color='red'>{</font>
+<a name='L40'>  40 
+<a name='L41'>  41     <b>if</b> (<a href='../D/6419.html' title='Multiple defined in 2 places.'>_IS_DIGIT</a>(<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>[0])) <font color='red'>{</font>
+<a name='L42'>  42         <i><font color='green'>/* Treat as 1-based, OF number */</font></i>
+<a name='L43'>  43         <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = <a href='../Y/7113.html' title='Multiple used in 6 places.'>strtoul</a>(&amp;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>[0], <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, 10);
+<a name='L44'>  44         <b>return</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> - 1;
+<a name='L45'>  45     <font color='red'>}</font>
+<a name='L46'>  46 
+<a name='L47'>  47     <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a> = <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>);
+<a name='L48'>  48     <b>for</b> (<a href='../Y/3716.html' title='Multiple used in 200 places.'>idx</a> = 0; <a href='../Y/3716.html' title='Multiple used in 200 places.'>idx</a> &lt; <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a> &amp;&amp; !<a href='../D/6419.html' title='Multiple defined in 2 places.'>_IS_DIGIT</a>(<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>[<a href='../Y/3716.html' title='Multiple used in 200 places.'>idx</a>]); <a href='../Y/3716.html' title='Multiple used in 200 places.'>idx</a>++) ;
+<a name='L49'>  49 
+<a name='L50'>  50     <b>if</b> ((<a href='../Y/3716.html' title='Multiple used in 200 places.'>idx</a> &lt; <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>) &amp;&amp; <a href='../D/6419.html' title='Multiple defined in 2 places.'>_IS_DIGIT</a>(<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>[<a href='../Y/3716.html' title='Multiple used in 200 places.'>idx</a>])) <font color='red'>{</font>
+<a name='L51'>  51         <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = <a href='../Y/7113.html' title='Multiple used in 6 places.'>strtoul</a>(&amp;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>[<a href='../Y/3716.html' title='Multiple used in 200 places.'>idx</a>], <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, 10);
+<a name='L52'>  52         <b>return</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L53'>  53     <font color='red'>}</font>
+<a name='L54'>  54 
+<a name='L55'>  55     <b>return</b> -1;
+<a name='L56'>  56 <font color='red'>}</font>
+<a name='L57'>  57 <font color='darkred'>#undef</font> <a href='../R/1817.html' title='Multiple refered from 3 places.'>_IS_DIGIT</a>
+<a name='L58'>  58 
+<a name='L59'>  59 
+<a name='L60'>  60 
+<a name='L61'>  61 <font color='darkred'>#endif</font> <i><font color='green'>/* SAMPLE_PLAT_H */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L14'>[^]</a><a href='#L38'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

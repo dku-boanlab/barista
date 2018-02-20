@@ -1,0 +1,43 @@
+<html>
+<head>
+<title>sw_q</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/969.html#L28'>sw_q</a>               28 components/include/switch_queue.h sw_queue_t sw_q;
+<a href='../S/969.html#L40'>sw_q</a>               40 components/include/switch_queue.h     pthread_spin_lock(&amp;sw_q.lock);
+<a href='../S/969.html#L42'>sw_q</a>               42 components/include/switch_queue.h     if (sw_q.head == NULL) {
+<a href='../S/969.html#L43'>sw_q</a>               43 components/include/switch_queue.h         pthread_spin_unlock(&amp;sw_q.lock);
+<a href='../S/969.html#L51'>sw_q</a>               51 components/include/switch_queue.h         pthread_spin_lock(&amp;sw_q.lock);
+<a href='../S/969.html#L52'>sw_q</a>               52 components/include/switch_queue.h         sw_q.size--;
+<a href='../S/969.html#L53'>sw_q</a>               53 components/include/switch_queue.h         pthread_spin_unlock(&amp;sw_q.lock);
+<a href='../S/969.html#L56'>sw_q</a>               56 components/include/switch_queue.h     } else if (sw_q.head == sw_q.tail) {
+<a href='../S/969.html#L57'>sw_q</a>               57 components/include/switch_queue.h         new = sw_q.head;
+<a href='../S/969.html#L58'>sw_q</a>               58 components/include/switch_queue.h         sw_q.head = sw_q.tail = NULL;
+<a href='../S/969.html#L60'>sw_q</a>               60 components/include/switch_queue.h         new = sw_q.head;
+<a href='../S/969.html#L61'>sw_q</a>               61 components/include/switch_queue.h         sw_q.head = sw_q.head-&gt;next;
+<a href='../S/969.html#L62'>sw_q</a>               62 components/include/switch_queue.h         sw_q.head-&gt;prev = NULL;
+<a href='../S/969.html#L65'>sw_q</a>               65 components/include/switch_queue.h     sw_q.size--;
+<a href='../S/969.html#L67'>sw_q</a>               67 components/include/switch_queue.h     pthread_spin_unlock(&amp;sw_q.lock);
+<a href='../S/969.html#L85'>sw_q</a>               85 components/include/switch_queue.h     pthread_spin_lock(&amp;sw_q.lock);
+<a href='../S/969.html#L87'>sw_q</a>               87 components/include/switch_queue.h     if (sw_q.size &lt; 0) {
+<a href='../S/969.html#L88'>sw_q</a>               88 components/include/switch_queue.h         sw_q.size++;
+<a href='../S/969.html#L90'>sw_q</a>               90 components/include/switch_queue.h         pthread_spin_unlock(&amp;sw_q.lock);
+<a href='../S/969.html#L97'>sw_q</a>               97 components/include/switch_queue.h     if (sw_q.tail == NULL) {
+<a href='../S/969.html#L98'>sw_q</a>               98 components/include/switch_queue.h         sw_q.head = sw_q.tail = old;
+<a href='../S/969.html#L100'>sw_q</a>              100 components/include/switch_queue.h         sw_q.tail-&gt;next = old;
+<a href='../S/969.html#L101'>sw_q</a>              101 components/include/switch_queue.h         old-&gt;prev = sw_q.tail;
+<a href='../S/969.html#L102'>sw_q</a>              102 components/include/switch_queue.h         sw_q.tail = old;
+<a href='../S/969.html#L105'>sw_q</a>              105 components/include/switch_queue.h     sw_q.size++;
+<a href='../S/969.html#L107'>sw_q</a>              107 components/include/switch_queue.h     pthread_spin_unlock(&amp;sw_q.lock);
+<a href='../S/969.html#L118'>sw_q</a>              118 components/include/switch_queue.h     memset(&amp;sw_q, 0, sizeof(sw_queue_t));
+<a href='../S/969.html#L119'>sw_q</a>              119 components/include/switch_queue.h     pthread_spin_init(&amp;sw_q.lock, PTHREAD_PROCESS_PRIVATE);
+<a href='../S/969.html#L141'>sw_q</a>              141 components/include/switch_queue.h     pthread_spin_lock(&amp;sw_q.lock);
+<a href='../S/969.html#L143'>sw_q</a>              143 components/include/switch_queue.h     switch_t *curr = sw_q.head;
+<a href='../S/969.html#L150'>sw_q</a>              150 components/include/switch_queue.h     pthread_spin_unlock(&amp;sw_q.lock);
+<a href='../S/969.html#L151'>sw_q</a>              151 components/include/switch_queue.h     pthread_spin_destroy(&amp;sw_q.lock);
+</pre>
+</body>
+</html>

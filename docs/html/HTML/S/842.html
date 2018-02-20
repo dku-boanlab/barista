@@ -1,0 +1,125 @@
+<html>
+<head>
+<title>cbench/openflow/lib/tag.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/tag.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L49'>[^]</a><a href='#L83'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L49' title='Defined at 49.'>tag_create_random</a>
+<li><a href='#L66' title='Defined at 66.'>tag_create_deterministic</a>
+<li><a href='#L76' title='Defined at 76.'>tag_set_init</a>
+<li><a href='#L83' title='Defined at 83.'>tag_set_add</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008, 2009 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> *</font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> *</font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> "<a href='822.html'>tag.h</a>"
+<a name='L36'>  36 <font color='darkred'>#include</font> &lt;limits.h&gt;
+<a name='L37'>  37 <font color='darkred'>#include</font> "<a href='../I/129.html'>random.h</a>"
+<a name='L38'>  38 <font color='darkred'>#include</font> "<a href='852.html'>type-props.h</a>"
+<a name='L39'>  39 <font color='darkred'>#include</font> "<a href='../I/69.html'>util.h</a>"
+<a name='L40'>  40 
+<a name='L41'>  41 <font color='darkred'>#define</font> <a href='../R/1037.html' title='Multiple refered from 4 places.'>N_TAG_BITS</a> (<a href='../Y/148.html' title='Multiple used in 3 places.'>CHAR_BIT</a> * <b>sizeof</b>(<a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a>))
+<a name='L42'>  42 <a href='../D/522.html' title='Multiple defined in 2 places.'>BUILD_ASSERT_DECL</a>(<a href='../S/840.html#L72' title='Defined at 72 in cbench/openflow/lib/util.h.'>IS_POW2</a>(<a href='../S/842.html#L41' title='Defined at 41 in cbench/openflow/lib/tag.c.'>N_TAG_BITS</a>));
+<a name='L43'>  43 
+<a name='L44'>  44 <font color='darkred'>#define</font> <a href='../R/794.html' title='Multiple refered from 3 places.'>LOG2_N_TAG_BITS</a> (<a href='../S/842.html#L41' title='Defined at 41 in cbench/openflow/lib/tag.c.'>N_TAG_BITS</a> == 32 ? 5 : <a href='../S/842.html#L41' title='Defined at 41 in cbench/openflow/lib/tag.c.'>N_TAG_BITS</a> == 64 ? 6 : 0)
+<a name='L45'>  45 <a href='../D/522.html' title='Multiple defined in 2 places.'>BUILD_ASSERT_DECL</a>(<a href='../S/842.html#L44' title='Defined at 44 in cbench/openflow/lib/tag.c.'>LOG2_N_TAG_BITS</a> &gt; 0);
+<a name='L46'>  46 
+<a name='L47'>  47 <i><font color='green'>/* Returns a randomly selected tag. */</font></i>
+<a name='L48'>  48 <a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a>
+<a name='L49'>  49 <a href='../R/4744.html' title='Multiple refered from 2 places.'>tag_create_random</a>(<b>void</b>)
+<a name='L50'>  50 <font color='red'>{</font>
+<a name='L51'>  51     <b>int</b> <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>, <a href='../Y/8037.html' title='Multiple used in 240 places.'>y</a>;
+<a name='L52'>  52     <b>do</b> <font color='red'>{</font>
+<a name='L53'>  53         <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/6224.html' title='Multiple used in 137 places.'>r</a> = <a href='../S/864.html#L75' title='Defined at 75 in cbench/openflow/lib/random.c.'>random_uint16</a>();
+<a name='L54'>  54         <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a> = <a href='../Y/6224.html' title='Multiple used in 137 places.'>r</a> &amp; (<a href='../S/842.html#L41' title='Defined at 41 in cbench/openflow/lib/tag.c.'>N_TAG_BITS</a> - 1);
+<a name='L55'>  55         <a href='../Y/8037.html' title='Multiple used in 240 places.'>y</a> = <a href='../Y/6224.html' title='Multiple used in 137 places.'>r</a> &gt;&gt; (16 - <a href='../S/842.html#L44' title='Defined at 44 in cbench/openflow/lib/tag.c.'>LOG2_N_TAG_BITS</a>);
+<a name='L56'>  56     <font color='red'>}</font> <b>while</b> (<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a> == <a href='../Y/8037.html' title='Multiple used in 240 places.'>y</a>);
+<a name='L57'>  57     <b>return</b> (1u &lt;&lt; <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>) | (1u &lt;&lt; <a href='../Y/8037.html' title='Multiple used in 240 places.'>y</a>);
+<a name='L58'>  58 <font color='red'>}</font>
+<a name='L59'>  59 
+<a name='L60'>  60 <i><font color='green'>/* Returns a tag deterministically generated from 'seed'.</font></i>
+<a name='L61'>  61 <i><font color='green'> *</font></i>
+<a name='L62'>  62 <i><font color='green'> * 'seed' should have data in all of its bits; if it has data only in its</font></i>
+<a name='L63'>  63 <i><font color='green'> * low-order bits then the resulting tags will be poorly distributed.  Use a</font></i>
+<a name='L64'>  64 <i><font color='green'> * hash function such as hash_bytes() to generate 'seed' if necessary. */</font></i>
+<a name='L65'>  65 <a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a>
+<a name='L66'>  66 <a href='../R/4743.html' title='Multiple refered from 2 places.'>tag_create_deterministic</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/6635.html' title='Multiple used in 15 places.'>seed</a>)
+<a name='L67'>  67 <font color='red'>{</font>
+<a name='L68'>  68     <b>int</b> <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a> = <a href='../Y/6635.html' title='Multiple used in 15 places.'>seed</a> &amp; (<a href='../S/842.html#L41' title='Defined at 41 in cbench/openflow/lib/tag.c.'>N_TAG_BITS</a> - 1);
+<a name='L69'>  69     <b>int</b> <a href='../Y/8037.html' title='Multiple used in 240 places.'>y</a> = (<a href='../Y/6635.html' title='Multiple used in 15 places.'>seed</a> &gt;&gt; <a href='../S/842.html#L44' title='Defined at 44 in cbench/openflow/lib/tag.c.'>LOG2_N_TAG_BITS</a>) % 31;
+<a name='L70'>  70     <a href='../Y/8037.html' title='Multiple used in 240 places.'>y</a> += <a href='../Y/8037.html' title='Multiple used in 240 places.'>y</a> &gt;= <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>;
+<a name='L71'>  71     <b>return</b> (1u &lt;&lt; <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>) | (1u &lt;&lt; <a href='../Y/8037.html' title='Multiple used in 240 places.'>y</a>);
+<a name='L72'>  72 <font color='red'>}</font>
+<a name='L73'>  73 
+<a name='L74'>  74 <i><font color='green'>/* Initializes 'set' as an empty tag set. */</font></i>
+<a name='L75'>  75 <b>void</b>
+<a name='L76'>  76 <a href='../S/822.html#L125' title='Refered from 125 in cbench/openflow/lib/tag.h.'>tag_set_init</a>(<b>struct</b> <a href='../Y/7236.html' title='Multiple used in 10 places.'>tag_set</a> *<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>)
+<a name='L77'>  77 <font color='red'>{</font>
+<a name='L78'>  78     <a href='../Y/4419.html' title='Multiple used in 245 places.'>memset</a>(<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>, 0, <b>sizeof</b> *<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>);
+<a name='L79'>  79 <font color='red'>}</font>
+<a name='L80'>  80 
+<a name='L81'>  81 <i><font color='green'>/* Adds 'tag' to 'set'. */</font></i>
+<a name='L82'>  82 <b>void</b>
+<a name='L83'>  83 <a href='../R/4747.html' title='Multiple refered from 2 places.'>tag_set_add</a>(<b>struct</b> <a href='../Y/7236.html' title='Multiple used in 10 places.'>tag_set</a> *<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>, <a href='../Y/7237.html' title='Multiple used in 10 places.'>tag_type</a> <a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a>)
+<a name='L84'>  84 <font color='red'>{</font>
+<a name='L85'>  85     <b>if</b> (<a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a> &amp;&amp; (!<a href='../S/822.html#L106' title='Defined at 106 in cbench/openflow/lib/tag.h.'>tag_is_valid</a>(<a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a>) || !<a href='../S/822.html#L141' title='Defined at 141 in cbench/openflow/lib/tag.h.'>tag_set_intersects</a>(<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>, <a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a>))) <font color='red'>{</font>
+<a name='L86'>  86         <i><font color='green'>/* XXX We could do better by finding the set member to which we would</font></i>
+<a name='L87'>  87 <i><font color='green'>         * add the fewest number of 1-bits.  This would reduce the amount of</font></i>
+<a name='L88'>  88 <i><font color='green'>         * ambiguity, since e.g. three 1-bits match 3 * 2 / 2 = 3 unique tags</font></i>
+<a name='L89'>  89 <i><font color='green'>         * whereas four 1-bits match 4 * 3 / 2 = 6 unique tags. */</font></i>
+<a name='L90'>  90         <a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a> *<a href='../Y/7216.html' title='Multiple used in 183 places.'>t</a> = &amp;<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>-&gt;<a href='../Y/7238.html' title='Multiple used in 9 places.'>tags</a>[<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>++ % <a href='../S/822.html#L118' title='Defined at 118 in cbench/openflow/lib/tag.h.'>TAG_SET_SIZE</a>];
+<a name='L91'>  91         *<a href='../Y/7216.html' title='Multiple used in 183 places.'>t</a> |= <a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a>;
+<a name='L92'>  92         <b>if</b> (*<a href='../Y/7216.html' title='Multiple used in 183 places.'>t</a> == <a href='../S/852.html#L45' title='Defined at 45 in cbench/openflow/lib/type-props.h.'>TYPE_MAXIMUM</a>(<a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a>)) <font color='red'>{</font>
+<a name='L93'>  93             <a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>-&gt;<a href='../Y/7238.html' title='Multiple used in 9 places.'>tags</a>[0] = *<a href='../Y/7216.html' title='Multiple used in 183 places.'>t</a>;
+<a name='L94'>  94         <font color='red'>}</font>
+<a name='L95'>  95 
+<a name='L96'>  96         <a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>-&gt;<a href='../Y/7434.html' title='Multiple used in 24 places.'>total</a> |= <a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a>;
+<a name='L97'>  97     <font color='red'>}</font>
+<a name='L98'>  98 <font color='red'>}</font>
+<a name='L99'>  99 
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L49'>[^]</a><a href='#L83'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

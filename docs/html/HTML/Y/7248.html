@@ -1,0 +1,36 @@
+<html>
+<head>
+<title>tap_fd</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/851.html#L105'>tap_fd</a>            105 cbench/openflow/lib/netdev.c     int tap_fd;                 /* TAP character device, if any, otherwise the
+<a href='../S/851.html#L143'>tap_fd</a>            143 cbench/openflow/lib/netdev.c static int do_open_netdev(const char *name, int ethertype, int tap_fd,
+<a href='../S/851.html#L648'>tap_fd</a>            648 cbench/openflow/lib/netdev.c     int tap_fd;
+<a href='../S/851.html#L650'>tap_fd</a>            650 cbench/openflow/lib/netdev.c     tap_fd = open(tap_dev, O_RDWR);
+<a href='../S/851.html#L651'>tap_fd</a>            651 cbench/openflow/lib/netdev.c     if (tap_fd &lt; 0) {
+<a href='../S/851.html#L661'>tap_fd</a>            661 cbench/openflow/lib/netdev.c     if (ioctl(tap_fd, TUNSETIFF, &amp;ifr) &lt; 0) {
+<a href='../S/851.html#L664'>tap_fd</a>            664 cbench/openflow/lib/netdev.c         close(tap_fd);
+<a href='../S/851.html#L668'>tap_fd</a>            668 cbench/openflow/lib/netdev.c     error = set_nonblocking(tap_fd);
+<a href='../S/851.html#L671'>tap_fd</a>            671 cbench/openflow/lib/netdev.c         close(tap_fd);
+<a href='../S/851.html#L675'>tap_fd</a>            675 cbench/openflow/lib/netdev.c     error = do_open_netdev(ifr.ifr_name, NETDEV_ETH_TYPE_NONE, tap_fd,
+<a href='../S/851.html#L678'>tap_fd</a>            678 cbench/openflow/lib/netdev.c         close(tap_fd);
+<a href='../S/851.html#L684'>tap_fd</a>            684 cbench/openflow/lib/netdev.c do_open_netdev(const char *name, int ethertype, int tap_fd,
+<a href='../S/851.html#L785'>tap_fd</a>            785 cbench/openflow/lib/netdev.c     netdev-&gt;tap_fd = tap_fd &lt; 0 ? netdev_fd : tap_fd;
+<a href='../S/851.html#L786'>tap_fd</a>            786 cbench/openflow/lib/netdev.c     netdev-&gt;queue_fd[0] = netdev-&gt;tap_fd;
+<a href='../S/851.html#L813'>tap_fd</a>            813 cbench/openflow/lib/netdev.c     if (tap_fd &gt;= 0) {
+<a href='../S/851.html#L814'>tap_fd</a>            814 cbench/openflow/lib/netdev.c         close(tap_fd);
+<a href='../S/851.html#L841'>tap_fd</a>            841 cbench/openflow/lib/netdev.c         if (netdev-&gt;netdev_fd != netdev-&gt;tap_fd) {
+<a href='../S/851.html#L842'>tap_fd</a>            842 cbench/openflow/lib/netdev.c             close(netdev-&gt;tap_fd);
+<a href='../S/851.html#L891'>tap_fd</a>            891 cbench/openflow/lib/netdev.c             n_bytes = read(netdev-&gt;tap_fd, ofpbuf_tail(buffer),
+<a href='../S/851.html#L897'>tap_fd</a>            897 cbench/openflow/lib/netdev.c             n_bytes = recvfrom(netdev-&gt;tap_fd, ofpbuf_tail(buffer),
+<a href='../S/851.html#L934'>tap_fd</a>            934 cbench/openflow/lib/netdev.c     poll_fd_wait(netdev-&gt;tap_fd, POLLIN);
+<a href='../S/851.html#L941'>tap_fd</a>            941 cbench/openflow/lib/netdev.c     if (netdev-&gt;tap_fd != netdev-&gt;netdev_fd) {
+<a href='../S/851.html#L942'>tap_fd</a>            942 cbench/openflow/lib/netdev.c         drain_fd(netdev-&gt;tap_fd, netdev-&gt;txqlen);
+<a href='../S/851.html#L1005'>tap_fd</a>           1005 cbench/openflow/lib/netdev.c     if (netdev-&gt;tap_fd == netdev-&gt;netdev_fd) {
+<a href='../S/851.html#L1006'>tap_fd</a>           1006 cbench/openflow/lib/netdev.c         poll_fd_wait(netdev-&gt;tap_fd, POLLOUT);
+</pre>
+</body>
+</html>

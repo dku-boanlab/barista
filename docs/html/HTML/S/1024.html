@@ -1,0 +1,659 @@
+<html>
+<head>
+<title>events/event.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1157.html'>events</a>/event.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L67'>[^]</a><a href='#L301'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L67' title='Defined at 67.'>ev_ofp_msg_in</a>
+<li><a href='#L69' title='Defined at 69.'>ev_dp_receive_packet</a>
+<li><a href='#L71' title='Defined at 71.'>ev_dp_flow_expired</a>
+<li><a href='#L73' title='Defined at 73.'>ev_dp_flow_deleted</a>
+<li><a href='#L75' title='Defined at 75.'>ev_dp_flow_stats</a>
+<li><a href='#L77' title='Defined at 77.'>ev_dp_aggregate_stats</a>
+<li><a href='#L79' title='Defined at 79.'>ev_dp_port_added</a>
+<li><a href='#L81' title='Defined at 81.'>ev_dp_port_modified</a>
+<li><a href='#L83' title='Defined at 83.'>ev_dp_port_deleted</a>
+<li><a href='#L85' title='Defined at 85.'>ev_dp_port_stats</a>
+<li><a href='#L90' title='Defined at 90.'>ev_ofp_msg_out</a>
+<li><a href='#L92' title='Defined at 92.'>ev_dp_send_packet</a>
+<li><a href='#L94' title='Defined at 94.'>ev_dp_insert_flow</a>
+<li><a href='#L96' title='Defined at 96.'>ev_dp_modify_flow</a>
+<li><a href='#L98' title='Defined at 98.'>ev_dp_delete_flow</a>
+<li><a href='#L100' title='Defined at 100.'>ev_dp_request_flow_stats</a>
+<li><a href='#L102' title='Defined at 102.'>ev_dp_request_aggregate_stats</a>
+<li><a href='#L104' title='Defined at 104.'>ev_dp_request_port_stats</a>
+<li><a href='#L109' title='Defined at 109.'>ev_sw_get_dpid</a>
+<li><a href='#L111' title='Defined at 111.'>ev_sw_get_fd</a>
+<li><a href='#L113' title='Defined at 113.'>ev_sw_get_xid</a>
+<li><a href='#L115' title='Defined at 115.'>ev_sw_get_version</a>
+<li><a href='#L118' title='Defined at 118.'>ev_sw_get_info</a>
+<li><a href='#L120' title='Defined at 120.'>ev_sw_get_all_info</a>
+<li><a href='#L122' title='Defined at 122.'>ev_host_get_info</a>
+<li><a href='#L124' title='Defined at 124.'>ev_host_get_all_info</a>
+<li><a href='#L126' title='Defined at 126.'>ev_link_get_info</a>
+<li><a href='#L128' title='Defined at 128.'>ev_link_get_all_info</a>
+<li><a href='#L130' title='Defined at 130.'>ev_flow_get_info</a>
+<li><a href='#L132' title='Defined at 132.'>ev_flow_get_all_info</a>
+<li><a href='#L137' title='Defined at 137.'>ev_sw_new_conn</a>
+<li><a href='#L139' title='Defined at 139.'>ev_sw_expired_conn</a>
+<li><a href='#L141' title='Defined at 141.'>ev_sw_connected</a>
+<li><a href='#L143' title='Defined at 143.'>ev_sw_disconnected</a>
+<li><a href='#L145' title='Defined at 145.'>ev_sw_update_config</a>
+<li><a href='#L147' title='Defined at 147.'>ev_sw_update_desc</a>
+<li><a href='#L149' title='Defined at 149.'>ev_host_added</a>
+<li><a href='#L151' title='Defined at 151.'>ev_host_deleted</a>
+<li><a href='#L153' title='Defined at 153.'>ev_link_added</a>
+<li><a href='#L155' title='Defined at 155.'>ev_link_deleted</a>
+<li><a href='#L157' title='Defined at 157.'>ev_flow_added</a>
+<li><a href='#L159' title='Defined at 159.'>ev_flow_deleted</a>
+<li><a href='#L161' title='Defined at 161.'>ev_rs_update_usage</a>
+<li><a href='#L163' title='Defined at 163.'>ev_tr_update_stats</a>
+<li><a href='#L165' title='Defined at 165.'>ev_log_update_msgs</a>
+<li><a href='#L170' title='Defined at 170.'>ev_log_debug</a>
+<li><a href='#L181' title='Defined at 181.'>ev_log_info</a>
+<li><a href='#L192' title='Defined at 192.'>ev_log_warn</a>
+<li><a href='#L203' title='Defined at 203.'>ev_log_error</a>
+<li><a href='#L214' title='Defined at 214.'>ev_log_fatal</a>
+<li><a href='#L231' title='Defined at 231.'>meta_events</a>
+<li><a href='#L301' title='Defined at 301.'>event_init</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright 2015-2018 NSSLab, KAIST</font></i>
+<a name='L3'>   3 <i><font color='green'> */</font></i>
+<a name='L4'>   4 
+<a name='L5'>   5 <i><font color='green'>/**</font></i>
+<a name='L6'>   6 <i><font color='green'> * \ingroup framework</font></i>
+<a name='L7'>   7 <i><font color='green'> * @{</font></i>
+<a name='L8'>   8 <i><font color='green'> * \defgroup events Event Handler</font></i>
+<a name='L9'>   9 <i><font color='green'> * \brief Functions to manage events for components</font></i>
+<a name='L10'>  10 <i><font color='green'> * @{</font></i>
+<a name='L11'>  11 <i><font color='green'> */</font></i>
+<a name='L12'>  12 
+<a name='L13'>  13 <i><font color='green'>/**</font></i>
+<a name='L14'>  14 <i><font color='green'> * \file</font></i>
+<a name='L15'>  15 <i><font color='green'> * \author Jaehyun Nam &lt;namjh@kaist.ac.kr&gt;</font></i>
+<a name='L16'>  16 <i><font color='green'> */</font></i>
+<a name='L17'>  17 
+<a name='L18'>  18 <font color='darkred'>#include</font> "<a href='1032.html'>event.h</a>"
+<a name='L19'>  19 <font color='darkred'>#include</font> "<a href='926.html'>component.h</a>"
+<a name='L20'>  20 <font color='darkred'>#include</font> "<a href='931.html'>cli.h</a>"
+<a name='L21'>  21 
+<a name='L22'>  22 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L23'>  23 <i><font color='green'>//</font></i>
+<a name='L24'>  24 <i><font color='green'>/** \brief The pointer of the context structure */</font></i>
+<a name='L25'>  25 <b>static</b> <a href='../D/7263.html' title='Multiple defined in 6 places.'>ctx_t</a> *<a href='../Y/2892.html' title='Multiple used in 10 places.'>ev_ctx</a>;
+<a name='L26'>  26 
+<a name='L27'>  27 <i><font color='green'>/** \brief The set flag not to overwrite the context structure */</font></i>
+<a name='L28'>  28 <b>int</b> <a href='../Y/2900.html' title='Multiple used in 3 places.'>event_is_set</a>;
+<a name='L29'>  29 
+<a name='L30'>  30 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L31'>  31 
+<a name='L32'>  32 <i><font color='green'>/** \brief Switch related trigger function (non-const) */</font></i>
+<a name='L33'>  33 <b>static</b> <b>int</b> sw_rw_raise(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L34'>  34 <i><font color='green'>/** \brief Port related trigger function (non-const) */</font></i>
+<a name='L35'>  35 <b>static</b> <b>int</b> port_rw_raise(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L36'>  36 <i><font color='green'>/** \brief Host related trigger function (non-const) */</font></i>
+<a name='L37'>  37 <b>static</b> <b>int</b> host_rw_raise(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L38'>  38 <i><font color='green'>/** \brief Flow related trigger function (non-const) */</font></i>
+<a name='L39'>  39 <b>static</b> <b>int</b> flow_rw_raise(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L40'>  40 
+<a name='L41'>  41 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L42'>  42 
+<a name='L43'>  43 <i><font color='green'>/** \brief Message related trigger function (const) */</font></i>
+<a name='L44'>  44 <b>static</b> <b>int</b> raw_ev_raise(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>const</b> <a href='../D/9307.html' title='Multiple defined in 6 places.'>raw_msg_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L45'>  45 <i><font color='green'>/** \brief Switch related trigger function (const) */</font></i>
+<a name='L46'>  46 <b>static</b> <b>int</b> sw_ev_raise(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>const</b> <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L47'>  47 <i><font color='green'>/** \brief Port related trigger function (const) */</font></i>
+<a name='L48'>  48 <b>static</b> <b>int</b> port_ev_raise(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>const</b> <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L49'>  49 <i><font color='green'>/** \brief Host related trigger function (const) */</font></i>
+<a name='L50'>  50 <b>static</b> <b>int</b> host_ev_raise(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>const</b> <a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L51'>  51 <i><font color='green'>/** \brief Packet-In related trigger function (const) */</font></i>
+<a name='L52'>  52 <b>static</b> <b>int</b> pktin_ev_raise(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>const</b> <a href='../D/9044.html' title='Multiple defined in 6 places.'>pktin_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L53'>  53 <i><font color='green'>/** \brief Packet-Out related trigger function (const) */</font></i>
+<a name='L54'>  54 <b>static</b> <b>int</b> pktout_ev_raise(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>const</b> <a href='../D/9045.html' title='Multiple defined in 6 places.'>pktout_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L55'>  55 <i><font color='green'>/** \brief Flow related trigger function (const) */</font></i>
+<a name='L56'>  56 <b>static</b> <b>int</b> flow_ev_raise(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L57'>  57 <i><font color='green'>/** \brief Resource related trigger function (const) */</font></i>
+<a name='L58'>  58 <b>static</b> <b>int</b> rs_ev_raise(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>const</b> <a href='../D/9419.html' title='Multiple defined in 6 places.'>resource_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L59'>  59 <i><font color='green'>/** \brief Traffic related trigger function (const) */</font></i>
+<a name='L60'>  60 <b>static</b> <b>int</b> tr_ev_raise(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>const</b> <a href='../D/9946.html' title='Multiple defined in 6 places.'>traffic_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L61'>  61 <i><font color='green'>/** \brief Log related trigger function (const) */</font></i>
+<a name='L62'>  62 <b>static</b> <b>int</b> log_ev_raise(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>const</b> <b>char</b> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L63'>  63 
+<a name='L64'>  64 <i><font color='green'>// Upstream events //////////////////////////////////////////////////</font></i>
+<a name='L65'>  65 
+<a name='L66'>  66 <i><font color='green'>/** \brief EV_OFP_MSG_IN */</font></i>
+<a name='L67'>  67 <b>void</b> <a href='../R/2946.html' title='Multiple refered from 5 places.'>ev_ofp_msg_in</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9307.html' title='Multiple defined in 6 places.'>raw_msg_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/6248.html' title='Multiple used in 3 places.'>raw_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L13' title='Defined at 13 in events/include/event_id.h.'>EV_OFP_MSG_IN</a>, <b>sizeof</b>(<a href='../D/9307.html' title='Multiple defined in 6 places.'>raw_msg_t</a>), (<b>const</b> <a href='../D/9307.html' title='Multiple defined in 6 places.'>raw_msg_t</a> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L68'>  68 <i><font color='green'>/** \brief EV_DP_RECEIVE_PACKET */</font></i>
+<a name='L69'>  69 <b>void</b> <a href='../R/2923.html' title='Multiple refered from 2 places.'>ev_dp_receive_packet</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9044.html' title='Multiple defined in 6 places.'>pktin_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/5763.html' title='Multiple used in 2 places.'>pktin_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L14' title='Defined at 14 in events/include/event_id.h.'>EV_DP_RECEIVE_PACKET</a>, <b>sizeof</b>(<a href='../D/9044.html' title='Multiple defined in 6 places.'>pktin_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L70'>  70 <i><font color='green'>/** \brief EV_DP_FLOW_EXPIRED */</font></i>
+<a name='L71'>  71 <b>void</b> <a href='../R/2915.html' title='Multiple refered from 2 places.'>ev_dp_flow_expired</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3140.html' title='Multiple used in 12 places.'>flow_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L15' title='Defined at 15 in events/include/event_id.h.'>EV_DP_FLOW_EXPIRED</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L72'>  72 <i><font color='green'>/** \brief EV_DP_FLOW_DELETED */</font></i>
+<a name='L73'>  73 <b>void</b> <a href='../R/2914.html' title='Multiple refered from 2 places.'>ev_dp_flow_deleted</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3140.html' title='Multiple used in 12 places.'>flow_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L16' title='Defined at 16 in events/include/event_id.h.'>EV_DP_FLOW_DELETED</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L74'>  74 <i><font color='green'>/** \brief EV_DP_FLOW_STATS */</font></i>
+<a name='L75'>  75 <b>void</b> <a href='../R/2916.html' title='Multiple refered from 2 places.'>ev_dp_flow_stats</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3140.html' title='Multiple used in 12 places.'>flow_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L17' title='Defined at 17 in events/include/event_id.h.'>EV_DP_FLOW_STATS</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L76'>  76 <i><font color='green'>/** \brief EV_DP_AGGREGATE_STATS */</font></i>
+<a name='L77'>  77 <b>void</b> <a href='../R/2912.html' title='Multiple refered from 2 places.'>ev_dp_aggregate_stats</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3140.html' title='Multiple used in 12 places.'>flow_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L18' title='Defined at 18 in events/include/event_id.h.'>EV_DP_AGGREGATE_STATS</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L78'>  78 <i><font color='green'>/** \brief EV_DP_PORT_ADDED */</font></i>
+<a name='L79'>  79 <b>void</b> <a href='../R/2919.html' title='Multiple refered from 2 places.'>ev_dp_port_added</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/5812.html' title='Multiple used in 8 places.'>port_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L19' title='Defined at 19 in events/include/event_id.h.'>EV_DP_PORT_ADDED</a>, <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L80'>  80 <i><font color='green'>/** \brief EV_DP_PORT_MODIFIED */</font></i>
+<a name='L81'>  81 <b>void</b> <a href='../R/2921.html' title='Multiple refered from 2 places.'>ev_dp_port_modified</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/5812.html' title='Multiple used in 8 places.'>port_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L20' title='Defined at 20 in events/include/event_id.h.'>EV_DP_PORT_MODIFIED</a>, <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L82'>  82 <i><font color='green'>/** \brief EV_DP_PORT_DELETED */</font></i>
+<a name='L83'>  83 <b>void</b> <a href='../R/2920.html' title='Multiple refered from 4 places.'>ev_dp_port_deleted</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/5812.html' title='Multiple used in 8 places.'>port_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L21' title='Defined at 21 in events/include/event_id.h.'>EV_DP_PORT_DELETED</a>, <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L84'>  84 <i><font color='green'>/** \brief EV_DP_PORT_STATS */</font></i>
+<a name='L85'>  85 <b>void</b> <a href='../R/2922.html' title='Multiple refered from 3 places.'>ev_dp_port_stats</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/5812.html' title='Multiple used in 8 places.'>port_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L22' title='Defined at 22 in events/include/event_id.h.'>EV_DP_PORT_STATS</a>, <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L86'>  86 
+<a name='L87'>  87 <i><font color='green'>// Downstream events ////////////////////////////////////////////////</font></i>
+<a name='L88'>  88 
+<a name='L89'>  89 <i><font color='green'>/** \brief EV_OFP_MSG_OUT */</font></i>
+<a name='L90'>  90 <b>void</b> <a href='../R/2947.html' title='Multiple refered from 13 places.'>ev_ofp_msg_out</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9307.html' title='Multiple defined in 6 places.'>raw_msg_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/6248.html' title='Multiple used in 3 places.'>raw_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L25' title='Defined at 25 in events/include/event_id.h.'>EV_OFP_MSG_OUT</a>, <b>sizeof</b>(<a href='../D/9307.html' title='Multiple defined in 6 places.'>raw_msg_t</a>), (<b>const</b> <a href='../D/9307.html' title='Multiple defined in 6 places.'>raw_msg_t</a> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L91'>  91 <i><font color='green'>/** \brief EV_DP_SEND_PACKET */</font></i>
+<a name='L92'>  92 <b>void</b> <a href='../R/2927.html' title='Multiple refered from 5 places.'>ev_dp_send_packet</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9045.html' title='Multiple defined in 6 places.'>pktout_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/5766.html' title='Multiple used in 2 places.'>pktout_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L26' title='Defined at 26 in events/include/event_id.h.'>EV_DP_SEND_PACKET</a>, <b>sizeof</b>(<a href='../D/9045.html' title='Multiple defined in 6 places.'>pktout_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L93'>  93 <i><font color='green'>/** \brief EV_DP_INSERT_FLOW */</font></i>
+<a name='L94'>  94 <b>void</b> <a href='../R/2917.html' title='Multiple refered from 3 places.'>ev_dp_insert_flow</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3140.html' title='Multiple used in 12 places.'>flow_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L27' title='Defined at 27 in events/include/event_id.h.'>EV_DP_INSERT_FLOW</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L95'>  95 <i><font color='green'>/** \brief EV_DP_MODIFY_FLOW */</font></i>
+<a name='L96'>  96 <b>void</b> <a href='../R/2918.html' title='Multiple refered from 2 places.'>ev_dp_modify_flow</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3140.html' title='Multiple used in 12 places.'>flow_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L28' title='Defined at 28 in events/include/event_id.h.'>EV_DP_MODIFY_FLOW</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L97'>  97 <i><font color='green'>/** \brief EV_DP_DELETE_FLOW */</font></i>
+<a name='L98'>  98 <b>void</b> <a href='../R/2913.html' title='Multiple refered from 3 places.'>ev_dp_delete_flow</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3140.html' title='Multiple used in 12 places.'>flow_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L29' title='Defined at 29 in events/include/event_id.h.'>EV_DP_DELETE_FLOW</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L99'>  99 <i><font color='green'>/** \brief EV_DP_REQUEST_FLOW_STATS */</font></i>
+<a name='L100'> 100 <b>void</b> <a href='../S/1025.html#L34' title='Refered from 34 in events/include/event_list.h.'>ev_dp_request_flow_stats</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3140.html' title='Multiple used in 12 places.'>flow_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L30' title='Defined at 30 in events/include/event_id.h.'>EV_DP_REQUEST_FLOW_STATS</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L101'> 101 <i><font color='green'>/** \brief EV_DP_REQUEST_AGGREGATE_STATS */</font></i>
+<a name='L102'> 102 <b>void</b> <a href='../R/2924.html' title='Multiple refered from 2 places.'>ev_dp_request_aggregate_stats</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3140.html' title='Multiple used in 12 places.'>flow_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L31' title='Defined at 31 in events/include/event_id.h.'>EV_DP_REQUEST_AGGREGATE_STATS</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L103'> 103 <i><font color='green'>/** \brief EV_DP_REQUEST_PORT_STATS */</font></i>
+<a name='L104'> 104 <b>void</b> <a href='../R/2926.html' title='Multiple refered from 2 places.'>ev_dp_request_port_stats</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/5812.html' title='Multiple used in 8 places.'>port_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L32' title='Defined at 32 in events/include/event_id.h.'>EV_DP_REQUEST_PORT_STATS</a>, <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L105'> 105 
+<a name='L106'> 106 <i><font color='green'>// Internal events (request-response) ///////////////////////////////</font></i>
+<a name='L107'> 107 
+<a name='L108'> 108 <i><font color='green'>/** \brief EV_SW_GET_DPID (fd) */</font></i>
+<a name='L109'> 109 <b>void</b> <a href='../R/2953.html' title='Multiple refered from 8 places.'>ev_sw_get_dpid</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/7185.html' title='Multiple used in 12 places.'>sw_rw_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L35' title='Defined at 35 in events/include/event_id.h.'>EV_SW_GET_DPID</a>, <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L110'> 110 <i><font color='green'>/** \brief EV_SW_GET_FD (dpid) */</font></i>
+<a name='L111'> 111 <b>void</b> <a href='../R/2954.html' title='Multiple refered from 6 places.'>ev_sw_get_fd</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/7185.html' title='Multiple used in 12 places.'>sw_rw_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L36' title='Defined at 36 in events/include/event_id.h.'>EV_SW_GET_FD</a>, <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L112'> 112 <i><font color='green'>/** \brief EV_SW_GET_XID (fd or dpid) */</font></i>
+<a name='L113'> 113 <b>void</b> <a href='../R/2957.html' title='Multiple refered from 9 places.'>ev_sw_get_xid</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/7185.html' title='Multiple used in 12 places.'>sw_rw_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L37' title='Defined at 37 in events/include/event_id.h.'>EV_SW_GET_XID</a>, <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L114'> 114 <i><font color='green'>/** \brief EV_SW_GET_VERSION (fd or dpid) */</font></i>
+<a name='L115'> 115 <b>void</b> <a href='../R/2956.html' title='Multiple refered from 8 places.'>ev_sw_get_version</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/7185.html' title='Multiple used in 12 places.'>sw_rw_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L38' title='Defined at 38 in events/include/event_id.h.'>EV_SW_GET_VERSION</a>, <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L116'> 116 
+<a name='L117'> 117 <i><font color='green'>/** \brief EV_SW_GET_INFO (dpid) */</font></i>
+<a name='L118'> 118 <b>void</b> <a href='../R/2955.html' title='Multiple refered from 2 places.'>ev_sw_get_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/7185.html' title='Multiple used in 12 places.'>sw_rw_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L39' title='Defined at 39 in events/include/event_id.h.'>EV_SW_GET_INFO</a>, <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L119'> 119 <i><font color='green'>/** \brief EV_SW_GET_ALL_INFO (none) */</font></i>
+<a name='L120'> 120 <b>void</b> <a href='../R/2952.html' title='Multiple refered from 2 places.'>ev_sw_get_all_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/7185.html' title='Multiple used in 12 places.'>sw_rw_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L40' title='Defined at 40 in events/include/event_id.h.'>EV_SW_GET_ALL_INFO</a>, <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L121'> 121 <i><font color='green'>/** \brief EV_HOST_GET_INFO (MAC address or IP address) */</font></i>
+<a name='L122'> 122 <b>void</b> <a href='../R/2935.html' title='Multiple refered from 2 places.'>ev_host_get_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3668.html' title='Multiple used in 8 places.'>host_rw_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L41' title='Defined at 41 in events/include/event_id.h.'>EV_HOST_GET_INFO</a>, <b>sizeof</b>(<a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L123'> 123 <i><font color='green'>/** \brief EV_HOST_GET_ALL_INFO (none) */</font></i>
+<a name='L124'> 124 <b>void</b> <a href='../R/2934.html' title='Multiple refered from 2 places.'>ev_host_get_all_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3668.html' title='Multiple used in 8 places.'>host_rw_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L42' title='Defined at 42 in events/include/event_id.h.'>EV_HOST_GET_ALL_INFO</a>, <b>sizeof</b>(<a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L125'> 125 <i><font color='green'>/** \brief EV_LINK_GET_INFO (dpid) */</font></i>
+<a name='L126'> 126 <b>void</b> <a href='../R/2939.html' title='Multiple refered from 2 places.'>ev_link_get_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/5827.html' title='Multiple used in 8 places.'>port_rw_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L43' title='Defined at 43 in events/include/event_id.h.'>EV_LINK_GET_INFO</a>, <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L127'> 127 <i><font color='green'>/** \brief EV_LINK_GET_ALL_INFO (none) */</font></i>
+<a name='L128'> 128 <b>void</b> <a href='../R/2938.html' title='Multiple refered from 2 places.'>ev_link_get_all_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/5827.html' title='Multiple used in 8 places.'>port_rw_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L44' title='Defined at 44 in events/include/event_id.h.'>EV_LINK_GET_ALL_INFO</a>, <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L129'> 129 <i><font color='green'>/** \brief EV_FLOW_GET_INFO (dpid) */</font></i>
+<a name='L130'> 130 <b>void</b> <a href='../R/2931.html' title='Multiple refered from 2 places.'>ev_flow_get_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3164.html' title='Multiple used in 8 places.'>flow_rw_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L45' title='Defined at 45 in events/include/event_id.h.'>EV_FLOW_GET_INFO</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L131'> 131 <i><font color='green'>/** \brief EV_FLOW_GET_ALL_INFO (none) */</font></i>
+<a name='L132'> 132 <b>void</b> <a href='../R/2930.html' title='Multiple refered from 2 places.'>ev_flow_get_all_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3164.html' title='Multiple used in 8 places.'>flow_rw_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L46' title='Defined at 46 in events/include/event_id.h.'>EV_FLOW_GET_ALL_INFO</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L133'> 133 
+<a name='L134'> 134 <i><font color='green'>// Internal events (notification) ///////////////////////////////////</font></i>
+<a name='L135'> 135 
+<a name='L136'> 136 <i><font color='green'>/** \brief EV_SW_NEW_CONN */</font></i>
+<a name='L137'> 137 <b>void</b> <a href='../R/2958.html' title='Multiple refered from 3 places.'>ev_sw_new_conn</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/7177.html' title='Multiple used in 7 places.'>sw_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L49' title='Defined at 49 in events/include/event_id.h.'>EV_SW_NEW_CONN</a>, <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>), (<b>const</b> <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L138'> 138 <i><font color='green'>/** \brief EV_SW_EXPIRED_CONN */</font></i>
+<a name='L139'> 139 <b>void</b> <a href='../R/2951.html' title='Multiple refered from 9 places.'>ev_sw_expired_conn</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/7177.html' title='Multiple used in 7 places.'>sw_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L50' title='Defined at 50 in events/include/event_id.h.'>EV_SW_EXPIRED_CONN</a>, <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>), (<b>const</b> <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L140'> 140 <i><font color='green'>/** \brief EV_SW_CONNECTED */</font></i>
+<a name='L141'> 141 <b>void</b> <a href='../R/2949.html' title='Multiple refered from 2 places.'>ev_sw_connected</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/7177.html' title='Multiple used in 7 places.'>sw_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L51' title='Defined at 51 in events/include/event_id.h.'>EV_SW_CONNECTED</a>, <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>), (<b>const</b> <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L142'> 142 <i><font color='green'>/** \brief EV_SW_DISCONNECTED */</font></i>
+<a name='L143'> 143 <b>void</b> <a href='../R/2950.html' title='Multiple refered from 3 places.'>ev_sw_disconnected</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/7177.html' title='Multiple used in 7 places.'>sw_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L52' title='Defined at 52 in events/include/event_id.h.'>EV_SW_DISCONNECTED</a>, <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>), (<b>const</b> <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L144'> 144 <i><font color='green'>/** \brief EV_SW_UPDATE_CONFIG */</font></i>
+<a name='L145'> 145 <b>void</b> <a href='../R/2959.html' title='Multiple refered from 3 places.'>ev_sw_update_config</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/7177.html' title='Multiple used in 7 places.'>sw_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L53' title='Defined at 53 in events/include/event_id.h.'>EV_SW_UPDATE_CONFIG</a>, <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>), (<b>const</b> <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L146'> 146 <i><font color='green'>/** \brief EV_SW_UPDATE_DESC */</font></i>
+<a name='L147'> 147 <b>void</b> <a href='../R/2960.html' title='Multiple refered from 3 places.'>ev_sw_update_desc</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/7177.html' title='Multiple used in 7 places.'>sw_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L54' title='Defined at 54 in events/include/event_id.h.'>EV_SW_UPDATE_DESC</a>, <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>), (<b>const</b> <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L148'> 148 <i><font color='green'>/** \brief EV_HOST_ADDED */</font></i>
+<a name='L149'> 149 <b>void</b> <a href='../R/2932.html' title='Multiple refered from 3 places.'>ev_host_added</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3657.html' title='Multiple used in 3 places.'>host_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L55' title='Defined at 55 in events/include/event_id.h.'>EV_HOST_ADDED</a>, <b>sizeof</b>(<a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a>), (<b>const</b> <a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L150'> 150 <i><font color='green'>/** \brief EV_HOST_DELETED */</font></i>
+<a name='L151'> 151 <b>void</b> <a href='../R/2933.html' title='Multiple refered from 4 places.'>ev_host_deleted</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3657.html' title='Multiple used in 3 places.'>host_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L56' title='Defined at 56 in events/include/event_id.h.'>EV_HOST_DELETED</a>, <b>sizeof</b>(<a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a>), (<b>const</b> <a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L152'> 152 <i><font color='green'>/** \brief EV_LINK_ADDED */</font></i>
+<a name='L153'> 153 <b>void</b> <a href='../R/2936.html' title='Multiple refered from 3 places.'>ev_link_added</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/5812.html' title='Multiple used in 8 places.'>port_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L57' title='Defined at 57 in events/include/event_id.h.'>EV_LINK_ADDED</a>, <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>), (<b>const</b> <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L154'> 154 <i><font color='green'>/** \brief EV_LINK_DELETED */</font></i>
+<a name='L155'> 155 <b>void</b> <a href='../R/2937.html' title='Multiple refered from 4 places.'>ev_link_deleted</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/5812.html' title='Multiple used in 8 places.'>port_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L58' title='Defined at 58 in events/include/event_id.h.'>EV_LINK_DELETED</a>, <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>), (<b>const</b> <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L156'> 156 <i><font color='green'>/** \brief EV_FLOW_ADDED */</font></i>
+<a name='L157'> 157 <b>void</b> <a href='../R/2928.html' title='Multiple refered from 3 places.'>ev_flow_added</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3140.html' title='Multiple used in 12 places.'>flow_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L59' title='Defined at 59 in events/include/event_id.h.'>EV_FLOW_ADDED</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), (<b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L158'> 158 <i><font color='green'>/** \brief EV_FLOW_DELETED */</font></i>
+<a name='L159'> 159 <b>void</b> <a href='../R/2929.html' title='Multiple refered from 5 places.'>ev_flow_deleted</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/3140.html' title='Multiple used in 12 places.'>flow_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L60' title='Defined at 60 in events/include/event_id.h.'>EV_FLOW_DELETED</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), (<b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L160'> 160 <i><font color='green'>/** \brief EV_RS_UPDATE_USAGE */</font></i>
+<a name='L161'> 161 <b>void</b> <a href='../R/2948.html' title='Multiple refered from 2 places.'>ev_rs_update_usage</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9419.html' title='Multiple defined in 6 places.'>resource_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/6482.html' title='Multiple used in 2 places.'>rs_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L61' title='Defined at 61 in events/include/event_id.h.'>EV_RS_UPDATE_USAGE</a>, <b>sizeof</b>(<a href='../D/9419.html' title='Multiple defined in 6 places.'>resource_t</a>), (<b>const</b> <a href='../D/9419.html' title='Multiple defined in 6 places.'>resource_t</a> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L162'> 162 <i><font color='green'>/** \brief EV_TR_UPDATE_STATS */</font></i>
+<a name='L163'> 163 <b>void</b> <a href='../R/2961.html' title='Multiple refered from 2 places.'>ev_tr_update_stats</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9946.html' title='Multiple defined in 6 places.'>traffic_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/7451.html' title='Multiple used in 2 places.'>tr_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L62' title='Defined at 62 in events/include/event_id.h.'>EV_TR_UPDATE_STATS</a>, <b>sizeof</b>(<a href='../D/9946.html' title='Multiple defined in 6 places.'>traffic_t</a>), (<b>const</b> <a href='../D/9946.html' title='Multiple defined in 6 places.'>traffic_t</a> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L164'> 164 <i><font color='green'>/** \brief EV_LOG_UPDATE_MSGS */</font></i>
+<a name='L165'> 165 <b>void</b> <a href='../R/2944.html' title='Multiple refered from 6 places.'>ev_log_update_msgs</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <b>char</b> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../Y/4222.html' title='Multiple used in 7 places.'>log_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L63' title='Defined at 63 in events/include/event_id.h.'>EV_LOG_UPDATE_MSGS</a>, <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>((<b>const</b> <b>char</b> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>), (<b>const</b> <b>char</b> *)<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L166'> 166 
+<a name='L167'> 167 <i><font color='green'>// Log events ///////////////////////////////////////////////////////</font></i>
+<a name='L168'> 168 
+<a name='L169'> 169 <i><font color='green'>/** \brief EV_LOG_DEBUG */</font></i>
+<a name='L170'> 170 <b>void</b> <a href='../R/2940.html' title='Multiple refered from 7 places.'>ev_log_debug</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>char</b> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...) <font color='red'>{</font>
+<a name='L171'> 171     <b>char</b> <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>[<a href='../D/6475.html' title='Multiple defined in 6 places.'>__CONF_STR_LEN</a>] = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L172'> 172     <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a> <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>;
+<a name='L173'> 173 
+<a name='L174'> 174     <a href='../Y/7712.html' title='Multiple used in 43 places.'>va_start</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>);
+<a name='L175'> 175     <a href='../Y/7826.html' title='Multiple used in 25 places.'>vsprintf</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L176'> 176     <a href='../Y/7710.html' title='Multiple used in 47 places.'>va_end</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L177'> 177 
+<a name='L178'> 178     <a href='../Y/4222.html' title='Multiple used in 7 places.'>log_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L66' title='Defined at 66 in events/include/event_id.h.'>EV_LOG_DEBUG</a>, <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>), <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>);
+<a name='L179'> 179 <font color='red'>}</font>
+<a name='L180'> 180 <i><font color='green'>/** \brief EV_LOG_INFO */</font></i>
+<a name='L181'> 181 <b>void</b> <a href='../R/2943.html' title='Multiple refered from 7 places.'>ev_log_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>char</b> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...) <font color='red'>{</font>
+<a name='L182'> 182     <b>char</b> <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>[<a href='../D/6475.html' title='Multiple defined in 6 places.'>__CONF_STR_LEN</a>] = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L183'> 183     <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a> <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>;
+<a name='L184'> 184 
+<a name='L185'> 185     <a href='../Y/7712.html' title='Multiple used in 43 places.'>va_start</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>);
+<a name='L186'> 186     <a href='../Y/7826.html' title='Multiple used in 25 places.'>vsprintf</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L187'> 187     <a href='../Y/7710.html' title='Multiple used in 47 places.'>va_end</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L188'> 188 
+<a name='L189'> 189     <a href='../Y/4222.html' title='Multiple used in 7 places.'>log_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L67' title='Defined at 67 in events/include/event_id.h.'>EV_LOG_INFO</a>, <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>), <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>);
+<a name='L190'> 190 <font color='red'>}</font>
+<a name='L191'> 191 <i><font color='green'>/** \brief EV_LOG_WARN */</font></i>
+<a name='L192'> 192 <b>void</b> <a href='../R/2945.html' title='Multiple refered from 7 places.'>ev_log_warn</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>char</b> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...) <font color='red'>{</font>
+<a name='L193'> 193     <b>char</b> <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>[<a href='../D/6475.html' title='Multiple defined in 6 places.'>__CONF_STR_LEN</a>] = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L194'> 194     <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a> <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>;
+<a name='L195'> 195 
+<a name='L196'> 196     <a href='../Y/7712.html' title='Multiple used in 43 places.'>va_start</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>);
+<a name='L197'> 197     <a href='../Y/7826.html' title='Multiple used in 25 places.'>vsprintf</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L198'> 198     <a href='../Y/7710.html' title='Multiple used in 47 places.'>va_end</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L199'> 199 
+<a name='L200'> 200     <a href='../Y/4222.html' title='Multiple used in 7 places.'>log_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L68' title='Defined at 68 in events/include/event_id.h.'>EV_LOG_WARN</a>, <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>), <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>);
+<a name='L201'> 201 <font color='red'>}</font>
+<a name='L202'> 202 <i><font color='green'>/** \brief EV_LOG_ERROR */</font></i>
+<a name='L203'> 203 <b>void</b> <a href='../R/2941.html' title='Multiple refered from 7 places.'>ev_log_error</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>char</b> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...) <font color='red'>{</font>
+<a name='L204'> 204     <b>char</b> <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>[<a href='../D/6475.html' title='Multiple defined in 6 places.'>__CONF_STR_LEN</a>] = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L205'> 205     <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a> <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>;
+<a name='L206'> 206 
+<a name='L207'> 207     <a href='../Y/7712.html' title='Multiple used in 43 places.'>va_start</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>);
+<a name='L208'> 208     <a href='../Y/7826.html' title='Multiple used in 25 places.'>vsprintf</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L209'> 209     <a href='../Y/7710.html' title='Multiple used in 47 places.'>va_end</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L210'> 210 
+<a name='L211'> 211     <a href='../Y/4222.html' title='Multiple used in 7 places.'>log_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L69' title='Defined at 69 in events/include/event_id.h.'>EV_LOG_ERROR</a>, <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>), <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>);
+<a name='L212'> 212 <font color='red'>}</font>
+<a name='L213'> 213 <i><font color='green'>/** \brief EV_LOG_FATAL */</font></i>
+<a name='L214'> 214 <b>void</b> <a href='../R/2942.html' title='Multiple refered from 7 places.'>ev_log_fatal</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>char</b> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...) <font color='red'>{</font>
+<a name='L215'> 215     <b>char</b> <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>[<a href='../D/6475.html' title='Multiple defined in 6 places.'>__CONF_STR_LEN</a>] = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L216'> 216     <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a> <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>;
+<a name='L217'> 217 
+<a name='L218'> 218     <a href='../Y/7712.html' title='Multiple used in 43 places.'>va_start</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>);
+<a name='L219'> 219     <a href='../Y/7826.html' title='Multiple used in 25 places.'>vsprintf</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L220'> 220     <a href='../Y/7710.html' title='Multiple used in 47 places.'>va_end</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L221'> 221 
+<a name='L222'> 222     <a href='../Y/4222.html' title='Multiple used in 7 places.'>log_ev_raise</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../S/1026.html#L70' title='Defined at 70 in events/include/event_id.h.'>EV_LOG_FATAL</a>, <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>), <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>);
+<a name='L223'> 223 <font color='red'>}</font>
+<a name='L224'> 224 
+<a name='L225'> 225 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L226'> 226 
+<a name='L227'> 227 <i><font color='green'>/**</font></i>
+<a name='L228'> 228 <i><font color='green'> * \brief Function to process meta events</font></i>
+<a name='L229'> 229 <i><font color='green'> * \return NULL</font></i>
+<a name='L230'> 230 <i><font color='green'> */</font></i>
+<a name='L231'> 231 <b>static</b> <b>void</b> *<a href='../S/1024.html#L311' title='Refered from 311 in events/event.c.'>meta_events</a>(<b>void</b> *<a href='../Y/4954.html' title='Multiple used in 18 places.'>null</a>)
+<a name='L232'> 232 <font color='red'>{</font>
+<a name='L233'> 233     <b>int</b> *<a href='../Y/4975.html' title='Multiple used in 18 places.'>num_events</a> = <a href='../Y/2892.html' title='Multiple used in 10 places.'>ev_ctx</a>-&gt;<a href='../Y/4975.html' title='Multiple used in 18 places.'>num_events</a>;
+<a name='L234'> 234     <a href='../D/8369.html' title='Multiple defined in 12 places.'>meta_event_t</a> *<a href='../Y/4431.html' title='Multiple used in 16 places.'>meta</a> = <a href='../Y/2892.html' title='Multiple used in 10 places.'>ev_ctx</a>-&gt;<a href='../Y/4433.html' title='Multiple used in 5 places.'>meta_event</a>;
+<a name='L235'> 235 
+<a name='L236'> 236     <b>while</b> (1) <font color='red'>{</font>
+<a name='L237'> 237         <b>int</b> <a href='../Y/2893.html' title='Multiple used in 5 places.'>ev_id</a>;
+<a name='L238'> 238         <b>for</b> (<a href='../Y/2893.html' title='Multiple used in 5 places.'>ev_id</a>=0; <a href='../Y/2893.html' title='Multiple used in 5 places.'>ev_id</a>&lt;<a href='../Y/1141.html' title='Multiple used in 17 places.'>__MAX_EVENTS</a>; <a href='../Y/2893.html' title='Multiple used in 5 places.'>ev_id</a>++) <font color='red'>{</font>
+<a name='L239'> 239             <b>int</b> <a href='../Y/4974.html' title='Multiple used in 12 places.'>num_event</a> = <a href='../Y/4975.html' title='Multiple used in 18 places.'>num_events</a>[<a href='../Y/2893.html' title='Multiple used in 5 places.'>ev_id</a>];
+<a name='L240'> 240 
+<a name='L241'> 241             <b>int</b> <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>;
+<a name='L242'> 242             <b>for</b> (<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>=0; <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>&lt;<a href='../Y/1142.html' title='Multiple used in 10 places.'>__MAX_META_EVENTS</a>; <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>++) <font color='red'>{</font>
+<a name='L243'> 243                 <b>if</b> (<a href='../Y/4431.html' title='Multiple used in 16 places.'>meta</a>[<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>].<a href='../Y/2899.html' title='Multiple used in 92 places.'>event</a> == <a href='../Y/2893.html' title='Multiple used in 5 places.'>ev_id</a>) <font color='red'>{</font>
+<a name='L244'> 244                     <b>switch</b> (<a href='../Y/4431.html' title='Multiple used in 16 places.'>meta</a>[<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>].<a href='../S/558.html#L33' title='Defined at 33 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/conditions.h.'>condition</a>) <font color='red'>{</font>
+<a name='L245'> 245                     <b>case</b> <a href='../D/2798.html' title='Multiple defined in 6 places.'>META_GT</a>: <i><font color='green'>// &gt;</font></i>
+<a name='L246'> 246                         <b>if</b> (<a href='../Y/4974.html' title='Multiple used in 12 places.'>num_event</a> &gt; <a href='../Y/4431.html' title='Multiple used in 16 places.'>meta</a>[<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>].<a href='../Y/7358.html' title='Multiple used in 16 places.'>threshold</a>) <font color='red'>{</font>
+<a name='L247'> 247                             <i><font color='green'>//char **args = split_line(meta[j].cmd);</font></i>
+<a name='L248'> 248                             <i><font color='green'>//execute(args);</font></i>
+<a name='L249'> 249                             <i><font color='green'>//FREE(args);</font></i>
+<a name='L250'> 250                         <font color='red'>}</font>
+<a name='L251'> 251                         <b>break</b>;
+<a name='L252'> 252                     <b>case</b> <a href='../D/2799.html' title='Multiple defined in 6 places.'>META_GTE</a>: <i><font color='green'>// &gt;=</font></i>
+<a name='L253'> 253                         <b>if</b> (<a href='../Y/4974.html' title='Multiple used in 12 places.'>num_event</a> &gt;= <a href='../Y/4431.html' title='Multiple used in 16 places.'>meta</a>[<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>].<a href='../Y/7358.html' title='Multiple used in 16 places.'>threshold</a>) <font color='red'>{</font>
+<a name='L254'> 254                             <i><font color='green'>//char **args = split_line(meta[j].cmd);</font></i>
+<a name='L255'> 255                             <i><font color='green'>//execute(args);</font></i>
+<a name='L256'> 256                             <i><font color='green'>//FREE(args);</font></i>
+<a name='L257'> 257                         <font color='red'>}</font>
+<a name='L258'> 258                         <b>break</b>;
+<a name='L259'> 259                     <b>case</b> <a href='../D/2800.html' title='Multiple defined in 6 places.'>META_LT</a>: <i><font color='green'>// &lt;</font></i>
+<a name='L260'> 260                         <b>if</b> (<a href='../Y/4974.html' title='Multiple used in 12 places.'>num_event</a> &lt; <a href='../Y/4431.html' title='Multiple used in 16 places.'>meta</a>[<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>].<a href='../Y/7358.html' title='Multiple used in 16 places.'>threshold</a>) <font color='red'>{</font>
+<a name='L261'> 261                             <i><font color='green'>//char **args = split_line(meta[j].cmd);</font></i>
+<a name='L262'> 262                             <i><font color='green'>//execute(args);</font></i>
+<a name='L263'> 263                             <i><font color='green'>//FREE(args);</font></i>
+<a name='L264'> 264                         <font color='red'>}</font>
+<a name='L265'> 265                         <b>break</b>;
+<a name='L266'> 266                     <b>case</b> <a href='../D/2801.html' title='Multiple defined in 6 places.'>META_LTE</a>: <i><font color='green'>// &lt;=</font></i>
+<a name='L267'> 267                         <b>if</b> (<a href='../Y/4974.html' title='Multiple used in 12 places.'>num_event</a> &lt;= <a href='../Y/4431.html' title='Multiple used in 16 places.'>meta</a>[<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>].<a href='../Y/7358.html' title='Multiple used in 16 places.'>threshold</a>) <font color='red'>{</font>
+<a name='L268'> 268                             <i><font color='green'>//char **args = split_line(meta[j].cmd);</font></i>
+<a name='L269'> 269                             <i><font color='green'>//execute(args);</font></i>
+<a name='L270'> 270                             <i><font color='green'>//FREE(args);</font></i>
+<a name='L271'> 271                         <font color='red'>}</font>
+<a name='L272'> 272                         <b>break</b>;
+<a name='L273'> 273                     <b>case</b> <a href='../D/2797.html' title='Multiple defined in 6 places.'>META_EQ</a>: <i><font color='green'>// ==</font></i>
+<a name='L274'> 274                         <b>if</b> (<a href='../Y/4974.html' title='Multiple used in 12 places.'>num_event</a> == <a href='../Y/4431.html' title='Multiple used in 16 places.'>meta</a>[<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>].<a href='../Y/7358.html' title='Multiple used in 16 places.'>threshold</a>) <font color='red'>{</font>
+<a name='L275'> 275                             <i><font color='green'>//char **args = split_line(meta[j].cmd);</font></i>
+<a name='L276'> 276                             <i><font color='green'>//execute(args);</font></i>
+<a name='L277'> 277                             <i><font color='green'>//FREE(args);</font></i>
+<a name='L278'> 278                         <font color='red'>}</font>
+<a name='L279'> 279                         <b>break</b>;
+<a name='L280'> 280                     <b>default</b>:
+<a name='L281'> 281                         <b>break</b>;
+<a name='L282'> 282                     <font color='red'>}</font>
+<a name='L283'> 283                 <font color='red'>}</font>
+<a name='L284'> 284             <font color='red'>}</font>
+<a name='L285'> 285 
+<a name='L286'> 286             <a href='../Y/4975.html' title='Multiple used in 18 places.'>num_events</a>[<a href='../Y/2893.html' title='Multiple used in 5 places.'>ev_id</a>] = 0;
+<a name='L287'> 287         <font color='red'>}</font>
+<a name='L288'> 288 
+<a name='L289'> 289         <a href='../D/10115.html' title='Multiple defined in 6 places.'>waitsec</a>(1, 0);
+<a name='L290'> 290     <font color='red'>}</font>
+<a name='L291'> 291 
+<a name='L292'> 292     <b>return</b> <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L293'> 293 <font color='red'>}</font>
+<a name='L294'> 294 
+<a name='L295'> 295 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L296'> 296 
+<a name='L297'> 297 <i><font color='green'>/**</font></i>
+<a name='L298'> 298 <i><font color='green'> * \brief Function to initialize the event handler</font></i>
+<a name='L299'> 299 <i><font color='green'> * \param ctx The context of the Barista NOS</font></i>
+<a name='L300'> 300 <i><font color='green'> */</font></i>
+<a name='L301'> 301 <b>int</b> <a href='../R/2963.html' title='Multiple refered from 2 places.'>event_init</a>(<a href='../D/7263.html' title='Multiple defined in 6 places.'>ctx_t</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>)
+<a name='L302'> 302 <font color='red'>{</font>
+<a name='L303'> 303     <b>if</b> (<a href='../Y/2900.html' title='Multiple used in 3 places.'>event_is_set</a> == <a href='../D/1780.html' title='Multiple defined in 7 places.'>FALSE</a>) <font color='red'>{</font>
+<a name='L304'> 304         <a href='../Y/2892.html' title='Multiple used in 10 places.'>ev_ctx</a> = <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>;
+<a name='L305'> 305         <a href='../Y/2900.html' title='Multiple used in 3 places.'>event_is_set</a> = <a href='../D/5695.html' title='Multiple defined in 7 places.'>TRUE</a>;
+<a name='L306'> 306     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L307'> 307         <b>return</b> -1;
+<a name='L308'> 308     <font color='red'>}</font>
+<a name='L309'> 309 
+<a name='L310'> 310     <a href='../Y/6150.html' title='Multiple used in 27 places.'>pthread_t</a> <a href='../Y/7357.html' title='Multiple used in 58 places.'>thread</a>;
+<a name='L311'> 311     <b>if</b> (<a href='../Y/6132.html' title='Multiple used in 31 places.'>pthread_create</a>(&amp;<a href='../Y/7357.html' title='Multiple used in 58 places.'>thread</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, &amp;<a href='../S/1024.html#L231' title='Defined at 231 in events/event.c.'>meta_events</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) &lt; 0) <font color='red'>{</font>
+<a name='L312'> 312         <a href='../D/4593.html' title='Multiple defined in 6 places.'>PERROR</a>("pthread_create");
+<a name='L313'> 313         <b>return</b> -1;
+<a name='L314'> 314     <font color='red'>}</font>
+<a name='L315'> 315 
+<a name='L316'> 316     <b>return</b> 0;
+<a name='L317'> 317 <font color='red'>}</font>
+<a name='L318'> 318 
+<a name='L319'> 319 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L320'> 320 
+<a name='L321'> 321 <font color='darkred'>#define</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a> <a href='../Y/2029.html' title='Multiple used in 4 places.'>compare_switch</a>
+<a name='L322'> 322 <font color='darkred'>#define</font> <a href='../R/1048.html' title='Multiple refered from 2 places.'>ODP_TYPE</a> <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>
+<a name='L323'> 323 <font color='darkred'>#include</font> "<a href='1027.html'>odp_partial.h</a>"
+<a name='L324'> 324 <font color='darkred'>#undef</font> <a href='../R/1048.html' title='Multiple refered from 2 places.'>ODP_TYPE</a>
+<a name='L325'> 325 <font color='darkred'>#undef</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a>
+<a name='L326'> 326 
+<a name='L327'> 327 <font color='darkred'>#define</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a> <a href='../Y/2028.html' title='Multiple used in 4 places.'>compare_port</a>
+<a name='L328'> 328 <font color='darkred'>#define</font> <a href='../R/1048.html' title='Multiple refered from 2 places.'>ODP_TYPE</a> <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>
+<a name='L329'> 329 <font color='darkred'>#include</font> "<a href='1027.html'>odp_partial.h</a>"
+<a name='L330'> 330 <font color='darkred'>#undef</font> <a href='../R/1048.html' title='Multiple refered from 2 places.'>ODP_TYPE</a>
+<a name='L331'> 331 <font color='darkred'>#undef</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a>
+<a name='L332'> 332 
+<a name='L333'> 333 <font color='darkred'>#define</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a> <a href='../Y/2025.html' title='Multiple used in 4 places.'>compare_host</a>
+<a name='L334'> 334 <font color='darkred'>#define</font> <a href='../R/1048.html' title='Multiple refered from 2 places.'>ODP_TYPE</a> <a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a>
+<a name='L335'> 335 <font color='darkred'>#include</font> "<a href='1027.html'>odp_partial.h</a>"
+<a name='L336'> 336 <font color='darkred'>#undef</font> <a href='../R/1048.html' title='Multiple refered from 2 places.'>ODP_TYPE</a>
+<a name='L337'> 337 <font color='darkred'>#undef</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a>
+<a name='L338'> 338 
+<a name='L339'> 339 <font color='darkred'>#define</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a> <a href='../Y/2026.html' title='Multiple used in 4 places.'>compare_pktin</a>
+<a name='L340'> 340 <font color='darkred'>#define</font> <a href='../R/1048.html' title='Multiple refered from 2 places.'>ODP_TYPE</a> <a href='../D/9044.html' title='Multiple defined in 6 places.'>pktin_t</a>
+<a name='L341'> 341 <font color='darkred'>#include</font> "<a href='1029.html'>odp_all.h</a>"
+<a name='L342'> 342 <font color='darkred'>#undef</font> <a href='../R/1048.html' title='Multiple refered from 2 places.'>ODP_TYPE</a>
+<a name='L343'> 343 <font color='darkred'>#undef</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a>
+<a name='L344'> 344 
+<a name='L345'> 345 <font color='darkred'>#define</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a> <a href='../Y/2027.html' title='Multiple used in 4 places.'>compare_pktout</a>
+<a name='L346'> 346 <font color='darkred'>#define</font> <a href='../R/1048.html' title='Multiple refered from 2 places.'>ODP_TYPE</a> <a href='../D/9045.html' title='Multiple defined in 6 places.'>pktout_t</a>
+<a name='L347'> 347 <font color='darkred'>#include</font> "<a href='1027.html'>odp_partial.h</a>"
+<a name='L348'> 348 <font color='darkred'>#undef</font> <a href='../R/1048.html' title='Multiple refered from 2 places.'>ODP_TYPE</a>
+<a name='L349'> 349 <font color='darkred'>#undef</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a>
+<a name='L350'> 350 
+<a name='L351'> 351 <font color='darkred'>#define</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a> <a href='../Y/2024.html' title='Multiple used in 4 places.'>compare_flow</a>
+<a name='L352'> 352 <font color='darkred'>#define</font> <a href='../R/1048.html' title='Multiple refered from 2 places.'>ODP_TYPE</a> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>
+<a name='L353'> 353 <font color='darkred'>#include</font> "<a href='1027.html'>odp_partial.h</a>"
+<a name='L354'> 354 <font color='darkred'>#undef</font> <a href='../R/1048.html' title='Multiple refered from 2 places.'>ODP_TYPE</a>
+<a name='L355'> 355 <font color='darkred'>#undef</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a>
+<a name='L356'> 356 
+<a name='L357'> 357 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L358'> 358 
+<a name='L359'> 359 <i><font color='green'>/**</font></i>
+<a name='L360'> 360 <i><font color='green'> * \brief The code of sw_rw_raise()</font></i>
+<a name='L361'> 361 <i><font color='green'> * \param id Component ID</font></i>
+<a name='L362'> 362 <i><font color='green'> * \param type Event type</font></i>
+<a name='L363'> 363 <i><font color='green'> * \param len The length of data</font></i>
+<a name='L364'> 364 <i><font color='green'> * \param data Data</font></i>
+<a name='L365'> 365 <i><font color='green'> */</font></i>
+<a name='L366'> 366 <font color='darkred'>#define</font> FUNC_NAME <a href='../Y/7185.html' title='Multiple used in 12 places.'>sw_rw_raise</a>
+<a name='L367'> 367 <font color='darkred'>#define</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a> <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>
+<a name='L368'> 368 <font color='darkred'>#define</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a> <a href='../Y/7175.html' title='Multiple used in 15 places.'>sw_data</a>
+<a name='L369'> 369 <font color='darkred'>#include</font> "<a href='1031.html'>event_rw_raise.h</a>"
+<a name='L370'> 370 <font color='darkred'>#undef</font> FUNC_NAME
+<a name='L371'> 371 <font color='darkred'>#undef</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a>
+<a name='L372'> 372 <font color='darkred'>#undef</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a>
+<a name='L373'> 373 
+<a name='L374'> 374 <i><font color='green'>/**</font></i>
+<a name='L375'> 375 <i><font color='green'> * \brief The code of port_rw_raise()</font></i>
+<a name='L376'> 376 <i><font color='green'> * \param id Component ID</font></i>
+<a name='L377'> 377 <i><font color='green'> * \param type Event type</font></i>
+<a name='L378'> 378 <i><font color='green'> * \param len The length of data</font></i>
+<a name='L379'> 379 <i><font color='green'> * \param data Data</font></i>
+<a name='L380'> 380 <i><font color='green'> */</font></i>
+<a name='L381'> 381 <font color='darkred'>#define</font> FUNC_NAME <a href='../Y/5827.html' title='Multiple used in 8 places.'>port_rw_raise</a>
+<a name='L382'> 382 <font color='darkred'>#define</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a> <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>
+<a name='L383'> 383 <font color='darkred'>#define</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a> <a href='../Y/5808.html' title='Multiple used in 13 places.'>port_data</a>
+<a name='L384'> 384 <font color='darkred'>#include</font> "<a href='1031.html'>event_rw_raise.h</a>"
+<a name='L385'> 385 <font color='darkred'>#undef</font> FUNC_NAME
+<a name='L386'> 386 <font color='darkred'>#undef</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a>
+<a name='L387'> 387 <font color='darkred'>#undef</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a>
+<a name='L388'> 388 
+<a name='L389'> 389 <i><font color='green'>/**</font></i>
+<a name='L390'> 390 <i><font color='green'> * \brief The code of host_rw_raise()</font></i>
+<a name='L391'> 391 <i><font color='green'> * \param id Component ID</font></i>
+<a name='L392'> 392 <i><font color='green'> * \param type Event type</font></i>
+<a name='L393'> 393 <i><font color='green'> * \param len The length of data</font></i>
+<a name='L394'> 394 <i><font color='green'> * \param data Data</font></i>
+<a name='L395'> 395 <i><font color='green'> */</font></i>
+<a name='L396'> 396 <font color='darkred'>#define</font> FUNC_NAME <a href='../Y/3668.html' title='Multiple used in 8 places.'>host_rw_raise</a>
+<a name='L397'> 397 <font color='darkred'>#define</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a> <a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a>
+<a name='L398'> 398 <font color='darkred'>#define</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a> <a href='../Y/3656.html' title='Multiple used in 11 places.'>host_data</a>
+<a name='L399'> 399 <font color='darkred'>#include</font> "<a href='1031.html'>event_rw_raise.h</a>"
+<a name='L400'> 400 <font color='darkred'>#undef</font> FUNC_NAME
+<a name='L401'> 401 <font color='darkred'>#undef</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a>
+<a name='L402'> 402 <font color='darkred'>#undef</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a>
+<a name='L403'> 403 
+<a name='L404'> 404 <i><font color='green'>/**</font></i>
+<a name='L405'> 405 <i><font color='green'> * \brief The code of flow_rw_raise()</font></i>
+<a name='L406'> 406 <i><font color='green'> * \param id Component ID</font></i>
+<a name='L407'> 407 <i><font color='green'> * \param type Event type</font></i>
+<a name='L408'> 408 <i><font color='green'> * \param len The length of data</font></i>
+<a name='L409'> 409 <i><font color='green'> * \param data Data</font></i>
+<a name='L410'> 410 <i><font color='green'> */</font></i>
+<a name='L411'> 411 <font color='darkred'>#define</font> FUNC_NAME <a href='../Y/3164.html' title='Multiple used in 8 places.'>flow_rw_raise</a>
+<a name='L412'> 412 <font color='darkred'>#define</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>
+<a name='L413'> 413 <font color='darkred'>#define</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a> <a href='../Y/3137.html' title='Multiple used in 11 places.'>flow_data</a>
+<a name='L414'> 414 <font color='darkred'>#include</font> "<a href='1031.html'>event_rw_raise.h</a>"
+<a name='L415'> 415 <font color='darkred'>#undef</font> FUNC_NAME
+<a name='L416'> 416 <font color='darkred'>#undef</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a>
+<a name='L417'> 417 <font color='darkred'>#undef</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a>
+<a name='L418'> 418 
+<a name='L419'> 419 <i><font color='green'>/**</font></i>
+<a name='L420'> 420 <i><font color='green'> * \brief The code of raw_ev_raise()</font></i>
+<a name='L421'> 421 <i><font color='green'> * \param id Component ID</font></i>
+<a name='L422'> 422 <i><font color='green'> * \param type Event type</font></i>
+<a name='L423'> 423 <i><font color='green'> * \param len The length of data</font></i>
+<a name='L424'> 424 <i><font color='green'> * \param data Data</font></i>
+<a name='L425'> 425 <i><font color='green'> */</font></i>
+<a name='L426'> 426 <font color='darkred'>#define</font> FUNC_NAME <a href='../Y/6248.html' title='Multiple used in 3 places.'>raw_ev_raise</a>
+<a name='L427'> 427 <font color='darkred'>#define</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a> <a href='../D/9307.html' title='Multiple defined in 6 places.'>raw_msg_t</a>
+<a name='L428'> 428 <font color='darkred'>#define</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a> <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>
+<a name='L429'> 429 <font color='darkred'>#include</font> "<a href='1030.html'>event_direct_raise.h</a>"
+<a name='L430'> 430 <font color='darkred'>#undef</font> FUNC_NAME
+<a name='L431'> 431 <font color='darkred'>#undef</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a>
+<a name='L432'> 432 <font color='darkred'>#undef</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a>
+<a name='L433'> 433 
+<a name='L434'> 434 <i><font color='green'>/**</font></i>
+<a name='L435'> 435 <i><font color='green'> * \brief The code of sw_ev_raise()</font></i>
+<a name='L436'> 436 <i><font color='green'> * \param id Component ID</font></i>
+<a name='L437'> 437 <i><font color='green'> * \param type Event type</font></i>
+<a name='L438'> 438 <i><font color='green'> * \param len The length of data</font></i>
+<a name='L439'> 439 <i><font color='green'> * \param data Data</font></i>
+<a name='L440'> 440 <i><font color='green'> */</font></i>
+<a name='L441'> 441 <font color='darkred'>#define</font> FUNC_NAME <a href='../Y/7177.html' title='Multiple used in 7 places.'>sw_ev_raise</a>
+<a name='L442'> 442 <font color='darkred'>#define</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a> <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>
+<a name='L443'> 443 <font color='darkred'>#define</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a> <a href='../Y/7172.html' title='Multiple used in 426 places.'>sw</a>
+<a name='L444'> 444 <font color='darkred'>#define</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a> <a href='../Y/2029.html' title='Multiple used in 4 places.'>compare_switch</a>
+<a name='L445'> 445 <font color='darkred'>#include</font> "<a href='1030.html'>event_direct_raise.h</a>"
+<a name='L446'> 446 <font color='darkred'>#undef</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a>
+<a name='L447'> 447 <font color='darkred'>#undef</font> FUNC_NAME
+<a name='L448'> 448 <font color='darkred'>#undef</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a>
+<a name='L449'> 449 <font color='darkred'>#undef</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a>
+<a name='L450'> 450 
+<a name='L451'> 451 <i><font color='green'>/**</font></i>
+<a name='L452'> 452 <i><font color='green'> * \brief The code of port_ev_raise()</font></i>
+<a name='L453'> 453 <i><font color='green'> * \param id Component ID</font></i>
+<a name='L454'> 454 <i><font color='green'> * \param type Event type</font></i>
+<a name='L455'> 455 <i><font color='green'> * \param len The length of data</font></i>
+<a name='L456'> 456 <i><font color='green'> * \param data Data</font></i>
+<a name='L457'> 457 <i><font color='green'> */</font></i>
+<a name='L458'> 458 <font color='darkred'>#define</font> FUNC_NAME <a href='../Y/5812.html' title='Multiple used in 8 places.'>port_ev_raise</a>
+<a name='L459'> 459 <font color='darkred'>#define</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a> <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>
+<a name='L460'> 460 <font color='darkred'>#define</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a> <a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a>
+<a name='L461'> 461 <font color='darkred'>#define</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a> <a href='../Y/2028.html' title='Multiple used in 4 places.'>compare_port</a>
+<a name='L462'> 462 <font color='darkred'>#include</font> "<a href='1030.html'>event_direct_raise.h</a>"
+<a name='L463'> 463 <font color='darkred'>#undef</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a>
+<a name='L464'> 464 <font color='darkred'>#undef</font> FUNC_NAME
+<a name='L465'> 465 <font color='darkred'>#undef</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a>
+<a name='L466'> 466 <font color='darkred'>#undef</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a>
+<a name='L467'> 467 
+<a name='L468'> 468 <i><font color='green'>/**</font></i>
+<a name='L469'> 469 <i><font color='green'> * \brief The code of host_ev_raise()</font></i>
+<a name='L470'> 470 <i><font color='green'> * \param id Component ID</font></i>
+<a name='L471'> 471 <i><font color='green'> * \param type Event type</font></i>
+<a name='L472'> 472 <i><font color='green'> * \param len The length of data</font></i>
+<a name='L473'> 473 <i><font color='green'> * \param data Data</font></i>
+<a name='L474'> 474 <i><font color='green'> */</font></i>
+<a name='L475'> 475 <font color='darkred'>#define</font> FUNC_NAME <a href='../Y/3657.html' title='Multiple used in 3 places.'>host_ev_raise</a>
+<a name='L476'> 476 <font color='darkred'>#define</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a> <a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a>
+<a name='L477'> 477 <font color='darkred'>#define</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a> <a href='../Y/3654.html' title='Multiple used in 58 places.'>host</a>
+<a name='L478'> 478 <font color='darkred'>#define</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a> <a href='../Y/2025.html' title='Multiple used in 4 places.'>compare_host</a>
+<a name='L479'> 479 <font color='darkred'>#include</font> "<a href='1030.html'>event_direct_raise.h</a>"
+<a name='L480'> 480 <font color='darkred'>#undef</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a>
+<a name='L481'> 481 <font color='darkred'>#undef</font> FUNC_NAME
+<a name='L482'> 482 <font color='darkred'>#undef</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a>
+<a name='L483'> 483 <font color='darkred'>#undef</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a>
+<a name='L484'> 484 
+<a name='L485'> 485 <i><font color='green'>/**</font></i>
+<a name='L486'> 486 <i><font color='green'> * \brief The code of pktin_ev_raise()</font></i>
+<a name='L487'> 487 <i><font color='green'> * \param id Component ID</font></i>
+<a name='L488'> 488 <i><font color='green'> * \param type Event type</font></i>
+<a name='L489'> 489 <i><font color='green'> * \param len The length of data</font></i>
+<a name='L490'> 490 <i><font color='green'> * \param data Data</font></i>
+<a name='L491'> 491 <i><font color='green'> */</font></i>
+<a name='L492'> 492 <font color='darkred'>#define</font> FUNC_NAME <a href='../Y/5763.html' title='Multiple used in 2 places.'>pktin_ev_raise</a>
+<a name='L493'> 493 <font color='darkred'>#define</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a> <a href='../D/9044.html' title='Multiple defined in 6 places.'>pktin_t</a>
+<a name='L494'> 494 <font color='darkred'>#define</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a> <a href='../Y/5761.html' title='Multiple used in 212 places.'>pktin</a>
+<a name='L495'> 495 <font color='darkred'>#define</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a> <a href='../Y/2026.html' title='Multiple used in 4 places.'>compare_pktin</a>
+<a name='L496'> 496 <font color='darkred'>#include</font> "<a href='1030.html'>event_direct_raise.h</a>"
+<a name='L497'> 497 <font color='darkred'>#undef</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a>
+<a name='L498'> 498 <font color='darkred'>#undef</font> FUNC_NAME
+<a name='L499'> 499 <font color='darkred'>#undef</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a>
+<a name='L500'> 500 <font color='darkred'>#undef</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a>
+<a name='L501'> 501 
+<a name='L502'> 502 <i><font color='green'>/**</font></i>
+<a name='L503'> 503 <i><font color='green'> * \brief The code of pktout_ev_raise()</font></i>
+<a name='L504'> 504 <i><font color='green'> * \param id Component ID</font></i>
+<a name='L505'> 505 <i><font color='green'> * \param type Event type</font></i>
+<a name='L506'> 506 <i><font color='green'> * \param len The length of data</font></i>
+<a name='L507'> 507 <i><font color='green'> * \param data Data</font></i>
+<a name='L508'> 508 <i><font color='green'> */</font></i>
+<a name='L509'> 509 <font color='darkred'>#define</font> FUNC_NAME <a href='../Y/5766.html' title='Multiple used in 2 places.'>pktout_ev_raise</a>
+<a name='L510'> 510 <font color='darkred'>#define</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a> <a href='../D/9045.html' title='Multiple defined in 6 places.'>pktout_t</a>
+<a name='L511'> 511 <font color='darkred'>#define</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a> <a href='../Y/5764.html' title='Multiple used in 49 places.'>pktout</a>
+<a name='L512'> 512 <font color='darkred'>#define</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a> <a href='../Y/2027.html' title='Multiple used in 4 places.'>compare_pktout</a>
+<a name='L513'> 513 <font color='darkred'>#include</font> "<a href='1030.html'>event_direct_raise.h</a>"
+<a name='L514'> 514 <font color='darkred'>#undef</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a>
+<a name='L515'> 515 <font color='darkred'>#undef</font> FUNC_NAME
+<a name='L516'> 516 <font color='darkred'>#undef</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a>
+<a name='L517'> 517 <font color='darkred'>#undef</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a>
+<a name='L518'> 518 
+<a name='L519'> 519 <i><font color='green'>/**</font></i>
+<a name='L520'> 520 <i><font color='green'> * \brief The code of flow_ev_raise()</font></i>
+<a name='L521'> 521 <i><font color='green'> * \param id Component ID</font></i>
+<a name='L522'> 522 <i><font color='green'> * \param type Event type</font></i>
+<a name='L523'> 523 <i><font color='green'> * \param len The length of data</font></i>
+<a name='L524'> 524 <i><font color='green'> * \param data Data</font></i>
+<a name='L525'> 525 <i><font color='green'> */</font></i>
+<a name='L526'> 526 <font color='darkred'>#define</font> FUNC_NAME <a href='../Y/3140.html' title='Multiple used in 12 places.'>flow_ev_raise</a>
+<a name='L527'> 527 <font color='darkred'>#define</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>
+<a name='L528'> 528 <font color='darkred'>#define</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a> <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>
+<a name='L529'> 529 <font color='darkred'>#define</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a> <a href='../Y/2024.html' title='Multiple used in 4 places.'>compare_flow</a>
+<a name='L530'> 530 <font color='darkred'>#include</font> "<a href='1030.html'>event_direct_raise.h</a>"
+<a name='L531'> 531 <font color='darkred'>#undef</font> <a href='../R/1043.html' title='Multiple refered from 4 places.'>ODP_FUNC</a>
+<a name='L532'> 532 <font color='darkred'>#undef</font> FUNC_NAME
+<a name='L533'> 533 <font color='darkred'>#undef</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a>
+<a name='L534'> 534 <font color='darkred'>#undef</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a>
+<a name='L535'> 535 
+<a name='L536'> 536 <i><font color='green'>/** </font></i>
+<a name='L537'> 537 <i><font color='green'> * \brief The code of rs_ev_raise()</font></i>
+<a name='L538'> 538 <i><font color='green'> * \param id Component ID</font></i>
+<a name='L539'> 539 <i><font color='green'> * \param type Event type</font></i>
+<a name='L540'> 540 <i><font color='green'> * \param len The length of data</font></i>
+<a name='L541'> 541 <i><font color='green'> * \param data Data</font></i>
+<a name='L542'> 542 <i><font color='green'> */</font></i>
+<a name='L543'> 543 <font color='darkred'>#define</font> FUNC_NAME <a href='../Y/6482.html' title='Multiple used in 2 places.'>rs_ev_raise</a>
+<a name='L544'> 544 <font color='darkred'>#define</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a> <a href='../D/9419.html' title='Multiple defined in 6 places.'>resource_t</a>
+<a name='L545'> 545 <font color='darkred'>#define</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a> <a href='../Y/6419.html' title='Multiple used in 4 places.'>resource</a>
+<a name='L546'> 546 <font color='darkred'>#include</font> "<a href='1030.html'>event_direct_raise.h</a>"
+<a name='L547'> 547 <font color='darkred'>#undef</font> FUNC_NAME
+<a name='L548'> 548 <font color='darkred'>#undef</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a>
+<a name='L549'> 549 <font color='darkred'>#undef</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a>
+<a name='L550'> 550 
+<a name='L551'> 551 <i><font color='green'>/**</font></i>
+<a name='L552'> 552 <i><font color='green'> * \brief The code of tr_ev_raise()</font></i>
+<a name='L553'> 553 <i><font color='green'> * \param id Component ID</font></i>
+<a name='L554'> 554 <i><font color='green'> * \param type Event type</font></i>
+<a name='L555'> 555 <i><font color='green'> * \param len The length of data</font></i>
+<a name='L556'> 556 <i><font color='green'> * \param data Data</font></i>
+<a name='L557'> 557 <i><font color='green'> */</font></i>
+<a name='L558'> 558 <font color='darkred'>#define</font> FUNC_NAME <a href='../Y/7451.html' title='Multiple used in 2 places.'>tr_ev_raise</a>
+<a name='L559'> 559 <font color='darkred'>#define</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a> <a href='../D/9946.html' title='Multiple defined in 6 places.'>traffic_t</a>
+<a name='L560'> 560 <font color='darkred'>#define</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a> <a href='../Y/7456.html' title='Multiple used in 14 places.'>traffic</a>
+<a name='L561'> 561 <font color='darkred'>#include</font> "<a href='1030.html'>event_direct_raise.h</a>"
+<a name='L562'> 562 <font color='darkred'>#undef</font> FUNC_NAME
+<a name='L563'> 563 <font color='darkred'>#undef</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a>
+<a name='L564'> 564 <font color='darkred'>#undef</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a>
+<a name='L565'> 565 
+<a name='L566'> 566 <i><font color='green'>/**</font></i>
+<a name='L567'> 567 <i><font color='green'> * \brief The code of log_ev_raise()</font></i>
+<a name='L568'> 568 <i><font color='green'> * \param id Component ID</font></i>
+<a name='L569'> 569 <i><font color='green'> * \param type Event type</font></i>
+<a name='L570'> 570 <i><font color='green'> * \param len The length of data</font></i>
+<a name='L571'> 571 <i><font color='green'> * \param data Data</font></i>
+<a name='L572'> 572 <i><font color='green'> */</font></i>
+<a name='L573'> 573 <font color='darkred'>#define</font> FUNC_NAME <a href='../Y/4222.html' title='Multiple used in 7 places.'>log_ev_raise</a>
+<a name='L574'> 574 <font color='darkred'>#define</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a> <b>char</b>
+<a name='L575'> 575 <font color='darkred'>#define</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a> <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>
+<a name='L576'> 576 <font color='darkred'>#include</font> "<a href='1030.html'>event_direct_raise.h</a>"
+<a name='L577'> 577 <font color='darkred'>#undef</font> FUNC_NAME
+<a name='L578'> 578 <font color='darkred'>#undef</font> <a href='../R/644.html' title='Multiple refered from 4 places.'>FUNC_TYPE</a>
+<a name='L579'> 579 <font color='darkred'>#undef</font> <a href='../R/643.html' title='Multiple refered from 4 places.'>FUNC_DATA</a>
+<a name='L580'> 580 
+<a name='L581'> 581 <i><font color='green'>/**</font></i>
+<a name='L582'> 582 <i><font color='green'> * @}</font></i>
+<a name='L583'> 583 <i><font color='green'> *</font></i>
+<a name='L584'> 584 <i><font color='green'> * @}</font></i>
+<a name='L585'> 585 <i><font color='green'> */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L67'>[^]</a><a href='#L301'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

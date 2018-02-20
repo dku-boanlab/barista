@@ -1,0 +1,213 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/capture_opts.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/capture_opts.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/339.html' title='Multiple included from 2 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* capture_opts.h</font></i>
+<a name='L2'>   2 <i><font color='green'> * Capture options (all parameters needed to do the actual capture)</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * $Id: capture_opts.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L5'>   5 <i><font color='green'> *</font></i>
+<a name='L6'>   6 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L7'>   7 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L8'>   8 <i><font color='green'> * Copyright 1998 Gerald Combs</font></i>
+<a name='L9'>   9 <i><font color='green'> *</font></i>
+<a name='L10'>  10 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L11'>  11 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L12'>  12 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L13'>  13 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L14'>  14 <i><font color='green'> *</font></i>
+<a name='L15'>  15 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L16'>  16 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L17'>  17 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L18'>  18 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L21'>  21 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L22'>  22 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L23'>  23 <i><font color='green'> */</font></i>
+<a name='L24'>  24 
+<a name='L25'>  25 
+<a name='L26'>  26 <i><font color='green'>/** @file</font></i>
+<a name='L27'>  27 <i><font color='green'> *</font></i>
+<a name='L28'>  28 <i><font color='green'> *  Capture options (all parameters needed to do the actual capture)</font></i>
+<a name='L29'>  29 <i><font color='green'> *</font></i>
+<a name='L30'>  30 <i><font color='green'> */</font></i>
+<a name='L31'>  31 
+<a name='L32'>  32 <font color='darkred'>#ifndef</font> <a href='../S/337.html#L33' title='Defined at 33 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/capture_opts.h.'>__CAPTURE_OPTS_H__</a>
+<a name='L33'>  33 <font color='darkred'>#define</font> <a href='../S/337.html#L32' title='Refered from 32 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/capture_opts.h.'>__CAPTURE_OPTS_H__</a>
+<a name='L34'>  34 
+<a name='L35'>  35 
+<a name='L36'>  36 <i><font color='green'>/* Current state of capture engine. XXX - differentiate states */</font></i>
+<a name='L37'>  37 <b>typedef</b> <b>enum</b> <font color='red'>{</font>
+<a name='L38'>  38     CAPTURE_STOPPED,        <i><font color='green'>/**&lt; stopped */</font></i>
+<a name='L39'>  39     CAPTURE_PREPARING,      <i><font color='green'>/**&lt; preparing, but still no response from capture child */</font></i>
+<a name='L40'>  40     CAPTURE_RUNNING         <i><font color='green'>/**&lt; capture child signalled ok, capture is running now */</font></i>
+<a name='L41'>  41 <font color='red'>}</font> <a href='../S/337.html#L150' title='Refered from 150 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/capture_opts.h.'>capture_state</a>;
+<a name='L42'>  42 
+<a name='L43'>  43 <font color='darkred'>#ifdef</font> <a href='../Y/419.html' title='Multiple used in 5 places.'>HAVE_PCAP_REMOTE</a>
+<a name='L44'>  44 <i><font color='green'>/* Type of capture source */</font></i>
+<a name='L45'>  45 <b>typedef</b> <b>enum</b> <font color='red'>{</font>
+<a name='L46'>  46     CAPTURE_IFLOCAL,        <i><font color='green'>/**&lt; Local network interface */</font></i>
+<a name='L47'>  47     CAPTURE_IFREMOTE        <i><font color='green'>/**&lt; Remote network interface */</font></i>
+<a name='L48'>  48 <font color='red'>}</font> <a href='../S/337.html#L87' title='Refered from 87 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/capture_opts.h.'>capture_source</a>;
+<a name='L49'>  49 
+<a name='L50'>  50 <i><font color='green'>/* Type of RPCAPD Authentication */</font></i>
+<a name='L51'>  51 <b>typedef</b> <b>enum</b> <font color='red'>{</font>
+<a name='L52'>  52     CAPTURE_AUTH_NULL,      <i><font color='green'>/**&lt; No authentication */</font></i>
+<a name='L53'>  53     CAPTURE_AUTH_PWD        <i><font color='green'>/**&lt; User/password authentication */</font></i>
+<a name='L54'>  54 <font color='red'>}</font> <a href='../S/337.html#L92' title='Refered from 92 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/capture_opts.h.'>capture_auth</a>;
+<a name='L55'>  55 
+<a name='L56'>  56 <font color='darkred'>#ifdef</font> <a href='../Y/420.html' title='Multiple used in 2 places.'>HAVE_PCAP_SETSAMPLING</a>
+<a name='L57'>  57 <i><font color='green'>/**</font></i>
+<a name='L58'>  58 <i><font color='green'> * Method of packet sampling (dropping some captured packets),</font></i>
+<a name='L59'>  59 <i><font color='green'> * may require additional integer parameter, marked here as N</font></i>
+<a name='L60'>  60 <i><font color='green'> */</font></i>
+<a name='L61'>  61 <b>typedef</b> <b>enum</b> <font color='red'>{</font>
+<a name='L62'>  62     CAPTURE_SAMP_NONE,      <i><font color='green'>/**&lt; No sampling - capture all packets */</font></i>
+<a name='L63'>  63     CAPTURE_SAMP_BY_COUNT,  <i><font color='green'>/**&lt; Counter-based sampling -</font></i>
+<a name='L64'>  64 <i><font color='green'>                                 capture 1 packet from every N */</font></i>
+<a name='L65'>  65     CAPTURE_SAMP_BY_TIMER   <i><font color='green'>/**&lt; Timer-based sampling -</font></i>
+<a name='L66'>  66 <i><font color='green'>                                 capture no more than 1 packet</font></i>
+<a name='L67'>  67 <i><font color='green'>                                 in N milliseconds */</font></i>
+<a name='L68'>  68 <font color='red'>}</font> <a href='../S/337.html#L100' title='Refered from 100 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/capture_opts.h.'>capture_sampling</a>;
+<a name='L69'>  69 <font color='darkred'>#endif</font>
+<a name='L70'>  70 <font color='darkred'>#endif</font>
+<a name='L71'>  71 
+<a name='L72'>  72 <i><font color='green'>/** Capture options coming from user interface */</font></i>
+<a name='L73'>  73 <b>typedef</b> <b>struct</b> capture_options_tag <font color='red'>{</font>
+<a name='L74'>  74     <i><font color='green'>/* general */</font></i>
+<a name='L75'>  75     <b>void</b>     *<a href='../Y/1835.html' title='Multiple used in 47 places.'>cf</a>;                   <i><font color='green'>/**&lt; handle to cfile (note: untyped handle) */</font></i>
+<a name='L76'>  76     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> has_cfilter;           <i><font color='green'>/**&lt; TRUE if capture filter specified on command line */</font></i>
+<a name='L77'>  77     <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>    *<a href='../Y/1842.html' title='Multiple used in 2 places.'>cfilter</a>;              <i><font color='green'>/**&lt; Capture filter string */</font></i>
+<a name='L78'>  78     <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>    *<a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>;                <i><font color='green'>/**&lt; the network interface to capture from */</font></i>
+<a name='L79'>  79     <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>    *<a href='../Y/3732.html' title='Multiple used in 2 places.'>iface_descr</a>;          <i><font color='green'>/**&lt; A human readable description of iface.</font></i>
+<a name='L80'>  80 <i><font color='green'>                                      *&lt; NOTE: capture_opts.c is not able to</font></i>
+<a name='L81'>  81 <i><font color='green'>                                      *&lt; set this field because doing so</font></i>
+<a name='L82'>  82 <i><font color='green'>                                      *&lt; requires too many dependencies.</font></i>
+<a name='L83'>  83 <i><font color='green'>                                      *&lt; Readers of this field should use</font></i>
+<a name='L84'>  84 <i><font color='green'>                                      *&lt; get_iface_description() from</font></i>
+<a name='L85'>  85 <i><font color='green'>                                      *&lt; "capture_ui_utils.h" to access it. */</font></i>
+<a name='L86'>  86 <font color='darkred'>#ifdef</font> <a href='../Y/419.html' title='Multiple used in 5 places.'>HAVE_PCAP_REMOTE</a>
+<a name='L87'>  87     <a href='../S/337.html#L48' title='Defined at 48 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/capture_opts.h.'>capture_source</a> <a href='../Y/6943.html' title='Multiple used in 2 places.'>src_type</a>;        <i><font color='green'>/**&lt; Capturing on remote interface */</font></i>
+<a name='L88'>  88     <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>    *remote_host;          <i><font color='green'>/**&lt; Host name or network address</font></i>
+<a name='L89'>  89 <i><font color='green'>                                      *&lt; for remote capturing */</font></i>
+<a name='L90'>  90     <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>    *remote_port;          <i><font color='green'>/**&lt; TCP port of remote RPCAP server */</font></i>
+<a name='L91'>  91 
+<a name='L92'>  92     <a href='../S/337.html#L54' title='Defined at 54 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/capture_opts.h.'>capture_auth</a>  <a href='../Y/1530.html' title='Multiple used in 2 places.'>auth_type</a>;
+<a name='L93'>  93     <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>    *auth_username;
+<a name='L94'>  94     <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>    *auth_password;        <i><font color='green'>/**&lt; Remote authentication parameters */</font></i>
+<a name='L95'>  95 
+<a name='L96'>  96     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> datatx_udp;            <i><font color='green'>/**&lt; Whether to use UDP for data transfer */</font></i>
+<a name='L97'>  97     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> nocap_rpcap;           <i><font color='green'>/**&lt; Whether to capture RPCAP own traffic */</font></i>
+<a name='L98'>  98     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> nocap_local;           <i><font color='green'>/**&lt; TODO: Whether to capture local traffic */</font></i>
+<a name='L99'>  99 <font color='darkred'>#ifdef</font> <a href='../Y/420.html' title='Multiple used in 2 places.'>HAVE_PCAP_SETSAMPLING</a>
+<a name='L100'> 100     <a href='../S/337.html#L68' title='Defined at 68 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/capture_opts.h.'>capture_sampling</a> sampling_method; <i><font color='green'>/**&lt; PCAP packet sampling method */</font></i>
+<a name='L101'> 101     <b>int</b> sampling_param;             <i><font color='green'>/**&lt; PCAP packet sampling parameter */</font></i>
+<a name='L102'> 102 <font color='darkred'>#endif</font>
+<a name='L103'> 103 <font color='darkred'>#endif</font>
+<a name='L104'> 104 <font color='darkred'>#ifdef</font> <a href='../Y/1121.html' title='Multiple used in 16 places.'>_WIN32</a>
+<a name='L105'> 105     <b>int</b>      buffer_size;           <i><font color='green'>/**&lt; the capture buffer size (MB) */</font></i>
+<a name='L106'> 106 <font color='darkred'>#endif</font>
+<a name='L107'> 107     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> has_snaplen;           <i><font color='green'>/**&lt; TRUE if maximum capture packet length</font></i>
+<a name='L108'> 108 <i><font color='green'>                                         is specified */</font></i>
+<a name='L109'> 109     <b>int</b>      <a href='../Y/6852.html' title='Multiple used in 12 places.'>snaplen</a>;               <i><font color='green'>/**&lt; Maximum captured packet length */</font></i>
+<a name='L110'> 110     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> promisc_mode;          <i><font color='green'>/**&lt; Capture in promiscuous mode */</font></i>
+<a name='L111'> 111     <b>int</b>      <a href='../Y/4145.html' title='Multiple used in 4 places.'>linktype</a>;              <i><font color='green'>/**&lt; Data link type to use, or -1 for</font></i>
+<a name='L112'> 112 <i><font color='green'>                                         "use default" */</font></i>
+<a name='L113'> 113     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> saving_to_file;        <i><font color='green'>/**&lt; TRUE if capture is writing to a file */</font></i>
+<a name='L114'> 114     <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>    *<a href='../Y/6585.html' title='Multiple used in 3 places.'>save_file</a>;            <i><font color='green'>/**&lt; the capture file name */</font></i>
+<a name='L115'> 115 
+<a name='L116'> 116     <i><font color='green'>/* GUI related */</font></i>
+<a name='L117'> 117     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> real_time_mode;        <i><font color='green'>/**&lt; Update list of packets in real time */</font></i>
+<a name='L118'> 118     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> show_info;             <i><font color='green'>/**&lt; show the info dialog */</font></i>
+<a name='L119'> 119     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> quit_after_cap;        <i><font color='green'>/**&lt; Makes a "capture only mode". Implies -k */</font></i>
+<a name='L120'> 120     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> restart;               <i><font color='green'>/**&lt; restart after closing is done */</font></i>
+<a name='L121'> 121 
+<a name='L122'> 122     <i><font color='green'>/* multiple files (and ringbuffer) */</font></i>
+<a name='L123'> 123     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> multi_files_on;        <i><font color='green'>/**&lt; TRUE if ring buffer in use */</font></i>
+<a name='L124'> 124 
+<a name='L125'> 125     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> has_file_duration;     <i><font color='green'>/**&lt; TRUE if ring duration specified */</font></i>
+<a name='L126'> 126     <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a> file_duration;           <i><font color='green'>/**&lt; Switch file after n seconds */</font></i>
+<a name='L127'> 127     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> has_ring_num_files;    <i><font color='green'>/**&lt; TRUE if ring num_files specified */</font></i>
+<a name='L128'> 128     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> ring_num_files;         <i><font color='green'>/**&lt; Number of multiple buffer files */</font></i>
+<a name='L129'> 129 
+<a name='L130'> 130     <i><font color='green'>/* autostop conditions */</font></i>
+<a name='L131'> 131     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> has_autostop_files;    <i><font color='green'>/**&lt; TRUE if maximum number of capture files</font></i>
+<a name='L132'> 132 <i><font color='green'>                                         are specified */</font></i>
+<a name='L133'> 133     <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a> autostop_files;          <i><font color='green'>/**&lt; Maximum number of capture files */</font></i>
+<a name='L134'> 134 
+<a name='L135'> 135     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> has_autostop_packets;  <i><font color='green'>/**&lt; TRUE if maximum packet count is</font></i>
+<a name='L136'> 136 <i><font color='green'>                                         specified */</font></i>
+<a name='L137'> 137     <b>int</b> autostop_packets;           <i><font color='green'>/**&lt; Maximum packet count */</font></i>
+<a name='L138'> 138     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> has_autostop_filesize; <i><font color='green'>/**&lt; TRUE if maximum capture file size</font></i>
+<a name='L139'> 139 <i><font color='green'>                                         is specified */</font></i>
+<a name='L140'> 140     <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a> autostop_filesize;       <i><font color='green'>/**&lt; Maximum capture file size */</font></i>
+<a name='L141'> 141     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> has_autostop_duration; <i><font color='green'>/**&lt; TRUE if maximum capture duration</font></i>
+<a name='L142'> 142 <i><font color='green'>                                         is specified */</font></i>
+<a name='L143'> 143     <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a> autostop_duration;       <i><font color='green'>/**&lt; Maximum capture duration */</font></i>
+<a name='L144'> 144 
+<a name='L145'> 145     <i><font color='green'>/* internally used (don't touch from outside) */</font></i>
+<a name='L146'> 146     <b>int</b> <a href='../Y/3198.html' title='Multiple used in 4 places.'>fork_child</a>;                 <i><font color='green'>/**&lt; If not -1, in parent, process ID of child */</font></i>
+<a name='L147'> 147 <font color='darkred'>#ifdef</font> <a href='../Y/1121.html' title='Multiple used in 16 places.'>_WIN32</a>
+<a name='L148'> 148     <b>int</b> signal_pipe_write_fd;       <i><font color='green'>/**&lt; the pipe to signal the child */</font></i>
+<a name='L149'> 149 <font color='darkred'>#endif</font>
+<a name='L150'> 150     <a href='../S/337.html#L41' title='Defined at 41 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/capture_opts.h.'>capture_state</a> <a href='../S/849.html#L59' title='Defined at 59 in cbench/openflow/lib/rconn.c.'>state</a>;            <i><font color='green'>/**&lt; current state of the capture engine */</font></i>
+<a name='L151'> 151     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> output_to_pipe;        <i><font color='green'>/**&lt; save_file is a pipe (named or stdout) */</font></i>
+<a name='L152'> 152 <font color='darkred'>#ifndef</font> <a href='../Y/1121.html' title='Multiple used in 16 places.'>_WIN32</a>
+<a name='L153'> 153     uid_t <a href='../Y/5563.html' title='Multiple used in 21 places.'>owner</a>;                    <i><font color='green'>/**&lt; owner of the cfile */</font></i>
+<a name='L154'> 154     gid_t <a href='../Y/3459.html' title='Multiple used in 10 places.'>group</a>;                    <i><font color='green'>/**&lt; group of the cfile */</font></i>
+<a name='L155'> 155 <font color='darkred'>#endif</font>
+<a name='L156'> 156 <font color='red'>}</font> capture_options;
+<a name='L157'> 157 
+<a name='L158'> 158 <i><font color='green'>/* initialize the capture_options with some reasonable values */</font></i>
+<a name='L159'> 159 <b>extern</b> <b>void</b>
+<a name='L160'> 160 capture_opts_init(<a href='../Y/1805.html' title='Multiple used in 21 places.'>capture_options</a> *<a href='../Y/1806.html' title='Multiple used in 21 places.'>capture_opts</a>, <b>void</b> *<a href='../Y/1841.html' title='Multiple used in 3 places.'>cfile</a>);
+<a name='L161'> 161 
+<a name='L162'> 162 <i><font color='green'>/* set a command line option value */</font></i>
+<a name='L163'> 163 <b>extern</b> <b>int</b>
+<a name='L164'> 164 capture_opts_add_opt(<a href='../Y/1805.html' title='Multiple used in 21 places.'>capture_options</a> *<a href='../Y/1806.html' title='Multiple used in 21 places.'>capture_opts</a>, <b>int</b> <a href='../Y/5495.html' title='Multiple used in 48 places.'>opt</a>, <b>const</b> <b>char</b> *<a href='../Y/5497.html' title='Multiple used in 99 places.'>optarg</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> *start_capture);
+<a name='L165'> 165 
+<a name='L166'> 166 <i><font color='green'>/* log content of capture_opts */</font></i>
+<a name='L167'> 167 <b>extern</b> <b>void</b>
+<a name='L168'> 168 capture_opts_log(<b>const</b> <b>char</b> *<a href='../Y/4221.html' title='Multiple used in 2 places.'>log_domain</a>, <a href='../Y/385.html' title='Multiple used in 2 places.'>GLogLevelFlags</a> <a href='../Y/4226.html' title='Multiple used in 2 places.'>log_level</a>, <a href='../Y/1805.html' title='Multiple used in 21 places.'>capture_options</a> *<a href='../Y/1806.html' title='Multiple used in 21 places.'>capture_opts</a>);
+<a name='L169'> 169 
+<a name='L170'> 170 <i><font color='green'>/* list link layer types */</font></i>
+<a name='L171'> 171 <b>extern</b> <b>int</b>
+<a name='L172'> 172 capture_opts_list_link_layer_types(<a href='../Y/1805.html' title='Multiple used in 21 places.'>capture_options</a> *<a href='../Y/1806.html' title='Multiple used in 21 places.'>capture_opts</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/4311.html' title='Multiple used in 3 places.'>machine_readable</a>);
+<a name='L173'> 173 
+<a name='L174'> 174 <i><font color='green'>/* list interfaces */</font></i>
+<a name='L175'> 175 <b>extern</b> <b>int</b>
+<a name='L176'> 176 capture_opts_list_interfaces(<a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/4311.html' title='Multiple used in 3 places.'>machine_readable</a>);
+<a name='L177'> 177 
+<a name='L178'> 178 <i><font color='green'>/* print interface statistics */</font></i>
+<a name='L179'> 179 <b>extern</b> <b>int</b>
+<a name='L180'> 180 capture_opts_print_statistics(<a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/4311.html' title='Multiple used in 3 places.'>machine_readable</a>);
+<a name='L181'> 181 
+<a name='L182'> 182 <i><font color='green'>/* trim the snaplen entry */</font></i>
+<a name='L183'> 183 <b>extern</b> <b>void</b>
+<a name='L184'> 184 capture_opts_trim_snaplen(<a href='../Y/1805.html' title='Multiple used in 21 places.'>capture_options</a> *<a href='../Y/1806.html' title='Multiple used in 21 places.'>capture_opts</a>, <b>int</b> snaplen_min);
+<a name='L185'> 185 
+<a name='L186'> 186 <i><font color='green'>/* trim the ring_num_files entry */</font></i>
+<a name='L187'> 187 <b>extern</b> <b>void</b>
+<a name='L188'> 188 capture_opts_trim_ring_num_files(<a href='../Y/1805.html' title='Multiple used in 21 places.'>capture_options</a> *<a href='../Y/1806.html' title='Multiple used in 21 places.'>capture_opts</a>);
+<a name='L189'> 189 
+<a name='L190'> 190 <i><font color='green'>/* trim the interface entry */</font></i>
+<a name='L191'> 191 <b>extern</b> <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a>
+<a name='L192'> 192 capture_opts_trim_iface(<a href='../Y/1805.html' title='Multiple used in 21 places.'>capture_options</a> *<a href='../Y/1806.html' title='Multiple used in 21 places.'>capture_opts</a>, <b>const</b> <b>char</b> *<a href='../Y/1798.html' title='Multiple used in 2 places.'>capture_device</a>);
+<a name='L193'> 193 
+<a name='L194'> 194 <font color='darkred'>#endif</font> <i><font color='green'>/* capture_opts.h */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

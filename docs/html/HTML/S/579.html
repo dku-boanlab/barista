@@ -1,0 +1,111 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/progress_dlg.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/progress_dlg.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* progress_dlg.h</font></i>
+<a name='L2'>   2 <i><font color='green'> * Definitions for progress dialog box routines</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * $Id: progress_dlg.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L5'>   5 <i><font color='green'> *</font></i>
+<a name='L6'>   6 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L7'>   7 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L8'>   8 <i><font color='green'> * Copyright 1998 Gerald Combs</font></i>
+<a name='L9'>   9 <i><font color='green'> *</font></i>
+<a name='L10'>  10 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L11'>  11 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L12'>  12 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L13'>  13 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L14'>  14 <i><font color='green'> *</font></i>
+<a name='L15'>  15 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L16'>  16 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L17'>  17 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L18'>  18 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L21'>  21 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L22'>  22 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L23'>  23 <i><font color='green'> */</font></i>
+<a name='L24'>  24 
+<a name='L25'>  25 <font color='darkred'>#ifndef</font> <a href='../S/579.html#L26' title='Defined at 26 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/progress_dlg.h.'>__PROGRESS_DLG_H__</a>
+<a name='L26'>  26 <font color='darkred'>#define</font> <a href='../S/579.html#L25' title='Refered from 25 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/progress_dlg.h.'>__PROGRESS_DLG_H__</a>
+<a name='L27'>  27 
+<a name='L28'>  28 <i><font color='green'>/** @file</font></i>
+<a name='L29'>  29 <i><font color='green'> *  Progress (modal) dialog box routines.</font></i>
+<a name='L30'>  30 <i><font color='green'> *  @ingroup dialog_group</font></i>
+<a name='L31'>  31 <i><font color='green'> */</font></i>
+<a name='L32'>  32 
+<a name='L33'>  33 <i><font color='green'>/** Progress dialog data. */</font></i>
+<a name='L34'>  34 <b>struct</b> <a href='../Y/5943.html' title='Multiple used in 2 places.'>progdlg</a>;
+<a name='L35'>  35 
+<a name='L36'>  36 <i><font color='green'>/** Progress dialog data. */</font></i>
+<a name='L37'>  37 <b>typedef</b> <b>struct</b> <a href='../Y/5943.html' title='Multiple used in 2 places.'>progdlg</a> <a href='../R/4164.html' title='Multiple refered from 4 places.'>progdlg_t</a>;
+<a name='L38'>  38 
+<a name='L39'>  39 <i><font color='green'>/**</font></i>
+<a name='L40'>  40 <i><font color='green'> * Create and pop up the progress dialog. Allocates a "progdlg_t"</font></i>
+<a name='L41'>  41 <i><font color='green'> * and initialize it to contain all information the implementation</font></i>
+<a name='L42'>  42 <i><font color='green'> * needs in order to manipulate the dialog, and return a pointer to</font></i>
+<a name='L43'>  43 <i><font color='green'> * it.</font></i>
+<a name='L44'>  44 <i><font color='green'> *</font></i>
+<a name='L45'>  45 <i><font color='green'> * @param task_title the task to do, e.g. "Loading"</font></i>
+<a name='L46'>  46 <i><font color='green'> * @param item_title the item to do, e.g. "capture.cap"</font></i>
+<a name='L47'>  47 <i><font color='green'> * @param terminate_is_stop TRUE if the operation can't be cancelled, just</font></i>
+<a name='L48'>  48 <i><font color='green'> *   stopped (i.e., it has a "Stop" button and clicking it doesn't undo</font></i>
+<a name='L49'>  49 <i><font color='green'> *   anything already done), FALSE if it can</font></i>
+<a name='L50'>  50 <i><font color='green'> * @param stop_flag a pointer to a Boolean variable that will be</font></i>
+<a name='L51'>  51 <i><font color='green'> *   set to TRUE if the user hits that button</font></i>
+<a name='L52'>  52 <i><font color='green'> * @return the newly created progress dialog</font></i>
+<a name='L53'>  53 <i><font color='green'> */</font></i>
+<a name='L54'>  54 <a href='../S/579.html#L37' title='Defined at 37 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/progress_dlg.h.'>progdlg_t</a> *create_progress_dlg(<b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/7264.html' title='Multiple used in 2 places.'>task_title</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/3955.html' title='Multiple used in 2 places.'>item_title</a>,
+<a name='L55'>  55     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/7308.html' title='Multiple used in 2 places.'>terminate_is_stop</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> *<a href='../Y/7055.html' title='Multiple used in 2 places.'>stop_flag</a>);
+<a name='L56'>  56 
+<a name='L57'>  57 <i><font color='green'>/**</font></i>
+<a name='L58'>  58 <i><font color='green'> * Create a progress dialog, but only if it's not likely to disappear</font></i>
+<a name='L59'>  59 <i><font color='green'> * immediately. This can be disconcerting for the user. </font></i>
+<a name='L60'>  60 <i><font color='green'> *</font></i>
+<a name='L61'>  61 <i><font color='green'> * @param task_title the task to do, e.g. "Loading"</font></i>
+<a name='L62'>  62 <i><font color='green'> * @param item_title the item to do, e.g. "capture.cap"</font></i>
+<a name='L63'>  63 <i><font color='green'> * @param terminate_is_stop TRUE if the operation can't be cancelled, just</font></i>
+<a name='L64'>  64 <i><font color='green'> *   stopped (i.e., it has a "Stop" button and clicking it doesn't undo</font></i>
+<a name='L65'>  65 <i><font color='green'> *   anything already done), FALSE if it can</font></i>
+<a name='L66'>  66 <i><font color='green'> * @param stop_flag a pointer to a Boolean variable that will be</font></i>
+<a name='L67'>  67 <i><font color='green'> *   set to TRUE if the user hits that button</font></i>
+<a name='L68'>  68 <i><font color='green'> * @param start_time a pointer to a GTimeVal structure which holds</font></i>
+<a name='L69'>  69 <i><font color='green'> *   the time at which the caller started to process the data</font></i>
+<a name='L70'>  70 <i><font color='green'> * @param progress the current progress (0..1)</font></i>
+<a name='L71'>  71 <i><font color='green'> * @return the newly created progress dialog</font></i>
+<a name='L72'>  72 <i><font color='green'> */</font></i>
+<a name='L73'>  73 <a href='../S/579.html#L37' title='Defined at 37 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/progress_dlg.h.'>progdlg_t</a> *
+<a name='L74'>  74 delayed_create_progress_dlg(<b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/7264.html' title='Multiple used in 2 places.'>task_title</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/3955.html' title='Multiple used in 2 places.'>item_title</a>,
+<a name='L75'>  75     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/7308.html' title='Multiple used in 2 places.'>terminate_is_stop</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> *<a href='../Y/7055.html' title='Multiple used in 2 places.'>stop_flag</a>,
+<a name='L76'>  76     <b>const</b> GTimeVal *<a href='../Y/6995.html' title='Multiple used in 5 places.'>start_time</a>, <a href='../Y/3431.html' title='Multiple used in 4 places.'>gfloat</a> <a href='../Y/5945.html' title='Multiple used in 8 places.'>progress</a>);
+<a name='L77'>  77 
+<a name='L78'>  78 <i><font color='green'>/**</font></i>
+<a name='L79'>  79 <i><font color='green'> * Update the progress information of the progress dialog box.</font></i>
+<a name='L80'>  80 <i><font color='green'> *</font></i>
+<a name='L81'>  81 <i><font color='green'> * @param dlg the progress dialog from create_progress_dlg()</font></i>
+<a name='L82'>  82 <i><font color='green'> * @param percentage the current percentage value (0..1)</font></i>
+<a name='L83'>  83 <i><font color='green'> * @param status the new status string to show, e.g. "3000KB of 6000KB"</font></i>
+<a name='L84'>  84 <i><font color='green'> */</font></i>
+<a name='L85'>  85 <b>void</b> update_progress_dlg(<a href='../S/579.html#L37' title='Defined at 37 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/progress_dlg.h.'>progdlg_t</a> *<a href='../Y/2470.html' title='Multiple used in 2 places.'>dlg</a>, <a href='../Y/3431.html' title='Multiple used in 4 places.'>gfloat</a> percentage, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/7040.html' title='Multiple used in 97 places.'>status</a>);
+<a name='L86'>  86 
+<a name='L87'>  87 <i><font color='green'>/**</font></i>
+<a name='L88'>  88 <i><font color='green'> * Destroy the progress bar.</font></i>
+<a name='L89'>  89 <i><font color='green'> *</font></i>
+<a name='L90'>  90 <i><font color='green'> * @param dlg the progress dialog from create_progress_dlg()</font></i>
+<a name='L91'>  91 <i><font color='green'> */</font></i>
+<a name='L92'>  92 <b>void</b> destroy_progress_dlg(<a href='../S/579.html#L37' title='Defined at 37 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/progress_dlg.h.'>progdlg_t</a> *<a href='../Y/2470.html' title='Multiple used in 2 places.'>dlg</a>);
+<a name='L93'>  93 
+<a name='L94'>  94 <font color='darkred'>#endif</font> <i><font color='green'>/* __PROGRESS_DLG_H__ */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

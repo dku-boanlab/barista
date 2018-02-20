@@ -1,0 +1,80 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/atalk-utils.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/atalk-utils.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* atalk-utils.h</font></i>
+<a name='L2'>   2 <i><font color='green'> * Definitions for Appletalk utilities (DDP, currently).</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * $Id: atalk-utils.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L5'>   5 <i><font color='green'> *</font></i>
+<a name='L6'>   6 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L7'>   7 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L8'>   8 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L9'>   9 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L10'>  10 <i><font color='green'> *</font></i>
+<a name='L11'>  11 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L12'>  12 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L13'>  13 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L14'>  14 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L15'>  15 <i><font color='green'> *</font></i>
+<a name='L16'>  16 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L17'>  17 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L18'>  18 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L19'>  19 <i><font color='green'> */</font></i>
+<a name='L20'>  20 
+<a name='L21'>  21 <font color='darkred'>#ifndef</font> <a href='../S/390.html#L22' title='Defined at 22 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/atalk-utils.h.'>__ATALK_UTILS_H__</a>
+<a name='L22'>  22 <font color='darkred'>#define</font> <a href='../S/390.html#L21' title='Refered from 21 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/atalk-utils.h.'>__ATALK_UTILS_H__</a>
+<a name='L23'>  23 
+<a name='L24'>  24 <font color='darkred'>#include</font> &lt;glib.h&gt;
+<a name='L25'>  25 <font color='darkred'>#include</font> &lt;stdio.h&gt;
+<a name='L26'>  26 
+<a name='L27'>  27 <font color='darkred'>#ifdef</font> <a href='../Y/1158.html' title='Multiple used in 106 places.'>__cplusplus</a>
+<a name='L28'>  28 <b>extern</b> "C" <font color='red'>{</font>
+<a name='L29'>  29 <font color='darkred'>#endif</font> <i><font color='green'>/* __cplusplus */</font></i>
+<a name='L30'>  30 
+<a name='L31'>  31 <i><font color='green'>/*</font></i>
+<a name='L32'>  32 <i><font color='green'> * Structure used to represent a DDP address; gives the layout of the</font></i>
+<a name='L33'>  33 <i><font color='green'> * data pointed to by an AT_ATALK "address" structure.</font></i>
+<a name='L34'>  34 <i><font color='green'> */</font></i>
+<a name='L35'>  35 <b>struct</b> <a href='../R/2239.html' title='Multiple refered from 2 places.'>atalk_ddp_addr</a> <font color='red'>{</font>
+<a name='L36'>  36         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../Y/4697.html' title='Multiple used in 6 places.'>net</a>;
+<a name='L37'>  37         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>;
+<a name='L38'>  38 <font color='red'>}</font>;
+<a name='L39'>  39 
+<a name='L40'>  40 <i><font color='green'>/*</font></i>
+<a name='L41'>  41 <i><font color='green'> * DDP packet types.</font></i>
+<a name='L42'>  42 <i><font color='green'> */</font></i>
+<a name='L43'>  43 <font color='darkred'>#define</font> DDP_RTMPDATA    0x01
+<a name='L44'>  44 <font color='darkred'>#define</font> DDP_NBP         0x02
+<a name='L45'>  45 <font color='darkred'>#define</font> DDP_ATP         0x03
+<a name='L46'>  46 <font color='darkred'>#define</font> DDP_AEP         0x04
+<a name='L47'>  47 <font color='darkred'>#define</font> DDP_RTMPREQ     0x05
+<a name='L48'>  48 <font color='darkred'>#define</font> DDP_ZIP         0x06
+<a name='L49'>  49 <font color='darkred'>#define</font> DDP_ADSP        0x07
+<a name='L50'>  50 <font color='darkred'>#define</font> DDP_EIGRP       0x58
+<a name='L51'>  51 
+<a name='L52'>  52 <i><font color='green'>/*</font></i>
+<a name='L53'>  53 <i><font color='green'> * Routines to take a DDP address and generate a string.</font></i>
+<a name='L54'>  54 <i><font color='green'> */</font></i>
+<a name='L55'>  55 <b>extern</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *atalk_addr_to_str(<b>const</b> <b>struct</b> <a href='../S/390.html#L35' title='Defined at 35 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/atalk-utils.h.'>atalk_ddp_addr</a> *<a href='../Y/1335.html' title='Multiple used in 6 places.'>addrp</a>);
+<a name='L56'>  56 <b>extern</b> <b>void</b> atalk_addr_to_str_buf(<b>const</b> <b>struct</b> <a href='../S/390.html#L35' title='Defined at 35 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/atalk-utils.h.'>atalk_ddp_addr</a> *<a href='../Y/1335.html' title='Multiple used in 6 places.'>addrp</a>,
+<a name='L57'>  57                                   <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <b>int</b> <a href='../Y/1696.html' title='Multiple used in 6 places.'>buf_len</a>);
+<a name='L58'>  58 
+<a name='L59'>  59 <font color='darkred'>#ifdef</font> <a href='../Y/1158.html' title='Multiple used in 106 places.'>__cplusplus</a>
+<a name='L60'>  60 <font color='red'>}</font>
+<a name='L61'>  61 <font color='darkred'>#endif</font> <i><font color='green'>/* __cplusplus */</font></i>
+<a name='L62'>  62 
+<a name='L63'>  63 <font color='darkred'>#endif</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

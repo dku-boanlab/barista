@@ -1,0 +1,23 @@
+<html>
+<head>
+<title>msgp</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/895.html#L112'>msgp</a>              112 cbench/openflow/lib/vconn-provider.h     int (*recv)(struct vconn *vconn, struct ofpbuf **msgp);
+<a href='../S/881.html#L460'>msgp</a>              460 cbench/openflow/lib/vconn.c vconn_recv(struct vconn *vconn, struct ofpbuf **msgp)
+<a href='../S/881.html#L464'>msgp</a>              464 cbench/openflow/lib/vconn.c         retval = do_recv(vconn, msgp);
+<a href='../S/881.html#L470'>msgp</a>              470 cbench/openflow/lib/vconn.c do_recv(struct vconn *vconn, struct ofpbuf **msgp)
+<a href='../S/881.html#L475'>msgp</a>              475 cbench/openflow/lib/vconn.c     retval = (vconn-&gt;class-&gt;recv)(vconn, msgp);
+<a href='../S/881.html#L480'>msgp</a>              480 cbench/openflow/lib/vconn.c             char *s = ofp_to_string((*msgp)-&gt;data, (*msgp)-&gt;size, 1);
+<a href='../S/881.html#L485'>msgp</a>              485 cbench/openflow/lib/vconn.c         oh = ofpbuf_at_assert(*msgp, 0, sizeof *oh);
+<a href='../S/881.html#L505'>msgp</a>              505 cbench/openflow/lib/vconn.c                     ofpbuf_delete(*msgp);
+<a href='../S/881.html#L516'>msgp</a>              516 cbench/openflow/lib/vconn.c             ofpbuf_delete(*msgp);
+<a href='../S/881.html#L521'>msgp</a>              521 cbench/openflow/lib/vconn.c         *msgp = NULL;
+<a href='../S/881.html#L582'>msgp</a>              582 cbench/openflow/lib/vconn.c vconn_recv_block(struct vconn *vconn, struct ofpbuf **msgp)
+<a href='../S/881.html#L585'>msgp</a>              585 cbench/openflow/lib/vconn.c     while ((retval = vconn_recv(vconn, msgp)) == EAGAIN) {
+</pre>
+</body>
+</html>

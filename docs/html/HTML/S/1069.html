@@ -1,0 +1,64 @@
+<html>
+<head>
+<title>ext_applications/l2_learning/shim/include/application.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1159.html'>ext_applications</a>/<a href='../files/1160.html'>l2_learning</a>/<a href='../files/1161.html'>shim</a>/<a href='../files/1162.html'>include</a>/application.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/649.html' title='Multiple included from 9 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright 2015-2018 NSSLab, KAIST</font></i>
+<a name='L3'>   3 <i><font color='green'> */</font></i>
+<a name='L4'>   4 
+<a name='L5'>   5 <i><font color='green'>/**</font></i>
+<a name='L6'>   6 <i><font color='green'> * \file</font></i>
+<a name='L7'>   7 <i><font color='green'> * \author Jaehyun Nam &lt;namjh@kaist.ac.kr&gt;</font></i>
+<a name='L8'>   8 <i><font color='green'> */</font></i>
+<a name='L9'>   9 
+<a name='L10'>  10 <font color='darkred'>#pragma</font> once
+<a name='L11'>  11 
+<a name='L12'>  12 <font color='darkred'>#include</font> "<a href='../I/650.html'>common.h</a>"
+<a name='L13'>  13 
+<a name='L14'>  14 <i><font color='green'>/** \brief The main function pointer of an application */</font></i>
+<a name='L15'>  15 <b>typedef</b> <b>int</b> (* <a href='../Y/1414.html' title='Multiple used in 11 places.'>app_main_f</a>)(<b>int</b> *<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>, <b>int</b> <a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a>, <b>char</b> **<a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>);
+<a name='L16'>  16 <i><font color='green'>/** \brief The handler function pointer of an application */</font></i>
+<a name='L17'>  17 <b>typedef</b> <b>int</b> (* <a href='../Y/1411.html' title='Multiple used in 11 places.'>app_handler_f</a>)(<b>const</b> <a href='../Y/1409.html' title='Multiple used in 4 places.'>app_event_t</a> *<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>, <a href='../Y/1407.html' title='Multiple used in 4 places.'>app_event_out_t</a> *<a href='../Y/2897.html' title='Multiple used in 49 places.'>ev_out</a>);
+<a name='L18'>  18 <i><font color='green'>/** \brief The cleanup function pointer of an application */</font></i>
+<a name='L19'>  19 <b>typedef</b> <b>int</b> (* <a href='../Y/1399.html' title='Multiple used in 11 places.'>app_cleanup_f</a>)(<b>int</b> *<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>);
+<a name='L20'>  20 <i><font color='green'>/** \brief The cli function pointer of an application */</font></i>
+<a name='L21'>  21 <b>typedef</b> <b>int</b> (* <a href='../Y/1400.html' title='Multiple used in 11 places.'>app_cli_f</a>)(<a href='../Y/1909.html' title='Multiple used in 5 places.'>cli_t</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>char</b> **<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>);
+<a name='L22'>  22 
+<a name='L23'>  23 <i><font color='green'>/** \brief The type of an application */</font></i>
+<a name='L24'>  24 <b>enum</b> <font color='red'>{</font>
+<a name='L25'>  25     <a href='../R/65.html' title='Multiple refered from 16 places.'>APP_GENERAL</a>,
+<a name='L26'>  26     <a href='../R/57.html' title='Multiple refered from 6 places.'>APP_AUTO</a>,
+<a name='L27'>  27 <font color='red'>}</font>;
+<a name='L28'>  28 
+<a name='L29'>  29 <i><font color='green'>/** \brief The structure of an application */</font></i>
+<a name='L30'>  30 <b>struct</b> <a href='../R/2053.html' title='Multiple refered from 6 places.'>_app_t</a> <font color='red'>{</font>
+<a name='L31'>  31     <b>char</b> <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>[<a href='../D/6476.html' title='Multiple defined in 6 places.'>__CONF_WORD_LEN</a>]; <i><font color='green'>/**&lt; Application name */</font></i>
+<a name='L32'>  32     <b>char</b> <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>[<a href='../D/6476.html' title='Multiple defined in 6 places.'>__CONF_WORD_LEN</a>]; <i><font color='green'>/**&lt; Original argument string */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34     <b>int</b> <a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a>; <i><font color='green'>/**&lt; The number of arguments */</font></i>
+<a name='L35'>  35     <b>char</b> *<a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>[<a href='../D/6472.html' title='Multiple defined in 6 places.'>__CONF_ARGC</a> + 1]; <i><font color='green'>/**&lt; Arguments */</font></i>
+<a name='L36'>  36 
+<a name='L37'>  37     <b>int</b> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>; <i><font color='green'>/**&lt; Type */</font></i>
+<a name='L38'>  38     <b>int</b> <a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>; <i><font color='green'>/**&lt; Activation */</font></i>
+<a name='L39'>  39 
+<a name='L40'>  40     <a href='../Y/1414.html' title='Multiple used in 11 places.'>app_main_f</a> <a href='../D/8313.html' title='Multiple defined in 17 places.'>main</a>; <i><font color='green'>/**&lt; The main function pointer */</font></i>
+<a name='L41'>  41     <a href='../Y/1411.html' title='Multiple used in 11 places.'>app_handler_f</a> <a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>; <i><font color='green'>/**&lt; The handler function pointer */</font></i>
+<a name='L42'>  42     <a href='../Y/1399.html' title='Multiple used in 11 places.'>app_cleanup_f</a> <a href='../Y/1895.html' title='Multiple used in 27 places.'>cleanup</a>; <i><font color='green'>/**&lt; The cleanup function pointer */</font></i>
+<a name='L43'>  43     <a href='../Y/1400.html' title='Multiple used in 11 places.'>app_cli_f</a> <a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>; <i><font color='green'>/**&lt; The CLI function pointer */</font></i>
+<a name='L44'>  44 <font color='red'>}</font>;
+<a name='L45'>  45 
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<html>
+<head>
+<title>filt</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/1090.html#L51'>filt</a>               51 libraries/libcli/libcli.c int cli_match_filter_init(struct cli_def *cli, int argc, char **argv, struct cli_filter *filt);
+<a href='../S/1090.html#L52'>filt</a>               52 libraries/libcli/libcli.c int cli_range_filter_init(struct cli_def *cli, int argc, char **argv, struct cli_filter *filt);
+<a href='../S/1090.html#L53'>filt</a>               53 libraries/libcli/libcli.c int cli_count_filter_init(struct cli_def *cli, int argc, char **argv, struct cli_filter *filt);
+<a href='../S/1090.html#L723'>filt</a>              723 libraries/libcli/libcli.c             struct cli_filter **filt = &amp;cli-&gt;filters;
+<a href='../S/1090.html#L813'>filt</a>              813 libraries/libcli/libcli.c                 *filt = calloc(sizeof(struct cli_filter), 1);
+<a href='../S/1090.html#L817'>filt</a>              817 libraries/libcli/libcli.c                     rc = cli_match_filter_init(cli, argc, argv, *filt);
+<a href='../S/1090.html#L819'>filt</a>              819 libraries/libcli/libcli.c                     rc = cli_range_filter_init(cli, argc, argv, *filt);
+<a href='../S/1090.html#L821'>filt</a>              821 libraries/libcli/libcli.c                     rc = cli_count_filter_init(cli, argc, argv, *filt);
+<a href='../S/1090.html#L830'>filt</a>              830 libraries/libcli/libcli.c                     filt = &amp;(*filt)-&gt;next;
+<a href='../S/1090.html#L834'>filt</a>              834 libraries/libcli/libcli.c                     free(*filt);
+<a href='../S/1090.html#L835'>filt</a>              835 libraries/libcli/libcli.c                     *filt = 0;
+<a href='../S/1090.html#L844'>filt</a>              844 libraries/libcli/libcli.c                 struct cli_filter *filt = cli-&gt;filters;
+<a href='../S/1090.html#L847'>filt</a>              847 libraries/libcli/libcli.c                 filt-&gt;filter(cli, NULL, filt-&gt;data);
+<a href='../S/1090.html#L848'>filt</a>              848 libraries/libcli/libcli.c                 cli-&gt;filters = filt-&gt;next;
+<a href='../S/1090.html#L849'>filt</a>              849 libraries/libcli/libcli.c                 free(filt);
+<a href='../S/1090.html#L1968'>filt</a>             1968 libraries/libcli/libcli.c int cli_match_filter_init(struct cli_def *cli, int argc, char **argv, struct cli_filter *filt)
+<a href='../S/1090.html#L1983'>filt</a>             1983 libraries/libcli/libcli.c     filt-&gt;filter = cli_match_filter;
+<a href='../S/1090.html#L1984'>filt</a>             1984 libraries/libcli/libcli.c     filt-&gt;data = state = calloc(sizeof(struct cli_match_filter_state), 1);
+<a href='../S/1090.html#L2092'>filt</a>             2092 libraries/libcli/libcli.c int cli_range_filter_init(struct cli_def *cli, int argc, char **argv, struct cli_filter *filt)
+<a href='../S/1090.html#L2125'>filt</a>             2125 libraries/libcli/libcli.c     filt-&gt;filter = cli_range_filter;
+<a href='../S/1090.html#L2126'>filt</a>             2126 libraries/libcli/libcli.c     filt-&gt;data = state = calloc(sizeof(struct cli_range_filter_state), 1);
+<a href='../S/1090.html#L2160'>filt</a>             2160 libraries/libcli/libcli.c int cli_count_filter_init(struct cli_def *cli, int argc, UNUSED(char **argv), struct cli_filter *filt)
+<a href='../S/1090.html#L2170'>filt</a>             2170 libraries/libcli/libcli.c     filt-&gt;filter = cli_count_filter;
+<a href='../S/1090.html#L2171'>filt</a>             2171 libraries/libcli/libcli.c     if (!(filt-&gt;data = calloc(sizeof(int), 1)))
+</pre>
+</body>
+</html>

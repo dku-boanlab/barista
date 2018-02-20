@@ -1,0 +1,72 @@
+<html>
+<head>
+<title>cbench/openflow/lib/socket-util.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/socket-util.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/250.html' title='Multiple included from 12 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> * </font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> * </font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> * </font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> * </font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#ifndef</font> <a href='../S/863.html#L35' title='Defined at 35 in cbench/openflow/lib/socket-util.h.'>SOCKET_UTIL_H</a>
+<a name='L35'>  35 <font color='darkred'>#define</font> <a href='../S/863.html#L34' title='Refered from 34 in cbench/openflow/lib/socket-util.h.'>SOCKET_UTIL_H</a> 1
+<a name='L36'>  36 
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;<a href='315.html'>sys/types.h</a>&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;netinet/in.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> &lt;stdbool.h&gt;
+<a name='L40'>  40 
+<a name='L41'>  41 <b>int</b> <a href='../S/835.html#L56' title='Defined at 56 in cbench/openflow/lib/socket-util.c.'>set_nonblocking</a>(<b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>);
+<a name='L42'>  42 <b>int</b> <a href='../S/835.html#L75' title='Defined at 75 in cbench/openflow/lib/socket-util.c.'>set_socket_priority</a>(<b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <b>int</b> <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>);
+<a name='L43'>  43 <b>int</b> <a href='../S/835.html#L83' title='Defined at 83 in cbench/openflow/lib/socket-util.c.'>get_max_fds</a>(<b>void</b>);
+<a name='L44'>  44 <b>int</b> <a href='../S/835.html#L105' title='Defined at 105 in cbench/openflow/lib/socket-util.c.'>lookup_ip</a>(<b>const</b> <b>char</b> *<a href='../Y/3663.html' title='Multiple used in 13 places.'>host_name</a>, <b>struct</b> <a href='../Y/3768.html' title='Multiple used in 89 places.'>in_addr</a> *<a href='../Y/1333.html' title='Multiple used in 6 places.'>address</a>);
+<a name='L45'>  45 <b>int</b> <a href='../S/835.html#L127' title='Defined at 127 in cbench/openflow/lib/socket-util.c.'>get_socket_error</a>(<b>int</b> <a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>);
+<a name='L46'>  46 <b>int</b> <a href='../S/835.html#L140' title='Defined at 140 in cbench/openflow/lib/socket-util.c.'>check_connection_completion</a>(<b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>);
+<a name='L47'>  47 <b>int</b> <a href='../S/835.html#L167' title='Defined at 167 in cbench/openflow/lib/socket-util.c.'>drain_rcvbuf</a>(<b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>);
+<a name='L48'>  48 <b>void</b> <a href='../S/835.html#L207' title='Defined at 207 in cbench/openflow/lib/socket-util.c.'>drain_fd</a>(<b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4609.html' title='Multiple used in 3 places.'>n_packets</a>);
+<a name='L49'>  49 <b>int</b> <a href='../S/835.html#L241' title='Defined at 241 in cbench/openflow/lib/socket-util.c.'>make_unix_socket</a>(<b>int</b> <a href='../Y/7121.html' title='Multiple used in 3 places.'>style</a>, <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/4927.html' title='Multiple used in 3 places.'>nonblock</a>, <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/5650.html' title='Multiple used in 3 places.'>passcred</a>,
+<a name='L50'>  50                      <b>const</b> <b>char</b> *<a href='../Y/1623.html' title='Multiple used in 19 places.'>bind_path</a>, <b>const</b> <b>char</b> *<a href='../Y/2097.html' title='Multiple used in 21 places.'>connect_path</a>);
+<a name='L51'>  51 <b>int</b> <a href='../S/835.html#L311' title='Defined at 311 in cbench/openflow/lib/socket-util.c.'>get_unix_name_len</a>(<a href='../Y/6904.html' title='Multiple used in 17 places.'>socklen_t</a> <a href='../Y/7165.html' title='Multiple used in 4 places.'>sun_len</a>);
+<a name='L52'>  52 
+<a name='L53'>  53 <font color='darkred'>#endif</font> <i><font color='green'>/* socket-util.h */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

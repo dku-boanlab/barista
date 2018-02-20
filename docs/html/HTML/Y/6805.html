@@ -1,0 +1,378 @@
+<html>
+<head>
+<title>skb</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/293.html#L132'>skb</a>               132 cbench/openflow/datapath/datapath.c void nla_shrink(struct sk_buff *skb, struct nlattr *nla, int len)
+<a href='../S/293.html#L136'>skb</a>               136 cbench/openflow/datapath/datapath.c 	skb-&gt;tail += delta;
+<a href='../S/293.html#L137'>skb</a>               137 cbench/openflow/datapath/datapath.c 	skb-&gt;len  += delta;
+<a href='../S/293.html#L153'>skb</a>               153 cbench/openflow/datapath/datapath.c put_openflow_headers(struct datapath *dp, struct sk_buff *skb, uint8_t type,
+<a href='../S/293.html#L161'>skb</a>               161 cbench/openflow/datapath/datapath.c 	if (!genlmsg_put(skb,
+<a href='../S/293.html#L166'>skb</a>               166 cbench/openflow/datapath/datapath.c 	if (nla_put_u32(skb, DP_GENL_A_DP_IDX, dp-&gt;dp_idx) &lt; 0)
+<a href='../S/293.html#L168'>skb</a>               168 cbench/openflow/datapath/datapath.c 	openflow_len = (skb_tailroom(skb) - NLA_HDRLEN) &amp; ~(NLA_ALIGNTO - 1);
+<a href='../S/293.html#L172'>skb</a>               172 cbench/openflow/datapath/datapath.c 	attr = nla_reserve(skb, DP_GENL_A_OPENFLOW, openflow_len);
+<a href='../S/293.html#L188'>skb</a>               188 cbench/openflow/datapath/datapath.c resize_openflow_skb(struct sk_buff *skb,
+<a href='../S/293.html#L192'>skb</a>               192 cbench/openflow/datapath/datapath.c 	nla_shrink(skb, attr, new_length);
+<a href='../S/293.html#L194'>skb</a>               194 cbench/openflow/datapath/datapath.c 	nlmsg_end(skb, (struct nlmsghdr *) skb-&gt;data);
+<a href='../S/293.html#L210'>skb</a>               210 cbench/openflow/datapath/datapath.c 	struct sk_buff *skb;
+<a href='../S/293.html#L224'>skb</a>               224 cbench/openflow/datapath/datapath.c 	skb = *pskb = genlmsg_new(genl_len, GFP_ATOMIC);
+<a href='../S/293.html#L225'>skb</a>               225 cbench/openflow/datapath/datapath.c 	if (!skb) {
+<a href='../S/293.html#L229'>skb</a>               229 cbench/openflow/datapath/datapath.c 	oh = put_openflow_headers(dp, skb, type, sender, &amp;max_openflow_len);
+<a href='../S/293.html#L231'>skb</a>               231 cbench/openflow/datapath/datapath.c 	resize_openflow_skb(skb, oh, openflow_len);
+<a href='../S/293.html#L247'>skb</a>               247 cbench/openflow/datapath/datapath.c 		  struct sk_buff *skb, const struct sender *sender)
+<a href='../S/293.html#L250'>skb</a>               250 cbench/openflow/datapath/datapath.c 		? genlmsg_unicast(skb, sender-&gt;pid)
+<a href='../S/293.html#L251'>skb</a>               251 cbench/openflow/datapath/datapath.c 		: genlmsg_multicast(skb, 0, dp_mc_group(dp), GFP_ATOMIC));
+<a href='../S/293.html#L518'>skb</a>               518 cbench/openflow/datapath/datapath.c do_port_input(struct net_bridge_port *p, struct sk_buff *skb) 
+<a href='../S/293.html#L524'>skb</a>               524 cbench/openflow/datapath/datapath.c 	skb = skb_share_check(skb, GFP_ATOMIC);
+<a href='../S/293.html#L525'>skb</a>               525 cbench/openflow/datapath/datapath.c 	if (!skb)
+<a href='../S/293.html#L529'>skb</a>               529 cbench/openflow/datapath/datapath.c 	skb_push(skb, ETH_HLEN);
+<a href='../S/293.html#L530'>skb</a>               530 cbench/openflow/datapath/datapath.c 	skb_reset_mac_header(skb);
+<a href='../S/293.html#L531'>skb</a>               531 cbench/openflow/datapath/datapath.c 	fwd_port_input(p-&gt;dp-&gt;chain, skb, p);
+<a href='../S/293.html#L541'>skb</a>               541 cbench/openflow/datapath/datapath.c 				     struct sk_buff *skb)
+<a href='../S/293.html#L543'>skb</a>               543 cbench/openflow/datapath/datapath.c 	do_port_input(p, skb);
+<a href='../S/293.html#L557'>skb</a>               557 cbench/openflow/datapath/datapath.c static inline unsigned packet_length(const struct sk_buff *skb)
+<a href='../S/293.html#L559'>skb</a>               559 cbench/openflow/datapath/datapath.c 	unsigned length = skb-&gt;len - ETH_HLEN;
+<a href='../S/293.html#L560'>skb</a>               560 cbench/openflow/datapath/datapath.c 	if (skb-&gt;protocol == htons(ETH_P_8021Q))
+<a href='../S/293.html#L569'>skb</a>               569 cbench/openflow/datapath/datapath.c output_all(struct datapath *dp, struct sk_buff *skb, int flood)
+<a href='../S/293.html#L576'>skb</a>               576 cbench/openflow/datapath/datapath.c 		if (skb-&gt;dev == p-&gt;dev || p-&gt;config &amp; disable)
+<a href='../S/293.html#L579'>skb</a>               579 cbench/openflow/datapath/datapath.c 			struct sk_buff *clone = skb_clone(skb, GFP_ATOMIC);
+<a href='../S/293.html#L581'>skb</a>               581 cbench/openflow/datapath/datapath.c 				kfree_skb(skb);
+<a href='../S/293.html#L589'>skb</a>               589 cbench/openflow/datapath/datapath.c 		dp_output_port(dp, skb, prev_port, 0);
+<a href='../S/293.html#L591'>skb</a>               591 cbench/openflow/datapath/datapath.c 		kfree_skb(skb);
+<a href='../S/293.html#L599'>skb</a>               599 cbench/openflow/datapath/datapath.c 			   struct sk_buff *skb)
+<a href='../S/293.html#L606'>skb</a>               606 cbench/openflow/datapath/datapath.c 		skb-&gt;dev = p-&gt;dev;
+<a href='../S/293.html#L608'>skb</a>               608 cbench/openflow/datapath/datapath.c 		skb-&gt;dev = NULL;
+<a href='../S/293.html#L612'>skb</a>               612 cbench/openflow/datapath/datapath.c dp_xmit_skb(struct sk_buff *skb)
+<a href='../S/293.html#L614'>skb</a>               614 cbench/openflow/datapath/datapath.c 	struct datapath *dp = skb-&gt;dev-&gt;br_port-&gt;dp;
+<a href='../S/293.html#L615'>skb</a>               615 cbench/openflow/datapath/datapath.c 	int len = skb-&gt;len;
+<a href='../S/293.html#L617'>skb</a>               617 cbench/openflow/datapath/datapath.c 	if (packet_length(skb) &gt; skb-&gt;dev-&gt;mtu &amp;&amp; !skb_is_gso(skb)) {
+<a href='../S/293.html#L619'>skb</a>               619 cbench/openflow/datapath/datapath.c 		       dp-&gt;netdev-&gt;name, packet_length(skb), skb-&gt;dev-&gt;mtu);
+<a href='../S/293.html#L620'>skb</a>               620 cbench/openflow/datapath/datapath.c 		kfree_skb(skb);
+<a href='../S/293.html#L624'>skb</a>               624 cbench/openflow/datapath/datapath.c 	dev_queue_xmit(skb);
+<a href='../S/293.html#L631'>skb</a>               631 cbench/openflow/datapath/datapath.c int dp_output_port(struct datapath *dp, struct sk_buff *skb, int out_port,
+<a href='../S/293.html#L634'>skb</a>               634 cbench/openflow/datapath/datapath.c 	BUG_ON(!skb);
+<a href='../S/293.html#L639'>skb</a>               639 cbench/openflow/datapath/datapath.c 		if (!skb-&gt;dev) {
+<a href='../S/293.html#L644'>skb</a>               644 cbench/openflow/datapath/datapath.c 			kfree_skb(skb);
+<a href='../S/293.html#L647'>skb</a>               647 cbench/openflow/datapath/datapath.c 		return dp_xmit_skb(skb);
+<a href='../S/293.html#L650'>skb</a>               650 cbench/openflow/datapath/datapath.c 		int retval = run_flow_through_tables(dp-&gt;chain, skb,
+<a href='../S/293.html#L651'>skb</a>               651 cbench/openflow/datapath/datapath.c 						     skb-&gt;dev-&gt;br_port);
+<a href='../S/293.html#L653'>skb</a>               653 cbench/openflow/datapath/datapath.c 			kfree_skb(skb);
+<a href='../S/293.html#L658'>skb</a>               658 cbench/openflow/datapath/datapath.c 		return output_all(dp, skb, 1);
+<a href='../S/293.html#L661'>skb</a>               661 cbench/openflow/datapath/datapath.c 		return output_all(dp, skb, 0);
+<a href='../S/293.html#L664'>skb</a>               664 cbench/openflow/datapath/datapath.c 		return dp_output_control(dp, skb, UINT16_MAX, OFPR_ACTION);
+<a href='../S/293.html#L668'>skb</a>               668 cbench/openflow/datapath/datapath.c 		return dev ? dp_dev_recv(dev, skb) : -ESRCH;
+<a href='../S/293.html#L675'>skb</a>               675 cbench/openflow/datapath/datapath.c 		if (p-&gt;dev == skb-&gt;dev) {
+<a href='../S/293.html#L677'>skb</a>               677 cbench/openflow/datapath/datapath.c 			kfree_skb(skb);
+<a href='../S/293.html#L685'>skb</a>               685 cbench/openflow/datapath/datapath.c 			kfree_skb(skb);
+<a href='../S/293.html#L688'>skb</a>               688 cbench/openflow/datapath/datapath.c 		skb-&gt;dev = p-&gt;dev; 
+<a href='../S/293.html#L689'>skb</a>               689 cbench/openflow/datapath/datapath.c 		return dp_xmit_skb(skb);
+<a href='../S/293.html#L697'>skb</a>               697 cbench/openflow/datapath/datapath.c 	kfree_skb(skb);
+<a href='../S/293.html#L709'>skb</a>               709 cbench/openflow/datapath/datapath.c dp_output_control(struct datapath *dp, struct sk_buff *skb,
+<a href='../S/293.html#L720'>skb</a>               720 cbench/openflow/datapath/datapath.c 	WARN_ON_ONCE(skb_shared(skb));
+<a href='../S/293.html#L722'>skb</a>               722 cbench/openflow/datapath/datapath.c 	buffer_id = fwd_save_skb(skb);
+<a href='../S/293.html#L724'>skb</a>               724 cbench/openflow/datapath/datapath.c 	fwd_len = skb-&gt;len;
+<a href='../S/293.html#L735'>skb</a>               735 cbench/openflow/datapath/datapath.c 	opi-&gt;total_len      = htons(skb-&gt;len);
+<a href='../S/293.html#L736'>skb</a>               736 cbench/openflow/datapath/datapath.c 	opi-&gt;in_port        = htons(skb-&gt;dev &amp;&amp; skb-&gt;dev-&gt;br_port
+<a href='../S/293.html#L737'>skb</a>               737 cbench/openflow/datapath/datapath.c 				    ? skb-&gt;dev-&gt;br_port-&gt;port_no
+<a href='../S/293.html#L741'>skb</a>               741 cbench/openflow/datapath/datapath.c 	skb_copy_bits(skb, 0, opi-&gt;data, fwd_len);
+<a href='../S/293.html#L745'>skb</a>               745 cbench/openflow/datapath/datapath.c 	kfree_skb(skb);
+<a href='../S/293.html#L879'>skb</a>               879 cbench/openflow/datapath/datapath.c 	struct sk_buff *skb;
+<a href='../S/293.html#L887'>skb</a>               887 cbench/openflow/datapath/datapath.c 				 OFPT_FEATURES_REPLY, sender, &amp;skb);
+<a href='../S/293.html#L896'>skb</a>               896 cbench/openflow/datapath/datapath.c 	resize_openflow_skb(skb, &amp;ofr-&gt;header, ofr_len);
+<a href='../S/293.html#L897'>skb</a>               897 cbench/openflow/datapath/datapath.c 	return send_openflow_skb(dp, skb, sender);
+<a href='../S/293.html#L903'>skb</a>               903 cbench/openflow/datapath/datapath.c 	struct sk_buff *skb;
+<a href='../S/293.html#L907'>skb</a>               907 cbench/openflow/datapath/datapath.c 				 &amp;skb);
+<a href='../S/293.html#L914'>skb</a>               914 cbench/openflow/datapath/datapath.c 	return send_openflow_skb(dp, skb, sender);
+<a href='../S/293.html#L928'>skb</a>               928 cbench/openflow/datapath/datapath.c 		struct sk_buff *skb;
+<a href='../S/293.html#L932'>skb</a>               932 cbench/openflow/datapath/datapath.c 					   OFPT_HELLO, sender, &amp;skb);
+<a href='../S/293.html#L936'>skb</a>               936 cbench/openflow/datapath/datapath.c 		return send_openflow_skb(dp, skb, sender);
+<a href='../S/293.html#L944'>skb</a>               944 cbench/openflow/datapath/datapath.c 	struct sk_buff *skb;
+<a href='../S/293.html#L948'>skb</a>               948 cbench/openflow/datapath/datapath.c 				   OFPT_BARRIER_REPLY, sender, &amp;skb);
+<a href='../S/293.html#L952'>skb</a>               952 cbench/openflow/datapath/datapath.c 	return send_openflow_skb(dp, skb, sender);
+<a href='../S/293.html#L1004'>skb</a>              1004 cbench/openflow/datapath/datapath.c 	struct sk_buff *skb;
+<a href='../S/293.html#L1008'>skb</a>              1008 cbench/openflow/datapath/datapath.c 				 &amp;skb);
+<a href='../S/293.html#L1015'>skb</a>              1015 cbench/openflow/datapath/datapath.c 	return send_openflow_skb(p-&gt;dp, skb, NULL);
+<a href='../S/293.html#L1039'>skb</a>              1039 cbench/openflow/datapath/datapath.c 	struct sk_buff *skb;
+<a href='../S/293.html#L1048'>skb</a>              1048 cbench/openflow/datapath/datapath.c 	ofr = alloc_openflow_skb(dp, sizeof *ofr, OFPT_FLOW_REMOVED, 0, &amp;skb);
+<a href='../S/293.html#L1064'>skb</a>              1064 cbench/openflow/datapath/datapath.c 	return send_openflow_skb(dp, skb, NULL);
+<a href='../S/293.html#L1072'>skb</a>              1072 cbench/openflow/datapath/datapath.c 	struct sk_buff *skb;
+<a href='../S/293.html#L1077'>skb</a>              1077 cbench/openflow/datapath/datapath.c 			sender, &amp;skb);
+<a href='../S/293.html#L1085'>skb</a>              1085 cbench/openflow/datapath/datapath.c 	return send_openflow_skb(dp, skb, sender);
+<a href='../S/293.html#L1092'>skb</a>              1092 cbench/openflow/datapath/datapath.c 	struct sk_buff *skb;
+<a href='../S/293.html#L1096'>skb</a>              1096 cbench/openflow/datapath/datapath.c 				   sender, &amp;skb);
+<a href='../S/293.html#L1101'>skb</a>              1101 cbench/openflow/datapath/datapath.c 	return send_openflow_skb(dp, skb, sender);
+<a href='../S/293.html#L1127'>skb</a>              1127 cbench/openflow/datapath/datapath.c static int dp_genl_add(struct sk_buff *skb, struct genl_info *info)
+<a href='../S/293.html#L1200'>skb</a>              1200 cbench/openflow/datapath/datapath.c static int dp_genl_del(struct sk_buff *skb, struct genl_info *info)
+<a href='../S/293.html#L1234'>skb</a>              1234 cbench/openflow/datapath/datapath.c static int dp_genl_query(struct sk_buff *skb, struct genl_info *info)
+<a href='../S/293.html#L1279'>skb</a>              1279 cbench/openflow/datapath/datapath.c static int dp_genl_add_del_port(struct sk_buff *skb, struct genl_info *info)
+<a href='../S/293.html#L1342'>skb</a>              1342 cbench/openflow/datapath/datapath.c static int dp_genl_openflow(struct sk_buff *skb, struct genl_info *info)
+<a href='../S/293.html#L1847'>skb</a>              1847 cbench/openflow/datapath/datapath.c dp_genl_openflow_dumpit(struct sk_buff *skb, struct netlink_callback *cb)
+<a href='../S/293.html#L1863'>skb</a>              1863 cbench/openflow/datapath/datapath.c 	sender.pid = NETLINK_CB(cb-&gt;skb).pid;
+<a href='../S/293.html#L1945'>skb</a>              1945 cbench/openflow/datapath/datapath.c 	osr = put_openflow_headers(dp, skb, OFPT_STATS_REPLY, &amp;sender,
+<a href='../S/293.html#L1951'>skb</a>              1951 cbench/openflow/datapath/datapath.c 	resize_openflow_skb(skb, &amp;osr-&gt;header, max_openflow_len);
+<a href='../S/293.html#L1961'>skb</a>              1961 cbench/openflow/datapath/datapath.c 		resize_openflow_skb(skb, &amp;osr-&gt;header,
+<a href='../S/293.html#L1964'>skb</a>              1964 cbench/openflow/datapath/datapath.c 		err = skb-&gt;len;
+<a href='../S/291.html#L90'>skb</a>                90 cbench/openflow/datapath/datapath.h int dp_xmit_skb(struct sk_buff *skb);
+<a href='../S/261.html#L37'>skb</a>                37 cbench/openflow/datapath/dp_act.c do_output(struct datapath *dp, struct sk_buff *skb, size_t max_len,
+<a href='../S/261.html#L40'>skb</a>                40 cbench/openflow/datapath/dp_act.c 	if (!skb)
+<a href='../S/261.html#L43'>skb</a>                43 cbench/openflow/datapath/dp_act.c 		? dp_output_port(dp, skb, out_port, ignore_no_fwd)
+<a href='../S/261.html#L44'>skb</a>                44 cbench/openflow/datapath/dp_act.c 		: dp_output_control(dp, skb, max_len, OFPR_ACTION));
+<a href='../S/261.html#L49'>skb</a>                49 cbench/openflow/datapath/dp_act.c vlan_pull_tag(struct sk_buff *skb)
+<a href='../S/261.html#L51'>skb</a>                51 cbench/openflow/datapath/dp_act.c 	struct vlan_ethhdr *vh = vlan_eth_hdr(skb);
+<a href='../S/261.html#L57'>skb</a>                57 cbench/openflow/datapath/dp_act.c 		return skb;
+<a href='../S/261.html#L59'>skb</a>                59 cbench/openflow/datapath/dp_act.c 	memmove(skb-&gt;data + VLAN_HLEN, skb-&gt;data, 2 * VLAN_ETH_ALEN);
+<a href='../S/261.html#L61'>skb</a>                61 cbench/openflow/datapath/dp_act.c 	eh = (struct ethhdr *)skb_pull(skb, VLAN_HLEN);
+<a href='../S/261.html#L63'>skb</a>                63 cbench/openflow/datapath/dp_act.c 	skb-&gt;protocol = eh-&gt;h_proto;
+<a href='../S/261.html#L64'>skb</a>                64 cbench/openflow/datapath/dp_act.c 	skb-&gt;mac_header += VLAN_HLEN;
+<a href='../S/261.html#L66'>skb</a>                66 cbench/openflow/datapath/dp_act.c 	return skb;
+<a href='../S/261.html#L71'>skb</a>                71 cbench/openflow/datapath/dp_act.c modify_vlan_tci(struct sk_buff *skb, struct sw_flow_key *key, 
+<a href='../S/261.html#L74'>skb</a>                74 cbench/openflow/datapath/dp_act.c 	struct vlan_ethhdr *vh = vlan_eth_hdr(skb);
+<a href='../S/261.html#L87'>skb</a>                87 cbench/openflow/datapath/dp_act.c 		skb = __vlan_put_tag(skb, tci);
+<a href='../S/261.html#L88'>skb</a>                88 cbench/openflow/datapath/dp_act.c 		vh = vlan_eth_hdr(skb);
+<a href='../S/261.html#L94'>skb</a>                94 cbench/openflow/datapath/dp_act.c 	return skb;
+<a href='../S/261.html#L98'>skb</a>                98 cbench/openflow/datapath/dp_act.c set_vlan_vid(struct sk_buff *skb, struct sw_flow_key *key, 
+<a href='../S/261.html#L104'>skb</a>               104 cbench/openflow/datapath/dp_act.c 	return modify_vlan_tci(skb, key, tci, VLAN_VID_MASK);
+<a href='../S/261.html#L112'>skb</a>               112 cbench/openflow/datapath/dp_act.c set_vlan_pcp(struct sk_buff *skb, struct sw_flow_key *key, 
+<a href='../S/261.html#L118'>skb</a>               118 cbench/openflow/datapath/dp_act.c 	return modify_vlan_tci(skb, key, tci, VLAN_PCP_MASK);
+<a href='../S/261.html#L122'>skb</a>               122 cbench/openflow/datapath/dp_act.c strip_vlan(struct sk_buff *skb, struct sw_flow_key *key, 
+<a href='../S/261.html#L125'>skb</a>               125 cbench/openflow/datapath/dp_act.c 	vlan_pull_tag(skb);
+<a href='../S/261.html#L128'>skb</a>               128 cbench/openflow/datapath/dp_act.c 	return skb;
+<a href='../S/261.html#L132'>skb</a>               132 cbench/openflow/datapath/dp_act.c set_dl_addr(struct sk_buff *skb, struct sw_flow_key *key, 
+<a href='../S/261.html#L136'>skb</a>               136 cbench/openflow/datapath/dp_act.c 	struct ethhdr *eh = eth_hdr(skb);
+<a href='../S/261.html#L143'>skb</a>               143 cbench/openflow/datapath/dp_act.c 	return skb;
+<a href='../S/261.html#L150'>skb</a>               150 cbench/openflow/datapath/dp_act.c static void update_csum(__sum16 *sum, struct sk_buff *skb,
+<a href='../S/261.html#L154'>skb</a>               154 cbench/openflow/datapath/dp_act.c 	if (skb-&gt;ip_summed != CHECKSUM_PARTIAL) {
+<a href='../S/261.html#L157'>skb</a>               157 cbench/openflow/datapath/dp_act.c 		if (skb-&gt;ip_summed == CHECKSUM_COMPLETE &amp;&amp; pseudohdr)
+<a href='../S/261.html#L158'>skb</a>               158 cbench/openflow/datapath/dp_act.c 			skb-&gt;csum = ~csum_partial((char *)diff, sizeof(diff),
+<a href='../S/261.html#L159'>skb</a>               159 cbench/openflow/datapath/dp_act.c 						~skb-&gt;csum);
+<a href='../S/261.html#L166'>skb</a>               166 cbench/openflow/datapath/dp_act.c set_nw_addr(struct sk_buff *skb, struct sw_flow_key *key, 
+<a href='../S/261.html#L173'>skb</a>               173 cbench/openflow/datapath/dp_act.c 		struct iphdr *nh = ip_hdr(skb);
+<a href='../S/261.html#L184'>skb</a>               184 cbench/openflow/datapath/dp_act.c 			struct tcphdr *th = tcp_hdr(skb);
+<a href='../S/261.html#L185'>skb</a>               185 cbench/openflow/datapath/dp_act.c 			update_csum(&amp;th-&gt;check, skb, *field, new, 1);
+<a href='../S/261.html#L187'>skb</a>               187 cbench/openflow/datapath/dp_act.c 			struct udphdr *th = udp_hdr(skb);
+<a href='../S/261.html#L188'>skb</a>               188 cbench/openflow/datapath/dp_act.c 			update_csum(&amp;th-&gt;check, skb, *field, new, 1);
+<a href='../S/261.html#L190'>skb</a>               190 cbench/openflow/datapath/dp_act.c 		update_csum(&amp;nh-&gt;check, skb, *field, new, 0);
+<a href='../S/261.html#L194'>skb</a>               194 cbench/openflow/datapath/dp_act.c 	return skb;
+<a href='../S/261.html#L198'>skb</a>               198 cbench/openflow/datapath/dp_act.c set_nw_tos(struct sk_buff *skb, struct sw_flow_key *key,
+<a href='../S/261.html#L205'>skb</a>               205 cbench/openflow/datapath/dp_act.c 		struct iphdr *nh = ip_hdr(skb);
+<a href='../S/261.html#L215'>skb</a>               215 cbench/openflow/datapath/dp_act.c 		update_csum(&amp;nh-&gt;check, skb, htons((uint16_t)*field),
+<a href='../S/261.html#L222'>skb</a>               222 cbench/openflow/datapath/dp_act.c 	return skb;
+<a href='../S/261.html#L226'>skb</a>               226 cbench/openflow/datapath/dp_act.c set_tp_port(struct sk_buff *skb, struct sw_flow_key *key, 
+<a href='../S/261.html#L238'>skb</a>               238 cbench/openflow/datapath/dp_act.c 			struct tcphdr *th = tcp_hdr(skb);
+<a href='../S/261.html#L245'>skb</a>               245 cbench/openflow/datapath/dp_act.c 			update_csum(&amp;th-&gt;check, skb, *field, new, 1);
+<a href='../S/261.html#L248'>skb</a>               248 cbench/openflow/datapath/dp_act.c 			struct udphdr *th = udp_hdr(skb);
+<a href='../S/261.html#L255'>skb</a>               255 cbench/openflow/datapath/dp_act.c 			update_csum(&amp;th-&gt;check, skb, *field, new, 1);
+<a href='../S/261.html#L260'>skb</a>               260 cbench/openflow/datapath/dp_act.c 	return skb;
+<a href='../S/261.html#L269'>skb</a>               269 cbench/openflow/datapath/dp_act.c 	struct sk_buff *(*execute)(struct sk_buff *skb, 
+<a href='../S/261.html#L429'>skb</a>               429 cbench/openflow/datapath/dp_act.c execute_ofpat(struct sk_buff *skb, struct sw_flow_key *key, 
+<a href='../S/261.html#L433'>skb</a>               433 cbench/openflow/datapath/dp_act.c 	if (act-&gt;execute &amp;&amp; make_writable(&amp;skb))
+<a href='../S/261.html#L434'>skb</a>               434 cbench/openflow/datapath/dp_act.c 		skb = act-&gt;execute(skb, key, ah);
+<a href='../S/261.html#L435'>skb</a>               435 cbench/openflow/datapath/dp_act.c 	return skb;
+<a href='../S/261.html#L440'>skb</a>               440 cbench/openflow/datapath/dp_act.c execute_vendor(struct sk_buff *skb, const struct sw_flow_key *key, 
+<a href='../S/261.html#L445'>skb</a>               445 cbench/openflow/datapath/dp_act.c 	struct datapath *dp = skb-&gt;dev-&gt;br_port-&gt;dp;
+<a href='../S/261.html#L460'>skb</a>               460 cbench/openflow/datapath/dp_act.c 	return skb;
+<a href='../S/261.html#L464'>skb</a>               464 cbench/openflow/datapath/dp_act.c void execute_actions(struct datapath *dp, struct sk_buff *skb,
+<a href='../S/261.html#L485'>skb</a>               485 cbench/openflow/datapath/dp_act.c 		WARN_ON_ONCE(skb_shared(skb));
+<a href='../S/261.html#L487'>skb</a>               487 cbench/openflow/datapath/dp_act.c 			do_output(dp, skb_clone(skb, GFP_ATOMIC),
+<a href='../S/261.html#L500'>skb</a>               500 cbench/openflow/datapath/dp_act.c 				skb = execute_ofpat(skb, key, ah, type);
+<a href='../S/261.html#L502'>skb</a>               502 cbench/openflow/datapath/dp_act.c 				skb = execute_vendor(skb, key, ah);
+<a href='../S/261.html#L504'>skb</a>               504 cbench/openflow/datapath/dp_act.c 			if (!skb) {
+<a href='../S/261.html#L517'>skb</a>               517 cbench/openflow/datapath/dp_act.c 		do_output(dp, skb, max_len, prev_port, ignore_no_fwd);
+<a href='../S/261.html#L519'>skb</a>               519 cbench/openflow/datapath/dp_act.c 		kfree_skb(skb);
+<a href='../S/261.html#L530'>skb</a>               530 cbench/openflow/datapath/dp_act.c 	struct sk_buff *skb = *pskb;
+<a href='../S/261.html#L531'>skb</a>               531 cbench/openflow/datapath/dp_act.c 	if (skb_shared(skb) || skb_cloned(skb)) {
+<a href='../S/261.html#L532'>skb</a>               532 cbench/openflow/datapath/dp_act.c 		struct sk_buff *nskb = skb_copy(skb, GFP_ATOMIC);
+<a href='../S/261.html#L535'>skb</a>               535 cbench/openflow/datapath/dp_act.c 		kfree_skb(skb);
+<a href='../S/261.html#L539'>skb</a>               539 cbench/openflow/datapath/dp_act.c 		unsigned int hdr_len = (skb_transport_offset(skb)
+<a href='../S/261.html#L541'>skb</a>               541 cbench/openflow/datapath/dp_act.c 		return pskb_may_pull(skb, min(hdr_len, skb-&gt;len));
+<a href='../S/281.html#L31'>skb</a>                31 cbench/openflow/datapath/dp_dev.c int dp_dev_recv(struct net_device *netdev, struct sk_buff *skb) 
+<a href='../S/281.html#L33'>skb</a>                33 cbench/openflow/datapath/dp_dev.c 	int len = skb-&gt;len;
+<a href='../S/281.html#L35'>skb</a>                35 cbench/openflow/datapath/dp_dev.c 	skb-&gt;dev = netdev;
+<a href='../S/281.html#L36'>skb</a>                36 cbench/openflow/datapath/dp_dev.c 	skb-&gt;pkt_type = PACKET_HOST;
+<a href='../S/281.html#L37'>skb</a>                37 cbench/openflow/datapath/dp_dev.c 	skb-&gt;protocol = eth_type_trans(skb, netdev);
+<a href='../S/281.html#L39'>skb</a>                39 cbench/openflow/datapath/dp_dev.c 		netif_rx(skb);
+<a href='../S/281.html#L41'>skb</a>                41 cbench/openflow/datapath/dp_dev.c 		netif_rx_ni(skb);
+<a href='../S/281.html#L60'>skb</a>                60 cbench/openflow/datapath/dp_dev.c static int dp_dev_xmit(struct sk_buff *skb, struct net_device *netdev)
+<a href='../S/281.html#L69'>skb</a>                69 cbench/openflow/datapath/dp_dev.c 	skb_orphan(skb);
+<a href='../S/281.html#L75'>skb</a>                75 cbench/openflow/datapath/dp_dev.c 	skb = skb_share_check(skb, GFP_ATOMIC);
+<a href='../S/281.html#L76'>skb</a>                76 cbench/openflow/datapath/dp_dev.c 	if (!skb)
+<a href='../S/281.html#L80'>skb</a>                80 cbench/openflow/datapath/dp_dev.c 	dp_dev-&gt;stats.tx_bytes += skb-&gt;len;
+<a href='../S/281.html#L90'>skb</a>                90 cbench/openflow/datapath/dp_dev.c 	skb_queue_tail(&amp;dp_dev-&gt;xmit_queue, skb);
+<a href='../S/281.html#L102'>skb</a>               102 cbench/openflow/datapath/dp_dev.c 	struct sk_buff *skb;
+<a href='../S/281.html#L104'>skb</a>               104 cbench/openflow/datapath/dp_dev.c 	while ((skb = skb_dequeue(&amp;dp_dev-&gt;xmit_queue)) != NULL) {
+<a href='../S/281.html#L105'>skb</a>               105 cbench/openflow/datapath/dp_dev.c 		skb_reset_mac_header(skb);
+<a href='../S/281.html#L107'>skb</a>               107 cbench/openflow/datapath/dp_dev.c 		fwd_port_input(dp-&gt;chain, skb, dp-&gt;local_port);
+<a href='../S/283.html#L381'>skb</a>               381 cbench/openflow/datapath/flow.c int flow_extract(struct sk_buff *skb, uint16_t in_port,
+<a href='../S/283.html#L393'>skb</a>               393 cbench/openflow/datapath/flow.c 	if (skb-&gt;len &lt; sizeof *eth)
+<a href='../S/283.html#L395'>skb</a>               395 cbench/openflow/datapath/flow.c 	if (!pskb_may_pull(skb, skb-&gt;len &gt;= 64 ? 64 : skb-&gt;len)) {
+<a href='../S/283.html#L399'>skb</a>               399 cbench/openflow/datapath/flow.c 	skb_reset_mac_header(skb);
+<a href='../S/283.html#L400'>skb</a>               400 cbench/openflow/datapath/flow.c 	eth = eth_hdr(skb);
+<a href='../S/283.html#L405'>skb</a>               405 cbench/openflow/datapath/flow.c 	else if (skb-&gt;len &gt;= sizeof *esh &amp;&amp; is_snap(esh)) {
+<a href='../S/283.html#L410'>skb</a>               410 cbench/openflow/datapath/flow.c 		if (skb-&gt;len &gt;= nh_ofs + sizeof(struct llc_pdu_un)) {
+<a href='../S/283.html#L417'>skb</a>               417 cbench/openflow/datapath/flow.c 	    skb-&gt;len &gt;= nh_ofs + sizeof(struct vlan_hdr)) {
+<a href='../S/283.html#L418'>skb</a>               418 cbench/openflow/datapath/flow.c 		struct vlan_hdr *vh = (struct vlan_hdr*)(skb-&gt;data + nh_ofs);
+<a href='../S/283.html#L427'>skb</a>               427 cbench/openflow/datapath/flow.c 	skb_set_network_header(skb, nh_ofs);
+<a href='../S/283.html#L430'>skb</a>               430 cbench/openflow/datapath/flow.c 	if (key-&gt;dl_type == htons(ETH_P_IP) &amp;&amp; iphdr_ok(skb)) {
+<a href='../S/283.html#L431'>skb</a>               431 cbench/openflow/datapath/flow.c 		struct iphdr *nh = ip_hdr(skb);
+<a href='../S/283.html#L437'>skb</a>               437 cbench/openflow/datapath/flow.c 		skb_set_transport_header(skb, th_ofs);
+<a href='../S/283.html#L442'>skb</a>               442 cbench/openflow/datapath/flow.c 				if (tcphdr_ok(skb)) {
+<a href='../S/283.html#L443'>skb</a>               443 cbench/openflow/datapath/flow.c 					struct tcphdr *tcp = tcp_hdr(skb);
+<a href='../S/283.html#L453'>skb</a>               453 cbench/openflow/datapath/flow.c 				if (udphdr_ok(skb)) {
+<a href='../S/283.html#L454'>skb</a>               454 cbench/openflow/datapath/flow.c 					struct udphdr *udp = udp_hdr(skb);
+<a href='../S/283.html#L464'>skb</a>               464 cbench/openflow/datapath/flow.c 				if (icmphdr_ok(skb)) {
+<a href='../S/283.html#L465'>skb</a>               465 cbench/openflow/datapath/flow.c 					struct icmphdr *icmp = icmp_hdr(skb);
+<a href='../S/283.html#L482'>skb</a>               482 cbench/openflow/datapath/flow.c 		skb_reset_transport_header(skb);
+<a href='../S/332.html#L140'>skb</a>               140 cbench/openflow/datapath/flow.h static inline int iphdr_ok(struct sk_buff *skb)
+<a href='../S/332.html#L142'>skb</a>               142 cbench/openflow/datapath/flow.h 	int nh_ofs = skb_network_offset(skb);
+<a href='../S/332.html#L143'>skb</a>               143 cbench/openflow/datapath/flow.h 	if (skb-&gt;len &gt;= nh_ofs + sizeof(struct iphdr)) {
+<a href='../S/332.html#L144'>skb</a>               144 cbench/openflow/datapath/flow.h 		int ip_len = ip_hdrlen(skb);
+<a href='../S/332.html#L146'>skb</a>               146 cbench/openflow/datapath/flow.h 			&amp;&amp; pskb_may_pull(skb, nh_ofs + ip_len));
+<a href='../S/332.html#L151'>skb</a>               151 cbench/openflow/datapath/flow.h static inline int tcphdr_ok(struct sk_buff *skb)
+<a href='../S/332.html#L153'>skb</a>               153 cbench/openflow/datapath/flow.h 	int th_ofs = skb_transport_offset(skb);
+<a href='../S/332.html#L154'>skb</a>               154 cbench/openflow/datapath/flow.h 	if (pskb_may_pull(skb, th_ofs + sizeof(struct tcphdr))) {
+<a href='../S/332.html#L155'>skb</a>               155 cbench/openflow/datapath/flow.h 		int tcp_len = tcp_hdrlen(skb);
+<a href='../S/332.html#L157'>skb</a>               157 cbench/openflow/datapath/flow.h 			&amp;&amp; skb-&gt;len &gt;= th_ofs + tcp_len);
+<a href='../S/332.html#L162'>skb</a>               162 cbench/openflow/datapath/flow.h static inline int udphdr_ok(struct sk_buff *skb)
+<a href='../S/332.html#L164'>skb</a>               164 cbench/openflow/datapath/flow.h 	int th_ofs = skb_transport_offset(skb);
+<a href='../S/332.html#L165'>skb</a>               165 cbench/openflow/datapath/flow.h 	return pskb_may_pull(skb, th_ofs + sizeof(struct udphdr));
+<a href='../S/332.html#L168'>skb</a>               168 cbench/openflow/datapath/flow.h static inline int icmphdr_ok(struct sk_buff *skb)
+<a href='../S/332.html#L170'>skb</a>               170 cbench/openflow/datapath/flow.h 	int th_ofs = skb_transport_offset(skb);
+<a href='../S/332.html#L171'>skb</a>               171 cbench/openflow/datapath/flow.h 	return pskb_may_pull(skb, th_ofs + sizeof(struct icmphdr));
+<a href='../S/332.html#L177'>skb</a>               177 cbench/openflow/datapath/flow.h static inline struct ofp_tcphdr *ofp_tcp_hdr(const struct sk_buff *skb)
+<a href='../S/332.html#L179'>skb</a>               179 cbench/openflow/datapath/flow.h 	return (struct ofp_tcphdr *)skb_transport_header(skb);
+<a href='../S/332.html#L182'>skb</a>               182 cbench/openflow/datapath/flow.h static inline void flow_used(struct sw_flow *flow, struct sk_buff *skb) 
+<a href='../S/332.html#L190'>skb</a>               190 cbench/openflow/datapath/flow.h 	flow-&gt;byte_count += skb-&gt;len;
+<a href='../S/282.html#L33'>skb</a>                33 cbench/openflow/datapath/forward.c int run_flow_through_tables(struct sw_chain *chain, struct sk_buff *skb,
+<a href='../S/282.html#L42'>skb</a>                42 cbench/openflow/datapath/forward.c 	if (flow_extract(skb, p ? p-&gt;port_no : OFPP_NONE, &amp;key)
+<a href='../S/282.html#L45'>skb</a>                45 cbench/openflow/datapath/forward.c 		kfree_skb(skb);
+<a href='../S/282.html#L51'>skb</a>                51 cbench/openflow/datapath/forward.c 		kfree_skb(skb);
+<a href='../S/282.html#L58'>skb</a>                58 cbench/openflow/datapath/forward.c 		flow_used(flow, skb);
+<a href='../S/282.html#L59'>skb</a>                59 cbench/openflow/datapath/forward.c 		execute_actions(chain-&gt;dp, skb, &amp;key,
+<a href='../S/282.html#L70'>skb</a>                70 cbench/openflow/datapath/forward.c void fwd_port_input(struct sw_chain *chain, struct sk_buff *skb,
+<a href='../S/282.html#L73'>skb</a>                73 cbench/openflow/datapath/forward.c 	WARN_ON_ONCE(skb_shared(skb));
+<a href='../S/282.html#L74'>skb</a>                74 cbench/openflow/datapath/forward.c 	WARN_ON_ONCE(skb-&gt;destructor);
+<a href='../S/282.html#L75'>skb</a>                75 cbench/openflow/datapath/forward.c 	if (run_flow_through_tables(chain, skb, p))
+<a href='../S/282.html#L76'>skb</a>                76 cbench/openflow/datapath/forward.c 		dp_output_control(chain-&gt;dp, skb, chain-&gt;dp-&gt;miss_send_len,
+<a href='../S/282.html#L132'>skb</a>               132 cbench/openflow/datapath/forward.c 	struct sk_buff *skb;
+<a href='../S/282.html#L148'>skb</a>               148 cbench/openflow/datapath/forward.c 		skb = alloc_skb(data_len, GFP_ATOMIC);
+<a href='../S/282.html#L149'>skb</a>               149 cbench/openflow/datapath/forward.c 		if (!skb)
+<a href='../S/282.html#L155'>skb</a>               155 cbench/openflow/datapath/forward.c 		skb_put(skb, data_len);
+<a href='../S/282.html#L156'>skb</a>               156 cbench/openflow/datapath/forward.c 		skb_copy_to_linear_data(skb,
+<a href='../S/282.html#L159'>skb</a>               159 cbench/openflow/datapath/forward.c 		skb_reset_mac_header(skb);
+<a href='../S/282.html#L161'>skb</a>               161 cbench/openflow/datapath/forward.c 		skb = retrieve_skb(ntohl(opo-&gt;buffer_id));
+<a href='../S/282.html#L162'>skb</a>               162 cbench/openflow/datapath/forward.c 		if (!skb)
+<a href='../S/282.html#L166'>skb</a>               166 cbench/openflow/datapath/forward.c 	dp_set_origin(chain-&gt;dp, ntohs(opo-&gt;in_port), skb);
+<a href='../S/282.html#L168'>skb</a>               168 cbench/openflow/datapath/forward.c 	flow_extract(skb, ntohs(opo-&gt;in_port), &amp;key);
+<a href='../S/282.html#L177'>skb</a>               177 cbench/openflow/datapath/forward.c 	execute_actions(chain-&gt;dp, skb, &amp;key, opo-&gt;actions, actions_len, 1);
+<a href='../S/282.html#L182'>skb</a>               182 cbench/openflow/datapath/forward.c 	kfree_skb(skb);
+<a href='../S/282.html#L280'>skb</a>               280 cbench/openflow/datapath/forward.c 		struct sk_buff *skb = retrieve_skb(ntohl(ofm-&gt;buffer_id));
+<a href='../S/282.html#L281'>skb</a>               281 cbench/openflow/datapath/forward.c 		if (skb) {
+<a href='../S/282.html#L283'>skb</a>               283 cbench/openflow/datapath/forward.c 			flow_used(flow, skb);
+<a href='../S/282.html#L284'>skb</a>               284 cbench/openflow/datapath/forward.c 			dp_set_origin(chain-&gt;dp, ntohs(ofm-&gt;match.in_port), skb);
+<a href='../S/282.html#L285'>skb</a>               285 cbench/openflow/datapath/forward.c 			flow_extract(skb, ntohs(ofm-&gt;match.in_port), &amp;key);
+<a href='../S/282.html#L286'>skb</a>               286 cbench/openflow/datapath/forward.c 			execute_actions(chain-&gt;dp, skb, &amp;key, ofm-&gt;actions, actions_len, 0);
+<a href='../S/282.html#L355'>skb</a>               355 cbench/openflow/datapath/forward.c 		struct sk_buff *skb = retrieve_skb(ntohl(ofm-&gt;buffer_id));
+<a href='../S/282.html#L356'>skb</a>               356 cbench/openflow/datapath/forward.c 		if (skb) {
+<a href='../S/282.html#L358'>skb</a>               358 cbench/openflow/datapath/forward.c 			flow_extract(skb, ntohs(ofm-&gt;match.in_port), &amp;skb_key);
+<a href='../S/282.html#L359'>skb</a>               359 cbench/openflow/datapath/forward.c 			execute_actions(chain-&gt;dp, skb, &amp;skb_key, 
+<a href='../S/282.html#L527'>skb</a>               527 cbench/openflow/datapath/forward.c 	struct sk_buff *skb;
+<a href='../S/282.html#L536'>skb</a>               536 cbench/openflow/datapath/forward.c uint32_t fwd_save_skb(struct sk_buff *skb)
+<a href='../S/282.html#L544'>skb</a>               544 cbench/openflow/datapath/forward.c 	skb = skb_copy(skb, GFP_ATOMIC);
+<a href='../S/282.html#L545'>skb</a>               545 cbench/openflow/datapath/forward.c 	if (!skb)
+<a href='../S/282.html#L551'>skb</a>               551 cbench/openflow/datapath/forward.c 	if (p-&gt;skb) {
+<a href='../S/282.html#L556'>skb</a>               556 cbench/openflow/datapath/forward.c 			kfree_skb(skb);
+<a href='../S/282.html#L563'>skb</a>               563 cbench/openflow/datapath/forward.c 			old_skb = p-&gt;skb;
+<a href='../S/282.html#L570'>skb</a>               570 cbench/openflow/datapath/forward.c 	p-&gt;skb = skb;
+<a href='../S/282.html#L584'>skb</a>               584 cbench/openflow/datapath/forward.c 	struct sk_buff *skb = NULL;
+<a href='../S/282.html#L590'>skb</a>               590 cbench/openflow/datapath/forward.c 		skb = p-&gt;skb;
+<a href='../S/282.html#L591'>skb</a>               591 cbench/openflow/datapath/forward.c 		p-&gt;skb = NULL;
+<a href='../S/282.html#L599'>skb</a>               599 cbench/openflow/datapath/forward.c 	return skb;
+<a href='../S/282.html#L607'>skb</a>               607 cbench/openflow/datapath/forward.c 		struct sk_buff *skb;
+<a href='../S/282.html#L612'>skb</a>               612 cbench/openflow/datapath/forward.c 		skb = buffers[i].skb;
+<a href='../S/282.html#L613'>skb</a>               613 cbench/openflow/datapath/forward.c 		buffers[i].skb = NULL;
+<a href='../S/282.html#L616'>skb</a>               616 cbench/openflow/datapath/forward.c 		kfree_skb(skb);
+<a href='../S/282.html#L630'>skb</a>               630 cbench/openflow/datapath/forward.c 		old_skb = p-&gt;skb;
+<a href='../S/282.html#L631'>skb</a>               631 cbench/openflow/datapath/forward.c 		p-&gt;skb = NULL;
+<a href='../S/294.html#L34'>skb</a>                34 cbench/openflow/datapath/forward.h uint32_t fwd_save_skb(struct sk_buff *skb);
+<a href='../S/316.html#L7'>skb</a>                 7 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/icmp.h static inline struct icmphdr *icmp_hdr(const struct sk_buff *skb)
+<a href='../S/316.html#L9'>skb</a>                 9 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/icmp.h         return (struct icmphdr *)skb_transport_header(skb);
+<a href='../S/312.html#L10'>skb</a>                10 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/if_arp.h static inline struct arphdr *arp_hdr(const struct sk_buff *skb)
+<a href='../S/312.html#L12'>skb</a>                12 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/if_arp.h 	return (struct arphdr *)skb_network_header(skb);
+<a href='../S/311.html#L7'>skb</a>                 7 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/ip.h static inline struct iphdr *ip_hdr(const struct sk_buff *skb)
+<a href='../S/311.html#L9'>skb</a>                 9 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/ip.h 	return (struct iphdr *)skb_network_header(skb);
+<a href='../S/311.html#L12'>skb</a>                12 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/ip.h static inline unsigned int ip_hdrlen(const struct sk_buff *skb)
+<a href='../S/311.html#L14'>skb</a>                14 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/ip.h 	return ip_hdr(skb)-&gt;ihl * 4;
+<a href='../S/326.html#L7'>skb</a>                 7 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/ipv6.h static inline struct ipv6hdr *ipv6_hdr(const struct sk_buff *skb)
+<a href='../S/326.html#L9'>skb</a>                 9 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/ipv6.h 	return (struct ipv6hdr *)skb_network_header(skb);
+<a href='../S/317.html#L12'>skb</a>                12 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/netfilter_bridge.h static inline unsigned int nf_bridge_encap_header_len(const struct sk_buff *skb)
+<a href='../S/317.html#L14'>skb</a>                14 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/netfilter_bridge.h 	switch (skb-&gt;protocol) {
+<a href='../S/319.html#L9'>skb</a>                 9 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h static inline void skb_copy_from_linear_data_offset(const struct sk_buff *skb,
+<a href='../S/319.html#L13'>skb</a>                13 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 	memcpy(to, skb-&gt;data + offset, len);
+<a href='../S/319.html#L16'>skb</a>                16 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h static inline void skb_copy_to_linear_data_offset(struct sk_buff *skb,
+<a href='../S/319.html#L21'>skb</a>                21 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 	memcpy(skb-&gt;data + offset, from, len);
+<a href='../S/319.html#L28'>skb</a>                28 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h static inline int __skb_cow(struct sk_buff *skb, unsigned int headroom,
+<a href='../S/319.html#L35'>skb</a>                35 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 	if (headroom &gt; skb_headroom(skb))
+<a href='../S/319.html#L36'>skb</a>                36 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 		delta = headroom - skb_headroom(skb);
+<a href='../S/319.html#L39'>skb</a>                39 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 		return pskb_expand_head(skb, ALIGN(delta, NET_SKB_PAD), 0,
+<a href='../S/319.html#L44'>skb</a>                44 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h static inline int skb_cow_head(struct sk_buff *skb, unsigned int headroom)
+<a href='../S/319.html#L46'>skb</a>                46 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 	return __skb_cow(skb, headroom, skb_header_cloned(skb));
+<a href='../S/319.html#L54'>skb</a>                54 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h #define kfree_skb(skb) kfree_skb_maybe_null(skb)
+<a href='../S/319.html#L55'>skb</a>                55 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h static inline void kfree_skb_maybe_null(struct sk_buff *skb)
+<a href='../S/319.html#L57'>skb</a>                57 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 	if (likely(skb != NULL))
+<a href='../S/319.html#L58'>skb</a>                58 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 		(kfree_skb)(skb);
+<a href='../S/319.html#L78'>skb</a>                78 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h static inline unsigned char *skb_transport_header(const struct sk_buff *skb)
+<a href='../S/319.html#L80'>skb</a>                80 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 	return skb-&gt;h.raw;
+<a href='../S/319.html#L83'>skb</a>                83 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h static inline void skb_reset_transport_header(struct sk_buff *skb)
+<a href='../S/319.html#L85'>skb</a>                85 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 	skb-&gt;h.raw = skb-&gt;data;
+<a href='../S/319.html#L88'>skb</a>                88 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h static inline void skb_set_transport_header(struct sk_buff *skb,
+<a href='../S/319.html#L91'>skb</a>                91 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 	skb-&gt;h.raw = skb-&gt;data + offset;
+<a href='../S/319.html#L94'>skb</a>                94 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h static inline unsigned char *skb_network_header(const struct sk_buff *skb)
+<a href='../S/319.html#L96'>skb</a>                96 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 	return skb-&gt;nh.raw;
+<a href='../S/319.html#L99'>skb</a>                99 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h static inline void skb_set_network_header(struct sk_buff *skb, const int offset)
+<a href='../S/319.html#L101'>skb</a>               101 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 	skb-&gt;nh.raw = skb-&gt;data + offset;
+<a href='../S/319.html#L104'>skb</a>               104 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h static inline unsigned char *skb_mac_header(const struct sk_buff *skb)
+<a href='../S/319.html#L106'>skb</a>               106 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 	return skb-&gt;mac.raw;
+<a href='../S/319.html#L109'>skb</a>               109 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h static inline void skb_reset_mac_header(struct sk_buff *skb)
+<a href='../S/319.html#L111'>skb</a>               111 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 	skb-&gt;mac_header = skb-&gt;data;
+<a href='../S/319.html#L114'>skb</a>               114 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h static inline void skb_set_mac_header(struct sk_buff *skb, const int offset)
+<a href='../S/319.html#L116'>skb</a>               116 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 	skb-&gt;mac.raw = skb-&gt;data + offset;
+<a href='../S/319.html#L119'>skb</a>               119 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h static inline int skb_transport_offset(const struct sk_buff *skb)
+<a href='../S/319.html#L121'>skb</a>               121 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h     return skb_transport_header(skb) - skb-&gt;data;
+<a href='../S/319.html#L124'>skb</a>               124 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h static inline int skb_network_offset(const struct sk_buff *skb)
+<a href='../S/319.html#L126'>skb</a>               126 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 	return skb_network_header(skb) - skb-&gt;data;
+<a href='../S/319.html#L129'>skb</a>               129 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h static inline void skb_copy_to_linear_data(struct sk_buff *skb,
+<a href='../S/319.html#L133'>skb</a>               133 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h 	memcpy(skb-&gt;data, from, len);
+<a href='../S/307.html#L7'>skb</a>                 7 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/tcp.h static inline struct tcphdr *tcp_hdr(const struct sk_buff *skb)
+<a href='../S/307.html#L9'>skb</a>                 9 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/tcp.h 	return (struct tcphdr *)skb_transport_header(skb);
+<a href='../S/307.html#L12'>skb</a>                12 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/tcp.h static inline unsigned int tcp_hdrlen(const struct sk_buff *skb)
+<a href='../S/307.html#L14'>skb</a>                14 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/tcp.h         return tcp_hdr(skb)-&gt;doff * 4;
+<a href='../S/320.html#L7'>skb</a>                 7 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/udp.h static inline struct udphdr *udp_hdr(const struct sk_buff *skb)
+<a href='../S/320.html#L9'>skb</a>                 9 cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/udp.h 	return (struct udphdr *)skb_transport_header(skb);
+<a href='../S/306.html#L62'>skb</a>                62 cbench/openflow/datapath/linux-2.6/compat-2.6/include/net/genetlink.h static inline int genlmsg_multicast_flags(struct sk_buff *skb, u32 pid, 
+<a href='../S/306.html#L67'>skb</a>                67 cbench/openflow/datapath/linux-2.6/compat-2.6/include/net/genetlink.h 	NETLINK_CB(skb).dst_group = group;
+<a href='../S/306.html#L69'>skb</a>                69 cbench/openflow/datapath/linux-2.6/compat-2.6/include/net/genetlink.h 	err = netlink_broadcast(genl_sock, skb, pid, group, flags);
+<a href='../S/306.html#L80'>skb</a>                80 cbench/openflow/datapath/linux-2.6/compat-2.6/include/net/genetlink.h #define genlmsg_put(skb, p, seq, fam, flg, c) \
+<a href='../S/306.html#L81'>skb</a>                81 cbench/openflow/datapath/linux-2.6/compat-2.6/include/net/genetlink.h 	genlmsg_put((skb), (p), (seq), (fam)-&gt;id, (fam)-&gt;hdrsize, \
+<a href='../S/306.html#L94'>skb</a>                94 cbench/openflow/datapath/linux-2.6/compat-2.6/include/net/genetlink.h static inline void *genlmsg_put_reply(struct sk_buff *skb,
+<a href='../S/306.html#L98'>skb</a>                98 cbench/openflow/datapath/linux-2.6/compat-2.6/include/net/genetlink.h 	return genlmsg_put(skb, info-&gt;snd_pid, info-&gt;snd_seq, family,
+<a href='../S/306.html#L107'>skb</a>               107 cbench/openflow/datapath/linux-2.6/compat-2.6/include/net/genetlink.h static inline int genlmsg_reply(struct sk_buff *skb, struct genl_info *info)
+<a href='../S/306.html#L109'>skb</a>               109 cbench/openflow/datapath/linux-2.6/compat-2.6/include/net/genetlink.h 	return genlmsg_unicast(skb, info-&gt;snd_pid);
+<a href='../S/301.html#L142'>skb</a>               142 cbench/openflow/datapath/linux-2.6/compat-2.6/veth.c static int veth_xmit(struct sk_buff *skb, struct net_device *dev)
+<a href='../S/301.html#L149'>skb</a>               149 cbench/openflow/datapath/linux-2.6/compat-2.6/veth.c 	skb_orphan(skb);
+<a href='../S/301.html#L161'>skb</a>               161 cbench/openflow/datapath/linux-2.6/compat-2.6/veth.c 	skb-&gt;dev = rcv;
+<a href='../S/301.html#L162'>skb</a>               162 cbench/openflow/datapath/linux-2.6/compat-2.6/veth.c 	skb-&gt;pkt_type = PACKET_HOST;
+<a href='../S/301.html#L163'>skb</a>               163 cbench/openflow/datapath/linux-2.6/compat-2.6/veth.c 	skb-&gt;protocol = eth_type_trans(skb, rcv);
+<a href='../S/301.html#L165'>skb</a>               165 cbench/openflow/datapath/linux-2.6/compat-2.6/veth.c 		skb-&gt;ip_summed = rcv_priv-&gt;ip_summed;
+<a href='../S/301.html#L167'>skb</a>               167 cbench/openflow/datapath/linux-2.6/compat-2.6/veth.c 	dst_release(skb-&gt;dst);
+<a href='../S/301.html#L168'>skb</a>               168 cbench/openflow/datapath/linux-2.6/compat-2.6/veth.c 	skb-&gt;dst = NULL;
+<a href='../S/301.html#L169'>skb</a>               169 cbench/openflow/datapath/linux-2.6/compat-2.6/veth.c 	secpath_reset(skb);
+<a href='../S/301.html#L170'>skb</a>               170 cbench/openflow/datapath/linux-2.6/compat-2.6/veth.c 	nf_reset(skb);
+<a href='../S/301.html#L172'>skb</a>               172 cbench/openflow/datapath/linux-2.6/compat-2.6/veth.c 	length = skb-&gt;len;
+<a href='../S/301.html#L181'>skb</a>               181 cbench/openflow/datapath/linux-2.6/compat-2.6/veth.c 	netif_rx(skb);
+<a href='../S/301.html#L185'>skb</a>               185 cbench/openflow/datapath/linux-2.6/compat-2.6/veth.c 	kfree_skb(skb);
+</pre>
+</body>
+</html>

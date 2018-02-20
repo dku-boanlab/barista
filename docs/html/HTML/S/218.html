@@ -1,0 +1,125 @@
+<html>
+<head>
+<title>cbench/openflow/hw-lib/skeleton/debug.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1135.html'>hw-lib</a>/<a href='../files/1137.html'>skeleton</a>/debug.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/149.html' title='Multiple included from 8 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 
+<a name='L2'>   2 <font color='darkred'>#ifndef</font> <a href='../D/3777.html' title='Multiple defined in 2 places.'>OF_HW_DEBUG_H</a>
+<a name='L3'>   3 <font color='darkred'>#define</font> <a href='../R/1303.html' title='Multiple refered from 2 places.'>OF_HW_DEBUG_H</a> 1
+<a name='L4'>   4 
+<a name='L5'>   5 <font color='darkred'>#include</font> &lt;stdio.h&gt;
+<a name='L6'>   6 <font color='darkred'>#include</font> &lt;<a href='181.html'>openflow/openflow.h</a>&gt;
+<a name='L7'>   7 
+<a name='L8'>   8 <font color='darkred'>#if</font> !<b>defined</b>(<a href='../Y/431.html' title='Multiple used in 11 places.'>HWTABLE_NO_DEBUG</a>)
+<a name='L9'>   9 <b>extern</b> <b>int</b> <a href='../Y/5048.html' title='Multiple used in 9 places.'>of_hw_debug</a>;
+<a name='L10'>  10 <font color='darkred'>#define</font> <a href='../R/2544.html' title='Multiple refered from 12 places.'>dbg_send</a>(<a href='../Y/4481.html' title='Multiple used in 122 places.'>mod</a>, <a href='../Y/4292.html' title='Multiple used in 8 places.'>lvl</a>, <a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...) \
+<a name='L11'>  11     <b>if</b> (<a href='../Y/5048.html' title='Multiple used in 9 places.'>of_hw_debug</a> &gt;= (<a href='../Y/4292.html' title='Multiple used in 8 places.'>lvl</a>)) <a href='../Y/3207.html' title='Multiple used in 289 places.'>fprintf</a>(<a href='../Y/7049.html' title='Multiple used in 246 places.'>stderr</a>, <a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L12'>  12 <font color='darkred'>#endif</font>
+<a name='L13'>  13 
+<a name='L14'>  14 <font color='darkred'>#define</font> DBG_LVL_NONE      -1 <i><font color='green'>/* All output off */</font></i>
+<a name='L15'>  15 <font color='darkred'>#define</font> <a href='../R/276.html' title='Multiple refered from 2 places.'>DBG_LVL_ERROR</a>     0  <i><font color='green'>/* Default value */</font></i>
+<a name='L16'>  16 <font color='darkred'>#define</font> <a href='../R/275.html' title='Multiple refered from 4 places.'>DBG_LVL_ALWAYS</a>    0  <i><font color='green'>/* For requested dump output */</font></i>
+<a name='L17'>  17 <font color='darkred'>#define</font> <a href='../R/279.html' title='Multiple refered from 4 places.'>DBG_LVL_WARN</a>      1
+<a name='L18'>  18 <font color='darkred'>#define</font> <a href='../R/277.html' title='Multiple refered from 2 places.'>DBG_LVL_VERBOSE</a>   2
+<a name='L19'>  19 <font color='darkred'>#define</font> <a href='../R/278.html' title='Multiple refered from 2 places.'>DBG_LVL_VVERB</a>     3  <i><font color='green'>/* Include success indications */</font></i>
+<a name='L20'>  20 
+<a name='L21'>  21 <i><font color='green'>/* Sorry for the lazy syntax here. */</font></i>
+<a name='L22'>  22 <font color='darkred'>#define</font> DBG_CHECK(<a href='../Y/4292.html' title='Multiple used in 8 places.'>lvl</a>) (((<a href='../Y/4292.html' title='Multiple used in 8 places.'>lvl</a>) &gt;= 0) &amp;&amp; (<a href='../Y/5048.html' title='Multiple used in 9 places.'>of_hw_debug</a> &gt;= (<a href='../Y/4292.html' title='Multiple used in 8 places.'>lvl</a>)))
+<a name='L23'>  23 <font color='darkred'>#define</font> <a href='../R/274.html' title='Multiple refered from 30 places.'>DBG_ERROR</a>(<a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)   <a href='../D/7269.html' title='Multiple defined in 2 places.'>dbg_send</a>(0, <a href='../D/1145.html' title='Multiple defined in 2 places.'>DBG_LVL_ERROR</a>, <a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L24'>  24 <font color='darkred'>#define</font> DBG_ALWAYS(<a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)  <a href='../D/7269.html' title='Multiple defined in 2 places.'>dbg_send</a>(0, <a href='../D/1144.html' title='Multiple defined in 2 places.'>DBG_LVL_ALWAYS</a>, <a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L25'>  25 <font color='darkred'>#define</font> <a href='../R/283.html' title='Multiple refered from 21 places.'>DBG_WARN</a>(<a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)    <a href='../D/7269.html' title='Multiple defined in 2 places.'>dbg_send</a>(0, <a href='../D/1149.html' title='Multiple defined in 2 places.'>DBG_LVL_WARN</a>, <a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L26'>  26 <font color='darkred'>#define</font> <a href='../R/281.html' title='Multiple refered from 142 places.'>DBG_VERBOSE</a>(<a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...) <a href='../D/7269.html' title='Multiple defined in 2 places.'>dbg_send</a>(0, <a href='../D/1147.html' title='Multiple defined in 2 places.'>DBG_LVL_VERBOSE</a>, <a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L27'>  27 <font color='darkred'>#define</font> <a href='../R/282.html' title='Multiple refered from 5 places.'>DBG_VVERB</a>(<a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)   <a href='../D/7269.html' title='Multiple defined in 2 places.'>dbg_send</a>(0, <a href='../D/1148.html' title='Multiple defined in 2 places.'>DBG_LVL_VVERB</a>, <a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L28'>  28 <font color='darkred'>#define</font> <a href='../R/280.html' title='Multiple refered from 4 places.'>DBG_NONE</a>(<a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)
+<a name='L29'>  29 <i><font color='green'>/* Same as DEBUG_ALWAYS */</font></i>
+<a name='L30'>  30 <font color='darkred'>#define</font> DEBUGK(<a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)      <a href='../D/7269.html' title='Multiple defined in 2 places.'>dbg_send</a>(0, <a href='../D/1144.html' title='Multiple defined in 2 places.'>DBG_LVL_ALWAYS</a>, <a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L31'>  31 
+<a name='L32'>  32 <font color='darkred'>#define</font> <a href='../R/1518.html' title='Multiple refered from 4 places.'>REPORT_ERROR</a>(<a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>) \
+<a name='L33'>  33     <a href='../D/1142.html' title='Multiple defined in 4 places.'>DBG_ERROR</a>("ERROR: %s:%d. %s\n", <a href='../Y/1131.html' title='Multiple used in 43 places.'>__FUNCTION__</a>, <a href='../Y/1136.html' title='Multiple used in 18 places.'>__LINE__</a>, <a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>)
+<a name='L34'>  34 
+<a name='L35'>  35 <i><font color='green'>/* Default debugging location string */</font></i>
+<a name='L36'>  36 <font color='darkred'>#define</font> <a href='../S/215.html#L278' title='Refered from 278 in cbench/openflow/hw-lib/skeleton/hw_flow.c.'>ANNOUNCE_LOCATION</a> <a href='../D/1152.html' title='Multiple defined in 4 places.'>DBG_VVERB</a>("%s: %d\n", <a href='../Y/1131.html' title='Multiple used in 43 places.'>__FUNCTION__</a>, <a href='../Y/1136.html' title='Multiple used in 18 places.'>__LINE__</a>)
+<a name='L37'>  37 <font color='darkred'>#define</font> DBG_INCR(<a href='../Y/1955.html' title='Multiple used in 143 places.'>cnt</a>) (++(<a href='../Y/1955.html' title='Multiple used in 143 places.'>cnt</a>))
+<a name='L38'>  38 
+<a name='L39'>  39 <i><font color='green'>/* Should assert return? Not presently */</font></i>
+<a name='L40'>  40 <font color='darkred'>#define</font> <a href='../R/90.html' title='Multiple refered from 7 places.'>ASSERT</a>(<a href='../Y/2048.html' title='Multiple used in 8 places.'>cond</a>)                                                    \
+<a name='L41'>  41     <b>if</b> (!(<a href='../Y/2048.html' title='Multiple used in 8 places.'>cond</a>)) <a href='../D/1142.html' title='Multiple defined in 4 places.'>DBG_ERROR</a>("ASSERTION %s IN %s FAILED LINE %d\n",       \
+<a name='L42'>  42                            #<a href='../Y/2048.html' title='Multiple used in 8 places.'>cond</a>, <a href='../Y/1131.html' title='Multiple used in 43 places.'>__FUNCTION__</a>, <a href='../Y/1136.html' title='Multiple used in 18 places.'>__LINE__</a>)
+<a name='L43'>  43 
+<a name='L44'>  44 <i><font color='green'>/* DEBUG for HW flow lists */</font></i>
+<a name='L45'>  45 <font color='darkred'>#define</font> <a href='../R/691.html' title='Multiple refered from 6 places.'>HW_FLOW_MAGIC</a> 0xba5eba11
+<a name='L46'>  46 <font color='darkred'>#define</font> <a href='../S/215.html#L36' title='Refered from 36 in cbench/openflow/hw-lib/skeleton/hw_flow.c.'>HW_FLOW_MAKE_VALID</a>(<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>) (<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>)-&gt;<a href='../Y/4312.html' title='Multiple used in 19 places.'>magic</a> = <a href='../D/2030.html' title='Multiple defined in 3 places.'>HW_FLOW_MAGIC</a>
+<a name='L47'>  47 <font color='darkred'>#define</font> <a href='../R/690.html' title='Multiple refered from 2 places.'>HW_FLOW_IS_VALID</a>(<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>) \
+<a name='L48'>  48     (((<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>) != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) &amp;&amp; ((<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>)-&gt;<a href='../Y/4312.html' title='Multiple used in 19 places.'>magic</a> == <a href='../D/2030.html' title='Multiple defined in 3 places.'>HW_FLOW_MAGIC</a>))
+<a name='L49'>  49 
+<a name='L50'>  50 <i><font color='green'>/*</font></i>
+<a name='L51'>  51 <i><font color='green'> * Carry out an operation and check for error, optionally returning</font></i>
+<a name='L52'>  52 <i><font color='green'> * from the calling routine.  To avoid compiler</font></i>
+<a name='L53'>  53 <i><font color='green'> * warnings in routines with void return, we give two macros.</font></i>
+<a name='L54'>  54 <i><font color='green'> *</font></i>
+<a name='L55'>  55 <i><font color='green'> * WARNING: This check uses rv != 0 (not just rv &lt; 0).</font></i>
+<a name='L56'>  56 <i><font color='green'> */</font></i>
+<a name='L57'>  57 
+<a name='L58'>  58 <font color='darkred'>#define</font> <a href='../R/1659.html' title='Multiple refered from 3 places.'>TRY</a>(<a href='../Y/5460.html' title='Multiple used in 44 places.'>op</a>, <a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>) <b>do</b> <font color='red'>{</font>                                       \
+<a name='L59'>  59         <b>int</b> <a href='../Y/6512.html' title='Multiple used in 34 places.'>rv</a>;                                                 \
+<a name='L60'>  60         <b>if</b> (((<a href='../Y/6512.html' title='Multiple used in 34 places.'>rv</a> = (<a href='../Y/5460.html' title='Multiple used in 44 places.'>op</a>)) &lt; 0)) <font color='red'>{</font>                                \
+<a name='L61'>  61             <a href='../D/1142.html' title='Multiple defined in 4 places.'>DBG_ERROR</a>("ERROR %d: %s\n", <a href='../Y/6512.html' title='Multiple used in 34 places.'>rv</a>, <a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>);               \
+<a name='L62'>  62             <b>return</b> <a href='../Y/6512.html' title='Multiple used in 34 places.'>rv</a>;                                          \
+<a name='L63'>  63         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>                                                \
+<a name='L64'>  64             <a href='../D/1150.html' title='Multiple defined in 4 places.'>DBG_NONE</a>("%s: success\n", <a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>);                     \
+<a name='L65'>  65         <font color='red'>}</font>                                                       \
+<a name='L66'>  66     <font color='red'>}</font> <b>while</b> (0)
+<a name='L67'>  67 
+<a name='L68'>  68 <font color='darkred'>#define</font> <a href='../R/1660.html' title='Multiple refered from 13 places.'>TRY_NR</a>(<a href='../Y/5460.html' title='Multiple used in 44 places.'>op</a>, <a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>) <b>do</b> <font color='red'>{</font>                                    \
+<a name='L69'>  69         <b>int</b> <a href='../Y/6512.html' title='Multiple used in 34 places.'>rv</a>;                                                 \
+<a name='L70'>  70         <b>if</b> (((<a href='../Y/6512.html' title='Multiple used in 34 places.'>rv</a> = (<a href='../Y/5460.html' title='Multiple used in 44 places.'>op</a>)) != 0)) <font color='red'>{</font>                               \
+<a name='L71'>  71             <a href='../D/1142.html' title='Multiple defined in 4 places.'>DBG_ERROR</a>("ERROR %d: %s\n", <a href='../Y/6512.html' title='Multiple used in 34 places.'>rv</a>, <a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>);               \
+<a name='L72'>  72         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>                                                \
+<a name='L73'>  73             <a href='../D/1150.html' title='Multiple defined in 4 places.'>DBG_NONE</a>("%s: success\n", <a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>);                     \
+<a name='L74'>  74         <font color='red'>}</font>                                                       \
+<a name='L75'>  75     <font color='red'>}</font> <b>while</b> (0)
+<a name='L76'>  76 
+<a name='L77'>  77 <font color='darkred'>#else</font>  <i><font color='green'>/* No debugging */</font></i>
+<a name='L78'>  78 
+<a name='L79'>  79 <font color='darkred'>#define</font> DBG_CHECK(<a href='../Y/4292.html' title='Multiple used in 8 places.'>lvl</a>) 0
+<a name='L80'>  80 <font color='darkred'>#define</font> <a href='../S/215.html#L278' title='Refered from 278 in cbench/openflow/hw-lib/skeleton/hw_flow.c.'>ANNOUNCE_LOCATION</a>
+<a name='L81'>  81 <font color='darkred'>#define</font> ACT_STRING(<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>) ""
+<a name='L82'>  82 <font color='darkred'>#define</font> DBG_INCR(<a href='../Y/1955.html' title='Multiple used in 143 places.'>cnt</a>)
+<a name='L83'>  83 <font color='darkred'>#define</font> <a href='../R/274.html' title='Multiple refered from 30 places.'>DBG_ERROR</a>(<a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)
+<a name='L84'>  84 <font color='darkred'>#define</font> DBG_ALWAYS(<a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)
+<a name='L85'>  85 <font color='darkred'>#define</font> <a href='../R/283.html' title='Multiple refered from 21 places.'>DBG_WARN</a>(<a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)
+<a name='L86'>  86 <font color='darkred'>#define</font> <a href='../R/281.html' title='Multiple refered from 142 places.'>DBG_VERBOSE</a>(<a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)
+<a name='L87'>  87 <font color='darkred'>#define</font> <a href='../R/282.html' title='Multiple refered from 5 places.'>DBG_VVERB</a>(<a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)
+<a name='L88'>  88 <font color='darkred'>#define</font> <a href='../R/280.html' title='Multiple refered from 4 places.'>DBG_NONE</a>(<a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)
+<a name='L89'>  89 <font color='darkred'>#define</font> DEBUGK(<a href='../Y/3185.html' title='Multiple used in 46 places.'>fmt</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)
+<a name='L90'>  90 <font color='darkred'>#define</font> <a href='../R/1518.html' title='Multiple refered from 4 places.'>REPORT_ERROR</a>(<a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>)
+<a name='L91'>  91 
+<a name='L92'>  92 <font color='darkred'>#define</font> <a href='../R/90.html' title='Multiple refered from 7 places.'>ASSERT</a>(<a href='../Y/2048.html' title='Multiple used in 8 places.'>cond</a>)
+<a name='L93'>  93 
+<a name='L94'>  94 <font color='darkred'>#define</font> <a href='../S/215.html#L36' title='Refered from 36 in cbench/openflow/hw-lib/skeleton/hw_flow.c.'>HW_FLOW_MAKE_VALID</a>(<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>)
+<a name='L95'>  95 <font color='darkred'>#define</font> <a href='../R/690.html' title='Multiple refered from 2 places.'>HW_FLOW_IS_VALID</a>(<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>) 1
+<a name='L96'>  96 
+<a name='L97'>  97 <font color='darkred'>#define</font> <a href='../R/1659.html' title='Multiple refered from 3 places.'>TRY</a>(<a href='../Y/5460.html' title='Multiple used in 44 places.'>op</a>, <a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>) <b>do</b> <font color='red'>{</font>                                       \
+<a name='L98'>  98         <b>int</b> <a href='../Y/6512.html' title='Multiple used in 34 places.'>rv</a>;                                                 \
+<a name='L99'>  99         <b>if</b> (((<a href='../Y/6512.html' title='Multiple used in 34 places.'>rv</a> = (<a href='../Y/5460.html' title='Multiple used in 44 places.'>op</a>)) != 0)) <b>return</b> <a href='../Y/6512.html' title='Multiple used in 34 places.'>rv</a>;                      \
+<a name='L100'> 100     <font color='red'>}</font> <b>while</b> (0)
+<a name='L101'> 101 
+<a name='L102'> 102 <font color='darkred'>#define</font> <a href='../R/1660.html' title='Multiple refered from 13 places.'>TRY_NR</a>(<a href='../Y/5460.html' title='Multiple used in 44 places.'>op</a>, <a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>) (<b>void</b>)<a href='../Y/5460.html' title='Multiple used in 44 places.'>op</a>
+<a name='L103'> 103 
+<a name='L104'> 104 <font color='darkred'>#endif</font> <i><font color='green'>/* !defined(HWTABLE_NO_DEBUG) */</font></i>
+<a name='L105'> 105 
+<a name='L106'> 106 <font color='darkred'>#endif</font> <i><font color='green'>/* OF_HW_DEBUG_H */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

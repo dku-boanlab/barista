@@ -1,0 +1,45 @@
+<html>
+<head>
+<title>hw_flow</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/215.html#L32'>hw_flow</a>            32 cbench/openflow/hw-lib/skeleton/hw_flow.c     hw_flow_t *hw_flow;
+<a href='../S/215.html#L34'>hw_flow</a>            34 cbench/openflow/hw-lib/skeleton/hw_flow.c     if ((hw_flow = ALLOC(sizeof(*hw_flow))) != NULL) {
+<a href='../S/215.html#L35'>hw_flow</a>            35 cbench/openflow/hw-lib/skeleton/hw_flow.c         memset(hw_flow, 0, sizeof(*hw_flow));
+<a href='../S/215.html#L36'>hw_flow</a>            36 cbench/openflow/hw-lib/skeleton/hw_flow.c         HW_FLOW_MAKE_VALID(hw_flow);
+<a href='../S/215.html#L37'>hw_flow</a>            37 cbench/openflow/hw-lib/skeleton/hw_flow.c         hw_flow-&gt;flow = flow;
+<a href='../S/215.html#L38'>hw_flow</a>            38 cbench/openflow/hw-lib/skeleton/hw_flow.c         flow-&gt;private = (void *)hw_flow;
+<a href='../S/215.html#L41'>hw_flow</a>            41 cbench/openflow/hw-lib/skeleton/hw_flow.c     return hw_flow;
+<a href='../S/215.html#L101'>hw_flow</a>           101 cbench/openflow/hw-lib/skeleton/hw_flow.c     hw_flow_t *hw_flow;
+<a href='../S/215.html#L107'>hw_flow</a>           107 cbench/openflow/hw-lib/skeleton/hw_flow.c     hw_flow = (hw_flow_t *)(flow-&gt;private);
+<a href='../S/215.html#L108'>hw_flow</a>           108 cbench/openflow/hw-lib/skeleton/hw_flow.c     if (!HW_FLOW_IS_VALID(hw_flow)) {
+<a href='../S/215.html#L109'>hw_flow</a>           109 cbench/openflow/hw-lib/skeleton/hw_flow.c         DBG_ERROR("BAD HW FLOW OBJECT %p for flow %p\n", hw_flow, flow);
+<a href='../S/215.html#L112'>hw_flow</a>           112 cbench/openflow/hw-lib/skeleton/hw_flow.c     ASSERT(hw_flow-&gt;entry_count &lt;= HW_FLOWS_PER_FLOW_MAX);
+<a href='../S/215.html#L119'>hw_flow</a>           119 cbench/openflow/hw-lib/skeleton/hw_flow.c     hw_flow-&gt;hw_byte_count = hw_flow-&gt;hw_packet_count = 0;
+<a href='../S/215.html#L120'>hw_flow</a>           120 cbench/openflow/hw-lib/skeleton/hw_flow.c     for (idx = 0; idx &lt; hw_flow-&gt;entry_count; idx++) {
+<a href='../S/215.html#L121'>hw_flow</a>           121 cbench/openflow/hw-lib/skeleton/hw_flow.c         ent = hw_flow-&gt;entry_list[idx];
+<a href='../S/215.html#L127'>hw_flow</a>           127 cbench/openflow/hw-lib/skeleton/hw_flow.c         FIXME_update proper hw_flow counters;
+<a href='../S/215.html#L129'>hw_flow</a>           129 cbench/openflow/hw-lib/skeleton/hw_flow.c     flow-&gt;packet_count = hw_flow-&gt;hw_packet_count;
+<a href='../S/215.html#L130'>hw_flow</a>           130 cbench/openflow/hw-lib/skeleton/hw_flow.c     flow-&gt;byte_count = hw_flow-&gt;hw_byte_count;
+<a href='../S/215.html#L192'>hw_flow</a>           192 cbench/openflow/hw-lib/skeleton/hw_flow.c     hw_flow_t *hw_flow;
+<a href='../S/215.html#L203'>hw_flow</a>           203 cbench/openflow/hw-lib/skeleton/hw_flow.c     hw_flow = (hw_flow_t *)(flow-&gt;private);
+<a href='../S/215.html#L204'>hw_flow</a>           204 cbench/openflow/hw-lib/skeleton/hw_flow.c     DBG_VERBOSE("Removing hw flow %p, flow %p\n", hw_flow, flow);
+<a href='../S/215.html#L205'>hw_flow</a>           205 cbench/openflow/hw-lib/skeleton/hw_flow.c     if (!HW_FLOW_IS_VALID(hw_flow)) {
+<a href='../S/215.html#L208'>hw_flow</a>           208 cbench/openflow/hw-lib/skeleton/hw_flow.c     ASSERT(hw_flow-&gt;entry_count &lt;= HW_FLOWS_PER_FLOW_MAX);
+<a href='../S/215.html#L212'>hw_flow</a>           212 cbench/openflow/hw-lib/skeleton/hw_flow.c     for (idx = 0; idx &lt; hw_flow-&gt;entry_count; idx++) {
+<a href='../S/215.html#L213'>hw_flow</a>           213 cbench/openflow/hw-lib/skeleton/hw_flow.c         ent = hw_flow-&gt;entry_list[idx];
+<a href='../S/215.html#L217'>hw_flow</a>           217 cbench/openflow/hw-lib/skeleton/hw_flow.c         hw_flow-&gt;entry_list[idx] = NULL;
+<a href='../S/215.html#L219'>hw_flow</a>           219 cbench/openflow/hw-lib/skeleton/hw_flow.c     FREE(hw_flow);
+<a href='../S/215.html#L401'>hw_flow</a>           401 cbench/openflow/hw-lib/skeleton/hw_flow.c         fc-&gt;entry_list[idx].hw_flow = NULL;
+<a href='../S/215.html#L429'>hw_flow</a>           429 cbench/openflow/hw-lib/skeleton/hw_flow.c     hw_flow_t *hw_flow;
+<a href='../S/215.html#L432'>hw_flow</a>           432 cbench/openflow/hw-lib/skeleton/hw_flow.c     if ((hw_flow = hw_flow_create(flow)) == NULL) {
+<a href='../S/215.html#L437'>hw_flow</a>           437 cbench/openflow/hw-lib/skeleton/hw_flow.c     DBG_VERBOSE("hw flow install: sw %p. hw %p\n", flow, hw_flow);
+<a href='../S/215.html#L438'>hw_flow</a>           438 cbench/openflow/hw-lib/skeleton/hw_flow.c     TRY(hw_entry_install(hw_int, 0, flow, hw_flow, extra),
+<a href='../S/212.html#L78'>hw_flow</a>            78 cbench/openflow/hw-lib/skeleton/hw_flow.h     hw_flow_t *hw_flow;
+<a href='../S/212.html#L92'>hw_flow</a>            92 cbench/openflow/hw-lib/skeleton/hw_flow.h #define HW_ENTRY_DRIVER(ent) ((ent)-&gt;hw_flow-&gt;hw_drv)
+</pre>
+</body>
+</html>

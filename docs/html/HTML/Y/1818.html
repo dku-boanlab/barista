@@ -1,0 +1,96 @@
+<html>
+<head>
+<title>cb</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/293.html#L1847'>cb</a>               1847 cbench/openflow/datapath/datapath.c dp_genl_openflow_dumpit(struct sk_buff *skb, struct netlink_callback *cb)
+<a href='../S/293.html#L1861'>cb</a>               1861 cbench/openflow/datapath/datapath.c 	cb-&gt;done = dp_genl_openflow_done;
+<a href='../S/293.html#L1863'>cb</a>               1863 cbench/openflow/datapath/datapath.c 	sender.pid = NETLINK_CB(cb-&gt;skb).pid;
+<a href='../S/293.html#L1864'>cb</a>               1864 cbench/openflow/datapath/datapath.c 	sender.seq = cb-&gt;nlh-&gt;nlmsg_seq;
+<a href='../S/293.html#L1865'>cb</a>               1865 cbench/openflow/datapath/datapath.c 	if (!cb-&gt;args[0]) {
+<a href='../S/293.html#L1872'>cb</a>               1872 cbench/openflow/datapath/datapath.c 		err = nlmsg_parse(cb-&gt;nlh, GENL_HDRLEN, attrs, DP_GENL_A_MAX,
+<a href='../S/293.html#L1917'>cb</a>               1917 cbench/openflow/datapath/datapath.c 		cb-&gt;args[0] = 1;
+<a href='../S/293.html#L1918'>cb</a>               1918 cbench/openflow/datapath/datapath.c 		cb-&gt;args[1] = dp_idx;
+<a href='../S/293.html#L1919'>cb</a>               1919 cbench/openflow/datapath/datapath.c 		cb-&gt;args[2] = type;
+<a href='../S/293.html#L1920'>cb</a>               1920 cbench/openflow/datapath/datapath.c 		cb-&gt;args[3] = rq-&gt;header.xid;
+<a href='../S/293.html#L1926'>cb</a>               1926 cbench/openflow/datapath/datapath.c 			cb-&gt;args[4] = (long) state;
+<a href='../S/293.html#L1928'>cb</a>               1928 cbench/openflow/datapath/datapath.c 	} else if (cb-&gt;args[0] == 1) {
+<a href='../S/293.html#L1929'>cb</a>               1929 cbench/openflow/datapath/datapath.c 		sender.xid = cb-&gt;args[3];
+<a href='../S/293.html#L1930'>cb</a>               1930 cbench/openflow/datapath/datapath.c 		dp_idx = cb-&gt;args[1];
+<a href='../S/293.html#L1931'>cb</a>               1931 cbench/openflow/datapath/datapath.c 		if (cb-&gt;args[2] == OFPST_VENDOR) {
+<a href='../S/293.html#L1935'>cb</a>               1935 cbench/openflow/datapath/datapath.c 			s = &amp;stats[cb-&gt;args[2]];
+<a href='../S/293.html#L1949'>cb</a>               1949 cbench/openflow/datapath/datapath.c 	osr-&gt;type = htons(cb-&gt;args[2]);
+<a href='../S/293.html#L1955'>cb</a>               1955 cbench/openflow/datapath/datapath.c 	err = s-&gt;dump(dp, (void *) cb-&gt;args[4], body, &amp;body_len);
+<a href='../S/293.html#L1958'>cb</a>               1958 cbench/openflow/datapath/datapath.c 			cb-&gt;args[0] = 2;
+<a href='../S/293.html#L1971'>cb</a>               1971 cbench/openflow/datapath/datapath.c dp_genl_openflow_done(struct netlink_callback *cb)
+<a href='../S/293.html#L1973'>cb</a>               1973 cbench/openflow/datapath/datapath.c 	if (cb-&gt;args[0]) {
+<a href='../S/293.html#L1975'>cb</a>               1975 cbench/openflow/datapath/datapath.c 		if (cb-&gt;args[2] == OFPST_VENDOR) {
+<a href='../S/293.html#L1979'>cb</a>               1979 cbench/openflow/datapath/datapath.c 			s = &amp;stats[cb-&gt;args[2]];
+<a href='../S/293.html#L1982'>cb</a>               1982 cbench/openflow/datapath/datapath.c 			s-&gt;done((void *) cb-&gt;args[4]);
+<a href='../S/810.html#L173'>cb</a>                173 cbench/openflow/secchan/port-watcher.c         local_port_changed_cb_func *cb = pw-&gt;local_cbs[i].local_port_changed;
+<a href='../S/810.html#L174'>cb</a>                174 cbench/openflow/secchan/port-watcher.c         (cb)(port, pw-&gt;local_cbs[i].aux);
+<a href='../S/810.html#L512'>cb</a>                512 cbench/openflow/secchan/port-watcher.c                                           local_port_changed_cb_func *cb,
+<a href='../S/810.html#L516'>cb</a>                516 cbench/openflow/secchan/port-watcher.c     pw-&gt;local_cbs[pw-&gt;n_local_cbs].local_port_changed = cb;
+<a href='../S/793.html#L72'>cb</a>                 72 cbench/openflow/secchan/port-watcher.h                                                local_port_changed_cb_func *cb,
+<a href='../S/801.html#L449'>cb</a>                449 cbench/openflow/secchan/secchan.c         bool (*cb)(struct relay *, void *aux) = h-&gt;class-&gt;local_packet_cb;
+<a href='../S/801.html#L450'>cb</a>                450 cbench/openflow/secchan/secchan.c         if (cb &amp;&amp; (cb)(r, h-&gt;aux)) {
+<a href='../S/801.html#L462'>cb</a>                462 cbench/openflow/secchan/secchan.c         bool (*cb)(struct relay *, void *aux) = h-&gt;class-&gt;remote_packet_cb;
+<a href='../S/801.html#L463'>cb</a>                463 cbench/openflow/secchan/secchan.c         if (cb &amp;&amp; (cb)(r, h-&gt;aux)) {
+<a href='../S/805.html#L53'>cb</a>                 53 cbench/openflow/secchan/status.c     void (*cb)(struct status_reply *, void *aux);
+<a href='../S/805.html#L100'>cb</a>                100 cbench/openflow/secchan/status.c             c-&gt;cb(&amp;sr, c-&gt;aux);
+<a href='../S/805.html#L193'>cb</a>                193 cbench/openflow/secchan/status.c                                 void (*cb)(struct status_reply *, void *aux),
+<a href='../S/805.html#L202'>cb</a>                202 cbench/openflow/secchan/status.c     c-&gt;cb = cb;
+<a href='../S/796.html#L47'>cb</a>                 47 cbench/openflow/secchan/status.h                                      void (*cb)(struct status_reply *,
+<a href='../S/204.html#L2049'>cb</a>               2049 cbench/openflow/udatapath/datapath.c     struct stats_dump_cb *cb = cb_;
+<a href='../S/204.html#L2054'>cb</a>               2054 cbench/openflow/udatapath/datapath.c     if (cb-&gt;done) {
+<a href='../S/204.html#L2058'>cb</a>               2058 cbench/openflow/udatapath/datapath.c     osr = make_openflow_reply(sizeof *osr, OFPT_STATS_REPLY, &amp;cb-&gt;sender,
+<a href='../S/204.html#L2060'>cb</a>               2060 cbench/openflow/udatapath/datapath.c     osr-&gt;type = htons(cb-&gt;s-&gt;type);
+<a href='../S/204.html#L2063'>cb</a>               2063 cbench/openflow/udatapath/datapath.c     err = cb-&gt;s-&gt;dump(dp, cb-&gt;state, buffer);
+<a href='../S/204.html#L2067'>cb</a>               2067 cbench/openflow/udatapath/datapath.c             cb-&gt;done = true;
+<a href='../S/204.html#L2073'>cb</a>               2073 cbench/openflow/udatapath/datapath.c         err2 = send_openflow_buffer(dp, buffer, &amp;cb-&gt;sender);
+<a href='../S/204.html#L2085'>cb</a>               2085 cbench/openflow/udatapath/datapath.c     struct stats_dump_cb *cb = cb_;
+<a href='../S/204.html#L2086'>cb</a>               2086 cbench/openflow/udatapath/datapath.c     if (cb) {
+<a href='../S/204.html#L2087'>cb</a>               2087 cbench/openflow/udatapath/datapath.c         if (cb-&gt;s-&gt;done) {
+<a href='../S/204.html#L2088'>cb</a>               2088 cbench/openflow/udatapath/datapath.c             cb-&gt;s-&gt;done(cb-&gt;state);
+<a href='../S/204.html#L2090'>cb</a>               2090 cbench/openflow/udatapath/datapath.c         if (cb-&gt;rq) {
+<a href='../S/204.html#L2091'>cb</a>               2091 cbench/openflow/udatapath/datapath.c             free(cb-&gt;rq);
+<a href='../S/204.html#L2093'>cb</a>               2093 cbench/openflow/udatapath/datapath.c         free(cb);
+<a href='../S/204.html#L2104'>cb</a>               2104 cbench/openflow/udatapath/datapath.c     struct stats_dump_cb *cb;
+<a href='../S/204.html#L2119'>cb</a>               2119 cbench/openflow/udatapath/datapath.c     cb = xmalloc(sizeof *cb);
+<a href='../S/204.html#L2120'>cb</a>               2120 cbench/openflow/udatapath/datapath.c     cb-&gt;done = false;
+<a href='../S/204.html#L2121'>cb</a>               2121 cbench/openflow/udatapath/datapath.c     cb-&gt;rq = xmemdup(rq, rq_len);
+<a href='../S/204.html#L2122'>cb</a>               2122 cbench/openflow/udatapath/datapath.c     cb-&gt;sender = *sender;
+<a href='../S/204.html#L2123'>cb</a>               2123 cbench/openflow/udatapath/datapath.c     cb-&gt;s = st;
+<a href='../S/204.html#L2124'>cb</a>               2124 cbench/openflow/udatapath/datapath.c     cb-&gt;state = NULL;
+<a href='../S/204.html#L2127'>cb</a>               2127 cbench/openflow/udatapath/datapath.c     if (body_len &lt; cb-&gt;s-&gt;min_body || body_len &gt; cb-&gt;s-&gt;max_body) {
+<a href='../S/204.html#L2134'>cb</a>               2134 cbench/openflow/udatapath/datapath.c     if (cb-&gt;s-&gt;init) {
+<a href='../S/204.html#L2135'>cb</a>               2135 cbench/openflow/udatapath/datapath.c         err = cb-&gt;s-&gt;init(rq-&gt;body, body_len, &amp;cb-&gt;state);
+<a href='../S/204.html#L2144'>cb</a>               2144 cbench/openflow/udatapath/datapath.c     remote_start_dump(sender-&gt;remote, stats_dump, stats_done, cb);
+<a href='../S/204.html#L2148'>cb</a>               2148 cbench/openflow/udatapath/datapath.c     free(cb-&gt;rq);
+<a href='../S/204.html#L2149'>cb</a>               2149 cbench/openflow/udatapath/datapath.c     free(cb);
+<a href='../S/501.html#L37'>cb</a>                 37 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h void epan_init(void (*register_all_protocols)(register_cb cb, gpointer client_data),
+<a href='../S/501.html#L38'>cb</a>                 38 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h 	       void (*register_all_handoffs)(register_cb cb, gpointer client_data),
+<a href='../S/501.html#L39'>cb</a>                 39 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h 	       register_cb cb,
+<a href='../S/368.html#L63'>cb</a>                 63 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/funnel.h     void (*set_close_cb)(funnel_text_window_t*  win, text_win_close_cb_t cb, void* data);
+<a href='../S/368.html#L66'>cb</a>                 66 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/funnel.h     void (*add_button)(funnel_text_window_t*  win, funnel_bt_t* cb, const gchar* label);
+<a href='../S/488.html#L346'>cb</a>                346 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h extern void proto_init(void (register_all_protocols)(register_cb cb, gpointer client_data), 
+<a href='../S/488.html#L347'>cb</a>                347 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h 		       void (register_all_handoffs)(register_cb cb, gpointer client_data), 
+<a href='../S/488.html#L348'>cb</a>                348 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h 		       register_cb cb, void *client_data);
+<a href='../S/373.html#L187'>cb</a>                187 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h 	} cb;
+<a href='../S/373.html#L289'>cb</a>                289 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h void uat_foreach_table(uat_cb_t cb,void* user_data);
+<a href='../S/347.html#L44'>cb</a>                 44 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/register.h extern void register_all_protocols(register_cb cb, gpointer client_data);
+<a href='../S/347.html#L45'>cb</a>                 45 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/register.h extern void register_all_protocol_handoffs(register_cb cb, gpointer client_data);
+<a href='../S/1002.html#L339'>cb</a>                339 components/conn.c static void recv_cb_register(recv_cb_t cb)
+<a href='../S/1002.html#L341'>cb</a>                341 components/conn.c     recv_cb = cb;
+<a href='../S/1009.html#L333'>cb</a>                333 components/conn_sb.c static void recv_cb_register(recv_cb_t cb)
+<a href='../S/1009.html#L335'>cb</a>                335 components/conn_sb.c     sb_recv_cb = cb;
+<a href='../S/952.html#L329'>cb</a>                329 southbound/src/southbound.c void ds_recv_cb_register(ds_recv_cb_t cb)
+<a href='../S/952.html#L331'>cb</a>                331 southbound/src/southbound.c     ds_recv_cb = cb;
+<a href='../S/952.html#L445'>cb</a>                445 southbound/src/southbound.c void recv_cb_register(recv_cb_t cb)
+<a href='../S/952.html#L447'>cb</a>                447 southbound/src/southbound.c     recv_cb = cb;
+</pre>
+</body>
+</html>

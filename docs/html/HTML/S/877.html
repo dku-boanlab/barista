@@ -1,0 +1,338 @@
+<html>
+<head>
+<title>cbench/openflow/lib/mac-learning.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/mac-learning.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L80'>[^]</a><a href='#L295'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L80' title='Defined at 80.'>mac_table_hash</a>
+<li><a href='#L86' title='Defined at 86.'>mac_entry_from_lru_node</a>
+<li><a href='#L95' title='Defined at 95.'>make_unknown_mac_tag</a>
+<li><a href='#L104' title='Defined at 104.'>mac_table_bucket</a>
+<li><a href='#L114' title='Defined at 114.'>search_bucket</a>
+<li><a href='#L130' title='Defined at 130.'>get_lru</a>
+<li><a href='#L144' title='Defined at 144.'>free_mac_entry</a>
+<li><a href='#L153' title='Defined at 153.'>mac_learning_create</a>
+<li><a href='#L174' title='Defined at 174.'>mac_learning_destroy</a>
+<li><a href='#L189' title='Defined at 189.'>mac_learning_learn</a>
+<li><a href='#L237' title='Defined at 237.'>mac_learning_lookup</a>
+<li><a href='#L251' title='Defined at 251.'>mac_learning_lookup_tag</a>
+<li><a href='#L274' title='Defined at 274.'>mac_learning_flush</a>
+<li><a href='#L283' title='Defined at 283.'>mac_learning_run</a>
+<li><a href='#L295' title='Defined at 295.'>mac_learning_wait</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008, 2009 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> *</font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> *</font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> "<a href='820.html'>mac-learning.h</a>"
+<a name='L36'>  36 
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;assert.h&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;inttypes.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> &lt;stdlib.h&gt;
+<a name='L40'>  40 
+<a name='L41'>  41 <font color='darkred'>#include</font> "<a href='../I/207.html'>hash.h</a>"
+<a name='L42'>  42 <font color='darkred'>#include</font> "<a href='916.html'>list.h</a>"
+<a name='L43'>  43 <font color='darkred'>#include</font> "<a href='181.html'>openflow/openflow.h</a>"
+<a name='L44'>  44 <font color='darkred'>#include</font> "<a href='901.html'>poll-loop.h</a>"
+<a name='L45'>  45 <font color='darkred'>#include</font> "<a href='822.html'>tag.h</a>"
+<a name='L46'>  46 <font color='darkred'>#include</font> "<a href='812.html'>timeval.h</a>"
+<a name='L47'>  47 <font color='darkred'>#include</font> "<a href='../I/69.html'>util.h</a>"
+<a name='L48'>  48 
+<a name='L49'>  49 <font color='darkred'>#define</font> <a href='../R/1643.html' title='Multiple refered from 13 places.'>THIS_MODULE</a> VLM_mac_learning
+<a name='L50'>  50 <font color='darkred'>#include</font> "<a href='859.html'>vlog.h</a>"
+<a name='L51'>  51 
+<a name='L52'>  52 <font color='darkred'>#define</font> <a href='../R/853.html' title='Multiple refered from 2 places.'>MAC_HASH_BITS</a> 10
+<a name='L53'>  53 <font color='darkred'>#define</font> MAC_HASH_MASK (<a href='../D/2520.html' title='Multiple defined in 5 places.'>MAC_HASH_SIZE</a> - 1)
+<a name='L54'>  54 <font color='darkred'>#define</font> <a href='../R/854.html' title='Multiple refered from 49 places.'>MAC_HASH_SIZE</a> (1u &lt;&lt; <a href='../S/877.html#L52' title='Defined at 52 in cbench/openflow/lib/mac-learning.c.'>MAC_HASH_BITS</a>)
+<a name='L55'>  55 
+<a name='L56'>  56 <font color='darkred'>#define</font> <a href='../R/856.html' title='Multiple refered from 2 places.'>MAC_MAX</a> 1024
+<a name='L57'>  57 
+<a name='L58'>  58 <i><font color='green'>/* A MAC learning table entry. */</font></i>
+<a name='L59'>  59 <b>struct</b> <a href='../R/3445.html' title='Multiple refered from 12 places.'>mac_entry</a> <font color='red'>{</font>
+<a name='L60'>  60     <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> <a href='../Y/3574.html' title='Multiple used in 5 places.'>hash_node</a>;      <i><font color='green'>/* Element in a mac_learning 'table' list. */</font></i>
+<a name='L61'>  61     <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> <a href='../Y/4248.html' title='Multiple used in 7 places.'>lru_node</a>;       <i><font color='green'>/* Element in 'lrus' or 'free' list. */</font></i>
+<a name='L62'>  62     <a href='../Y/7369.html' title='Multiple used in 80 places.'>time_t</a> <a href='../Y/2958.html' title='Multiple used in 6 places.'>expires</a>;             <i><font color='green'>/* Expiration time. */</font></i>
+<a name='L63'>  63     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/4297.html' title='Multiple used in 196 places.'>mac</a>[<a href='../S/860.html#L42' title='Defined at 42 in cbench/openflow/lib/packets.h.'>ETH_ADDR_LEN</a>];  <i><font color='green'>/* Known MAC address. */</font></i>
+<a name='L64'>  64     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>;              <i><font color='green'>/* VLAN tag. */</font></i>
+<a name='L65'>  65     <b>int</b> <a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a>;                   <i><font color='green'>/* Port on which MAC was most recently seen. */</font></i>
+<a name='L66'>  66     <a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a> <a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a>;               <i><font color='green'>/* Tag for this learning entry. */</font></i>
+<a name='L67'>  67 <font color='red'>}</font>;
+<a name='L68'>  68 
+<a name='L69'>  69 <i><font color='green'>/* MAC learning table. */</font></i>
+<a name='L70'>  70 <b>struct</b> <a href='../R/3449.html' title='Multiple refered from 5 places.'>mac_learning</a> <font color='red'>{</font>
+<a name='L71'>  71     <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>;           <i><font color='green'>/* Not-in-use entries. */</font></i>
+<a name='L72'>  72     <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> <a href='../Y/4249.html' title='Multiple used in 8 places.'>lrus</a>;           <i><font color='green'>/* In-use entries, least recently used at the</font></i>
+<a name='L73'>  73 <i><font color='green'>                                   front, most recently used at the back. */</font></i>
+<a name='L74'>  74     <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> <a href='../Y/7225.html' title='Multiple used in 105 places.'>table</a>[<a href='../D/2520.html' title='Multiple defined in 5 places.'>MAC_HASH_SIZE</a>]; <i><font color='green'>/* Hash table. */</font></i>
+<a name='L75'>  75     <b>struct</b> <a href='../S/877.html#L59' title='Defined at 59 in cbench/openflow/lib/mac-learning.c.'>mac_entry</a> <a href='../Y/2699.html' title='Multiple used in 54 places.'>entries</a>[<a href='../S/877.html#L56' title='Defined at 56 in cbench/openflow/lib/mac-learning.c.'>MAC_MAX</a>]; <i><font color='green'>/* All entries. */</font></i>
+<a name='L76'>  76     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/6632.html' title='Multiple used in 3 places.'>secret</a>;            <i><font color='green'>/* Secret for  */</font></i>
+<a name='L77'>  77 <font color='red'>}</font>;
+<a name='L78'>  78 
+<a name='L79'>  79 <b>static</b> <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a>
+<a name='L80'>  80 <a href='../R/3462.html' title='Multiple refered from 2 places.'>mac_table_hash</a>(<b>const</b> <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/4297.html' title='Multiple used in 196 places.'>mac</a>[<a href='../S/860.html#L42' title='Defined at 42 in cbench/openflow/lib/packets.h.'>ETH_ADDR_LEN</a>], <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>)
+<a name='L81'>  81 <font color='red'>{</font>
+<a name='L82'>  82     <b>return</b> <a href='../S/813.html#L99' title='Defined at 99 in cbench/openflow/lib/hash.c.'>hash_bytes</a>(<a href='../Y/4297.html' title='Multiple used in 196 places.'>mac</a>, <a href='../S/860.html#L42' title='Defined at 42 in cbench/openflow/lib/packets.h.'>ETH_ADDR_LEN</a>, <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>);
+<a name='L83'>  83 <font color='red'>}</font>
+<a name='L84'>  84 
+<a name='L85'>  85 <b>static</b> <b>struct</b> <a href='../S/877.html#L59' title='Defined at 59 in cbench/openflow/lib/mac-learning.c.'>mac_entry</a> *
+<a name='L86'>  86 <a href='../R/3446.html' title='Multiple refered from 4 places.'>mac_entry_from_lru_node</a>(<b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *<a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a>)
+<a name='L87'>  87 <font color='red'>{</font>
+<a name='L88'>  88     <b>return</b> <a href='../S/840.html#L88' title='Defined at 88 in cbench/openflow/lib/util.h.'>CONTAINER_OF</a>(<a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a>, <b>struct</b> <a href='../S/877.html#L59' title='Defined at 59 in cbench/openflow/lib/mac-learning.c.'>mac_entry</a>, <a href='../Y/4248.html' title='Multiple used in 7 places.'>lru_node</a>);
+<a name='L89'>  89 <font color='red'>}</font>
+<a name='L90'>  90 
+<a name='L91'>  91 <i><font color='green'>/* Returns a tag that represents that 'mac' is on an unknown port in 'vlan'.</font></i>
+<a name='L92'>  92 <i><font color='green'> * (When we learn where 'mac' is in 'vlan', this allows flows that were</font></i>
+<a name='L93'>  93 <i><font color='green'> * flooded to be revalidated.) */</font></i>
+<a name='L94'>  94 <b>static</b> <a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a>
+<a name='L95'>  95 <a href='../R/3502.html' title='Multiple refered from 2 places.'>make_unknown_mac_tag</a>(<b>const</b> <b>struct</b> <a href='../Y/4305.html' title='Multiple used in 18 places.'>mac_learning</a> *<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>,
+<a name='L96'>  96                      <b>const</b> <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/4297.html' title='Multiple used in 196 places.'>mac</a>[<a href='../S/860.html#L42' title='Defined at 42 in cbench/openflow/lib/packets.h.'>ETH_ADDR_LEN</a>], <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>)
+<a name='L97'>  97 <font color='red'>{</font>
+<a name='L98'>  98     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a> = <a href='../S/813.html#L99' title='Defined at 99 in cbench/openflow/lib/hash.c.'>hash_bytes</a>(&amp;<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/6632.html' title='Multiple used in 3 places.'>secret</a>, <b>sizeof</b> <a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/6632.html' title='Multiple used in 3 places.'>secret</a>,
+<a name='L99'>  99                             <a href='../S/877.html#L80' title='Defined at 80 in cbench/openflow/lib/mac-learning.c.'>mac_table_hash</a>(<a href='../Y/4297.html' title='Multiple used in 196 places.'>mac</a>, <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>));
+<a name='L100'> 100     <b>return</b> <a href='../S/842.html#L66' title='Defined at 66 in cbench/openflow/lib/tag.c.'>tag_create_deterministic</a>(<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>);
+<a name='L101'> 101 <font color='red'>}</font>
+<a name='L102'> 102 
+<a name='L103'> 103 <b>static</b> <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> *
+<a name='L104'> 104 <a href='../R/3461.html' title='Multiple refered from 2 places.'>mac_table_bucket</a>(<b>const</b> <b>struct</b> <a href='../Y/4305.html' title='Multiple used in 18 places.'>mac_learning</a> *<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>,
+<a name='L105'> 105                  <b>const</b> <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/4297.html' title='Multiple used in 196 places.'>mac</a>[<a href='../S/860.html#L42' title='Defined at 42 in cbench/openflow/lib/packets.h.'>ETH_ADDR_LEN</a>],
+<a name='L106'> 106                  <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>)
+<a name='L107'> 107 <font color='red'>{</font>
+<a name='L108'> 108     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3569.html' title='Multiple used in 52 places.'>hash</a> = <a href='../S/877.html#L80' title='Defined at 80 in cbench/openflow/lib/mac-learning.c.'>mac_table_hash</a>(<a href='../Y/4297.html' title='Multiple used in 196 places.'>mac</a>, <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>);
+<a name='L109'> 109     <b>const</b> <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> *<a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> = &amp;<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/7225.html' title='Multiple used in 105 places.'>table</a>[<a href='../Y/3569.html' title='Multiple used in 52 places.'>hash</a> &amp; <a href='../S/877.html#L52' title='Defined at 52 in cbench/openflow/lib/mac-learning.c.'>MAC_HASH_BITS</a>];
+<a name='L110'> 110     <b>return</b> (<b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> *) <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a>;
+<a name='L111'> 111 <font color='red'>}</font>
+<a name='L112'> 112 
+<a name='L113'> 113 <b>static</b> <b>struct</b> <a href='../S/877.html#L59' title='Defined at 59 in cbench/openflow/lib/mac-learning.c.'>mac_entry</a> *
+<a name='L114'> 114 <a href='../R/4404.html' title='Multiple refered from 2 places.'>search_bucket</a>(<b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *<a href='../Y/1687.html' title='Multiple used in 64 places.'>bucket</a>, <b>const</b> <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/4297.html' title='Multiple used in 196 places.'>mac</a>[<a href='../S/860.html#L42' title='Defined at 42 in cbench/openflow/lib/packets.h.'>ETH_ADDR_LEN</a>],
+<a name='L115'> 115               <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>)
+<a name='L116'> 116 <font color='red'>{</font>
+<a name='L117'> 117     <b>struct</b> <a href='../S/877.html#L59' title='Defined at 59 in cbench/openflow/lib/mac-learning.c.'>mac_entry</a> *<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>;
+<a name='L118'> 118     <a href='../S/916.html#L73' title='Defined at 73 in cbench/openflow/lib/list.h.'>LIST_FOR_EACH</a> (<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>, <b>struct</b> <a href='../S/877.html#L59' title='Defined at 59 in cbench/openflow/lib/mac-learning.c.'>mac_entry</a>, <a href='../Y/3574.html' title='Multiple used in 5 places.'>hash_node</a>, <a href='../Y/1687.html' title='Multiple used in 64 places.'>bucket</a>) <font color='red'>{</font>
+<a name='L119'> 119         <b>if</b> (<a href='../S/860.html#L63' title='Defined at 63 in cbench/openflow/lib/packets.h.'>eth_addr_equals</a>(<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/4297.html' title='Multiple used in 196 places.'>mac</a>, <a href='../Y/4297.html' title='Multiple used in 196 places.'>mac</a>) &amp;&amp; <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a> == <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>) <font color='red'>{</font>
+<a name='L120'> 120             <b>return</b> <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>;
+<a name='L121'> 121         <font color='red'>}</font>
+<a name='L122'> 122     <font color='red'>}</font>
+<a name='L123'> 123     <b>return</b> <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L124'> 124 <font color='red'>}</font>
+<a name='L125'> 125 
+<a name='L126'> 126 <i><font color='green'>/* If the LRU list is not empty, stores the least-recently-used entry in '*e'</font></i>
+<a name='L127'> 127 <i><font color='green'> * and returns true.  Otherwise, if the LRU list is empty, stores NULL in '*e'</font></i>
+<a name='L128'> 128 <i><font color='green'> * and return false. */</font></i>
+<a name='L129'> 129 <b>static</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a>
+<a name='L130'> 130 <a href='../R/3170.html' title='Multiple refered from 2 places.'>get_lru</a>(<b>struct</b> <a href='../Y/4305.html' title='Multiple used in 18 places.'>mac_learning</a> *<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>, <b>struct</b> <a href='../Y/4303.html' title='Multiple used in 2 places.'>mac_entry</a> **<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>)
+<a name='L131'> 131 <font color='red'>{</font>
+<a name='L132'> 132     <b>if</b> (!<a href='../S/845.html#L164' title='Defined at 164 in cbench/openflow/lib/list.c.'>list_is_empty</a>(&amp;<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/4249.html' title='Multiple used in 8 places.'>lrus</a>)) <font color='red'>{</font>
+<a name='L133'> 133         *<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a> = <a href='../S/877.html#L86' title='Defined at 86 in cbench/openflow/lib/mac-learning.c.'>mac_entry_from_lru_node</a>(<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/4249.html' title='Multiple used in 8 places.'>lrus</a>.<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>);
+<a name='L134'> 134         <b>return</b> <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>;
+<a name='L135'> 135     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L136'> 136         *<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L137'> 137         <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L138'> 138     <font color='red'>}</font>
+<a name='L139'> 139 <font color='red'>}</font>
+<a name='L140'> 140 
+<a name='L141'> 141 <i><font color='green'>/* Removes 'e' from the 'ml' hash table.  'e' must not already be on the free</font></i>
+<a name='L142'> 142 <i><font color='green'> * list. */</font></i>
+<a name='L143'> 143 <b>static</b> <b>void</b>
+<a name='L144'> 144 <a href='../R/3100.html' title='Multiple refered from 2 places.'>free_mac_entry</a>(<b>struct</b> <a href='../Y/4305.html' title='Multiple used in 18 places.'>mac_learning</a> *<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>, <b>struct</b> <a href='../Y/4303.html' title='Multiple used in 2 places.'>mac_entry</a> *<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>)
+<a name='L145'> 145 <font color='red'>{</font>
+<a name='L146'> 146     <a href='../S/845.html#L104' title='Defined at 104 in cbench/openflow/lib/list.c.'>list_remove</a>(&amp;<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/3574.html' title='Multiple used in 5 places.'>hash_node</a>);
+<a name='L147'> 147     <a href='../S/845.html#L104' title='Defined at 104 in cbench/openflow/lib/list.c.'>list_remove</a>(&amp;<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/4248.html' title='Multiple used in 7 places.'>lru_node</a>);
+<a name='L148'> 148     <a href='../S/845.html#L77' title='Defined at 77 in cbench/openflow/lib/list.c.'>list_push_front</a>(&amp;<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>, &amp;<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/4248.html' title='Multiple used in 7 places.'>lru_node</a>);
+<a name='L149'> 149 <font color='red'>}</font>
+<a name='L150'> 150 
+<a name='L151'> 151 <i><font color='green'>/* Creates and returns a new MAC learning table. */</font></i>
+<a name='L152'> 152 <b>struct</b> <a href='../S/877.html#L70' title='Defined at 70 in cbench/openflow/lib/mac-learning.c.'>mac_learning</a> *
+<a name='L153'> 153 <a href='../R/3450.html' title='Multiple refered from 3 places.'>mac_learning_create</a>(<b>void</b>)
+<a name='L154'> 154 <font color='red'>{</font>
+<a name='L155'> 155     <b>struct</b> <a href='../S/877.html#L70' title='Defined at 70 in cbench/openflow/lib/mac-learning.c.'>mac_learning</a> *<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>;
+<a name='L156'> 156     <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L157'> 157 
+<a name='L158'> 158     <a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a> = <a href='../D/10153.html' title='Multiple defined in 2 places.'>xmalloc</a>(<b>sizeof</b> *<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>);
+<a name='L159'> 159     <a href='../S/845.html#L39' title='Defined at 39 in cbench/openflow/lib/list.c.'>list_init</a>(&amp;<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/4249.html' title='Multiple used in 8 places.'>lrus</a>);
+<a name='L160'> 160     <a href='../S/845.html#L39' title='Defined at 39 in cbench/openflow/lib/list.c.'>list_init</a>(&amp;<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>);
+<a name='L161'> 161     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../D/2520.html' title='Multiple defined in 5 places.'>MAC_HASH_SIZE</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L162'> 162         <a href='../S/845.html#L39' title='Defined at 39 in cbench/openflow/lib/list.c.'>list_init</a>(&amp;<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/7225.html' title='Multiple used in 105 places.'>table</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L163'> 163     <font color='red'>}</font>
+<a name='L164'> 164     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../S/877.html#L56' title='Defined at 56 in cbench/openflow/lib/mac-learning.c.'>MAC_MAX</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L165'> 165         <b>struct</b> <a href='../S/877.html#L59' title='Defined at 59 in cbench/openflow/lib/mac-learning.c.'>mac_entry</a> *<a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a> = &amp;<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/2699.html' title='Multiple used in 54 places.'>entries</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>];
+<a name='L166'> 166         <a href='../S/845.html#L77' title='Defined at 77 in cbench/openflow/lib/list.c.'>list_push_front</a>(&amp;<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>, &amp;<a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>-&gt;<a href='../Y/4248.html' title='Multiple used in 7 places.'>lru_node</a>);
+<a name='L167'> 167     <font color='red'>}</font>
+<a name='L168'> 168     <a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/6632.html' title='Multiple used in 3 places.'>secret</a> = <a href='../S/864.html#L88' title='Defined at 88 in cbench/openflow/lib/random.c.'>random_uint32</a>();
+<a name='L169'> 169     <b>return</b> <a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>;
+<a name='L170'> 170 <font color='red'>}</font>
+<a name='L171'> 171 
+<a name='L172'> 172 <i><font color='green'>/* Destroys MAC learning table 'ml'. */</font></i>
+<a name='L173'> 173 <b>void</b>
+<a name='L174'> 174 <a href='../R/3451.html' title='Multiple refered from 2 places.'>mac_learning_destroy</a>(<b>struct</b> <a href='../Y/4305.html' title='Multiple used in 18 places.'>mac_learning</a> *<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>)
+<a name='L175'> 175 <font color='red'>{</font>
+<a name='L176'> 176     <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>);
+<a name='L177'> 177 <font color='red'>}</font>
+<a name='L178'> 178 
+<a name='L179'> 179 <i><font color='green'>/* Attempts to make 'ml' learn from the fact that a frame from 'src_mac' was</font></i>
+<a name='L180'> 180 <i><font color='green'> * just observed arriving from 'src_port' on the given 'vlan'.</font></i>
+<a name='L181'> 181 <i><font color='green'> *</font></i>
+<a name='L182'> 182 <i><font color='green'> * Returns nonzero if we actually learned something from this, zero if it just</font></i>
+<a name='L183'> 183 <i><font color='green'> * confirms what we already knew.  The nonzero return value is the tag of flows</font></i>
+<a name='L184'> 184 <i><font color='green'> * that now need revalidation.</font></i>
+<a name='L185'> 185 <i><font color='green'> *</font></i>
+<a name='L186'> 186 <i><font color='green'> * The 'vlan' parameter is used to maintain separate per-VLAN learning tables.</font></i>
+<a name='L187'> 187 <i><font color='green'> * Specify 0 if this behavior is undesirable. */</font></i>
+<a name='L188'> 188 <a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a>
+<a name='L189'> 189 <a href='../R/3453.html' title='Multiple refered from 3 places.'>mac_learning_learn</a>(<b>struct</b> <a href='../Y/4305.html' title='Multiple used in 18 places.'>mac_learning</a> *<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>,
+<a name='L190'> 190                    <b>const</b> <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/6938.html' title='Multiple used in 61 places.'>src_mac</a>[<a href='../S/860.html#L42' title='Defined at 42 in cbench/openflow/lib/packets.h.'>ETH_ADDR_LEN</a>], <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>,
+<a name='L191'> 191                    <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/6941.html' title='Multiple used in 94 places.'>src_port</a>)
+<a name='L192'> 192 <font color='red'>{</font>
+<a name='L193'> 193     <b>struct</b> <a href='../S/877.html#L59' title='Defined at 59 in cbench/openflow/lib/mac-learning.c.'>mac_entry</a> *<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>;
+<a name='L194'> 194     <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> *<a href='../Y/1687.html' title='Multiple used in 64 places.'>bucket</a>;
+<a name='L195'> 195 
+<a name='L196'> 196     <b>if</b> (<a href='../S/860.html#L51' title='Defined at 51 in cbench/openflow/lib/packets.h.'>eth_addr_is_multicast</a>(<a href='../Y/6938.html' title='Multiple used in 61 places.'>src_mac</a>)) <font color='red'>{</font>
+<a name='L197'> 197         <b>static</b> <b>struct</b> <a href='../D/10099.html' title='Multiple defined in 2 places.'>vlog_rate_limit</a> <a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a> = <a href='../S/859.html#L107' title='Defined at 107 in cbench/openflow/lib/vlog.h.'>VLOG_RATE_LIMIT_INIT</a>(30, 30);
+<a name='L198'> 198         <a href='../S/859.html#L173' title='Defined at 173 in cbench/openflow/lib/vlog.h.'>VLOG_DBG_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "multicast packet source "<a href='../S/860.html#L104' title='Defined at 104 in cbench/openflow/lib/packets.h.'>ETH_ADDR_FMT</a>,
+<a name='L199'> 199                     <a href='../S/860.html#L106' title='Defined at 106 in cbench/openflow/lib/packets.h.'>ETH_ADDR_ARGS</a>(<a href='../Y/6938.html' title='Multiple used in 61 places.'>src_mac</a>));
+<a name='L200'> 200         <b>return</b> 0;
+<a name='L201'> 201     <font color='red'>}</font>
+<a name='L202'> 202 
+<a name='L203'> 203     <a href='../Y/1687.html' title='Multiple used in 64 places.'>bucket</a> = <a href='../S/877.html#L104' title='Defined at 104 in cbench/openflow/lib/mac-learning.c.'>mac_table_bucket</a>(<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>, <a href='../Y/6938.html' title='Multiple used in 61 places.'>src_mac</a>, <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>);
+<a name='L204'> 204     <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a> = <a href='../S/877.html#L114' title='Defined at 114 in cbench/openflow/lib/mac-learning.c.'>search_bucket</a>(<a href='../Y/1687.html' title='Multiple used in 64 places.'>bucket</a>, <a href='../Y/6938.html' title='Multiple used in 61 places.'>src_mac</a>, <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>);
+<a name='L205'> 205     <b>if</b> (!<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>) <font color='red'>{</font>
+<a name='L206'> 206         <b>if</b> (!<a href='../S/845.html#L164' title='Defined at 164 in cbench/openflow/lib/list.c.'>list_is_empty</a>(&amp;<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>)) <font color='red'>{</font>
+<a name='L207'> 207             <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a> = <a href='../S/877.html#L86' title='Defined at 86 in cbench/openflow/lib/mac-learning.c.'>mac_entry_from_lru_node</a>(<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>.<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>);
+<a name='L208'> 208         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L209'> 209             <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a> = <a href='../S/877.html#L86' title='Defined at 86 in cbench/openflow/lib/mac-learning.c.'>mac_entry_from_lru_node</a>(<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/4249.html' title='Multiple used in 8 places.'>lrus</a>.<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>);
+<a name='L210'> 210             <a href='../S/845.html#L104' title='Defined at 104 in cbench/openflow/lib/list.c.'>list_remove</a>(&amp;<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/3574.html' title='Multiple used in 5 places.'>hash_node</a>);
+<a name='L211'> 211         <font color='red'>}</font>
+<a name='L212'> 212         <a href='../Y/4417.html' title='Multiple used in 205 places.'>memcpy</a>(<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/4297.html' title='Multiple used in 196 places.'>mac</a>, <a href='../Y/6938.html' title='Multiple used in 61 places.'>src_mac</a>, <a href='../S/860.html#L42' title='Defined at 42 in cbench/openflow/lib/packets.h.'>ETH_ADDR_LEN</a>);
+<a name='L213'> 213         <a href='../S/845.html#L77' title='Defined at 77 in cbench/openflow/lib/list.c.'>list_push_front</a>(<a href='../Y/1687.html' title='Multiple used in 64 places.'>bucket</a>, &amp;<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/3574.html' title='Multiple used in 5 places.'>hash_node</a>);
+<a name='L214'> 214         <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a> = -1;
+<a name='L215'> 215         <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a> = <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>;
+<a name='L216'> 216         <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a> = <a href='../S/877.html#L95' title='Defined at 95 in cbench/openflow/lib/mac-learning.c.'>make_unknown_mac_tag</a>(<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>, <a href='../Y/6938.html' title='Multiple used in 61 places.'>src_mac</a>, <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>);
+<a name='L217'> 217     <font color='red'>}</font>
+<a name='L218'> 218 
+<a name='L219'> 219     <i><font color='green'>/* Make the entry most-recently-used. */</font></i>
+<a name='L220'> 220     <a href='../S/845.html#L104' title='Defined at 104 in cbench/openflow/lib/list.c.'>list_remove</a>(&amp;<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/4248.html' title='Multiple used in 7 places.'>lru_node</a>);
+<a name='L221'> 221     <a href='../S/845.html#L85' title='Defined at 85 in cbench/openflow/lib/list.c.'>list_push_back</a>(&amp;<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/4249.html' title='Multiple used in 8 places.'>lrus</a>, &amp;<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/4248.html' title='Multiple used in 7 places.'>lru_node</a>);
+<a name='L222'> 222     <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/2958.html' title='Multiple used in 6 places.'>expires</a> = <a href='../S/902.html#L108' title='Defined at 108 in cbench/openflow/lib/timeval.c.'>time_now</a>() + 60;
+<a name='L223'> 223 
+<a name='L224'> 224     <i><font color='green'>/* Did we learn something? */</font></i>
+<a name='L225'> 225     <b>if</b> (<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a> != <a href='../Y/6941.html' title='Multiple used in 94 places.'>src_port</a>) <font color='red'>{</font>
+<a name='L226'> 226         <a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a> <a href='../Y/5443.html' title='Multiple used in 2 places.'>old_tag</a> = <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a>;
+<a name='L227'> 227         <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a> = <a href='../Y/6941.html' title='Multiple used in 94 places.'>src_port</a>;
+<a name='L228'> 228         <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a> = <a href='../S/842.html#L49' title='Defined at 49 in cbench/openflow/lib/tag.c.'>tag_create_random</a>();
+<a name='L229'> 229         <b>return</b> <a href='../Y/5443.html' title='Multiple used in 2 places.'>old_tag</a>;
+<a name='L230'> 230     <font color='red'>}</font>
+<a name='L231'> 231     <b>return</b> 0;
+<a name='L232'> 232 <font color='red'>}</font>
+<a name='L233'> 233 
+<a name='L234'> 234 <i><font color='green'>/* Looks up MAC 'dst' for VLAN 'vlan' in 'ml'.  Returns the port on which a</font></i>
+<a name='L235'> 235 <i><font color='green'> * frame destined for 'dst' should be sent, OFPP_FLOOD if unknown. */</font></i>
+<a name='L236'> 236 <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a>
+<a name='L237'> 237 <a href='../R/3454.html' title='Multiple refered from 5 places.'>mac_learning_lookup</a>(<b>const</b> <b>struct</b> <a href='../Y/4305.html' title='Multiple used in 18 places.'>mac_learning</a> *<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>,
+<a name='L238'> 238                     <b>const</b> <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a>[<a href='../S/860.html#L42' title='Defined at 42 in cbench/openflow/lib/packets.h.'>ETH_ADDR_LEN</a>], <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>)
+<a name='L239'> 239 <font color='red'>{</font>
+<a name='L240'> 240     <a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a> <a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a> = 0;
+<a name='L241'> 241     <b>return</b> <a href='../S/877.html#L251' title='Defined at 251 in cbench/openflow/lib/mac-learning.c.'>mac_learning_lookup_tag</a>(<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>, <a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a>, <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>, &amp;<a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a>);
+<a name='L242'> 242 <font color='red'>}</font>
+<a name='L243'> 243 
+<a name='L244'> 244 <i><font color='green'>/* Looks up MAC 'dst' for VLAN 'vlan' in 'ml'.  Returns the port on which a</font></i>
+<a name='L245'> 245 <i><font color='green'> * frame destined for 'dst' should be sent, OFPP_FLOOD if unknown.</font></i>
+<a name='L246'> 246 <i><font color='green'> *</font></i>
+<a name='L247'> 247 <i><font color='green'> * Adds to '*tag' (which the caller must have initialized) the tag that should</font></i>
+<a name='L248'> 248 <i><font color='green'> * be attached to any flow created based on the return value, if any, to allow</font></i>
+<a name='L249'> 249 <i><font color='green'> * those flows to be revalidated when the MAC learning entry changes. */</font></i>
+<a name='L250'> 250 <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a>
+<a name='L251'> 251 <a href='../R/3455.html' title='Multiple refered from 2 places.'>mac_learning_lookup_tag</a>(<b>const</b> <b>struct</b> <a href='../Y/4305.html' title='Multiple used in 18 places.'>mac_learning</a> *<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>,
+<a name='L252'> 252                         <b>const</b> <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a>[<a href='../S/860.html#L42' title='Defined at 42 in cbench/openflow/lib/packets.h.'>ETH_ADDR_LEN</a>], <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>,
+<a name='L253'> 253                         <a href='../Y/7237.html' title='Multiple used in 10 places.'>tag_type</a> *<a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a>)
+<a name='L254'> 254 <font color='red'>{</font>
+<a name='L255'> 255     <b>if</b> (<a href='../S/860.html#L51' title='Defined at 51 in cbench/openflow/lib/packets.h.'>eth_addr_is_multicast</a>(<a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a>)) <font color='red'>{</font>
+<a name='L256'> 256         <b>return</b> <a href='../D/3583.html' title='Multiple defined in 3 places.'>OFPP_FLOOD</a>;
+<a name='L257'> 257     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L258'> 258         <b>struct</b> <a href='../S/877.html#L59' title='Defined at 59 in cbench/openflow/lib/mac-learning.c.'>mac_entry</a> *<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a> = <a href='../S/877.html#L114' title='Defined at 114 in cbench/openflow/lib/mac-learning.c.'>search_bucket</a>(<a href='../S/877.html#L104' title='Defined at 104 in cbench/openflow/lib/mac-learning.c.'>mac_table_bucket</a>(<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>, <a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a>, <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>),
+<a name='L259'> 259                                             <a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a>, <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>);
+<a name='L260'> 260         <b>if</b> (<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>) <font color='red'>{</font>
+<a name='L261'> 261             *<a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a> |= <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a>;
+<a name='L262'> 262             <b>return</b> <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a>;
+<a name='L263'> 263         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L264'> 264             *<a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a> |= <a href='../S/877.html#L95' title='Defined at 95 in cbench/openflow/lib/mac-learning.c.'>make_unknown_mac_tag</a>(<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>, <a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a>, <a href='../Y/7798.html' title='Multiple used in 59 places.'>vlan</a>);
+<a name='L265'> 265             <b>return</b> <a href='../D/3583.html' title='Multiple defined in 3 places.'>OFPP_FLOOD</a>;
+<a name='L266'> 266         <font color='red'>}</font>
+<a name='L267'> 267     <font color='red'>}</font>
+<a name='L268'> 268 <font color='red'>}</font>
+<a name='L269'> 269 
+<a name='L270'> 270 <i><font color='green'>/* Expires all the mac-learning entries in 'ml'.  The tags in 'ml' are</font></i>
+<a name='L271'> 271 <i><font color='green'> * discarded, so the client is responsible for revalidating any flows that</font></i>
+<a name='L272'> 272 <i><font color='green'> * depend on 'ml', if necessary. */</font></i>
+<a name='L273'> 273 <b>void</b>
+<a name='L274'> 274 <a href='../S/820.html#L50' title='Refered from 50 in cbench/openflow/lib/mac-learning.h.'>mac_learning_flush</a>(<b>struct</b> <a href='../Y/4305.html' title='Multiple used in 18 places.'>mac_learning</a> *<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>)
+<a name='L275'> 275 <font color='red'>{</font>
+<a name='L276'> 276     <b>struct</b> <a href='../S/877.html#L59' title='Defined at 59 in cbench/openflow/lib/mac-learning.c.'>mac_entry</a> *<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>;
+<a name='L277'> 277     <b>while</b> (<a href='../S/877.html#L130' title='Defined at 130 in cbench/openflow/lib/mac-learning.c.'>get_lru</a>(<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>, &amp;<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>))<font color='red'>{</font>
+<a name='L278'> 278         <a href='../S/877.html#L144' title='Defined at 144 in cbench/openflow/lib/mac-learning.c.'>free_mac_entry</a>(<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>, <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>);
+<a name='L279'> 279     <font color='red'>}</font>
+<a name='L280'> 280 <font color='red'>}</font>
+<a name='L281'> 281 
+<a name='L282'> 282 <b>void</b>
+<a name='L283'> 283 <a href='../R/3456.html' title='Multiple refered from 3 places.'>mac_learning_run</a>(<b>struct</b> <a href='../Y/4305.html' title='Multiple used in 18 places.'>mac_learning</a> *<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>, <b>struct</b> <a href='../Y/7236.html' title='Multiple used in 10 places.'>tag_set</a> *<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>)
+<a name='L284'> 284 <font color='red'>{</font>
+<a name='L285'> 285     <b>struct</b> <a href='../S/877.html#L59' title='Defined at 59 in cbench/openflow/lib/mac-learning.c.'>mac_entry</a> *<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>;
+<a name='L286'> 286     <b>while</b> (<a href='../S/877.html#L130' title='Defined at 130 in cbench/openflow/lib/mac-learning.c.'>get_lru</a>(<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>, &amp;<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>) &amp;&amp; <a href='../S/902.html#L108' title='Defined at 108 in cbench/openflow/lib/timeval.c.'>time_now</a>() &gt;= <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/2958.html' title='Multiple used in 6 places.'>expires</a>) <font color='red'>{</font>
+<a name='L287'> 287         <b>if</b> (<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>) <font color='red'>{</font>
+<a name='L288'> 288             <a href='../S/842.html#L83' title='Defined at 83 in cbench/openflow/lib/tag.c.'>tag_set_add</a>(<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>, <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a>);
+<a name='L289'> 289         <font color='red'>}</font>
+<a name='L290'> 290         <a href='../S/877.html#L144' title='Defined at 144 in cbench/openflow/lib/mac-learning.c.'>free_mac_entry</a>(<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>, <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>);
+<a name='L291'> 291     <font color='red'>}</font>
+<a name='L292'> 292 <font color='red'>}</font>
+<a name='L293'> 293 
+<a name='L294'> 294 <b>void</b>
+<a name='L295'> 295 <a href='../R/3457.html' title='Multiple refered from 3 places.'>mac_learning_wait</a>(<b>struct</b> <a href='../Y/4305.html' title='Multiple used in 18 places.'>mac_learning</a> *<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>)
+<a name='L296'> 296 <font color='red'>{</font>
+<a name='L297'> 297     <b>if</b> (!<a href='../S/845.html#L164' title='Defined at 164 in cbench/openflow/lib/list.c.'>list_is_empty</a>(&amp;<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/4249.html' title='Multiple used in 8 places.'>lrus</a>)) <font color='red'>{</font>
+<a name='L298'> 298         <b>struct</b> <a href='../S/877.html#L59' title='Defined at 59 in cbench/openflow/lib/mac-learning.c.'>mac_entry</a> *<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a> = <a href='../S/877.html#L86' title='Defined at 86 in cbench/openflow/lib/mac-learning.c.'>mac_entry_from_lru_node</a>(<a href='../Y/4477.html' title='Multiple used in 61 places.'>ml</a>-&gt;<a href='../Y/4249.html' title='Multiple used in 8 places.'>lrus</a>.<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>);
+<a name='L299'> 299         <a href='../S/854.html#L106' title='Defined at 106 in cbench/openflow/lib/poll-loop.c.'>poll_timer_wait</a>((<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/2958.html' title='Multiple used in 6 places.'>expires</a> - <a href='../S/902.html#L108' title='Defined at 108 in cbench/openflow/lib/timeval.c.'>time_now</a>()) * 1000);
+<a name='L300'> 300     <font color='red'>}</font>
+<a name='L301'> 301 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L80'>[^]</a><a href='#L295'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

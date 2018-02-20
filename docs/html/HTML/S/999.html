@@ -1,0 +1,220 @@
+<html>
+<head>
+<title>components/resource_mgmt.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1155.html'>components</a>/resource_mgmt.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L45'>[^]</a><a href='#L184'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L45' title='Defined at 45.'>resource_mgmt_main</a>
+<li><a href='#L113' title='Defined at 113.'>resource_mgmt_cleanup</a>
+<li><a href='#L133' title='Defined at 133.'>resource_stat_summary</a>
+<li><a href='#L166' title='Defined at 166.'>resource_mgmt_cli</a>
+<li><a href='#L184' title='Defined at 184.'>resource_mgmt_handler</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright 2015-2018 NSSLab, KAIST</font></i>
+<a name='L3'>   3 <i><font color='green'> */</font></i>
+<a name='L4'>   4 
+<a name='L5'>   5 <i><font color='green'>/**</font></i>
+<a name='L6'>   6 <i><font color='green'> * \ingroup compnt</font></i>
+<a name='L7'>   7 <i><font color='green'> * @{</font></i>
+<a name='L8'>   8 <i><font color='green'> * \defgroup resource_mgmt Resource Management</font></i>
+<a name='L9'>   9 <i><font color='green'> * \brief (Management) resource management</font></i>
+<a name='L10'>  10 <i><font color='green'> * @{</font></i>
+<a name='L11'>  11 <i><font color='green'> */</font></i>
+<a name='L12'>  12 
+<a name='L13'>  13 <i><font color='green'>/**</font></i>
+<a name='L14'>  14 <i><font color='green'> * \file</font></i>
+<a name='L15'>  15 <i><font color='green'> * \author Jaehyun Nam &lt;namjh@kaist.ac.kr&gt;</font></i>
+<a name='L16'>  16 <i><font color='green'> */</font></i>
+<a name='L17'>  17 
+<a name='L18'>  18 <font color='darkred'>#include</font> "<a href='966.html'>resource_mgmt.h</a>"
+<a name='L19'>  19 
+<a name='L20'>  20 <i><font color='green'>/** \brief Resource management ID */</font></i>
+<a name='L21'>  21 <font color='darkred'>#define</font> <a href='../R/1532.html' title='Multiple refered from 5 places.'>RSM_ID</a> 683559233
+<a name='L22'>  22 
+<a name='L23'>  23 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L24'>  24 
+<a name='L25'>  25 <i><font color='green'>/** \brief The pointer to record resource usages in a history array */</font></i>
+<a name='L26'>  26 <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/6484.html' title='Multiple used in 5 places.'>rs_history_ptr</a>;
+<a name='L27'>  27 
+<a name='L28'>  28 <i><font color='green'>/** \brief The history array of resource usages */</font></i>
+<a name='L29'>  29 <a href='../D/9419.html' title='Multiple defined in 6 places.'>resource_t</a> *<a href='../Y/6483.html' title='Multiple used in 8 places.'>rs_history</a>;
+<a name='L30'>  30 
+<a name='L31'>  31 <i><font color='green'>/** \brief The default resource raw file */</font></i>
+<a name='L32'>  32 <b>char</b> <a href='../Y/6249.html' title='Multiple used in 2 places.'>raw_file</a>[<a href='../D/6476.html' title='Multiple defined in 6 places.'>__CONF_WORD_LEN</a>] = <a href='../D/1185.html' title='Multiple defined in 6 places.'>DEFAULT_RAW_RESOURCE_FILE</a>;
+<a name='L33'>  33 
+<a name='L34'>  34 <i><font color='green'>/** \brief The default resource log file */</font></i>
+<a name='L35'>  35 <b>char</b> <a href='../Y/6420.html' title='Multiple used in 3 places.'>resource_file</a>[<a href='../D/6476.html' title='Multiple defined in 6 places.'>__CONF_WORD_LEN</a>] = <a href='../D/1186.html' title='Multiple defined in 6 places.'>DEFAULT_RESOURCE_FILE</a>;
+<a name='L36'>  36 
+<a name='L37'>  37 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L38'>  38 
+<a name='L39'>  39 <i><font color='green'>/**</font></i>
+<a name='L40'>  40 <i><font color='green'> * \brief The main function</font></i>
+<a name='L41'>  41 <i><font color='green'> * \param activated The activation flag of this component</font></i>
+<a name='L42'>  42 <i><font color='green'> * \param argc The number of arguments</font></i>
+<a name='L43'>  43 <i><font color='green'> * \param argv Arguments</font></i>
+<a name='L44'>  44 <i><font color='green'> */</font></i>
+<a name='L45'>  45 <b>int</b> <a href='../S/979.html#L139' title='Refered from 139 in components/include/component_list.h.'>resource_mgmt_main</a>(<b>int</b> *<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>, <b>int</b> <a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a>, <b>char</b> **<a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>)
+<a name='L46'>  46 <font color='red'>{</font>
+<a name='L47'>  47     <a href='../D/2419.html' title='Multiple defined in 6 places.'>LOG_INFO</a>(<a href='../S/999.html#L21' title='Defined at 21 in components/resource_mgmt.c.'>RSM_ID</a>, "Init - Resource management");
+<a name='L48'>  48 
+<a name='L49'>  49     <a href='../Y/6484.html' title='Multiple used in 5 places.'>rs_history_ptr</a> = 0;
+<a name='L50'>  50 
+<a name='L51'>  51     <a href='../Y/6483.html' title='Multiple used in 8 places.'>rs_history</a> = (<a href='../D/9419.html' title='Multiple defined in 6 places.'>resource_t</a> *)<a href='../D/2525.html' title='Multiple defined in 6 places.'>MALLOC</a>(<b>sizeof</b>(<a href='../D/9419.html' title='Multiple defined in 6 places.'>resource_t</a>) * <a href='../D/5136.html' title='Multiple defined in 6 places.'>RESOURCE_MGMT_HISTORY</a>);
+<a name='L52'>  52     <b>if</b> (<a href='../Y/6483.html' title='Multiple used in 8 places.'>rs_history</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L53'>  53         <a href='../D/4593.html' title='Multiple defined in 6 places.'>PERROR</a>("malloc");
+<a name='L54'>  54         <b>return</b> -1;
+<a name='L55'>  55     <font color='red'>}</font>
+<a name='L56'>  56 
+<a name='L57'>  57     <a href='../Y/4419.html' title='Multiple used in 245 places.'>memset</a>(<a href='../Y/6483.html' title='Multiple used in 8 places.'>rs_history</a>, 0, <b>sizeof</b>(<a href='../D/9419.html' title='Multiple defined in 6 places.'>resource_t</a>) * <a href='../D/5136.html' title='Multiple defined in 6 places.'>RESOURCE_MGMT_HISTORY</a>);
+<a name='L58'>  58 
+<a name='L59'>  59     <b>int</b> <a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>;
+<a name='L60'>  60     <b>char</b> *<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>[] = <font color='red'>{</font>"./barista_rsm", <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a><font color='red'>}</font>;
+<a name='L61'>  61     <a href='../Y/5844.html' title='Multiple used in 17 places.'>posix_spawn</a>(&amp;<a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>, "./barista_rsm", <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>);
+<a name='L62'>  62 
+<a name='L63'>  63     <a href='../D/2419.html' title='Multiple defined in 6 places.'>LOG_INFO</a>(<a href='../S/999.html#L21' title='Defined at 21 in components/resource_mgmt.c.'>RSM_ID</a>, "Resource usage output: %s", <a href='../Y/6420.html' title='Multiple used in 3 places.'>resource_file</a>);
+<a name='L64'>  64     <a href='../D/2419.html' title='Multiple defined in 6 places.'>LOG_INFO</a>(<a href='../S/999.html#L21' title='Defined at 21 in components/resource_mgmt.c.'>RSM_ID</a>, "Resource monitoring period: %d sec", <a href='../D/5137.html' title='Multiple defined in 6 places.'>RESOURCE_MGMT_MONITOR_TIME</a>);
+<a name='L65'>  65 
+<a name='L66'>  66     <a href='../D/6825.html' title='Multiple defined in 6 places.'>activate</a>();
+<a name='L67'>  67 
+<a name='L68'>  68     <b>while</b> (*<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>) <font color='red'>{</font>
+<a name='L69'>  69         <a href='../D/9419.html' title='Multiple defined in 6 places.'>resource_t</a> <a href='../Y/6481.html' title='Multiple used in 14 places.'>rs</a> = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L70'>  70 
+<a name='L71'>  71         <b>char</b> <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>[<a href='../D/6475.html' title='Multiple defined in 6 places.'>__CONF_STR_LEN</a>] = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L72'>  72         <b>char</b> <a href='../Y/2285.html' title='Multiple used in 3 places.'>day</a>[<a href='../D/6474.html' title='Multiple defined in 6 places.'>__CONF_SHORT_LEN</a>] = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L73'>  73         <b>char</b> <a href='../Y/6623.html' title='Multiple used in 39 places.'>sec</a>[<a href='../D/6474.html' title='Multiple defined in 6 places.'>__CONF_SHORT_LEN</a>] = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L74'>  74 
+<a name='L75'>  75         <a href='../Y/328.html' title='Multiple used in 113 places.'>FILE</a> *<a href='../Y/6471.html' title='Multiple used in 5 places.'>rp</a> = <a href='../Y/3190.html' title='Multiple used in 43 places.'>fopen</a>(<a href='../Y/6249.html' title='Multiple used in 2 places.'>raw_file</a>, "r");
+<a name='L76'>  76         <b>if</b> (<a href='../Y/6471.html' title='Multiple used in 5 places.'>rp</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L77'>  77             <b>char</b> <a href='../Y/7297.html' title='Multiple used in 40 places.'>temp</a>[<a href='../D/6476.html' title='Multiple defined in 6 places.'>__CONF_WORD_LEN</a>] = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L78'>  78 
+<a name='L79'>  79             <b>if</b> (<a href='../Y/3031.html' title='Multiple used in 17 places.'>fgets</a>(<a href='../Y/7297.html' title='Multiple used in 40 places.'>temp</a>, <a href='../D/6476.html' title='Multiple defined in 6 places.'>__CONF_WORD_LEN</a>-1, <a href='../Y/6471.html' title='Multiple used in 5 places.'>rp</a>) == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L80'>  80                 <a href='../Y/5691.html' title='Multiple used in 6 places.'>pclose</a>(<a href='../Y/6471.html' title='Multiple used in 5 places.'>rp</a>);
+<a name='L81'>  81                 <b>continue</b>;
+<a name='L82'>  82             <font color='red'>}</font>
+<a name='L83'>  83 
+<a name='L84'>  84             <a href='../Y/6952.html' title='Multiple used in 16 places.'>sscanf</a>(<a href='../Y/7297.html' title='Multiple used in 40 places.'>temp</a>, "%s %s %lf %lf", <a href='../Y/2285.html' title='Multiple used in 3 places.'>day</a>, <a href='../Y/6623.html' title='Multiple used in 39 places.'>sec</a>, &amp;<a href='../Y/6481.html' title='Multiple used in 14 places.'>rs</a>.<a href='../Y/2154.html' title='Multiple used in 27 places.'>cpu</a>, &amp;<a href='../Y/6481.html' title='Multiple used in 14 places.'>rs</a>.<a href='../Y/4413.html' title='Multiple used in 15 places.'>mem</a>);
+<a name='L85'>  85 
+<a name='L86'>  86             <a href='../Y/3012.html' title='Multiple used in 34 places.'>fclose</a>(<a href='../Y/6471.html' title='Multiple used in 5 places.'>rp</a>);
+<a name='L87'>  87         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L88'>  88             <b>continue</b>;
+<a name='L89'>  89         <font color='red'>}</font>
+<a name='L90'>  90 
+<a name='L91'>  91         <a href='../Y/6891.html' title='Multiple used in 224 places.'>snprintf</a>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <a href='../D/6475.html' title='Multiple defined in 6 places.'>__CONF_STR_LEN</a>-1, "%s %s - CPU %6.2lf MEM %6.2lf", <a href='../Y/2285.html' title='Multiple used in 3 places.'>day</a>, <a href='../Y/6623.html' title='Multiple used in 39 places.'>sec</a>, <a href='../Y/6481.html' title='Multiple used in 14 places.'>rs</a>.<a href='../Y/2154.html' title='Multiple used in 27 places.'>cpu</a>, <a href='../Y/6481.html' title='Multiple used in 14 places.'>rs</a>.<a href='../Y/4413.html' title='Multiple used in 15 places.'>mem</a>);
+<a name='L92'>  92 
+<a name='L93'>  93         <a href='../Y/4418.html' title='Multiple used in 102 places.'>memmove</a>(&amp;<a href='../Y/6483.html' title='Multiple used in 8 places.'>rs_history</a>[<a href='../Y/6484.html' title='Multiple used in 5 places.'>rs_history_ptr</a>++ % <a href='../D/5136.html' title='Multiple defined in 6 places.'>RESOURCE_MGMT_HISTORY</a>], &amp;<a href='../Y/6481.html' title='Multiple used in 14 places.'>rs</a>, <b>sizeof</b>(<a href='../D/9419.html' title='Multiple defined in 6 places.'>resource_t</a>));
+<a name='L94'>  94 
+<a name='L95'>  95         <a href='../Y/328.html' title='Multiple used in 113 places.'>FILE</a> *<a href='../Y/3206.html' title='Multiple used in 53 places.'>fp</a> = <a href='../Y/3190.html' title='Multiple used in 43 places.'>fopen</a>(<a href='../Y/6420.html' title='Multiple used in 3 places.'>resource_file</a>, "a");
+<a name='L96'>  96         <b>if</b> (<a href='../Y/3206.html' title='Multiple used in 53 places.'>fp</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L97'>  97             <a href='../Y/3207.html' title='Multiple used in 289 places.'>fprintf</a>(<a href='../Y/3206.html' title='Multiple used in 53 places.'>fp</a>, "%s\n", <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>);
+<a name='L98'>  98             <a href='../Y/3012.html' title='Multiple used in 34 places.'>fclose</a>(<a href='../Y/3206.html' title='Multiple used in 53 places.'>fp</a>);
+<a name='L99'>  99         <font color='red'>}</font>
+<a name='L100'> 100 
+<a name='L101'> 101         <a href='../S/1024.html#L161' title='Defined at 161 in events/event.c.'>ev_rs_update_usage</a>(<a href='../S/999.html#L21' title='Defined at 21 in components/resource_mgmt.c.'>RSM_ID</a>, &amp;<a href='../Y/6481.html' title='Multiple used in 14 places.'>rs</a>);
+<a name='L102'> 102 
+<a name='L103'> 103         <a href='../D/10115.html' title='Multiple defined in 6 places.'>waitsec</a>(<a href='../D/5137.html' title='Multiple defined in 6 places.'>RESOURCE_MGMT_MONITOR_TIME</a>, 0);
+<a name='L104'> 104     <font color='red'>}</font>
+<a name='L105'> 105 
+<a name='L106'> 106     <b>return</b> 0;
+<a name='L107'> 107 <font color='red'>}</font>
+<a name='L108'> 108 
+<a name='L109'> 109 <i><font color='green'>/**</font></i>
+<a name='L110'> 110 <i><font color='green'> * \brief The cleanup function</font></i>
+<a name='L111'> 111 <i><font color='green'> * \param activated The activation flag of this component</font></i>
+<a name='L112'> 112 <i><font color='green'> */</font></i>
+<a name='L113'> 113 <b>int</b> <a href='../S/979.html#L139' title='Refered from 139 in components/include/component_list.h.'>resource_mgmt_cleanup</a>(<b>int</b> *<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>)
+<a name='L114'> 114 <font color='red'>{</font>
+<a name='L115'> 115     <a href='../D/2419.html' title='Multiple defined in 6 places.'>LOG_INFO</a>(<a href='../S/999.html#L21' title='Defined at 21 in components/resource_mgmt.c.'>RSM_ID</a>, "Clean up - Resource management");
+<a name='L116'> 116 
+<a name='L117'> 117     <a href='../D/7280.html' title='Multiple defined in 6 places.'>deactivate</a>();
+<a name='L118'> 118 
+<a name='L119'> 119     <a href='../D/1836.html' title='Multiple defined in 7 places.'>FREE</a>(<a href='../Y/6483.html' title='Multiple used in 8 places.'>rs_history</a>);
+<a name='L120'> 120 
+<a name='L121'> 121     <b>int</b> <a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>;
+<a name='L122'> 122     <b>char</b> *<a href='../Y/1468.html' title='Multiple used in 12 places.'>argr</a>[] = <font color='red'>{</font>"pkill", "-9", "barista_rsm", <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a><font color='red'>}</font>;
+<a name='L123'> 123     <a href='../Y/5844.html' title='Multiple used in 17 places.'>posix_spawn</a>(&amp;<a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>, "/usr/bin/pkill", <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, <a href='../Y/1468.html' title='Multiple used in 12 places.'>argr</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>);
+<a name='L124'> 124 
+<a name='L125'> 125     <b>return</b> 0;
+<a name='L126'> 126 <font color='red'>}</font>
+<a name='L127'> 127 
+<a name='L128'> 128 <i><font color='green'>/**</font></i>
+<a name='L129'> 129 <i><font color='green'> * \brief Function to summarize the resource history for the last n seconds</font></i>
+<a name='L130'> 130 <i><font color='green'> * \param cli The CLI pointer</font></i>
+<a name='L131'> 131 <i><font color='green'> * \param seconds Time period to query</font></i>
+<a name='L132'> 132 <i><font color='green'> */</font></i>
+<a name='L133'> 133 <b>static</b> <b>int</b> <a href='../S/999.html#L169' title='Refered from 169 in components/resource_mgmt.c.'>resource_stat_summary</a>(<a href='../D/7177.html' title='Multiple defined in 6 places.'>cli_t</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>char</b> *<a href='../Y/6629.html' title='Multiple used in 16 places.'>seconds</a>)
+<a name='L134'> 134 <font color='red'>{</font>
+<a name='L135'> 135     <b>int</b> <a href='../Y/6623.html' title='Multiple used in 39 places.'>sec</a> = <a href='../Y/1510.html' title='Multiple used in 76 places.'>atoi</a>(<a href='../Y/6629.html' title='Multiple used in 16 places.'>seconds</a>);
+<a name='L136'> 136     <b>if</b> (<a href='../Y/6623.html' title='Multiple used in 39 places.'>sec</a> &gt; <a href='../D/5136.html' title='Multiple defined in 6 places.'>RESOURCE_MGMT_HISTORY</a>) <a href='../Y/6623.html' title='Multiple used in 39 places.'>sec</a> = <a href='../D/5136.html' title='Multiple defined in 6 places.'>RESOURCE_MGMT_HISTORY</a>;
+<a name='L137'> 137     <b>else</b> <b>if</b> (<a href='../Y/6484.html' title='Multiple used in 5 places.'>rs_history_ptr</a> &lt; <a href='../D/5136.html' title='Multiple defined in 6 places.'>RESOURCE_MGMT_HISTORY</a> &amp;&amp; <a href='../Y/6484.html' title='Multiple used in 5 places.'>rs_history_ptr</a> &lt; <a href='../Y/6623.html' title='Multiple used in 39 places.'>sec</a>) <a href='../Y/6623.html' title='Multiple used in 39 places.'>sec</a> = <a href='../Y/6484.html' title='Multiple used in 5 places.'>rs_history_ptr</a>;
+<a name='L138'> 138 
+<a name='L139'> 139     <b>int</b> <a href='../Y/6155.html' title='Multiple used in 45 places.'>ptr</a> = <a href='../Y/6484.html' title='Multiple used in 5 places.'>rs_history_ptr</a> - <a href='../Y/6623.html' title='Multiple used in 39 places.'>sec</a>;
+<a name='L140'> 140     <b>if</b> (<a href='../Y/6155.html' title='Multiple used in 45 places.'>ptr</a> &lt; 0) <a href='../Y/6155.html' title='Multiple used in 45 places.'>ptr</a> = <a href='../D/5136.html' title='Multiple defined in 6 places.'>RESOURCE_MGMT_HISTORY</a> + <a href='../Y/6155.html' title='Multiple used in 45 places.'>ptr</a>;
+<a name='L141'> 141 
+<a name='L142'> 142     <a href='../D/9419.html' title='Multiple defined in 6 places.'>resource_t</a> <a href='../Y/6481.html' title='Multiple used in 14 places.'>rs</a> = <font color='red'>{</font>0.0<font color='red'>}</font>;
+<a name='L143'> 143 
+<a name='L144'> 144     <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L145'> 145     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>=0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>&lt;<a href='../Y/6623.html' title='Multiple used in 39 places.'>sec</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L146'> 146         <a href='../Y/6481.html' title='Multiple used in 14 places.'>rs</a>.<a href='../Y/2154.html' title='Multiple used in 27 places.'>cpu</a> += <a href='../Y/6483.html' title='Multiple used in 8 places.'>rs_history</a>[<a href='../Y/6155.html' title='Multiple used in 45 places.'>ptr</a> % <a href='../D/5136.html' title='Multiple defined in 6 places.'>RESOURCE_MGMT_HISTORY</a>].<a href='../Y/2154.html' title='Multiple used in 27 places.'>cpu</a>;
+<a name='L147'> 147         <a href='../Y/6481.html' title='Multiple used in 14 places.'>rs</a>.<a href='../Y/4413.html' title='Multiple used in 15 places.'>mem</a> += <a href='../Y/6483.html' title='Multiple used in 8 places.'>rs_history</a>[<a href='../Y/6155.html' title='Multiple used in 45 places.'>ptr</a> % <a href='../D/5136.html' title='Multiple defined in 6 places.'>RESOURCE_MGMT_HISTORY</a>].<a href='../Y/4413.html' title='Multiple used in 15 places.'>mem</a>;
+<a name='L148'> 148 
+<a name='L149'> 149         <a href='../Y/6155.html' title='Multiple used in 45 places.'>ptr</a>++;
+<a name='L150'> 150     <font color='red'>}</font>
+<a name='L151'> 151 
+<a name='L152'> 152     <a href='../Y/6481.html' title='Multiple used in 14 places.'>rs</a>.<a href='../Y/2154.html' title='Multiple used in 27 places.'>cpu</a> /= <a href='../Y/6623.html' title='Multiple used in 39 places.'>sec</a>;
+<a name='L153'> 153     <a href='../Y/6481.html' title='Multiple used in 14 places.'>rs</a>.<a href='../Y/4413.html' title='Multiple used in 15 places.'>mem</a> /= <a href='../Y/6623.html' title='Multiple used in 39 places.'>sec</a>;
+<a name='L154'> 154 
+<a name='L155'> 155     <a href='../D/7132.html' title='Multiple defined in 7 places.'>cli_print</a>(<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, "&lt;Resource Statistics for %d seconds&gt;", <a href='../Y/6623.html' title='Multiple used in 39 places.'>sec</a>);
+<a name='L156'> 156     <a href='../D/7132.html' title='Multiple defined in 7 places.'>cli_print</a>(<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, "  CPU: %.2f %%, MEM: %.2f %%", <a href='../Y/6481.html' title='Multiple used in 14 places.'>rs</a>.<a href='../Y/2154.html' title='Multiple used in 27 places.'>cpu</a>, <a href='../Y/6481.html' title='Multiple used in 14 places.'>rs</a>.<a href='../Y/4413.html' title='Multiple used in 15 places.'>mem</a>);
+<a name='L157'> 157 
+<a name='L158'> 158     <b>return</b> 0;
+<a name='L159'> 159 <font color='red'>}</font>
+<a name='L160'> 160 
+<a name='L161'> 161 <i><font color='green'>/**</font></i>
+<a name='L162'> 162 <i><font color='green'> * \brief The CLI function</font></i>
+<a name='L163'> 163 <i><font color='green'> * \param cli The CLI pointer</font></i>
+<a name='L164'> 164 <i><font color='green'> * \param args Arguments</font></i>
+<a name='L165'> 165 <i><font color='green'> */</font></i>
+<a name='L166'> 166 <b>int</b> <a href='../S/979.html#L139' title='Refered from 139 in components/include/component_list.h.'>resource_mgmt_cli</a>(<a href='../D/7177.html' title='Multiple defined in 6 places.'>cli_t</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>char</b> **<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L167'> 167 <font color='red'>{</font>
+<a name='L168'> 168     <b>if</b> (<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>[0] != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a> &amp;&amp; <a href='../Y/7082.html' title='Multiple used in 371 places.'>strcmp</a>(<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>[0], "stat") == 0 &amp;&amp; <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>[1] != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L169'> 169         <a href='../S/999.html#L133' title='Defined at 133 in components/resource_mgmt.c.'>resource_stat_summary</a>(<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>[1]);
+<a name='L170'> 170         <b>return</b> 0;
+<a name='L171'> 171     <font color='red'>}</font>
+<a name='L172'> 172 
+<a name='L173'> 173     <a href='../D/7132.html' title='Multiple defined in 7 places.'>cli_print</a>(<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, "&lt;Available Commands&gt;");
+<a name='L174'> 174     <a href='../D/7132.html' title='Multiple defined in 7 places.'>cli_print</a>(<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, "  resource_mgmt stat [n secs]");
+<a name='L175'> 175 
+<a name='L176'> 176     <b>return</b> 0;
+<a name='L177'> 177 <font color='red'>}</font>
+<a name='L178'> 178 
+<a name='L179'> 179 <i><font color='green'>/**</font></i>
+<a name='L180'> 180 <i><font color='green'> * \brief The handler function</font></i>
+<a name='L181'> 181 <i><font color='green'> * \param ev Read-only event</font></i>
+<a name='L182'> 182 <i><font color='green'> * \param ev_out Read-write event (if this component has the write permission)</font></i>
+<a name='L183'> 183 <i><font color='green'> */</font></i>
+<a name='L184'> 184 <b>int</b> <a href='../S/979.html#L139' title='Refered from 139 in components/include/component_list.h.'>resource_mgmt_handler</a>(<b>const</b> <a href='../D/7743.html' title='Multiple defined in 7 places.'>event_t</a> *<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>, <a href='../D/7740.html' title='Multiple defined in 7 places.'>event_out_t</a> *<a href='../Y/2897.html' title='Multiple used in 49 places.'>ev_out</a>)
+<a name='L185'> 185 <font color='red'>{</font>
+<a name='L186'> 186     <b>return</b> 0;
+<a name='L187'> 187 <font color='red'>}</font>
+<a name='L188'> 188 
+<a name='L189'> 189 <i><font color='green'>/**</font></i>
+<a name='L190'> 190 <i><font color='green'> * @}</font></i>
+<a name='L191'> 191 <i><font color='green'> *</font></i>
+<a name='L192'> 192 <i><font color='green'> * @}</font></i>
+<a name='L193'> 193 <i><font color='green'> */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L45'>[^]</a><a href='#L184'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

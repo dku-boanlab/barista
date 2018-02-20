@@ -1,0 +1,84 @@
+<html>
+<head>
+<title>ofs</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/293.html#L1425'>ofs</a>              1425 cbench/openflow/datapath/datapath.c 	struct ofp_flow_stats *ofs;
+<a href='../S/293.html#L1429'>ofs</a>              1429 cbench/openflow/datapath/datapath.c 	length = sizeof *ofs + sf_acts-&gt;actions_len;
+<a href='../S/293.html#L1433'>ofs</a>              1433 cbench/openflow/datapath/datapath.c 	ofs = s-&gt;body + s-&gt;bytes_used;
+<a href='../S/293.html#L1434'>ofs</a>              1434 cbench/openflow/datapath/datapath.c 	ofs-&gt;length          = htons(length);
+<a href='../S/293.html#L1435'>ofs</a>              1435 cbench/openflow/datapath/datapath.c 	ofs-&gt;table_id        = s-&gt;table_idx;
+<a href='../S/293.html#L1436'>ofs</a>              1436 cbench/openflow/datapath/datapath.c 	ofs-&gt;pad             = 0;
+<a href='../S/293.html#L1437'>ofs</a>              1437 cbench/openflow/datapath/datapath.c 	ofs-&gt;match.wildcards = htonl(flow-&gt;key.wildcards);
+<a href='../S/293.html#L1438'>ofs</a>              1438 cbench/openflow/datapath/datapath.c 	ofs-&gt;match.in_port   = flow-&gt;key.in_port;
+<a href='../S/293.html#L1439'>ofs</a>              1439 cbench/openflow/datapath/datapath.c 	memcpy(ofs-&gt;match.dl_src, flow-&gt;key.dl_src, ETH_ALEN);
+<a href='../S/293.html#L1440'>ofs</a>              1440 cbench/openflow/datapath/datapath.c 	memcpy(ofs-&gt;match.dl_dst, flow-&gt;key.dl_dst, ETH_ALEN);
+<a href='../S/293.html#L1441'>ofs</a>              1441 cbench/openflow/datapath/datapath.c 	ofs-&gt;match.dl_vlan   = flow-&gt;key.dl_vlan;
+<a href='../S/293.html#L1442'>ofs</a>              1442 cbench/openflow/datapath/datapath.c 	ofs-&gt;match.dl_type   = flow-&gt;key.dl_type;
+<a href='../S/293.html#L1443'>ofs</a>              1443 cbench/openflow/datapath/datapath.c 	ofs-&gt;match.nw_tos    = flow-&gt;key.nw_tos;
+<a href='../S/293.html#L1444'>ofs</a>              1444 cbench/openflow/datapath/datapath.c 	ofs-&gt;match.nw_proto  = flow-&gt;key.nw_proto;
+<a href='../S/293.html#L1445'>ofs</a>              1445 cbench/openflow/datapath/datapath.c 	ofs-&gt;match.nw_src    = flow-&gt;key.nw_src;
+<a href='../S/293.html#L1446'>ofs</a>              1446 cbench/openflow/datapath/datapath.c 	ofs-&gt;match.nw_dst    = flow-&gt;key.nw_dst;
+<a href='../S/293.html#L1447'>ofs</a>              1447 cbench/openflow/datapath/datapath.c 	ofs-&gt;match.dl_vlan_pcp = flow-&gt;key.dl_vlan_pcp;
+<a href='../S/293.html#L1448'>ofs</a>              1448 cbench/openflow/datapath/datapath.c 	ofs-&gt;match.tp_src    = flow-&gt;key.tp_src;
+<a href='../S/293.html#L1449'>ofs</a>              1449 cbench/openflow/datapath/datapath.c 	ofs-&gt;match.tp_dst    = flow-&gt;key.tp_dst;
+<a href='../S/293.html#L1456'>ofs</a>              1456 cbench/openflow/datapath/datapath.c 	ofs-&gt;duration_sec    = htonl(jiffies_64_to_secs(duration));
+<a href='../S/293.html#L1457'>ofs</a>              1457 cbench/openflow/datapath/datapath.c 	ofs-&gt;duration_nsec   = htonl(jiffies_64_to_nsecs(duration));
+<a href='../S/293.html#L1459'>ofs</a>              1459 cbench/openflow/datapath/datapath.c 	ofs-&gt;priority        = htons(flow-&gt;priority);
+<a href='../S/293.html#L1460'>ofs</a>              1460 cbench/openflow/datapath/datapath.c 	ofs-&gt;idle_timeout    = htons(flow-&gt;idle_timeout);
+<a href='../S/293.html#L1461'>ofs</a>              1461 cbench/openflow/datapath/datapath.c 	ofs-&gt;hard_timeout    = htons(flow-&gt;hard_timeout);
+<a href='../S/293.html#L1462'>ofs</a>              1462 cbench/openflow/datapath/datapath.c 	memset(&amp;ofs-&gt;pad2, 0, sizeof ofs-&gt;pad2);
+<a href='../S/293.html#L1463'>ofs</a>              1463 cbench/openflow/datapath/datapath.c 	ofs-&gt;packet_count    = cpu_to_be64(flow-&gt;packet_count);
+<a href='../S/293.html#L1464'>ofs</a>              1464 cbench/openflow/datapath/datapath.c 	ofs-&gt;byte_count      = cpu_to_be64(flow-&gt;byte_count);
+<a href='../S/293.html#L1465'>ofs</a>              1465 cbench/openflow/datapath/datapath.c 	memcpy(ofs-&gt;actions, sf_acts-&gt;actions, sf_acts-&gt;actions_len);
+<a href='../S/907.html#L219'>ofs</a>               219 cbench/openflow/lib/dynamic-string.c                 uintptr_t ofs, bool ascii)
+<a href='../S/907.html#L230'>ofs</a>               230 cbench/openflow/lib/dynamic-string.c       start = ofs % per_line;
+<a href='../S/907.html#L237'>ofs</a>               237 cbench/openflow/lib/dynamic-string.c       ds_put_format(ds, "%08jx  ", (uintmax_t) ROUND_DOWN(ofs, per_line));
+<a href='../S/907.html#L260'>ofs</a>               260 cbench/openflow/lib/dynamic-string.c       ofs += n;
+<a href='../S/908.html#L70'>ofs</a>                70 cbench/openflow/lib/dynamic-string.h                      uintptr_t ofs, bool ascii);
+<a href='../S/884.html#L571'>ofs</a>               571 cbench/openflow/lib/learning-switch.c                    const struct ofp_flow_stats *ofs)
+<a href='../S/884.html#L573'>ofs</a>               573 cbench/openflow/lib/learning-switch.c     const char *end = (char *) ofs + ntohs(ofs-&gt;length);
+<a href='../S/884.html#L580'>ofs</a>               580 cbench/openflow/lib/learning-switch.c     if (!(ofs-&gt;match.wildcards &amp; htonl(OFPFW_IN_PORT))) {
+<a href='../S/884.html#L581'>ofs</a>               581 cbench/openflow/lib/learning-switch.c         if (!may_recv(sw, ntohs(ofs-&gt;match.in_port),
+<a href='../S/884.html#L582'>ofs</a>               582 cbench/openflow/lib/learning-switch.c                       end &gt; (char *) ofs-&gt;actions)) {
+<a href='../S/884.html#L594'>ofs</a>               594 cbench/openflow/lib/learning-switch.c         for (a = ofs-&gt;actions; (char *) a &lt; end; a += len / 8) {
+<a href='../S/884.html#L625'>ofs</a>               625 cbench/openflow/lib/learning-switch.c         ofm-&gt;match = ofs-&gt;match;
+<a href='../S/878.html#L199'>ofs</a>               199 cbench/openflow/lib/util.c              uintptr_t ofs, bool ascii)
+<a href='../S/878.html#L210'>ofs</a>               210 cbench/openflow/lib/util.c       start = ofs % per_line;
+<a href='../S/878.html#L217'>ofs</a>               217 cbench/openflow/lib/util.c       fprintf(stream, "%08jx  ", (uintmax_t) ROUND_DOWN(ofs, per_line));
+<a href='../S/878.html#L240'>ofs</a>               240 cbench/openflow/lib/util.c       ofs += n;
+<a href='../S/204.html#L1143'>ofs</a>              1143 cbench/openflow/udatapath/datapath.c     struct ofp_flow_stats *ofs;
+<a href='../S/204.html#L1144'>ofs</a>              1144 cbench/openflow/udatapath/datapath.c     int length = sizeof *ofs + flow-&gt;sf_acts-&gt;actions_len;
+<a href='../S/204.html#L1147'>ofs</a>              1147 cbench/openflow/udatapath/datapath.c     ofs = ofpbuf_put_uninit(buffer, length);
+<a href='../S/204.html#L1148'>ofs</a>              1148 cbench/openflow/udatapath/datapath.c     ofs-&gt;length          = htons(length);
+<a href='../S/204.html#L1149'>ofs</a>              1149 cbench/openflow/udatapath/datapath.c     ofs-&gt;table_id        = table_idx;
+<a href='../S/204.html#L1150'>ofs</a>              1150 cbench/openflow/udatapath/datapath.c     ofs-&gt;pad             = 0;
+<a href='../S/204.html#L1151'>ofs</a>              1151 cbench/openflow/udatapath/datapath.c     ofs-&gt;match.wildcards = htonl(flow-&gt;key.wildcards);
+<a href='../S/204.html#L1152'>ofs</a>              1152 cbench/openflow/udatapath/datapath.c     ofs-&gt;match.in_port   = flow-&gt;key.flow.in_port;
+<a href='../S/204.html#L1153'>ofs</a>              1153 cbench/openflow/udatapath/datapath.c     memcpy(ofs-&gt;match.dl_src, flow-&gt;key.flow.dl_src, ETH_ADDR_LEN);
+<a href='../S/204.html#L1154'>ofs</a>              1154 cbench/openflow/udatapath/datapath.c     memcpy(ofs-&gt;match.dl_dst, flow-&gt;key.flow.dl_dst, ETH_ADDR_LEN);
+<a href='../S/204.html#L1155'>ofs</a>              1155 cbench/openflow/udatapath/datapath.c     ofs-&gt;match.dl_vlan   = flow-&gt;key.flow.dl_vlan;
+<a href='../S/204.html#L1156'>ofs</a>              1156 cbench/openflow/udatapath/datapath.c     ofs-&gt;match.dl_type   = flow-&gt;key.flow.dl_type;
+<a href='../S/204.html#L1157'>ofs</a>              1157 cbench/openflow/udatapath/datapath.c     ofs-&gt;match.nw_tos    = flow-&gt;key.flow.nw_tos;
+<a href='../S/204.html#L1158'>ofs</a>              1158 cbench/openflow/udatapath/datapath.c     ofs-&gt;match.nw_src    = flow-&gt;key.flow.nw_src;
+<a href='../S/204.html#L1159'>ofs</a>              1159 cbench/openflow/udatapath/datapath.c     ofs-&gt;match.nw_dst    = flow-&gt;key.flow.nw_dst;
+<a href='../S/204.html#L1160'>ofs</a>              1160 cbench/openflow/udatapath/datapath.c     ofs-&gt;match.nw_proto  = flow-&gt;key.flow.nw_proto;
+<a href='../S/204.html#L1161'>ofs</a>              1161 cbench/openflow/udatapath/datapath.c     ofs-&gt;match.dl_vlan_pcp = flow-&gt;key.flow.dl_vlan_pcp;
+<a href='../S/204.html#L1162'>ofs</a>              1162 cbench/openflow/udatapath/datapath.c     ofs-&gt;match.tp_src    = flow-&gt;key.flow.tp_src;
+<a href='../S/204.html#L1163'>ofs</a>              1163 cbench/openflow/udatapath/datapath.c     ofs-&gt;match.tp_dst    = flow-&gt;key.flow.tp_dst;
+<a href='../S/204.html#L1164'>ofs</a>              1164 cbench/openflow/udatapath/datapath.c     ofs-&gt;duration_sec    = htonl(sec);
+<a href='../S/204.html#L1165'>ofs</a>              1165 cbench/openflow/udatapath/datapath.c     ofs-&gt;duration_nsec   = htonl((tdiff - (sec * 1000)) * 1000000);
+<a href='../S/204.html#L1166'>ofs</a>              1166 cbench/openflow/udatapath/datapath.c     ofs-&gt;cookie          = htonll(flow-&gt;cookie);
+<a href='../S/204.html#L1167'>ofs</a>              1167 cbench/openflow/udatapath/datapath.c     ofs-&gt;priority        = htons(flow-&gt;priority);
+<a href='../S/204.html#L1168'>ofs</a>              1168 cbench/openflow/udatapath/datapath.c     ofs-&gt;idle_timeout    = htons(flow-&gt;idle_timeout);
+<a href='../S/204.html#L1169'>ofs</a>              1169 cbench/openflow/udatapath/datapath.c     ofs-&gt;hard_timeout    = htons(flow-&gt;hard_timeout);
+<a href='../S/204.html#L1170'>ofs</a>              1170 cbench/openflow/udatapath/datapath.c     memset(&amp;ofs-&gt;pad2, 0, sizeof ofs-&gt;pad2);
+<a href='../S/204.html#L1171'>ofs</a>              1171 cbench/openflow/udatapath/datapath.c     ofs-&gt;packet_count    = htonll(flow-&gt;packet_count);
+<a href='../S/204.html#L1172'>ofs</a>              1172 cbench/openflow/udatapath/datapath.c     ofs-&gt;byte_count      = htonll(flow-&gt;byte_count);
+<a href='../S/204.html#L1173'>ofs</a>              1173 cbench/openflow/udatapath/datapath.c     memcpy(ofs-&gt;actions, flow-&gt;sf_acts-&gt;actions, flow-&gt;sf_acts-&gt;actions_len);
+</pre>
+</body>
+</html>

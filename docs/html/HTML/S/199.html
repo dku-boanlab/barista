@@ -1,0 +1,92 @@
+<html>
+<head>
+<title>cbench/openflow/udatapath/crc32.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1143.html'>udatapath</a>/crc32.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L38'>[^]</a><a href='#L56'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L38' title='Defined at 38.'>crc32_init</a>
+<li><a href='#L56' title='Defined at 56.'>crc32_calculate</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> * </font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> * </font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> * </font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> * </font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> "<a href='../I/89.html'>crc32.h</a>"
+<a name='L36'>  36 
+<a name='L37'>  37 <b>void</b>
+<a name='L38'>  38 <a href='../R/2531.html' title='Multiple refered from 8 places.'>crc32_init</a>(<b>struct</b> <a href='../Y/2172.html' title='Multiple used in 8 places.'>crc32</a> *<a href='../Y/2162.html' title='Multiple used in 22 places.'>crc</a>, <b>unsigned</b> <b>int</b> <a href='../Y/5789.html' title='Multiple used in 12 places.'>polynomial</a>)
+<a name='L39'>  39 <font color='red'>{</font>
+<a name='L40'>  40     <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L41'>  41 
+<a name='L42'>  42     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../D/1094.html' title='Multiple defined in 2 places.'>CRC32_TABLE_SIZE</a>; ++<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L43'>  43         <b>unsigned</b> <b>int</b> <a href='../Y/6324.html' title='Multiple used in 53 places.'>reg</a> = <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt;&lt; 24;
+<a name='L44'>  44         <b>int</b> <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>;
+<a name='L45'>  45         <b>for</b> (<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a> = 0; <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a> &lt; <a href='../D/1093.html' title='Multiple defined in 2 places.'>CRC32_TABLE_BITS</a>; <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>++) <font color='red'>{</font>
+<a name='L46'>  46             <b>int</b> <a href='../Y/7416.html' title='Multiple used in 4 places.'>topBit</a> = (<a href='../Y/6324.html' title='Multiple used in 53 places.'>reg</a> &amp; 0x80000000) != 0;
+<a name='L47'>  47             <a href='../Y/6324.html' title='Multiple used in 53 places.'>reg</a> &lt;&lt;= 1;
+<a name='L48'>  48             <b>if</b> (<a href='../Y/7416.html' title='Multiple used in 4 places.'>topBit</a>)
+<a name='L49'>  49                 <a href='../Y/6324.html' title='Multiple used in 53 places.'>reg</a> ^= <a href='../Y/5789.html' title='Multiple used in 12 places.'>polynomial</a>;
+<a name='L50'>  50         <font color='red'>}</font>
+<a name='L51'>  51         <a href='../Y/2162.html' title='Multiple used in 22 places.'>crc</a>-&gt;<a href='../Y/7225.html' title='Multiple used in 105 places.'>table</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>] = <a href='../Y/6324.html' title='Multiple used in 53 places.'>reg</a>;
+<a name='L52'>  52     <font color='red'>}</font>
+<a name='L53'>  53 <font color='red'>}</font>
+<a name='L54'>  54 
+<a name='L55'>  55 <b>unsigned</b> <b>int</b>
+<a name='L56'>  56 <a href='../R/2530.html' title='Multiple refered from 8 places.'>crc32_calculate</a>(<b>const</b> <b>struct</b> <a href='../Y/2172.html' title='Multiple used in 8 places.'>crc32</a> *<a href='../Y/2162.html' title='Multiple used in 22 places.'>crc</a>, <b>const</b> <b>void</b> *<a href='../Y/2254.html' title='Multiple used in 7 places.'>data_</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4574.html' title='Multiple used in 31 places.'>n_bytes</a>)
+<a name='L57'>  57 <font color='red'>{</font>
+<a name='L58'>  58     <b>const</b> <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = <a href='../Y/2254.html' title='Multiple used in 7 places.'>data_</a>;
+<a name='L59'>  59     <b>unsigned</b> <b>int</b> <a href='../Y/6429.html' title='Multiple used in 16 places.'>result</a> = 0;
+<a name='L60'>  60     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L61'>  61 
+<a name='L62'>  62     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../Y/4574.html' title='Multiple used in 31 places.'>n_bytes</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L63'>  63         <b>unsigned</b> <b>int</b> <a href='../Y/7415.html' title='Multiple used in 6 places.'>top</a> = <a href='../Y/6429.html' title='Multiple used in 16 places.'>result</a> &gt;&gt; 24;
+<a name='L64'>  64         <a href='../Y/7415.html' title='Multiple used in 6 places.'>top</a> ^= <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>];
+<a name='L65'>  65         <a href='../Y/6429.html' title='Multiple used in 16 places.'>result</a> = (<a href='../Y/6429.html' title='Multiple used in 16 places.'>result</a> &lt;&lt; 8) ^ <a href='../Y/2162.html' title='Multiple used in 22 places.'>crc</a>-&gt;<a href='../Y/7225.html' title='Multiple used in 105 places.'>table</a>[<a href='../Y/7415.html' title='Multiple used in 6 places.'>top</a>];
+<a name='L66'>  66     <font color='red'>}</font>
+<a name='L67'>  67     <b>return</b> <a href='../Y/6429.html' title='Multiple used in 16 places.'>result</a>;
+<a name='L68'>  68 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L38'>[^]</a><a href='#L56'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

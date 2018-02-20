@@ -1,0 +1,74 @@
+<html>
+<head>
+<title>cbench/oflops/timer_event.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1101.html'>oflops</a>/timer_event.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L7'>[^]</a><a href='#L43'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L7' title='Defined at 7.'>timer_get_next_event</a>
+<li><a href='#L23' title='Defined at 23.'>timer_run_next_event</a>
+<li><a href='#L43' title='Defined at 43.'>timer_init</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 
+<a name='L2'>   2 <font color='darkred'>#include</font> &lt;sys/time.h&gt;
+<a name='L3'>   3 
+<a name='L4'>   4 <font color='darkred'>#include</font> "<a href='116.html'>timer_event.h</a>"
+<a name='L5'>   5 
+<a name='L6'>   6 
+<a name='L7'>   7 <b>int</b> <a href='../R/4804.html' title='Multiple refered from 2 places.'>timer_get_next_event</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>)
+<a name='L8'>   8 <font color='red'>{</font>
+<a name='L9'>   9         <b>struct</b> <a href='../Y/7388.html' title='Multiple used in 197 places.'>timeval</a> <a href='../Y/7508.html' title='Multiple used in 13 places.'>tv</a>;
+<a name='L10'>  10         <b>int</b> <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a>;
+<a name='L11'>  11         <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a>=<a href='../S/21.html#L314' title='Defined at 314 in cbench/oflops/wc_event.c.'>wc_get_next_event_delta</a>(<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/7380.html' title='Multiple used in 7 places.'>timers</a>, &amp;<a href='../Y/7508.html' title='Multiple used in 13 places.'>tv</a>);
+<a name='L12'>  12         <b>if</b>(<a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> == 0)
+<a name='L13'>  13         <font color='red'>{</font>
+<a name='L14'>  14           <b>return</b> <a href='../Y/7508.html' title='Multiple used in 13 places.'>tv</a>.<a href='../Y/7510.html' title='Multiple used in 122 places.'>tv_sec</a> * 1000000 + <a href='../Y/7508.html' title='Multiple used in 13 places.'>tv</a>.<a href='../Y/7511.html' title='Multiple used in 105 places.'>tv_usec</a>;      <i><font color='green'>// next event</font></i>
+<a name='L15'>  15         <font color='red'>}</font>
+<a name='L16'>  16         <b>else</b> <b>if</b>(<a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> == -1)
+<a name='L17'>  17                 <b>return</b> 1000000;         <i><font color='green'>// no events; just say 1 sec</font></i>
+<a name='L18'>  18         <b>else</b> 
+<a name='L19'>  19                 <b>return</b> -1;              <i><font color='green'>// next event timer already passed... </font></i>
+<a name='L20'>  20 <font color='red'>}</font>
+<a name='L21'>  21 
+<a name='L22'>  22 
+<a name='L23'>  23 <b>int</b> <a href='../R/4806.html' title='Multiple refered from 2 places.'>timer_run_next_event</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>)
+<a name='L24'>  24 <font color='red'>{</font>
+<a name='L25'>  25         <b>void</b> (* <a href='../Y/3272.html' title='Multiple used in 22 places.'>func</a>)(<b>void</b> *);
+<a name='L26'>  26         <b>void</b> * <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>;
+<a name='L27'>  27         <b>int</b> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>;
+<a name='L28'>  28         <b>struct</b> <a href='../Y/7388.html' title='Multiple used in 197 places.'>timeval</a> <a href='../Y/7216.html' title='Multiple used in 183 places.'>t</a>;
+<a name='L29'>  29         <b>int</b> <a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>;
+<a name='L30'>  30         <a href='../D/9906.html' title='Multiple defined in 2 places.'>timer_event</a> <a href='../Y/7295.html' title='Multiple used in 60 places.'>te</a>;
+<a name='L31'>  31 
+<a name='L32'>  32         <a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a> = <a href='../S/21.html#L206' title='Defined at 206 in cbench/oflops/wc_event.c.'>wc_queue_extract</a>(<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/7380.html' title='Multiple used in 7 places.'>timers</a>, &amp;<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, &amp;<a href='../Y/7216.html' title='Multiple used in 183 places.'>t</a>, &amp;<a href='../Y/3272.html' title='Multiple used in 22 places.'>func</a>, &amp;<a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>);
+<a name='L33'>  33         <a href='../Y/7295.html' title='Multiple used in 60 places.'>te</a>.<a href='../Y/7378.html' title='Multiple used in 2 places.'>timer_id</a> = <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>;
+<a name='L34'>  34         <a href='../Y/7295.html' title='Multiple used in 60 places.'>te</a>.<a href='../Y/1454.html' title='Multiple used in 77 places.'>arg</a> = <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>;
+<a name='L35'>  35         <a href='../Y/7295.html' title='Multiple used in 60 places.'>te</a>.<a href='../Y/6607.html' title='Multiple used in 22 places.'>sched_time</a>  = <a href='../Y/7216.html' title='Multiple used in 183 places.'>t</a>;
+<a name='L36'>  36         <i><font color='green'>// func is ignored by oflops</font></i>
+<a name='L37'>  37         <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/2226.html' title='Multiple used in 6 places.'>curr_test</a>-&gt;<a href='../D/8001.html' title='Multiple defined in 17 places.'>handle_timer_event</a>(<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, &amp;<a href='../Y/7295.html' title='Multiple used in 60 places.'>te</a>);
+<a name='L38'>  38         
+<a name='L39'>  39         <b>return</b> 0;
+<a name='L40'>  40 <font color='red'>}</font>
+<a name='L41'>  41 
+<a name='L42'>  42 
+<a name='L43'>  43 <b>int</b> <a href='../R/4805.html' title='Multiple refered from 2 places.'>timer_init</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>)
+<a name='L44'>  44 <font color='red'>{</font>
+<a name='L45'>  45         <b>if</b>(<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/7380.html' title='Multiple used in 7 places.'>timers</a>)
+<a name='L46'>  46                 <a href='../S/21.html#L97' title='Defined at 97 in cbench/oflops/wc_event.c.'>wc_queue_free</a>(<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/7380.html' title='Multiple used in 7 places.'>timers</a>);
+<a name='L47'>  47         <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/7380.html' title='Multiple used in 7 places.'>timers</a> = <a href='../S/21.html#L75' title='Defined at 75 in cbench/oflops/wc_event.c.'>wc_queue_init</a>(10);        <i><font color='green'>// 10 == initial size; gets dynamically resized so it don't matter</font></i>
+<a name='L48'>  48         <b>return</b> 0;
+<a name='L49'>  49 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L7'>[^]</a><a href='#L43'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

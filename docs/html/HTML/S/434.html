@@ -1,0 +1,110 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_rijndael.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/<a href='../files/1149.html'>crypt</a>/airpdcap_rijndael.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/**</font></i>
+<a name='L2'>   2 <i><font color='green'> * airpdcap_rijndael.h</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * $Id: airpdcap_rijndael.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L5'>   5 <i><font color='green'> *</font></i>
+<a name='L6'>   6 <i><font color='green'> * @version 3.0 (December 2000)</font></i>
+<a name='L7'>   7 <i><font color='green'> *</font></i>
+<a name='L8'>   8 <i><font color='green'> * Optimised ANSI C code for the Rijndael cipher (now AES)</font></i>
+<a name='L9'>   9 <i><font color='green'> *</font></i>
+<a name='L10'>  10 <i><font color='green'> * @author Vincent Rijmen &lt;vincent.rijmen@esat.kuleuven.ac.be&gt;</font></i>
+<a name='L11'>  11 <i><font color='green'> * @author Antoon Bosselaers &lt;antoon.bosselaers@esat.kuleuven.ac.be&gt;</font></i>
+<a name='L12'>  12 <i><font color='green'> * @author Paulo Barreto &lt;paulo.barreto@terra.com.br&gt;</font></i>
+<a name='L13'>  13 <i><font color='green'> *</font></i>
+<a name='L14'>  14 <i><font color='green'> * This code is hereby placed in the public domain.</font></i>
+<a name='L15'>  15 <i><font color='green'> *</font></i>
+<a name='L16'>  16 <i><font color='green'> * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS</font></i>
+<a name='L17'>  17 <i><font color='green'> * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED</font></i>
+<a name='L18'>  18 <i><font color='green'> * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</font></i>
+<a name='L19'>  19 <i><font color='green'> * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE</font></i>
+<a name='L20'>  20 <i><font color='green'> * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</font></i>
+<a name='L21'>  21 <i><font color='green'> * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR</font></i>
+<a name='L23'>  23 <i><font color='green'> * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,</font></i>
+<a name='L24'>  24 <i><font color='green'> * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE</font></i>
+<a name='L25'>  25 <i><font color='green'> * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,</font></i>
+<a name='L26'>  26 <i><font color='green'> * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</font></i>
+<a name='L27'>  27 <i><font color='green'> */</font></i>
+<a name='L28'>  28 
+<a name='L29'>  29 <font color='darkred'>#ifndef</font> <a href='../S/434.html#L30' title='Defined at 30 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_rijndael.h.'>_AIRPDCAP_RIJNDAEL</a>
+<a name='L30'>  30 <font color='darkred'>#define</font> <a href='../S/434.html#L29' title='Refered from 29 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_rijndael.h.'>_AIRPDCAP_RIJNDAEL</a>
+<a name='L31'>  31 
+<a name='L32'>  32 <i><font color='green'>/******************************************************************************/</font></i>
+<a name='L33'>  33 <i><font color='green'>/*      File includes                                                                                                                                                                   */</font></i>
+<a name='L34'>  34 <i><font color='green'>/*                                                                                                                                                                                                              */</font></i>
+<a name='L35'>  35 <font color='darkred'>#include</font> "<a href='427.html'>airpdcap_interop.h</a>"
+<a name='L36'>  36 <i><font color='green'>/*                                                                                                                                                                                                              */</font></i>
+<a name='L37'>  37 <i><font color='green'>/*                                                                                                                                                                                                              */</font></i>
+<a name='L38'>  38 <i><font color='green'>/******************************************************************************/</font></i>
+<a name='L39'>  39 
+<a name='L40'>  40 <i><font color='green'>/******************************************************************************/</font></i>
+<a name='L41'>  41 <i><font color='green'>/*      Definitions                                                                                                                                                                             */</font></i>
+<a name='L42'>  42 <i><font color='green'>/*                                                                                                                                                                                                              */</font></i>
+<a name='L43'>  43 <i><font color='green'>/* Note: copied AirPDcap/rijndael/rijndael.h                                                                                            */</font></i>
+<a name='L44'>  44 <font color='darkred'>#define</font> RIJNDAEL_MAXKC  (256/32)
+<a name='L45'>  45 <font color='darkred'>#define</font> RIJNDAEL_MAXKB  (256/8)
+<a name='L46'>  46 <font color='darkred'>#define</font> <a href='../R/1529.html' title='Multiple refered from 2 places.'>RIJNDAEL_MAXNR</a>  14
+<a name='L47'>  47 <i><font color='green'>/*                                                                                                                                                                                                              */</font></i>
+<a name='L48'>  48 <i><font color='green'>/******************************************************************************/</font></i>
+<a name='L49'>  49 
+<a name='L50'>  50 <i><font color='green'>/******************************************************************************/</font></i>
+<a name='L51'>  51 <i><font color='green'>/*      Type definitions                                                                                                                                                                */</font></i>
+<a name='L52'>  52 <i><font color='green'>/*                                                                                                                                                                                                              */</font></i>
+<a name='L53'>  53 <i><font color='green'>/* Note: copied AirPDcap/rijndael/rijndael.h                                                                                            */</font></i>
+<a name='L54'>  54 <b>typedef</b> <b>struct</b> s_rijndael_ctx <font color='red'>{</font>
+<a name='L55'>  55         <a href='../S/427.html#L49' title='Defined at 49 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_interop.h.'>INT</a>     decrypt;
+<a name='L56'>  56         <a href='../S/427.html#L49' title='Defined at 49 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_interop.h.'>INT</a>     Nr;             <i><font color='green'>/* key-length-dependent number of rounds */</font></i>
+<a name='L57'>  57         <a href='../S/427.html#L65' title='Defined at 65 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_interop.h.'>UINT32</a> ek[4 * (<a href='../S/434.html#L46' title='Defined at 46 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_rijndael.h.'>RIJNDAEL_MAXNR</a> + 1)];  <i><font color='green'>/* encrypt key schedule */</font></i>
+<a name='L58'>  58         <a href='../S/427.html#L65' title='Defined at 65 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_interop.h.'>UINT32</a> <a href='../Y/2459.html' title='Multiple used in 3 places.'>dk</a>[4 * (<a href='../S/434.html#L46' title='Defined at 46 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_rijndael.h.'>RIJNDAEL_MAXNR</a> + 1)];  <i><font color='green'>/* decrypt key schedule */</font></i>
+<a name='L59'>  59 <font color='red'>}</font> rijndael_ctx;
+<a name='L60'>  60 <i><font color='green'>/*                                                                                                                                                                                                              */</font></i>
+<a name='L61'>  61 <i><font color='green'>/******************************************************************************/</font></i>
+<a name='L62'>  62 
+<a name='L63'>  63 <i><font color='green'>/******************************************************************************/</font></i>
+<a name='L64'>  64 <i><font color='green'>/*      External function prototypes declarations                                                                                               */</font></i>
+<a name='L65'>  65 <i><font color='green'>/*                                                                                                                                                                                                              */</font></i>
+<a name='L66'>  66 <b>void</b> rijndael_encrypt(
+<a name='L67'>  67         <b>const</b> <a href='../Y/6446.html' title='Multiple used in 2 places.'>rijndael_ctx</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>,
+<a name='L68'>  68         <b>const</b> <a href='../S/427.html#L89' title='Defined at 89 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_interop.h.'>UCHAR</a> *<a href='../Y/6931.html' title='Multiple used in 47 places.'>src</a>,
+<a name='L69'>  69         <a href='../S/427.html#L89' title='Defined at 89 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_interop.h.'>UCHAR</a> *<a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a>)
+<a name='L70'>  70         ;
+<a name='L71'>  71 
+<a name='L72'>  72 
+<a name='L73'>  73 <b>void</b> rijndael_set_key(
+<a name='L74'>  74         <a href='../Y/6446.html' title='Multiple used in 2 places.'>rijndael_ctx</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>,
+<a name='L75'>  75         <b>const</b> <a href='../S/427.html#L89' title='Defined at 89 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_interop.h.'>UCHAR</a> *<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>,
+<a name='L76'>  76         <a href='../S/427.html#L49' title='Defined at 49 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_interop.h.'>INT</a> <a href='../Y/1632.html' title='Multiple used in 7 places.'>bits</a>)
+<a name='L77'>  77         ;
+<a name='L78'>  78 <i><font color='green'>/*                                                                                                                                                                                                              */</font></i>
+<a name='L79'>  79 <i><font color='green'>/******************************************************************************/</font></i>
+<a name='L80'>  80 
+<a name='L81'>  81 <i><font color='green'>/******************************************************************************/</font></i>
+<a name='L82'>  82 <i><font color='green'>/*      Block XOR macro definition                                                                                                                              */</font></i>
+<a name='L83'>  83 <i><font color='green'>/*                                                                                                                                                                                                              */</font></i>
+<a name='L84'>  84 <font color='darkred'>#define</font> XOR_BLOCK(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>) \
+<a name='L85'>  85         <font color='red'>{</font>                                               \
+<a name='L86'>  86                 <a href='../S/427.html#L49' title='Defined at 49 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_interop.h.'>INT</a> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;                                  \
+<a name='L87'>  87                 <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; (<a href='../S/427.html#L49' title='Defined at 49 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_interop.h.'>INT</a>)(<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>); <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++)        \
+<a name='L88'>  88                         (<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>)[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>] ^= (<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>)[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>];               \
+<a name='L89'>  89         <font color='red'>}</font>
+<a name='L90'>  90 <i><font color='green'>/*                                                                                                                                                                                                              */</font></i>
+<a name='L91'>  91 <i><font color='green'>/******************************************************************************/</font></i>
+<a name='L92'>  92 
+<a name='L93'>  93 <font color='darkred'>#endif</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

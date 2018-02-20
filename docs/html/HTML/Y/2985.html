@@ -1,0 +1,44 @@
+<html>
+<head>
+<title>fail_open</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/789.html#L65'>fail_open</a>          65 cbench/openflow/secchan/fail-open.c     struct fail_open_data *fail_open = fail_open_;
+<a href='../S/789.html#L69'>fail_open</a>          69 cbench/openflow/secchan/fail-open.c     if (time_now() &lt; fail_open-&gt;boot_deadline) {
+<a href='../S/789.html#L72'>fail_open</a>          72 cbench/openflow/secchan/fail-open.c     disconn_secs = rconn_failure_duration(fail_open-&gt;remote_rconn);
+<a href='../S/789.html#L73'>fail_open</a>          73 cbench/openflow/secchan/fail-open.c     open = disconn_secs &gt;= fail_open-&gt;s-&gt;probe_interval * 3;
+<a href='../S/789.html#L74'>fail_open</a>          74 cbench/openflow/secchan/fail-open.c     if (open != (fail_open-&gt;lswitch != NULL)) {
+<a href='../S/789.html#L77'>fail_open</a>          77 cbench/openflow/secchan/fail-open.c             lswitch_destroy(fail_open-&gt;lswitch);
+<a href='../S/789.html#L78'>fail_open</a>          78 cbench/openflow/secchan/fail-open.c             fail_open-&gt;lswitch = NULL;
+<a href='../S/789.html#L82'>fail_open</a>          82 cbench/openflow/secchan/fail-open.c             fail_open-&gt;lswitch = lswitch_create(fail_open-&gt;local_rconn, true,
+<a href='../S/789.html#L83'>fail_open</a>          83 cbench/openflow/secchan/fail-open.c                                                 fail_open-&gt;s-&gt;max_idle);
+<a href='../S/789.html#L84'>fail_open</a>          84 cbench/openflow/secchan/fail-open.c             fail_open-&gt;last_disconn_secs = disconn_secs;
+<a href='../S/789.html#L86'>fail_open</a>          86 cbench/openflow/secchan/fail-open.c     } else if (open &amp;&amp; disconn_secs &gt; fail_open-&gt;last_disconn_secs + 60) {
+<a href='../S/789.html#L89'>fail_open</a>          89 cbench/openflow/secchan/fail-open.c         fail_open-&gt;last_disconn_secs = disconn_secs;
+<a href='../S/789.html#L91'>fail_open</a>          91 cbench/openflow/secchan/fail-open.c     if (fail_open-&gt;lswitch) {
+<a href='../S/789.html#L92'>fail_open</a>          92 cbench/openflow/secchan/fail-open.c         lswitch_run(fail_open-&gt;lswitch, fail_open-&gt;local_rconn);
+<a href='../S/789.html#L99'>fail_open</a>          99 cbench/openflow/secchan/fail-open.c     struct fail_open_data *fail_open = fail_open_;
+<a href='../S/789.html#L100'>fail_open</a>         100 cbench/openflow/secchan/fail-open.c     if (fail_open-&gt;lswitch) {
+<a href='../S/789.html#L101'>fail_open</a>         101 cbench/openflow/secchan/fail-open.c         lswitch_wait(fail_open-&gt;lswitch);
+<a href='../S/789.html#L108'>fail_open</a>         108 cbench/openflow/secchan/fail-open.c     struct fail_open_data *fail_open = fail_open_;
+<a href='../S/789.html#L109'>fail_open</a>         109 cbench/openflow/secchan/fail-open.c     if (rconn_is_connected(fail_open-&gt;remote_rconn) || !fail_open-&gt;lswitch) {
+<a href='../S/789.html#L112'>fail_open</a>         112 cbench/openflow/secchan/fail-open.c         lswitch_process_packet(fail_open-&gt;lswitch, fail_open-&gt;local_rconn,
+<a href='../S/789.html#L114'>fail_open</a>         114 cbench/openflow/secchan/fail-open.c         rconn_run(fail_open-&gt;local_rconn);
+<a href='../S/789.html#L122'>fail_open</a>         122 cbench/openflow/secchan/fail-open.c     struct fail_open_data *fail_open = fail_open_;
+<a href='../S/789.html#L123'>fail_open</a>         123 cbench/openflow/secchan/fail-open.c     const struct settings *s = fail_open-&gt;s;
+<a href='../S/789.html#L125'>fail_open</a>         125 cbench/openflow/secchan/fail-open.c     int cur_duration = rconn_failure_duration(fail_open-&gt;remote_rconn);
+<a href='../S/789.html#L147'>fail_open</a>         147 cbench/openflow/secchan/fail-open.c     struct fail_open_data *fail_open = xmalloc(sizeof *fail_open);
+<a href='../S/789.html#L148'>fail_open</a>         148 cbench/openflow/secchan/fail-open.c     fail_open-&gt;s = s;
+<a href='../S/789.html#L149'>fail_open</a>         149 cbench/openflow/secchan/fail-open.c     fail_open-&gt;local_rconn = local_rconn;
+<a href='../S/789.html#L150'>fail_open</a>         150 cbench/openflow/secchan/fail-open.c     fail_open-&gt;remote_rconn = remote_rconn;
+<a href='../S/789.html#L151'>fail_open</a>         151 cbench/openflow/secchan/fail-open.c     fail_open-&gt;lswitch = NULL;
+<a href='../S/789.html#L152'>fail_open</a>         152 cbench/openflow/secchan/fail-open.c     fail_open-&gt;boot_deadline = time_now() + s-&gt;probe_interval * 3;
+<a href='../S/789.html#L154'>fail_open</a>         154 cbench/openflow/secchan/fail-open.c         fail_open-&gt;boot_deadline += STP_EXTRA_BOOT_TIME;
+<a href='../S/789.html#L157'>fail_open</a>         157 cbench/openflow/secchan/fail-open.c                                     fail_open_status_cb, fail_open);
+<a href='../S/789.html#L158'>fail_open</a>         158 cbench/openflow/secchan/fail-open.c     add_hook(secchan, &amp;fail_open_hook_class, fail_open);
+</pre>
+</body>
+</html>

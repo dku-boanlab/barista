@@ -1,0 +1,505 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/uat.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='472.html#L34' title='Included from 34 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat-int.h.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> *  uat.h</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> *  $Id: uat.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L5'>   5 <i><font color='green'> *</font></i>
+<a name='L6'>   6 <i><font color='green'> *  User Accessible Tables</font></i>
+<a name='L7'>   7 <i><font color='green'> *  Mantain an array of user accessible data strucures</font></i>
+<a name='L8'>   8 <i><font color='green'> *</font></i>
+<a name='L9'>   9 <i><font color='green'> * (c) 2007, Luis E. Garcia Ontanon &lt;luis.ontanon@gmail.com&gt;</font></i>
+<a name='L10'>  10 <i><font color='green'> *</font></i>
+<a name='L11'>  11 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L12'>  12 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L13'>  13 <i><font color='green'> * Copyright 2001 Gerald Combs</font></i>
+<a name='L14'>  14 <i><font color='green'> *</font></i>
+<a name='L15'>  15 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L16'>  16 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L17'>  17 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L18'>  18 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L21'>  21 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L23'>  23 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L24'>  24 <i><font color='green'> *</font></i>
+<a name='L25'>  25 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L26'>  26 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L27'>  27 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L28'>  28 <i><font color='green'> */</font></i>
+<a name='L29'>  29 
+<a name='L30'>  30 <font color='darkred'>#ifndef</font> <a href='../S/373.html#L31' title='Defined at 31 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>_UAT_H_</a>
+<a name='L31'>  31 <font color='darkred'>#define</font> <a href='../S/373.html#L30' title='Refered from 30 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>_UAT_H_</a>
+<a name='L32'>  32 
+<a name='L33'>  33 <i><font color='green'>/*</font></i>
+<a name='L34'>  34 <i><font color='green'> * uat mantains a dynamically allocated table accessible to the user</font></i>
+<a name='L35'>  35 <i><font color='green'> * via a file and/or gui tables.</font></i>
+<a name='L36'>  36 <i><font color='green'> *</font></i>
+<a name='L37'>  37 <i><font color='green'> * the file is located either in userdir(when first read or when writen) or</font></i>
+<a name='L38'>  38 <i><font color='green'> * in datadir for defaults (read only , it will be always written to userdir).</font></i>
+<a name='L39'>  39 <i><font color='green'> *</font></i>
+<a name='L40'>  40 <i><font color='green'> * the behaviour of the table is controlled by a series of callbacks</font></i>
+<a name='L41'>  41 <i><font color='green'> * the caller must provide.</font></i>
+<a name='L42'>  42 <i><font color='green'> *</font></i>
+<a name='L43'>  43 <i><font color='green'> * BEWARE that the user can change an uat at (almost) any time,</font></i>
+<a name='L44'>  44 <i><font color='green'> * That is pointers to records in an uat are valid only during the call</font></i>
+<a name='L45'>  45 <i><font color='green'> * to the function that obtains them (do not store them).</font></i>
+<a name='L46'>  46 <i><font color='green'> *</font></i>
+<a name='L47'>  47 <i><font color='green'> * UATs are meant for short tables of user data (passwords and such) there's</font></i>
+<a name='L48'>  48 <i><font color='green'> * no quick access, you must iterate through them each time to fetch the record</font></i>
+<a name='L49'>  49 <i><font color='green'> * you are looking for. Use uat_dup() or uat_se_dup() if necessary.</font></i>
+<a name='L50'>  50 <i><font color='green'> *</font></i>
+<a name='L51'>  51 <i><font color='green'> * Only users via gui or editing the file can add/remove records your code cannot.</font></i>
+<a name='L52'>  52 <i><font color='green'> */</font></i>
+<a name='L53'>  53 
+<a name='L54'>  54 <i><font color='green'>/* obscure data type to handle an uat */</font></i>
+<a name='L55'>  55 <b>typedef</b> <b>struct</b> <a href='../S/472.html#L48' title='Defined at 48 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat-int.h.'>_uat_t</a> <a href='../R/4865.html' title='Multiple refered from 14 places.'>uat_t</a>;
+<a name='L56'>  56 <i><font color='green'>/********************************************</font></i>
+<a name='L57'>  57 <i><font color='green'> * Callbacks:</font></i>
+<a name='L58'>  58 <i><font color='green'> * these instruct uat on how to deal with user info and data in records</font></i>
+<a name='L59'>  59 <i><font color='green'> ********************************************/</font></i>
+<a name='L60'>  60 
+<a name='L61'>  61 <i><font color='green'>/********</font></i>
+<a name='L62'>  62 <i><font color='green'> * Callbacks for the entire table (these deal with entire records)</font></i>
+<a name='L63'>  63 <i><font color='green'> ********/</font></i>
+<a name='L64'>  64 
+<a name='L65'>  65 <i><font color='green'>/*</font></i>
+<a name='L66'>  66 <i><font color='green'> * Copy CB</font></i>
+<a name='L67'>  67 <i><font color='green'> * used to copy a record</font></i>
+<a name='L68'>  68 <i><font color='green'> * optional, memcpy will be used if not given</font></i>
+<a name='L69'>  69 <i><font color='green'> * copy(dest,orig,len)</font></i>
+<a name='L70'>  70 <i><font color='green'> */</font></i>
+<a name='L71'>  71 <b>typedef</b> <b>void</b>* (*<a href='../Y/7577.html' title='Multiple used in 3 places.'>uat_copy_cb_t</a>)(<b>void</b>*, <b>const</b> <b>void</b>*, <b>unsigned</b>);
+<a name='L72'>  72 
+<a name='L73'>  73 <i><font color='green'>/*</font></i>
+<a name='L74'>  74 <i><font color='green'> *</font></i>
+<a name='L75'>  75 <i><font color='green'> * Free CB</font></i>
+<a name='L76'>  76 <i><font color='green'> *</font></i>
+<a name='L77'>  77 <i><font color='green'> * destroy a record's child data</font></i>
+<a name='L78'>  78 <i><font color='green'> * (do not free the container, it will be handled by uat)</font></i>
+<a name='L79'>  79 <i><font color='green'> * it is optional, no child data will be freed if no present</font></i>
+<a name='L80'>  80 <i><font color='green'> * free(record)</font></i>
+<a name='L81'>  81 <i><font color='green'> */</font></i>
+<a name='L82'>  82 <b>typedef</b> <b>void</b> (*<a href='../Y/7591.html' title='Multiple used in 3 places.'>uat_free_cb_t</a>)(<b>void</b>*);
+<a name='L83'>  83 
+<a name='L84'>  84 <i><font color='green'>/*</font></i>
+<a name='L85'>  85 <i><font color='green'> * Update CB</font></i>
+<a name='L86'>  86 <i><font color='green'> *</font></i>
+<a name='L87'>  87 <i><font color='green'> * to be called after all record fields has been updated</font></i>
+<a name='L88'>  88 <i><font color='green'> * optional, record will be updated always if not given</font></i>
+<a name='L89'>  89 <i><font color='green'> * update(record,&amp;error)</font></i>
+<a name='L90'>  90 <i><font color='green'> */</font></i>
+<a name='L91'>  91 <b>typedef</b> <b>void</b> (*<a href='../Y/7598.html' title='Multiple used in 3 places.'>uat_update_cb_t</a>)(<b>void</b>* , <b>const</b> <b>char</b>** );
+<a name='L92'>  92 
+<a name='L93'>  93 
+<a name='L94'>  94 <i><font color='green'>/*******</font></i>
+<a name='L95'>  95 <i><font color='green'> * Callbacks for single fields (these deal with single values)</font></i>
+<a name='L96'>  96 <i><font color='green'> * the caller should provide one of these for every field!</font></i>
+<a name='L97'>  97 <i><font color='green'> ********/</font></i>
+<a name='L98'>  98 
+<a name='L99'>  99 <i><font color='green'>/*</font></i>
+<a name='L100'> 100 <i><font color='green'> * given an input string (ptr, len) checks if the value is OK for a field in the record.</font></i>
+<a name='L101'> 101 <i><font color='green'> * it will return TRUE if OK or else</font></i>
+<a name='L102'> 102 <i><font color='green'> * it will return FALSE and may set *error to inform the user on what's</font></i>
+<a name='L103'> 103 <i><font color='green'> * wrong with the given input</font></i>
+<a name='L104'> 104 <i><font color='green'> * optional, if not given any input is considered OK and the set cb will be called</font></i>
+<a name='L105'> 105 <i><font color='green'> * chk(record, ptr, len, chk_data, fld_data, &amp;error)</font></i>
+<a name='L106'> 106 <i><font color='green'> */</font></i>
+<a name='L107'> 107 <b>typedef</b> <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> (*<a href='../Y/7579.html' title='Multiple used in 2 places.'>uat_fld_chk_cb_t</a>)(<b>void</b>*, <b>const</b> <b>char</b>*, <b>unsigned</b>, <b>void</b>*, <b>void</b>*, <b>const</b> <b>char</b>**);
+<a name='L108'> 108 
+<a name='L109'> 109 <i><font color='green'>/*</font></i>
+<a name='L110'> 110 <i><font color='green'> * Set Field CB</font></i>
+<a name='L111'> 111 <i><font color='green'> *</font></i>
+<a name='L112'> 112 <i><font color='green'> * given an input string (ptr, len) sets the value of a field in the record,</font></i>
+<a name='L113'> 113 <i><font color='green'> * it will return TRUE if OK or else</font></i>
+<a name='L114'> 114 <i><font color='green'> * it will return FALSE and may set *error to inform the user on what's</font></i>
+<a name='L115'> 115 <i><font color='green'> * wrong with the given input</font></i>
+<a name='L116'> 116 <i><font color='green'> * it is mandatory</font></i>
+<a name='L117'> 117 <i><font color='green'> * set(record, ptr, len, set_data, fld_data)</font></i>
+<a name='L118'> 118 <i><font color='green'> */</font></i>
+<a name='L119'> 119 <b>typedef</b> <b>void</b> (*<a href='../Y/7589.html' title='Multiple used in 2 places.'>uat_fld_set_cb_t</a>)(<b>void</b>*, <b>const</b> <b>char</b>*, <b>unsigned</b>, <b>void</b>*, <b>void</b>*);
+<a name='L120'> 120 
+<a name='L121'> 121 <i><font color='green'>/*</font></i>
+<a name='L122'> 122 <i><font color='green'> * given a record returns a string representation of the field</font></i>
+<a name='L123'> 123 <i><font color='green'> * mandatory</font></i>
+<a name='L124'> 124 <i><font color='green'> * tostr(record, &amp;out_ptr, &amp;out_len, tostr_data, fld_data)</font></i>
+<a name='L125'> 125 <i><font color='green'> */</font></i>
+<a name='L126'> 126 <b>typedef</b> <b>void</b> (*<a href='../Y/7590.html' title='Multiple used in 2 places.'>uat_fld_tostr_cb_t</a>)(<b>void</b>*, <b>const</b> <b>char</b>**, <b>unsigned</b>*, <b>void</b>*, <b>void</b>*);
+<a name='L127'> 127 
+<a name='L128'> 128 <i><font color='green'>/***********</font></i>
+<a name='L129'> 129 <i><font color='green'> * Text Mode</font></i>
+<a name='L130'> 130 <i><font color='green'> *</font></i>
+<a name='L131'> 131 <i><font color='green'> * used for file and dialog representation of fileds in columns,</font></i>
+<a name='L132'> 132 <i><font color='green'> * when the file is read it modifies the way the value is passed back to the fld_set_cb</font></i>
+<a name='L133'> 133 <i><font color='green'> * (see definition bellow for description)</font></i>
+<a name='L134'> 134 <i><font color='green'> ***********/</font></i>
+<a name='L135'> 135 
+<a name='L136'> 136 <b>typedef</b> <b>enum</b> _uat_text_mode_t <font color='red'>{</font>
+<a name='L137'> 137         <a href='../S/373.html#L202' title='Refered from 202 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>PT_TXTMOD_NONE</a>,
+<a name='L138'> 138         <i><font color='green'>/* not used */</font></i>
+<a name='L139'> 139 
+<a name='L140'> 140         <a href='../R/1494.html' title='Multiple refered from 8 places.'>PT_TXTMOD_STRING</a>,
+<a name='L141'> 141         <i><font color='green'>/*</font></i>
+<a name='L142'> 142 <i><font color='green'>         file:</font></i>
+<a name='L143'> 143 <i><font color='green'>                 reads:</font></i>
+<a name='L144'> 144 <i><font color='green'>                         ,"\x20\x00\x30", as " \00",3</font></i>
+<a name='L145'> 145 <i><font color='green'>                         ,"", as "",0</font></i>
+<a name='L146'> 146 <i><font color='green'>                         ,, as NULL,0</font></i>
+<a name='L147'> 147 <i><font color='green'>                 writes:</font></i>
+<a name='L148'> 148 <i><font color='green'>                         ,"\x20\x30\x00\x20", for " 0\0 ",4</font></i>
+<a name='L149'> 149 <i><font color='green'>                         ,"", for *, 0</font></i>
+<a name='L150'> 150 <i><font color='green'>                         ,, for NULL, *</font></i>
+<a name='L151'> 151 <i><font color='green'>         dialog:</font></i>
+<a name='L152'> 152 <i><font color='green'>                 accepts \x?? and other escapes</font></i>
+<a name='L153'> 153 <i><font color='green'>                 gets "",0 on empty string</font></i>
+<a name='L154'> 154 <i><font color='green'>         */</font></i>
+<a name='L155'> 155         <a href='../S/373.html#L376' title='Refered from 376 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>PT_TXTMOD_HEXBYTES</a>,
+<a name='L156'> 156         <i><font color='green'>/*</font></i>
+<a name='L157'> 157 <i><font color='green'>         file:</font></i>
+<a name='L158'> 158 <i><font color='green'>                 reads:</font></i>
+<a name='L159'> 159 <i><font color='green'>                         ,A1b2C3d4, as "\001\002\003\004",4</font></i>
+<a name='L160'> 160 <i><font color='green'>                         ,, as NULL,0</font></i>
+<a name='L161'> 161 <i><font color='green'>                 writes:</font></i>
+<a name='L162'> 162 <i><font color='green'>                         ,, on NULL, *</font></i>
+<a name='L163'> 163 <i><font color='green'>                         ,a1b2c3d4, on "\001\002\003\004",4</font></i>
+<a name='L164'> 164 <i><font color='green'>         dialog:</font></i>
+<a name='L165'> 165 <i><font color='green'>                 "a1b2c3d4" as "\001\002\003\004",4</font></i>
+<a name='L166'> 166 <i><font color='green'>                 "a1 b2:c3d4" as "\001\002\003\004",4</font></i>
+<a name='L167'> 167 <i><font color='green'>                 "" as NULL,0</font></i>
+<a name='L168'> 168 <i><font color='green'>                 "invalid" as NULL,3</font></i>
+<a name='L169'> 169 <i><font color='green'>                 "a1b" as NULL, 1</font></i>
+<a name='L170'> 170 <i><font color='green'>         */</font></i>
+<a name='L171'> 171         <a href='../S/373.html#L434' title='Refered from 434 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>PT_TXTMOD_ENUM</a>
+<a name='L172'> 172 <font color='red'>}</font> <a href='../S/373.html#L181' title='Refered from 181 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>uat_text_mode_t</a>;
+<a name='L173'> 173 
+<a name='L174'> 174 <i><font color='green'>/*</font></i>
+<a name='L175'> 175 <i><font color='green'> * Fields</font></i>
+<a name='L176'> 176 <i><font color='green'> *</font></i>
+<a name='L177'> 177 <i><font color='green'> *</font></i>
+<a name='L178'> 178 <i><font color='green'> */</font></i>
+<a name='L179'> 179 <b>typedef</b> <b>struct</b> _uat_field_t <font color='red'>{</font>
+<a name='L180'> 180         <b>const</b> <b>char</b>* <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;
+<a name='L181'> 181         <a href='../S/373.html#L172' title='Defined at 172 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>uat_text_mode_t</a> <a href='../Y/4483.html' title='Multiple used in 57 places.'>mode</a>;
+<a name='L182'> 182 
+<a name='L183'> 183         <b>struct</b> <font color='red'>{</font>
+<a name='L184'> 184                 <a href='../Y/7579.html' title='Multiple used in 2 places.'>uat_fld_chk_cb_t</a> <a href='../Y/1873.html' title='Multiple used in 4 places.'>chk</a>;
+<a name='L185'> 185                 <a href='../Y/7589.html' title='Multiple used in 2 places.'>uat_fld_set_cb_t</a> <a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>;
+<a name='L186'> 186                 <a href='../Y/7590.html' title='Multiple used in 2 places.'>uat_fld_tostr_cb_t</a> <a href='../Y/7428.html' title='Multiple used in 2 places.'>tostr</a>;
+<a name='L187'> 187         <font color='red'>}</font> <a href='../Y/1818.html' title='Multiple used in 85 places.'>cb</a>;
+<a name='L188'> 188 
+<a name='L189'> 189         <b>struct</b> <font color='red'>{</font>
+<a name='L190'> 190                 <b>void</b>* <a href='../Y/1873.html' title='Multiple used in 4 places.'>chk</a>;
+<a name='L191'> 191                 <b>void</b>* <a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>;
+<a name='L192'> 192                 <b>void</b>* <a href='../Y/7428.html' title='Multiple used in 2 places.'>tostr</a>;
+<a name='L193'> 193         <font color='red'>}</font> cbdata;
+<a name='L194'> 194 
+<a name='L195'> 195         <b>void</b>* fld_data;
+<a name='L196'> 196 
+<a name='L197'> 197         <b>const</b> <b>char</b>* <a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>;
+<a name='L198'> 198         <b>struct</b> <a href='../S/472.html#L42' title='Defined at 42 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat-int.h.'>_fld_data_t</a>* <a href='../Y/5910.html' title='Multiple used in 53 places.'>priv</a>;
+<a name='L199'> 199 <font color='red'>}</font> <a href='../R/4862.html' title='Multiple refered from 2 places.'>uat_field_t</a>;
+<a name='L200'> 200 
+<a name='L201'> 201 <font color='darkred'>#define</font> <a href='../R/607.html' title='Multiple refered from 11 places.'>FLDFILL</a> <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>
+<a name='L202'> 202 <font color='darkred'>#define</font> UAT_END_FIELDS <font color='red'>{</font>0,<a href='../S/373.html#L137' title='Defined at 137 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>PT_TXTMOD_NONE</a>,<font color='red'>{</font>0,0,0<font color='red'>}</font>,<font color='red'>{</font>0,0,0<font color='red'>}</font>,0,0,<a href='../S/373.html#L201' title='Defined at 201 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>FLDFILL</a><font color='red'>}</font>
+<a name='L203'> 203 
+<a name='L204'> 204 
+<a name='L205'> 205 <font color='darkred'>#define</font> UAT_CAT_GENERAL "General"
+<a name='L206'> 206 <font color='darkred'>#define</font> UAT_CAT_PORTS "Port Assignments"
+<a name='L207'> 207 <font color='darkred'>#define</font> UAT_CAT_CRYPTO "Decryption"
+<a name='L208'> 208 <font color='darkred'>#define</font> UAT_CAT_FFMT "File Formats"
+<a name='L209'> 209 
+<a name='L210'> 210 <i><font color='green'>/** Create a new uat</font></i>
+<a name='L211'> 211 <i><font color='green'> *</font></i>
+<a name='L212'> 212 <i><font color='green'> * @param name The name of the table</font></i>
+<a name='L213'> 213 <i><font color='green'> * @param data_ptr A pointer to a null terminated array of pointers to the data</font></i>
+<a name='L214'> 214 <i><font color='green'> * @param default_data A pointer to a struct containing default values</font></i>
+<a name='L215'> 215 <i><font color='green'> * @param size The size of the structure</font></i>
+<a name='L216'> 216 <i><font color='green'> * @param filename The filename to be used (either in userdir or datadir)</font></i>
+<a name='L217'> 217 <i><font color='green'> * @param copy_cb A function that copies the data in the struct</font></i>
+<a name='L218'> 218 <i><font color='green'> * @param update_cb Will be called when a record is updated</font></i>
+<a name='L219'> 219 <i><font color='green'> * @param free_cb Will be called to destroy a struct in the dataset</font></i>
+<a name='L220'> 220 <i><font color='green'> *</font></i>
+<a name='L221'> 221 <i><font color='green'> * @return A freshly-allocated and populated uat_t struct.</font></i>
+<a name='L222'> 222 <i><font color='green'> */</font></i>
+<a name='L223'> 223 <a href='../S/373.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>uat_t</a>* uat_new(<b>const</b> <b>char</b>* <a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>,
+<a name='L224'> 224                            <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>,
+<a name='L225'> 225                            <b>const</b> <b>char</b>* <a href='../Y/3055.html' title='Multiple used in 60 places.'>filename</a>,
+<a name='L226'> 226                            <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/3253.html' title='Multiple used in 3 places.'>from_profile</a>,
+<a name='L227'> 227                            <b>void</b>** data_ptr,
+<a name='L228'> 228                            <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a>* num_items,
+<a name='L229'> 229                            <b>const</b> <b>char</b>* <a href='../Y/1817.html' title='Multiple used in 12 places.'>category</a>,
+<a name='L230'> 230                            <b>const</b> <b>char</b>* <a href='../Y/3603.html' title='Multiple used in 13 places.'>help</a>,
+<a name='L231'> 231                            <a href='../Y/7577.html' title='Multiple used in 3 places.'>uat_copy_cb_t</a> <a href='../Y/2137.html' title='Multiple used in 2 places.'>copy_cb</a>,
+<a name='L232'> 232                            <a href='../Y/7598.html' title='Multiple used in 3 places.'>uat_update_cb_t</a> <a href='../Y/7656.html' title='Multiple used in 2 places.'>update_cb</a>,
+<a name='L233'> 233                            <a href='../Y/7591.html' title='Multiple used in 3 places.'>uat_free_cb_t</a> <a href='../Y/3234.html' title='Multiple used in 3 places.'>free_cb</a>,
+<a name='L234'> 234                            <a href='../S/373.html#L199' title='Defined at 199 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>uat_field_t</a>* flds_array);
+<a name='L235'> 235 
+<a name='L236'> 236 <i><font color='green'>/** Populate a uat using its file.</font></i>
+<a name='L237'> 237 <i><font color='green'> *</font></i>
+<a name='L238'> 238 <i><font color='green'> * @param uat_in Pointer to a uat. Must not be NULL.</font></i>
+<a name='L239'> 239 <i><font color='green'> * @param err Upon failure, points to an error string.</font></i>
+<a name='L240'> 240 <i><font color='green'> *</font></i>
+<a name='L241'> 241 <i><font color='green'> * @return TRUE on success, FALSE on failure.</font></i>
+<a name='L242'> 242 <i><font color='green'> */</font></i>
+<a name='L243'> 243 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> uat_load(<a href='../S/373.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>uat_t</a>* <a href='../Y/7592.html' title='Multiple used in 2 places.'>uat_in</a>, <b>char</b>** <a href='../Y/2737.html' title='Multiple used in 82 places.'>err</a>);
+<a name='L244'> 244 
+<a name='L245'> 245 <i><font color='green'>/** Create or update a single uat entry using a string.</font></i>
+<a name='L246'> 246 <i><font color='green'> *</font></i>
+<a name='L247'> 247 <i><font color='green'> * @param uat_in Pointer to a uat. Must not be NULL.</font></i>
+<a name='L248'> 248 <i><font color='green'> * @param entry The string representation of the entry. Format must match</font></i>
+<a name='L249'> 249 <i><font color='green'> * what's written to the uat's output file.</font></i>
+<a name='L250'> 250 <i><font color='green'> * @param err Upon failure, points to an error string.</font></i>
+<a name='L251'> 251 <i><font color='green'> *</font></i>
+<a name='L252'> 252 <i><font color='green'> * @return TRUE on success, FALSE on failure.</font></i>
+<a name='L253'> 253 <i><font color='green'> */</font></i>
+<a name='L254'> 254 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> uat_load_str(<a href='../S/373.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>uat_t</a>* <a href='../Y/7592.html' title='Multiple used in 2 places.'>uat_in</a>, <b>char</b>* <a href='../Y/2701.html' title='Multiple used in 33 places.'>entry</a>, <b>char</b>** <a href='../Y/2737.html' title='Multiple used in 82 places.'>err</a>);
+<a name='L255'> 255 
+<a name='L256'> 256 <i><font color='green'>/** Given a uat name or filename, find its pointer.</font></i>
+<a name='L257'> 257 <i><font color='green'> *</font></i>
+<a name='L258'> 258 <i><font color='green'> * @param name The name or filename of the uat</font></i>
+<a name='L259'> 259 <i><font color='green'> *</font></i>
+<a name='L260'> 260 <i><font color='green'> * @return A pointer to the uat on success, NULL on failure.</font></i>
+<a name='L261'> 261 <i><font color='green'> */</font></i>
+<a name='L262'> 262 <a href='../S/373.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>uat_t</a> *uat_find(<a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>);
+<a name='L263'> 263 
+<a name='L264'> 264 <i><font color='green'>/*</font></i>
+<a name='L265'> 265 <i><font color='green'> * uat_dup()</font></i>
+<a name='L266'> 266 <i><font color='green'> * uat_se_dup()</font></i>
+<a name='L267'> 267 <i><font color='green'> * make a reliable copy of an uat for internal use,</font></i>
+<a name='L268'> 268 <i><font color='green'> * so that pointers to records can be kept through calls.</font></i>
+<a name='L269'> 269 <i><font color='green'> * return NULL on zero len.</font></i>
+<a name='L270'> 270 <i><font color='green'> */</font></i>
+<a name='L271'> 271 <b>void</b>* uat_dup(<a href='../S/373.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>uat_t</a>*, <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a>* <a href='../Y/4122.html' title='Multiple used in 5 places.'>len_p</a>); <i><font color='green'>/* to be freed */</font></i>
+<a name='L272'> 272 <b>void</b>* uat_se_dup(<a href='../S/373.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>uat_t</a>*, <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a>* <a href='../Y/4122.html' title='Multiple used in 5 places.'>len_p</a>);
+<a name='L273'> 273 <a href='../S/373.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>uat_t</a>* uat_get_table_by_name(<b>const</b> <b>char</b>* <a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>);
+<a name='L274'> 274 
+<a name='L275'> 275 <i><font color='green'>/*</font></i>
+<a name='L276'> 276 <i><font color='green'> * Some common uat_fld_chk_cbs</font></i>
+<a name='L277'> 277 <i><font color='green'> */</font></i>
+<a name='L278'> 278 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> uat_fld_chk_str(<b>void</b>*, <b>const</b> <b>char</b>*, <b>unsigned</b>, <b>void</b>*,<b>void</b>*, <b>const</b> <b>char</b>** <a href='../Y/2737.html' title='Multiple used in 82 places.'>err</a>);
+<a name='L279'> 279 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> uat_fld_chk_proto(<b>void</b>*, <b>const</b> <b>char</b>*, <b>unsigned</b>, <b>void</b>*,<b>void</b>*, <b>const</b> <b>char</b>** <a href='../Y/2737.html' title='Multiple used in 82 places.'>err</a>);
+<a name='L280'> 280 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> uat_fld_chk_num_dec(<b>void</b>*, <b>const</b> <b>char</b>*, <b>unsigned</b>, <b>void</b>*, <b>void</b>*, <b>const</b> <b>char</b>** <a href='../Y/2737.html' title='Multiple used in 82 places.'>err</a>);
+<a name='L281'> 281 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> uat_fld_chk_num_hex(<b>void</b>*, <b>const</b> <b>char</b>*, <b>unsigned</b>, <b>void</b>*, <b>void</b>*, <b>const</b> <b>char</b>** <a href='../Y/2737.html' title='Multiple used in 82 places.'>err</a>);
+<a name='L282'> 282 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> uat_fld_chk_enum(<b>void</b>*, <b>const</b> <b>char</b>*, <b>unsigned</b>, <b>void</b>*, <b>void</b>*, <b>const</b> <b>char</b>**);
+<a name='L283'> 283 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> uat_fld_chk_range(<b>void</b>*, <b>const</b> <b>char</b>*, <b>unsigned</b>, <b>void</b>*, <b>void</b>*, <b>const</b> <b>char</b>**);
+<a name='L284'> 284 
+<a name='L285'> 285 <font color='darkred'>#define</font> <a href='../R/175.html' title='Multiple refered from 5 places.'>CHK_STR_IS_DECL</a>(<a href='../Y/7865.html' title='Multiple used in 5 places.'>what</a>) \
+<a name='L286'> 286 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/7586.html' title='Multiple used in 2 places.'>uat_fld_chk_str_</a> ## <a href='../Y/7865.html' title='Multiple used in 5 places.'>what</a> (<b>void</b>*, <b>const</b> <b>char</b>*, <b>unsigned</b>, <b>void</b>*, <b>void</b>*, <b>const</b> <b>char</b>**)
+<a name='L287'> 287 
+<a name='L288'> 288 <b>typedef</b> <b>void</b> (*<a href='../Y/7576.html' title='Multiple used in 2 places.'>uat_cb_t</a>)(<b>void</b>* <a href='../Y/7575.html' title='Multiple used in 6 places.'>uat</a>,<b>void</b>* <a href='../Y/7684.html' title='Multiple used in 30 places.'>user_data</a>);
+<a name='L289'> 289 <b>void</b> uat_foreach_table(<a href='../Y/7576.html' title='Multiple used in 2 places.'>uat_cb_t</a> <a href='../Y/1818.html' title='Multiple used in 85 places.'>cb</a>,<b>void</b>* <a href='../Y/7684.html' title='Multiple used in 30 places.'>user_data</a>);
+<a name='L290'> 290 <b>void</b> uat_unload_all(<b>void</b>);
+<a name='L291'> 291 
+<a name='L292'> 292 <b>char</b>* uat_undquote(<b>const</b> <b>char</b>* <a href='../Y/6755.html' title='Multiple used in 3 places.'>si</a>, <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/3781.html' title='Multiple used in 3 places.'>in_len</a>, <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a>* <a href='../Y/4122.html' title='Multiple used in 5 places.'>len_p</a>);
+<a name='L293'> 293 <b>char</b>* uat_unbinstring(<b>const</b> <b>char</b>* <a href='../Y/6755.html' title='Multiple used in 3 places.'>si</a>, <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/3781.html' title='Multiple used in 3 places.'>in_len</a>, <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a>* <a href='../Y/4122.html' title='Multiple used in 5 places.'>len_p</a>);
+<a name='L294'> 294 <b>char</b>* uat_unesc(<b>const</b> <b>char</b>* <a href='../Y/6755.html' title='Multiple used in 3 places.'>si</a>, <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/3781.html' title='Multiple used in 3 places.'>in_len</a>, <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a>* <a href='../Y/4122.html' title='Multiple used in 5 places.'>len_p</a>);
+<a name='L295'> 295 <b>char</b>* uat_esc(<b>const</b> <b>char</b>* <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>);
+<a name='L296'> 296 
+<a name='L297'> 297 <i><font color='green'>/* Some strings entirely made of ... already declared */</font></i>
+<a name='L298'> 298 <a href='../S/373.html#L285' title='Defined at 285 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>CHK_STR_IS_DECL</a>(isprint);
+<a name='L299'> 299 <a href='../S/373.html#L285' title='Defined at 285 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>CHK_STR_IS_DECL</a>(<a href='../Y/3941.html' title='Multiple used in 3 places.'>isalpha</a>);
+<a name='L300'> 300 <a href='../S/373.html#L285' title='Defined at 285 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>CHK_STR_IS_DECL</a>(isalnum);
+<a name='L301'> 301 <a href='../S/373.html#L285' title='Defined at 285 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>CHK_STR_IS_DECL</a>(<a href='../Y/3943.html' title='Multiple used in 6 places.'>isdigit</a>);
+<a name='L302'> 302 <a href='../S/373.html#L285' title='Defined at 285 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>CHK_STR_IS_DECL</a>(<a href='../Y/3950.html' title='Multiple used in 2 places.'>isxdigit</a>);
+<a name='L303'> 303 
+<a name='L304'> 304 <font color='darkred'>#define</font> CHK_STR_IS_DEF(<a href='../Y/7865.html' title='Multiple used in 5 places.'>what</a>) \
+<a name='L305'> 305 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/7586.html' title='Multiple used in 2 places.'>uat_fld_chk_str_</a> ## <a href='../Y/7865.html' title='Multiple used in 5 places.'>what</a> (<b>void</b>* <a href='../Y/7564.html' title='Multiple used in 15 places.'>u1</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>const</b> <b>char</b>* <a href='../Y/7104.html' title='Multiple used in 8 places.'>strptr</a>, <b>unsigned</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>void</b>* u3 <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>const</b> <b>char</b>** <a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>) <font color='red'>{</font> \
+<a name='L306'> 306         <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>; <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>=0;<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>&lt;<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font> \
+<a name='L307'> 307                 <b>char</b> <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> = <a href='../Y/7104.html' title='Multiple used in 8 places.'>strptr</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]; \
+<a name='L308'> 308                         <b>if</b> (! <a href='../Y/7865.html' title='Multiple used in 5 places.'>what</a>((<b>int</b>)<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>)) <font color='red'>{</font> \
+<a name='L309'> 309                                 *<a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a> = <a href='../S/443.html#L66' title='Defined at 66 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/emem.h.'>ep_strdup_printf</a>("invalid char pos=%d value=%.2x",<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>,<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>); <b>return</b> <a href='../D/1780.html' title='Multiple defined in 7 places.'>FALSE</a>;  <font color='red'>}</font> <font color='red'>}</font> \
+<a name='L310'> 310                 *<a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>; <b>return</b> <a href='../D/5695.html' title='Multiple defined in 7 places.'>TRUE</a>; <font color='red'>}</font>
+<a name='L311'> 311 
+<a name='L312'> 312 
+<a name='L313'> 313 <i><font color='green'>/*</font></i>
+<a name='L314'> 314 <i><font color='green'> * Macros</font></i>
+<a name='L315'> 315 <i><font color='green'> *   to define basic uat_fld_set_cbs, uat_fld_tostr_cbs</font></i>
+<a name='L316'> 316 <i><font color='green'> *   for those elements in uat_field_t array</font></i>
+<a name='L317'> 317 <i><font color='green'> */</font></i>
+<a name='L318'> 318 
+<a name='L319'> 319 <i><font color='green'>/*</font></i>
+<a name='L320'> 320 <i><font color='green'> * CSTRING macros,</font></i>
+<a name='L321'> 321 <i><font color='green'> *    a simple c-string contained in (((rec_t*)rec)-&gt;(field_name))</font></i>
+<a name='L322'> 322 <i><font color='green'> */</font></i>
+<a name='L323'> 323 <font color='darkred'>#define</font> UAT_CSTRING_CB_DEF(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>) \
+<a name='L324'> 324 <b>static</b> <b>void</b> <a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>(<b>void</b>* <a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>, <b>const</b> <b>char</b>* <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <b>unsigned</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>void</b>* <a href='../Y/7564.html' title='Multiple used in 15 places.'>u1</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>) <font color='red'>{</font>\
+<a name='L325'> 325         <b>if</b> ((((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>)) <a href='../Y/3299.html' title='Multiple used in 3 places.'>g_free</a>((((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>)); \
+<a name='L326'> 326         (((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>) = g_strndup(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>,<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>); <font color='red'>}</font> \
+<a name='L327'> 327 <b>static</b> <b>void</b> <a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a>(<b>void</b>* <a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>, <b>const</b> <b>char</b>** <a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a>, <b>unsigned</b>* <a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a>, <b>void</b>* <a href='../Y/7564.html' title='Multiple used in 15 places.'>u1</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>) <font color='red'>{</font>\
+<a name='L328'> 328                 <b>if</b> (((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ) <font color='red'>{</font> \
+<a name='L329'> 329                         *<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a> = (((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>); *<a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a> = <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>((((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>)); \
+<a name='L330'> 330                 <font color='red'>}</font> <b>else</b> <font color='red'>{</font> \
+<a name='L331'> 331                         *<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a> = ""; *<a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a> = 0; <font color='red'>}</font> <font color='red'>}</font>
+<a name='L332'> 332 
+<a name='L333'> 333 <font color='darkred'>#define</font> UAT_FLD_CSTRING(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>) \
+<a name='L334'> 334         <font color='red'>{</font>#<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>, <a href='../S/373.html#L140' title='Defined at 140 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>PT_TXTMOD_STRING</a>,<font color='red'>{</font>uat_fld_chk_str,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a><font color='red'>}</font>,<font color='red'>{</font>0,0,0<font color='red'>}</font>,0,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>,<a href='../S/373.html#L201' title='Defined at 201 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>FLDFILL</a><font color='red'>}</font>
+<a name='L335'> 335 
+<a name='L336'> 336 <font color='darkred'>#define</font> UAT_FLD_CSTRING_ISPRINT(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>) \
+<a name='L337'> 337         <font color='red'>{</font>#<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>, <a href='../S/373.html#L140' title='Defined at 140 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>PT_TXTMOD_STRING</a>,<font color='red'>{</font>uat_fld_chk_str_isprint,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a><font color='red'>}</font>,<font color='red'>{</font>0,0,0<font color='red'>}</font>,0,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>,<a href='../S/373.html#L201' title='Defined at 201 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>FLDFILL</a><font color='red'>}</font>
+<a name='L338'> 338 
+<a name='L339'> 339 <font color='darkred'>#define</font> UAT_FLD_CSTRING_OTHER(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<a href='../Y/1873.html' title='Multiple used in 4 places.'>chk</a>,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>) \
+<a name='L340'> 340         <font color='red'>{</font>#<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>, <a href='../S/373.html#L140' title='Defined at 140 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>PT_TXTMOD_STRING</a>,<font color='red'>{</font> <a href='../Y/1873.html' title='Multiple used in 4 places.'>chk</a> ,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a><font color='red'>}</font>,<font color='red'>{</font>0,0,0<font color='red'>}</font>,0,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>,<a href='../S/373.html#L201' title='Defined at 201 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>FLDFILL</a><font color='red'>}</font>
+<a name='L341'> 341 
+<a name='L342'> 342 <i><font color='green'>/*</font></i>
+<a name='L343'> 343 <i><font color='green'> * LSTRING MACROS</font></i>
+<a name='L344'> 344 <i><font color='green'> */</font></i>
+<a name='L345'> 345 <font color='darkred'>#define</font> UAT_LSTRING_CB_DEF(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>,<a href='../Y/6156.html' title='Multiple used in 9 places.'>ptr_element</a>,<a href='../Y/4120.html' title='Multiple used in 7 places.'>len_element</a>) \
+<a name='L346'> 346 <b>static</b> <b>void</b> <a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>(<b>void</b>* <a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>, <b>const</b> <b>char</b>* <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <b>unsigned</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>void</b>* <a href='../Y/7564.html' title='Multiple used in 15 places.'>u1</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>) <font color='red'>{</font>\
+<a name='L347'> 347         <b>if</b> ((((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/6156.html' title='Multiple used in 9 places.'>ptr_element</a>)) <a href='../Y/3299.html' title='Multiple used in 3 places.'>g_free</a>((((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/6156.html' title='Multiple used in 9 places.'>ptr_element</a>)); \
+<a name='L348'> 348         (((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/6156.html' title='Multiple used in 9 places.'>ptr_element</a>) = uat_unesc(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>,<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>,&amp;(((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/4120.html' title='Multiple used in 7 places.'>len_element</a>)); <font color='red'>}</font>\
+<a name='L349'> 349 <b>static</b> <b>void</b> <a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a>(<b>void</b>* <a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>, <b>const</b> <b>char</b>** <a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a>, <b>unsigned</b>* <a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a>, <b>void</b>* <a href='../Y/7564.html' title='Multiple used in 15 places.'>u1</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>) <font color='red'>{</font>\
+<a name='L350'> 350         <b>if</b> (((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/6156.html' title='Multiple used in 9 places.'>ptr_element</a> ) <font color='red'>{</font> \
+<a name='L351'> 351                 *<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a> = uat_esc(((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/6156.html' title='Multiple used in 9 places.'>ptr_element</a>, (((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/4120.html' title='Multiple used in 7 places.'>len_element</a>)); \
+<a name='L352'> 352                 *<a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a> = <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(*<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a>); \
+<a name='L353'> 353         <font color='red'>}</font> <b>else</b> <font color='red'>{</font> \
+<a name='L354'> 354                 *<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a> = ""; *<a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a> = 0; <font color='red'>}</font> <font color='red'>}</font>
+<a name='L355'> 355 
+<a name='L356'> 356 <font color='darkred'>#define</font> UAT_FLD_LSTRING(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>) \
+<a name='L357'> 357 <font color='red'>{</font>#<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>, <a href='../S/373.html#L140' title='Defined at 140 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>PT_TXTMOD_STRING</a>,<font color='red'>{</font>0,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a><font color='red'>}</font>,<font color='red'>{</font>0,0,0<font color='red'>}</font>,0,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>,<a href='../S/373.html#L201' title='Defined at 201 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>FLDFILL</a><font color='red'>}</font>
+<a name='L358'> 358 
+<a name='L359'> 359 
+<a name='L360'> 360 <i><font color='green'>/*</font></i>
+<a name='L361'> 361 <i><font color='green'> * BUFFER macros,</font></i>
+<a name='L362'> 362 <i><font color='green'> *    a buffer_ptr contained in (((rec_t*)rec)-&gt;(field_name))</font></i>
+<a name='L363'> 363 <i><font color='green'> *    and its len in (((rec_t*)rec)-&gt;(len_name))</font></i>
+<a name='L364'> 364 <i><font color='green'> *  XXX: UNTESTED</font></i>
+<a name='L365'> 365 <i><font color='green'> */</font></i>
+<a name='L366'> 366 <font color='darkred'>#define</font> UAT_BUFFER_CB_DEF(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>,<a href='../Y/6156.html' title='Multiple used in 9 places.'>ptr_element</a>,<a href='../Y/4120.html' title='Multiple used in 7 places.'>len_element</a>) \
+<a name='L367'> 367 <b>static</b> <b>void</b> <a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>(<b>void</b>* <a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>, <b>const</b> <b>char</b>* <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <b>unsigned</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>void</b>* <a href='../Y/7564.html' title='Multiple used in 15 places.'>u1</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>) <font color='red'>{</font>\
+<a name='L368'> 368                 <b>if</b> ((((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/6156.html' title='Multiple used in 9 places.'>ptr_element</a>) ) <a href='../Y/3299.html' title='Multiple used in 3 places.'>g_free</a>((((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/6156.html' title='Multiple used in 9 places.'>ptr_element</a>)); \
+<a name='L369'> 369                         (((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/6156.html' title='Multiple used in 9 places.'>ptr_element</a>) = <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a> ? g_memdup(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>,<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>) : <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>; \
+<a name='L370'> 370                         (((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/4120.html' title='Multiple used in 7 places.'>len_element</a>) = <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>; <font color='red'>}</font> \
+<a name='L371'> 371 <b>static</b> <b>void</b> <a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a>(<b>void</b>* <a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>, <b>const</b> <b>char</b>** <a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a>, <b>unsigned</b>* <a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a>, <b>void</b>* <a href='../Y/7564.html' title='Multiple used in 15 places.'>u1</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>) <font color='red'>{</font>\
+<a name='L372'> 372         *<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a> = ((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/6156.html' title='Multiple used in 9 places.'>ptr_element</a> ? ep_memdup(((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/6156.html' title='Multiple used in 9 places.'>ptr_element</a>,((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/4120.html' title='Multiple used in 7 places.'>len_element</a>) : ""; \
+<a name='L373'> 373         *<a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a> = ((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/4120.html' title='Multiple used in 7 places.'>len_element</a>; <font color='red'>}</font>
+<a name='L374'> 374 
+<a name='L375'> 375 <font color='darkred'>#define</font> UAT_FLD_BUFFER(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>) \
+<a name='L376'> 376         <font color='red'>{</font>#<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>, <a href='../S/373.html#L155' title='Defined at 155 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>PT_TXTMOD_HEXBYTES</a>,<font color='red'>{</font>0,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a><font color='red'>}</font>,<font color='red'>{</font>0,0,0<font color='red'>}</font>,0,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>,<a href='../S/373.html#L201' title='Defined at 201 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>FLDFILL</a><font color='red'>}</font>
+<a name='L377'> 377 
+<a name='L378'> 378 
+<a name='L379'> 379 <i><font color='green'>/*</font></i>
+<a name='L380'> 380 <i><font color='green'> * DEC Macros,</font></i>
+<a name='L381'> 381 <i><font color='green'> *   a decimal number contained in</font></i>
+<a name='L382'> 382 <i><font color='green'> */</font></i>
+<a name='L383'> 383 <font color='darkred'>#define</font> UAT_DEC_CB_DEF(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>) \
+<a name='L384'> 384 <b>static</b> <b>void</b> <a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>(<b>void</b>* <a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>, <b>const</b> <b>char</b>* <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <b>unsigned</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>void</b>* <a href='../Y/7564.html' title='Multiple used in 15 places.'>u1</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>) <font color='red'>{</font>\
+<a name='L385'> 385         ((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> = <a href='../Y/7111.html' title='Multiple used in 96 places.'>strtol</a>(<a href='../Y/2720.html' title='Multiple used in 5 places.'>ep_strndup</a>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>,<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>),<a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>,10); <font color='red'>}</font> \
+<a name='L386'> 386 <b>static</b> <b>void</b> <a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a>(<b>void</b>* <a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>, <b>const</b> <b>char</b>** <a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a>, <b>unsigned</b>* <a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a>, <b>void</b>* <a href='../Y/7564.html' title='Multiple used in 15 places.'>u1</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>) <font color='red'>{</font>\
+<a name='L387'> 387         *<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a> = <a href='../S/443.html#L66' title='Defined at 66 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/emem.h.'>ep_strdup_printf</a>("%d",((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>); \
+<a name='L388'> 388         *<a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a> = <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(*<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a>); <font color='red'>}</font>
+<a name='L389'> 389 
+<a name='L390'> 390 <font color='darkred'>#define</font> UAT_FLD_DEC(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>) \
+<a name='L391'> 391         <font color='red'>{</font>#<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>, <a href='../S/373.html#L140' title='Defined at 140 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>PT_TXTMOD_STRING</a>,<font color='red'>{</font>uat_fld_chk_num_dec,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a><font color='red'>}</font>,<font color='red'>{</font>0,0,0<font color='red'>}</font>,0,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>,<a href='../S/373.html#L201' title='Defined at 201 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>FLDFILL</a><font color='red'>}</font>
+<a name='L392'> 392 
+<a name='L393'> 393 
+<a name='L394'> 394 <i><font color='green'>/*</font></i>
+<a name='L395'> 395 <i><font color='green'> * HEX Macros,</font></i>
+<a name='L396'> 396 <i><font color='green'> *   an hexadecimal number contained in</font></i>
+<a name='L397'> 397 <i><font color='green'> */</font></i>
+<a name='L398'> 398 <font color='darkred'>#define</font> UAT_HEX_CB_DEF(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>) \
+<a name='L399'> 399 <b>static</b> <b>void</b> <a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>(<b>void</b>* <a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>, <b>const</b> <b>char</b>* <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <b>unsigned</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>void</b>* <a href='../Y/7564.html' title='Multiple used in 15 places.'>u1</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>) <font color='red'>{</font>\
+<a name='L400'> 400         ((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> = <a href='../Y/7111.html' title='Multiple used in 96 places.'>strtol</a>(<a href='../Y/2720.html' title='Multiple used in 5 places.'>ep_strndup</a>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>,<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>),<a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>,16); <font color='red'>}</font> \
+<a name='L401'> 401 <b>static</b> <b>void</b> <a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a>(<b>void</b>* <a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>, <b>const</b> <b>char</b>** <a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a>, <b>unsigned</b>* <a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a>, <b>void</b>* <a href='../Y/7564.html' title='Multiple used in 15 places.'>u1</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>) <font color='red'>{</font>\
+<a name='L402'> 402         *<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a> = <a href='../S/443.html#L66' title='Defined at 66 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/emem.h.'>ep_strdup_printf</a>("%x",((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>); \
+<a name='L403'> 403         *<a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a> = <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(*<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a>); <font color='red'>}</font>
+<a name='L404'> 404 
+<a name='L405'> 405 <font color='darkred'>#define</font> UAT_FLD_HEX(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>) \
+<a name='L406'> 406 <font color='red'>{</font>#<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>, <a href='../S/373.html#L140' title='Defined at 140 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>PT_TXTMOD_STRING</a>,<font color='red'>{</font>uat_fld_chk_num_hex,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a><font color='red'>}</font>,<font color='red'>{</font>0,0,0<font color='red'>}</font>,0,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>,<a href='../S/373.html#L201' title='Defined at 201 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>FLDFILL</a><font color='red'>}</font>
+<a name='L407'> 407 
+<a name='L408'> 408 
+<a name='L409'> 409 <i><font color='green'>/*</font></i>
+<a name='L410'> 410 <i><font color='green'> * ENUM macros</font></i>
+<a name='L411'> 411 <i><font color='green'> *  enum_t: name = ((enum_t*)ptr)-&gt;strptr</font></i>
+<a name='L412'> 412 <i><font color='green'> *          value = ((enum_t*)ptr)-&gt;value</font></i>
+<a name='L413'> 413 <i><font color='green'> *  rec_t:</font></i>
+<a name='L414'> 414 <i><font color='green'> *        value</font></i>
+<a name='L415'> 415 <i><font color='green'> */</font></i>
+<a name='L416'> 416 <font color='darkred'>#define</font> UAT_VS_DEF(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>,<a href='../Y/2310.html' title='Multiple used in 10 places.'>default_val</a>,<a href='../Y/2309.html' title='Multiple used in 2 places.'>default_str</a>) \
+<a name='L417'> 417 <b>static</b> <b>void</b> <a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>(<b>void</b>* <a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>, <b>const</b> <b>char</b>* <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <b>unsigned</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>void</b>* <a href='../Y/7822.html' title='Multiple used in 11 places.'>vs</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>) <font color='red'>{</font>\
+<a name='L418'> 418         <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>; \
+<a name='L419'> 419         <b>char</b>* <a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a> = <a href='../Y/2720.html' title='Multiple used in 5 places.'>ep_strndup</a>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>,<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>); \
+<a name='L420'> 420         <b>const</b> <b>char</b>* <a href='../Y/2199.html' title='Multiple used in 3 places.'>cstr</a>; ((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> = <a href='../Y/2310.html' title='Multiple used in 10 places.'>default_val</a>; \
+<a name='L421'> 421         <b>for</b>(<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>=0; ( <a href='../Y/2199.html' title='Multiple used in 3 places.'>cstr</a> = ((<a href='../S/375.html#L35' title='Defined at 35 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/value_string.h.'>value_string</a>*)<a href='../Y/7822.html' title='Multiple used in 11 places.'>vs</a>)[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>].<a href='../Y/7104.html' title='Multiple used in 8 places.'>strptr</a> ) ;<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font> \
+<a name='L422'> 422                 <b>if</b> (g_str_equal(<a href='../Y/2199.html' title='Multiple used in 3 places.'>cstr</a>,<a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>)) <font color='red'>{</font> \
+<a name='L423'> 423                         ((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> = ((<a href='../S/375.html#L35' title='Defined at 35 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/value_string.h.'>value_string</a>*)<a href='../Y/7822.html' title='Multiple used in 11 places.'>vs</a>)[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>].<a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>; <b>return</b>; <font color='red'>}</font> <font color='red'>}</font> <font color='red'>}</font> \
+<a name='L424'> 424 <b>static</b> <b>void</b> <a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a>(<b>void</b>* <a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>, <b>const</b> <b>char</b>** <a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a>, <b>unsigned</b>* <a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a>, <b>void</b>* <a href='../Y/7822.html' title='Multiple used in 11 places.'>vs</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>) <font color='red'>{</font>\
+<a name='L425'> 425         <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>; \
+<a name='L426'> 426         *<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a> = <a href='../Y/2719.html' title='Multiple used in 2 places.'>ep_strdup</a>(<a href='../Y/2309.html' title='Multiple used in 2 places.'>default_str</a>); *<a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a> = <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../Y/2309.html' title='Multiple used in 2 places.'>default_str</a>);\
+<a name='L427'> 427         <b>for</b>(<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>=0;((<a href='../S/375.html#L35' title='Defined at 35 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/value_string.h.'>value_string</a>*)<a href='../Y/7822.html' title='Multiple used in 11 places.'>vs</a>)[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>].<a href='../Y/7104.html' title='Multiple used in 8 places.'>strptr</a>;<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font> \
+<a name='L428'> 428                 <b>if</b> ( ((<a href='../S/375.html#L35' title='Defined at 35 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/value_string.h.'>value_string</a>*)<a href='../Y/7822.html' title='Multiple used in 11 places.'>vs</a>)[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>].<a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a> == ((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ) <font color='red'>{</font> \
+<a name='L429'> 429                         *<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a> = <a href='../Y/2719.html' title='Multiple used in 2 places.'>ep_strdup</a>(((<a href='../S/375.html#L35' title='Defined at 35 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/value_string.h.'>value_string</a>*)<a href='../Y/7822.html' title='Multiple used in 11 places.'>vs</a>)[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>].<a href='../Y/7104.html' title='Multiple used in 8 places.'>strptr</a>); \
+<a name='L430'> 430                         *<a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a> = <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(*<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a>); <b>return</b>; <font color='red'>}</font> <font color='red'>}</font> <font color='red'>}</font>
+<a name='L431'> 431 
+<a name='L432'> 432 
+<a name='L433'> 433 <font color='darkred'>#define</font> UAT_FLD_VS(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<b>enum</b>,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>) \
+<a name='L434'> 434         <font color='red'>{</font>#<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>, <a href='../S/373.html#L171' title='Defined at 171 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>PT_TXTMOD_ENUM</a>,<font color='red'>{</font>uat_fld_chk_enum,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a><font color='red'>}</font>,<font color='red'>{</font>&amp;(<b>enum</b>),&amp;(<b>enum</b>),&amp;(<b>enum</b>)<font color='red'>}</font>,&amp;(<b>enum</b>),<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>,<a href='../S/373.html#L201' title='Defined at 201 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>FLDFILL</a><font color='red'>}</font>
+<a name='L435'> 435 
+<a name='L436'> 436 
+<a name='L437'> 437 <i><font color='green'>/*</font></i>
+<a name='L438'> 438 <i><font color='green'> * PROTO macros</font></i>
+<a name='L439'> 439 <i><font color='green'> */</font></i>
+<a name='L440'> 440 
+<a name='L441'> 441 <font color='darkred'>#define</font> UAT_PROTO_DEF(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>, <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>, <a href='../Y/2436.html' title='Multiple used in 3 places.'>dissector_field</a>, <a href='../Y/4635.html' title='Multiple used in 6 places.'>name_field</a>, <a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>) \
+<a name='L442'> 442 <b>static</b> <b>void</b> <a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>(<b>void</b>* <a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>, <b>const</b> <b>char</b>* <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <b>unsigned</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>void</b>* <a href='../Y/7564.html' title='Multiple used in 15 places.'>u1</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>) <font color='red'>{</font>\
+<a name='L443'> 443         <b>if</b> (<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>) <font color='red'>{</font> \
+<a name='L444'> 444                 ((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/4635.html' title='Multiple used in 6 places.'>name_field</a> = <a href='../Y/2720.html' title='Multiple used in 5 places.'>ep_strndup</a>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>,<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>); g_strdown(((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/4635.html' title='Multiple used in 6 places.'>name_field</a> ); g_strchug(((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/4635.html' title='Multiple used in 6 places.'>name_field</a>); \
+<a name='L445'> 445                 ((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/2436.html' title='Multiple used in 3 places.'>dissector_field</a> = <a href='../Y/3089.html' title='Multiple used in 4 places.'>find_dissector</a>(((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/4635.html' title='Multiple used in 6 places.'>name_field</a>); \
+<a name='L446'> 446         <font color='red'>}</font> <b>else</b> <font color='red'>{</font> \
+<a name='L447'> 447                 ((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/2436.html' title='Multiple used in 3 places.'>dissector_field</a> = <a href='../Y/3089.html' title='Multiple used in 4 places.'>find_dissector</a>("data"); \
+<a name='L448'> 448                 ((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/4635.html' title='Multiple used in 6 places.'>name_field</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>; \
+<a name='L449'> 449                 <font color='red'>}</font> <font color='red'>}</font> \
+<a name='L450'> 450 <b>static</b> <b>void</b> <a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a>(<b>void</b>* <a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>, <b>const</b> <b>char</b>** <a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a>, <b>unsigned</b>* <a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a>, <b>void</b>* <a href='../Y/7564.html' title='Multiple used in 15 places.'>u1</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>) <font color='red'>{</font>\
+<a name='L451'> 451         <b>if</b> ( ((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/4635.html' title='Multiple used in 6 places.'>name_field</a> ) <font color='red'>{</font> \
+<a name='L452'> 452                 *<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a> = (((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/4635.html' title='Multiple used in 6 places.'>name_field</a>); \
+<a name='L453'> 453                 *<a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a> = <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(*<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a>); \
+<a name='L454'> 454         <font color='red'>}</font> <b>else</b> <font color='red'>{</font> \
+<a name='L455'> 455                 *<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a> = ""; *<a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a> = 0; <font color='red'>}</font> <font color='red'>}</font>
+<a name='L456'> 456 
+<a name='L457'> 457 
+<a name='L458'> 458 <font color='darkred'>#define</font> UAT_FLD_PROTO(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>) \
+<a name='L459'> 459         <font color='red'>{</font>#<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>, <a href='../S/373.html#L140' title='Defined at 140 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>PT_TXTMOD_STRING</a>,<font color='red'>{</font>uat_fld_chk_proto,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a><font color='red'>}</font>,<font color='red'>{</font>0,0,0<font color='red'>}</font>,0,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>,<a href='../S/373.html#L201' title='Defined at 201 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>FLDFILL</a><font color='red'>}</font>
+<a name='L460'> 460 
+<a name='L461'> 461 <i><font color='green'>/*</font></i>
+<a name='L462'> 462 <i><font color='green'> * RANGE macros</font></i>
+<a name='L463'> 463 <i><font color='green'> */</font></i>
+<a name='L464'> 464 
+<a name='L465'> 465 <font color='darkred'>#define</font> UAT_RANGE_CB_DEF(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>) \
+<a name='L466'> 466 <b>static</b> <b>void</b> <a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>(<b>void</b>* <a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>, <b>const</b> <b>char</b>* <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <b>unsigned</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>void</b>* <a href='../Y/7564.html' title='Multiple used in 15 places.'>u1</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a>) <font color='red'>{</font>\
+<a name='L467'> 467         <b>char</b>* <a href='../Y/6456.html' title='Multiple used in 3 places.'>rng</a> = <a href='../Y/2720.html' title='Multiple used in 5 places.'>ep_strndup</a>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>,<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>);\
+<a name='L468'> 468                 range_convert_str(&amp;(((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>), <a href='../Y/6456.html' title='Multiple used in 3 places.'>rng</a>,GPOINTER_TO_UINT(<a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a>)); \
+<a name='L469'> 469         <font color='red'>}</font> \
+<a name='L470'> 470 <b>static</b> <b>void</b> <a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a>(<b>void</b>* <a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>, <b>const</b> <b>char</b>** <a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a>, <b>unsigned</b>* <a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a>, <b>void</b>* <a href='../Y/7564.html' title='Multiple used in 15 places.'>u1</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>void</b>* <a href='../Y/7565.html' title='Multiple used in 18 places.'>u2</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>) <font color='red'>{</font>\
+<a name='L471'> 471         <b>if</b> ( ((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ) <font color='red'>{</font> \
+<a name='L472'> 472                 *<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a> = range_convert_range(((<a href='../Y/6300.html' title='Multiple used in 37 places.'>rec_t</a>*)<a href='../Y/6298.html' title='Multiple used in 45 places.'>rec</a>)-&gt;<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>);  *<a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a> = <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(*<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a>); \
+<a name='L473'> 473         <font color='red'>}</font> <b>else</b> <font color='red'>{</font> \
+<a name='L474'> 474                 *<a href='../Y/5549.html' title='Multiple used in 26 places.'>out_ptr</a> = ""; *<a href='../Y/5542.html' title='Multiple used in 21 places.'>out_len</a> = 0; <font color='red'>}</font> <font color='red'>}</font>
+<a name='L475'> 475 
+<a name='L476'> 476 
+<a name='L477'> 477 <font color='darkred'>#define</font> UAT_FLD_RANGE(<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a>,<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>,<a href='../Y/4352.html' title='Multiple used in 27 places.'>max</a>,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>) \
+<a name='L478'> 478         <font color='red'>{</font>#<a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a>, <a href='../S/373.html#L140' title='Defined at 140 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>PT_TXTMOD_STRING</a>,<font color='red'>{</font>uat_fld_chk_range,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1231.html' title='Multiple used in 18 places.'>_set_cb</a>,<a href='../Y/1601.html' title='Multiple used in 44 places.'>basename</a> ## <a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a> ## <a href='../Y/3038.html' title='Multiple used in 59 places.'>field_name</a> ## <a href='../Y/1236.html' title='Multiple used in 18 places.'>_tostr_cb</a><font color='red'>}</font>,\
+<a name='L479'> 479           <font color='red'>{</font>GUINT_TO_POINTER(<a href='../Y/4352.html' title='Multiple used in 27 places.'>max</a>),GUINT_TO_POINTER(<a href='../Y/4352.html' title='Multiple used in 27 places.'>max</a>),GUINT_TO_POINTER(<a href='../Y/4352.html' title='Multiple used in 27 places.'>max</a>)<font color='red'>}</font>,0,<a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>,<a href='../S/373.html#L201' title='Defined at 201 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h.'>FLDFILL</a><font color='red'>}</font>
+<a name='L480'> 480 
+<a name='L481'> 481 
+<a name='L482'> 482 
+<a name='L483'> 483 
+<a name='L484'> 484 
+<a name='L485'> 485 <font color='darkred'>#endif</font>
+<a name='L486'> 486 
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

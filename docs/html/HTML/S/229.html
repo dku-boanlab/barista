@@ -1,0 +1,890 @@
+<html>
+<head>
+<title>cbench/openflow/hw-lib/nf2/nf2_drv.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1135.html'>hw-lib</a>/<a href='../files/1136.html'>nf2</a>/nf2_drv.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L58'>[^]</a><a href='#L804'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L58' title='Defined at 58.'>log_entry</a>
+<li><a href='#L118' title='Defined at 118.'>log_entry_raw</a>
+<li><a href='#L139' title='Defined at 139.'>log_mask</a>
+<li><a href='#L197' title='Defined at 197.'>log_mask_raw</a>
+<li><a href='#L218' title='Defined at 218.'>log_action</a>
+<li><a href='#L315' title='Defined at 315.'>log_action_raw</a>
+<li><a href='#L336' title='Defined at 336.'>nf2_reset_card</a>
+<li><a href='#L349' title='Defined at 349.'>nf2_clear_watchdog</a>
+<li><a href='#L372' title='Defined at 372.'>nf2_write_of_wildcard</a>
+<li><a href='#L424' title='Defined at 424.'>nf2_write_of_exact</a>
+<li><a href='#L467' title='Defined at 467.'>nf2_modify_write_of_wildcard</a>
+<li><a href='#L532' title='Defined at 532.'>nf2_modify_write_of_exact</a>
+<li><a href='#L559' title='Defined at 559.'>nf2_get_exact_packet_count</a>
+<li><a href='#L588' title='Defined at 588.'>nf2_get_exact_byte_count</a>
+<li><a href='#L616' title='Defined at 616.'>nf2_get_wildcard_packet_count</a>
+<li><a href='#L632' title='Defined at 632.'>nf2_get_wildcard_byte_count</a>
+<li><a href='#L648' title='Defined at 648.'>nf2_get_matched_count</a>
+<li><a href='#L665' title='Defined at 665.'>nf2_get_missed_count</a>
+<li><a href='#L682' title='Defined at 682.'>log_watchdog_info</a>
+<li><a href='#L700' title='Defined at 700.'>nf2_get_all_ports_info_addr</a>
+<li><a href='#L804' title='Defined at 804.'>nf2_get_port_info</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*-</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright (c) 2008, 2009, 2010</font></i>
+<a name='L3'>   3 <i><font color='green'> *      The Board of Trustees of The Leland Stanford Junior University</font></i>
+<a name='L4'>   4 <i><font color='green'> *</font></i>
+<a name='L5'>   5 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L6'>   6 <i><font color='green'> * (Software) available for public use and benefit with the expectation that</font></i>
+<a name='L7'>   7 <i><font color='green'> * others will use, modify and enhance the Software and contribute those</font></i>
+<a name='L8'>   8 <i><font color='green'> * enhancements back to the community. However, since we would like to make the</font></i>
+<a name='L9'>   9 <i><font color='green'> * Software available for broadest use, with as few restrictions as possible</font></i>
+<a name='L10'>  10 <i><font color='green'> * permission is hereby granted, free of charge, to any person obtaining a copy</font></i>
+<a name='L11'>  11 <i><font color='green'> * of this Software to deal in the Software under the copyrights without</font></i>
+<a name='L12'>  12 <i><font color='green'> * restriction, including without limitation the rights to use, copy, modify,</font></i>
+<a name='L13'>  13 <i><font color='green'> * merge, publish, distribute, sublicense, and/or sell copies of the Software,</font></i>
+<a name='L14'>  14 <i><font color='green'> * and to permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> *</font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be included in</font></i>
+<a name='L18'>  18 <i><font color='green'> * all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</font></i>
+<a name='L21'>  21 <i><font color='green'> * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</font></i>
+<a name='L22'>  22 <i><font color='green'> * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE</font></i>
+<a name='L23'>  23 <i><font color='green'> * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</font></i>
+<a name='L24'>  24 <i><font color='green'> * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</font></i>
+<a name='L25'>  25 <i><font color='green'> * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS</font></i>
+<a name='L26'>  26 <i><font color='green'> * IN THE SOFTWARE.</font></i>
+<a name='L27'>  27 <i><font color='green'> *</font></i>
+<a name='L28'>  28 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L29'>  29 <i><font color='green'> * advertising or publicity pertaining to the Software or any derivatives</font></i>
+<a name='L30'>  30 <i><font color='green'> * without specific, written prior permission.</font></i>
+<a name='L31'>  31 <i><font color='green'> */</font></i>
+<a name='L32'>  32 
+<a name='L33'>  33 <font color='darkred'>#include</font> &lt;stdlib.h&gt;
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;unistd.h&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> &lt;time.h&gt;
+<a name='L36'>  36 
+<a name='L37'>  37 <font color='darkred'>#include</font> "<a href='200.html'>udatapath/switch-flow.h</a>"
+<a name='L38'>  38 <font color='darkred'>#include</font> "<a href='../I/148.html'>udatapath/table.h</a>"
+<a name='L39'>  39 <font color='darkred'>#include</font> "<a href='812.html'>timeval.h</a>"
+<a name='L40'>  40 <font color='darkred'>#include</font> "<a href='234.html'>reg_defines_openflow_switch.h</a>"
+<a name='L41'>  41 <font color='darkred'>#include</font> "<a href='../I/64.html'>nf2.h</a>"
+<a name='L42'>  42 <font color='darkred'>#include</font> "<a href='../I/66.html'>nf2util.h</a>"
+<a name='L43'>  43 <font color='darkred'>#include</font> "<a href='../I/151.html'>hw_flow.h</a>"
+<a name='L44'>  44 <font color='darkred'>#include</font> "<a href='233.html'>nf2_drv.h</a>"
+<a name='L45'>  45 <font color='darkred'>#include</font> "<a href='../I/107.html'>nf2_lib.h</a>"
+<a name='L46'>  46 <font color='darkred'>#include</font> "<a href='../I/149.html'>debug.h</a>"
+<a name='L47'>  47 
+<a name='L48'>  48 <b>static</b> <b>void</b> <a href='../D/8266.html' title='Multiple defined in 2 places.'>log_entry</a>(<a href='../Y/4844.html' title='Multiple used in 36 places.'>nf2_of_entry_wrap</a> *);
+<a name='L49'>  49 <b>static</b> <b>void</b> <a href='../D/8267.html' title='Multiple defined in 2 places.'>log_entry_raw</a>(<a href='../Y/4844.html' title='Multiple used in 36 places.'>nf2_of_entry_wrap</a> *);
+<a name='L50'>  50 <b>static</b> <b>void</b> <a href='../D/8270.html' title='Multiple defined in 2 places.'>log_mask</a>(<a href='../Y/4845.html' title='Multiple used in 22 places.'>nf2_of_mask_wrap</a> *);
+<a name='L51'>  51 <b>static</b> <b>void</b> <a href='../D/8271.html' title='Multiple defined in 2 places.'>log_mask_raw</a>(<a href='../Y/4845.html' title='Multiple used in 22 places.'>nf2_of_mask_wrap</a> *);
+<a name='L52'>  52 <b>static</b> <b>void</b> <a href='../D/8260.html' title='Multiple defined in 2 places.'>log_action</a>(<a href='../Y/4843.html' title='Multiple used in 56 places.'>nf2_of_action_wrap</a> *);
+<a name='L53'>  53 <b>static</b> <b>void</b> <a href='../D/8261.html' title='Multiple defined in 2 places.'>log_action_raw</a>(<a href='../Y/4843.html' title='Multiple used in 56 places.'>nf2_of_action_wrap</a> *);
+<a name='L54'>  54 <b>static</b> <b>void</b> <a href='../S/229.html#L682' title='Defined at 682 in cbench/openflow/hw-lib/nf2/nf2_drv.c.'>log_watchdog_info</a>(<b>struct</b> <a href='../Y/4857.html' title='Multiple used in 112 places.'>nf2device</a> *);
+<a name='L55'>  55 <b>static</b> <b>void</b> <a href='../D/8520.html' title='Multiple defined in 2 places.'>nf2_get_all_ports_info_addr</a>(<b>struct</b> <a href='../Y/4833.html' title='Multiple used in 2 places.'>nf2_all_ports_info_addr</a> *);
+<a name='L56'>  56 
+<a name='L57'>  57 <b>static</b> <b>void</b>
+<a name='L58'>  58 <a href='../R/3418.html' title='Multiple refered from 8 places.'>log_entry</a>(<a href='../Y/4844.html' title='Multiple used in 36 places.'>nf2_of_entry_wrap</a> *<a href='../Y/2701.html' title='Multiple used in 33 places.'>entry</a>)
+<a name='L59'>  59 <font color='red'>{</font>
+<a name='L60'>  60         <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L61'>  61 
+<a name='L62'>  62         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("log entry\n");
+<a name='L63'>  63 <font color='darkred'>#ifdef</font> <a href='../Y/431.html' title='Multiple used in 11 places.'>HWTABLE_NO_DEBUG</a>
+<a name='L64'>  64         <b>return</b>;
+<a name='L65'>  65 <font color='darkred'>#else</font>
+<a name='L66'>  66 
+<a name='L67'>  67         <i><font color='green'>// Log the physical source port</font></i>
+<a name='L68'>  68         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("E psrc[%i] ", <a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/6941.html' title='Multiple used in 94 places.'>src_port</a> / 2);
+<a name='L69'>  69 
+<a name='L70'>  70         <i><font color='green'>// Log the link layer source</font></i>
+<a name='L71'>  71         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("dlsrc[");
+<a name='L72'>  72         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 5; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &gt; 0; --<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L73'>  73                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X:", <a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/2790.html' title='Multiple used in 31 places.'>eth_src</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L74'>  74         <font color='red'>}</font>
+<a name='L75'>  75         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X] ", <a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/2790.html' title='Multiple used in 31 places.'>eth_src</a>[0]);
+<a name='L76'>  76 
+<a name='L77'>  77         <i><font color='green'>// Log the link layer dest</font></i>
+<a name='L78'>  78         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("dldst[");
+<a name='L79'>  79         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 5; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &gt; 0; --<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L80'>  80                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X:", <a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/2785.html' title='Multiple used in 36 places.'>eth_dst</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L81'>  81         <font color='red'>}</font>
+<a name='L82'>  82         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X] ", <a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/2785.html' title='Multiple used in 36 places.'>eth_dst</a>[0]);
+<a name='L83'>  83 
+<a name='L84'>  84         <i><font color='green'>// Log the link layer type</font></i>
+<a name='L85'>  85         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("dltype[%0X] ", <a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/2799.html' title='Multiple used in 21 places.'>eth_type</a>);
+<a name='L86'>  86 
+<a name='L87'>  87         <i><font color='green'>// Log the link layer vlan</font></i>
+<a name='L88'>  88         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("dlvlan[%0X] ", <a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/7805.html' title='Multiple used in 70 places.'>vlan_id</a>);
+<a name='L89'>  89 
+<a name='L90'>  90         <i><font color='green'>// Log the network source</font></i>
+<a name='L91'>  91         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("nwsrc[");
+<a name='L92'>  92         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0i.", (<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3893.html' title='Multiple used in 35 places.'>ip_src</a> &gt;&gt; 24) &amp; 0xFF);
+<a name='L93'>  93         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0i.", (<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3893.html' title='Multiple used in 35 places.'>ip_src</a> &gt;&gt; 16) &amp; 0xFF);
+<a name='L94'>  94         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0i.", (<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3893.html' title='Multiple used in 35 places.'>ip_src</a> &gt;&gt; 8) &amp; 0xFF);
+<a name='L95'>  95         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0i", <a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3893.html' title='Multiple used in 35 places.'>ip_src</a> &amp; 0xFF);
+<a name='L96'>  96         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("] ");
+<a name='L97'>  97 
+<a name='L98'>  98         <i><font color='green'>// Log the network dest</font></i>
+<a name='L99'>  99         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("nwdst[");
+<a name='L100'> 100         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0i.", (<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3883.html' title='Multiple used in 35 places.'>ip_dst</a> &gt;&gt; 24) &amp; 0xFF);
+<a name='L101'> 101         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0i.", (<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3883.html' title='Multiple used in 35 places.'>ip_dst</a> &gt;&gt; 16) &amp; 0xFF);
+<a name='L102'> 102         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0i.", (<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3883.html' title='Multiple used in 35 places.'>ip_dst</a> &gt;&gt; 8) &amp; 0xFF);
+<a name='L103'> 103         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0i", <a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3883.html' title='Multiple used in 35 places.'>ip_dst</a> &amp; 0xFF);
+<a name='L104'> 104         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("] ");
+<a name='L105'> 105 
+<a name='L106'> 106         <i><font color='green'>// Log the network TOS</font></i>
+<a name='L107'> 107         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("nwtos[0x%0X] ", <a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3896.html' title='Multiple used in 36 places.'>ip_tos</a>);
+<a name='L108'> 108 
+<a name='L109'> 109         <i><font color='green'>// Log the transport source port</font></i>
+<a name='L110'> 110         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("tsrc[%i] ", <a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/7471.html' title='Multiple used in 14 places.'>transp_src</a>);
+<a name='L111'> 111 
+<a name='L112'> 112         <i><font color='green'>// Log the transport dest port</font></i>
+<a name='L113'> 113         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("tdst[%i]\n", <a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/7470.html' title='Multiple used in 14 places.'>transp_dst</a>);
+<a name='L114'> 114 <font color='darkred'>#endif</font>
+<a name='L115'> 115 <font color='red'>}</font>
+<a name='L116'> 116 
+<a name='L117'> 117 <b>static</b> <b>void</b>
+<a name='L118'> 118 <a href='../R/3419.html' title='Multiple refered from 8 places.'>log_entry_raw</a>(<a href='../Y/4844.html' title='Multiple used in 36 places.'>nf2_of_entry_wrap</a> *<a href='../Y/2701.html' title='Multiple used in 33 places.'>entry</a>)
+<a name='L119'> 119 <font color='red'>{</font>
+<a name='L120'> 120 <font color='darkred'>#ifdef</font> <a href='../Y/431.html' title='Multiple used in 11 places.'>HWTABLE_NO_DEBUG</a>
+<a name='L121'> 121         <b>return</b>;
+<a name='L122'> 122 <font color='darkred'>#else</font>
+<a name='L123'> 123         <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L124'> 124         <b>unsigned</b> <b>char</b> *<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>;
+<a name='L125'> 125 
+<a name='L126'> 126         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("E ");
+<a name='L127'> 127         <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> = (<b>unsigned</b> <b>char</b> *)<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>;
+<a name='L128'> 128         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <b>sizeof</b>(<a href='../D/8551.html' title='Multiple defined in 4 places.'>nf2_of_entry_wrap</a>); ++<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L129'> 129                 <b>if</b> (!(<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> % 4)) <font color='red'>{</font>
+<a name='L130'> 130                         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>(" ");
+<a name='L131'> 131                 <font color='red'>}</font>
+<a name='L132'> 132                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%02x", <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L133'> 133         <font color='red'>}</font>
+<a name='L134'> 134         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("\n");
+<a name='L135'> 135 <font color='darkred'>#endif</font>
+<a name='L136'> 136 <font color='red'>}</font>
+<a name='L137'> 137 
+<a name='L138'> 138 <b>static</b> <b>void</b>
+<a name='L139'> 139 <a href='../R/3422.html' title='Multiple refered from 6 places.'>log_mask</a>(<a href='../Y/4845.html' title='Multiple used in 22 places.'>nf2_of_mask_wrap</a> *<a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>)
+<a name='L140'> 140 <font color='red'>{</font>
+<a name='L141'> 141 <font color='darkred'>#ifdef</font> <a href='../Y/431.html' title='Multiple used in 11 places.'>HWTABLE_NO_DEBUG</a>
+<a name='L142'> 142         <b>return</b>;
+<a name='L143'> 143 <font color='darkred'>#else</font>
+<a name='L144'> 144         <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L145'> 145 
+<a name='L146'> 146         <i><font color='green'>// Log the physical source port</font></i>
+<a name='L147'> 147         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("M psrc[%0X] ", <a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/6941.html' title='Multiple used in 94 places.'>src_port</a> / 2);
+<a name='L148'> 148 
+<a name='L149'> 149         <i><font color='green'>// Log the link layer source</font></i>
+<a name='L150'> 150         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("dlsrc[");
+<a name='L151'> 151         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 5; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &gt; 0; --<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L152'> 152                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X:", <a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/2790.html' title='Multiple used in 31 places.'>eth_src</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L153'> 153         <font color='red'>}</font>
+<a name='L154'> 154         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X] ", <a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/2790.html' title='Multiple used in 31 places.'>eth_src</a>[0]);
+<a name='L155'> 155 
+<a name='L156'> 156         <i><font color='green'>// Log the link layer dest</font></i>
+<a name='L157'> 157         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("dldst[");
+<a name='L158'> 158         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 5; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &gt; 0; --<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L159'> 159                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X:", <a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/2785.html' title='Multiple used in 36 places.'>eth_dst</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L160'> 160         <font color='red'>}</font>
+<a name='L161'> 161         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X] ", <a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/2785.html' title='Multiple used in 36 places.'>eth_dst</a>[0]);
+<a name='L162'> 162 
+<a name='L163'> 163         <i><font color='green'>// Log the link layer type</font></i>
+<a name='L164'> 164         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("dltype[%0X] ", <a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/2799.html' title='Multiple used in 21 places.'>eth_type</a>);
+<a name='L165'> 165 
+<a name='L166'> 166         <i><font color='green'>// Log the link layer vlan</font></i>
+<a name='L167'> 167         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("dlvlan[%0X] ", <a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/7805.html' title='Multiple used in 70 places.'>vlan_id</a>);
+<a name='L168'> 168 
+<a name='L169'> 169         <i><font color='green'>// Log the network source</font></i>
+<a name='L170'> 170         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("nwsrc[");
+<a name='L171'> 171         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X.", (<a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3893.html' title='Multiple used in 35 places.'>ip_src</a> &gt;&gt; 24) &amp; 0xFF);
+<a name='L172'> 172         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X.", (<a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3893.html' title='Multiple used in 35 places.'>ip_src</a> &gt;&gt; 16) &amp; 0xFF);
+<a name='L173'> 173         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X.", (<a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3893.html' title='Multiple used in 35 places.'>ip_src</a> &gt;&gt; 8) &amp; 0xFF);
+<a name='L174'> 174         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X", <a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3893.html' title='Multiple used in 35 places.'>ip_src</a> &amp; 0xFF);
+<a name='L175'> 175         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("] ");
+<a name='L176'> 176 
+<a name='L177'> 177         <i><font color='green'>// Log the network dest</font></i>
+<a name='L178'> 178         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("nwdst[");
+<a name='L179'> 179         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X.", (<a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3883.html' title='Multiple used in 35 places.'>ip_dst</a> &gt;&gt; 24) &amp; 0xFF);
+<a name='L180'> 180         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X.", (<a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3883.html' title='Multiple used in 35 places.'>ip_dst</a> &gt;&gt; 16) &amp; 0xFF);
+<a name='L181'> 181         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X.", (<a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3883.html' title='Multiple used in 35 places.'>ip_dst</a> &gt;&gt; 8) &amp; 0xFF);
+<a name='L182'> 182         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X", <a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3883.html' title='Multiple used in 35 places.'>ip_dst</a> &amp; 0xFF);
+<a name='L183'> 183         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("] ");
+<a name='L184'> 184 
+<a name='L185'> 185         <i><font color='green'>// Log the network TOS</font></i>
+<a name='L186'> 186         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("nwtos[0x%0X] ", <a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/3896.html' title='Multiple used in 36 places.'>ip_tos</a>);
+<a name='L187'> 187 
+<a name='L188'> 188         <i><font color='green'>// Log the transport source port</font></i>
+<a name='L189'> 189         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("tsrc[%0X] ", <a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/7471.html' title='Multiple used in 14 places.'>transp_src</a>);
+<a name='L190'> 190 
+<a name='L191'> 191         <i><font color='green'>// Log the transport dest port</font></i>
+<a name='L192'> 192         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("tdst[%0X]\n", <a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>.<a href='../Y/7470.html' title='Multiple used in 14 places.'>transp_dst</a>);
+<a name='L193'> 193 <font color='darkred'>#endif</font>
+<a name='L194'> 194 <font color='red'>}</font>
+<a name='L195'> 195 
+<a name='L196'> 196 <b>static</b> <b>void</b>
+<a name='L197'> 197 <a href='../R/3423.html' title='Multiple refered from 6 places.'>log_mask_raw</a>(<a href='../Y/4845.html' title='Multiple used in 22 places.'>nf2_of_mask_wrap</a> *<a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>)
+<a name='L198'> 198 <font color='red'>{</font>
+<a name='L199'> 199 <font color='darkred'>#ifdef</font> <a href='../Y/431.html' title='Multiple used in 11 places.'>HWTABLE_NO_DEBUG</a>
+<a name='L200'> 200         <b>return</b>;
+<a name='L201'> 201 <font color='darkred'>#else</font>
+<a name='L202'> 202         <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L203'> 203         <b>unsigned</b> <b>char</b> *<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>;
+<a name='L204'> 204 
+<a name='L205'> 205         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("M ");
+<a name='L206'> 206         <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> = (<b>unsigned</b> <b>char</b> *)<a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>;
+<a name='L207'> 207         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <b>sizeof</b>(<a href='../D/8554.html' title='Multiple defined in 2 places.'>nf2_of_mask_wrap</a>); ++<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L208'> 208                 <b>if</b> (!(<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> % 4)) <font color='red'>{</font>
+<a name='L209'> 209                         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>(" ");
+<a name='L210'> 210                 <font color='red'>}</font>
+<a name='L211'> 211                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%02x", <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L212'> 212         <font color='red'>}</font>
+<a name='L213'> 213         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("\n");
+<a name='L214'> 214 <font color='darkred'>#endif</font>
+<a name='L215'> 215 <font color='red'>}</font>
+<a name='L216'> 216 
+<a name='L217'> 217 <b>static</b> <b>void</b>
+<a name='L218'> 218 <a href='../R/3412.html' title='Multiple refered from 10 places.'>log_action</a>(<a href='../Y/4843.html' title='Multiple used in 56 places.'>nf2_of_action_wrap</a> *<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>)
+<a name='L219'> 219 <font color='red'>{</font>
+<a name='L220'> 220 <font color='darkred'>#ifdef</font> <a href='../Y/431.html' title='Multiple used in 11 places.'>HWTABLE_NO_DEBUG</a>
+<a name='L221'> 221         <b>return</b>;
+<a name='L222'> 222 <font color='darkred'>#else</font>
+<a name='L223'> 223         <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L224'> 224 
+<a name='L225'> 225         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("A Output P[");
+<a name='L226'> 226         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; 4; ++<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L227'> 227                 <b>if</b> (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/3202.html' title='Multiple used in 22 places.'>forward_bitmask</a> &amp; (1 &lt;&lt; (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> * 2))) <font color='red'>{</font>
+<a name='L228'> 228                         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%i", <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>);
+<a name='L229'> 229                 <font color='red'>}</font>
+<a name='L230'> 230         <font color='red'>}</font>
+<a name='L231'> 231         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("] CPU[");
+<a name='L232'> 232         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; 4; ++<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L233'> 233                 <b>if</b> (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/3202.html' title='Multiple used in 22 places.'>forward_bitmask</a> &amp; (1 &lt;&lt; (1 + (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> * 2)))) <font color='red'>{</font>
+<a name='L234'> 234                         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%i", <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>);
+<a name='L235'> 235                 <font color='red'>}</font>
+<a name='L236'> 236         <font color='red'>}</font>
+<a name='L237'> 237         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("]\n");
+<a name='L238'> 238 
+<a name='L239'> 239         <i><font color='green'>// Log the link layer source</font></i>
+<a name='L240'> 240         <b>if</b> (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/4832.html' title='Multiple used in 26 places.'>nf2_action_flag</a> &amp; (1 &lt;&lt; <a href='../D/3297.html' title='Multiple defined in 2 places.'>OFPAT_SET_DL_SRC</a>)) <font color='red'>{</font>
+<a name='L241'> 241                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("A Modify: dlsrc: new value [");
+<a name='L242'> 242                 <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 5; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &gt; 0; --<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L243'> 243                         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X:", <a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/2790.html' title='Multiple used in 31 places.'>eth_src</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L244'> 244                 <font color='red'>}</font>
+<a name='L245'> 245                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X]\n", <a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/2790.html' title='Multiple used in 31 places.'>eth_src</a>[0]);
+<a name='L246'> 246         <font color='red'>}</font>
+<a name='L247'> 247 
+<a name='L248'> 248         <i><font color='green'>// Log the link layer dest</font></i>
+<a name='L249'> 249         <b>if</b> (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/4832.html' title='Multiple used in 26 places.'>nf2_action_flag</a> &amp; (1 &lt;&lt; <a href='../D/3296.html' title='Multiple defined in 2 places.'>OFPAT_SET_DL_DST</a>)) <font color='red'>{</font>
+<a name='L250'> 250                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("A Modify: dldst: new value [");
+<a name='L251'> 251                 <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 5; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &gt; 0; --<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L252'> 252                         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X:", <a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/2785.html' title='Multiple used in 36 places.'>eth_dst</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L253'> 253                 <font color='red'>}</font>
+<a name='L254'> 254                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0X]\n", <a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/2785.html' title='Multiple used in 36 places.'>eth_dst</a>[0]);
+<a name='L255'> 255         <font color='red'>}</font>
+<a name='L256'> 256 
+<a name='L257'> 257         <i><font color='green'>// Log the link layer vlan id</font></i>
+<a name='L258'> 258         <b>if</b> (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/4832.html' title='Multiple used in 26 places.'>nf2_action_flag</a> &amp; (1 &lt;&lt; <a href='../D/3308.html' title='Multiple defined in 2 places.'>OFPAT_SET_VLAN_VID</a>)) <font color='red'>{</font>
+<a name='L259'> 259                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("A Modify: dlvlanid: new value [%0X]\n",
+<a name='L260'> 260                     <a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/7805.html' title='Multiple used in 70 places.'>vlan_id</a>);
+<a name='L261'> 261         <font color='red'>}</font>
+<a name='L262'> 262 
+<a name='L263'> 263         <i><font color='green'>// Log the link layer vlan pcp</font></i>
+<a name='L264'> 264         <b>if</b> (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/4832.html' title='Multiple used in 26 places.'>nf2_action_flag</a> &amp; (1 &lt;&lt; <a href='../D/3307.html' title='Multiple defined in 2 places.'>OFPAT_SET_VLAN_PCP</a>)) <font color='red'>{</font>
+<a name='L265'> 265                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("A Modify: dlvlanpcp: new value [%0X]\n",
+<a name='L266'> 266                     <a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/7808.html' title='Multiple used in 82 places.'>vlan_pcp</a>);
+<a name='L267'> 267         <font color='red'>}</font>
+<a name='L268'> 268 
+<a name='L269'> 269         <i><font color='green'>// Log the link layer vlan strip</font></i>
+<a name='L270'> 270         <b>if</b> (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/4832.html' title='Multiple used in 26 places.'>nf2_action_flag</a> &amp; (1 &lt;&lt; <a href='../D/3309.html' title='Multiple defined in 2 places.'>OFPAT_STRIP_VLAN</a>)) <font color='red'>{</font>
+<a name='L271'> 271                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("A Modify: dlvlan strip\n");
+<a name='L272'> 272         <font color='red'>}</font>
+<a name='L273'> 273 
+<a name='L274'> 274         <i><font color='green'>// Log the network source</font></i>
+<a name='L275'> 275         <b>if</b> (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/4832.html' title='Multiple used in 26 places.'>nf2_action_flag</a> &amp; (1 &lt;&lt; <a href='../D/3301.html' title='Multiple defined in 2 places.'>OFPAT_SET_NW_SRC</a>)) <font color='red'>{</font>
+<a name='L276'> 276                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("A Modify: nwsrc: new value [");
+<a name='L277'> 277                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0i.", (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/3893.html' title='Multiple used in 35 places.'>ip_src</a> &gt;&gt; 24) &amp; 0xFF);
+<a name='L278'> 278                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0i.", (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/3893.html' title='Multiple used in 35 places.'>ip_src</a> &gt;&gt; 16) &amp; 0xFF);
+<a name='L279'> 279                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0i.", (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/3893.html' title='Multiple used in 35 places.'>ip_src</a> &gt;&gt; 8) &amp; 0xFF);
+<a name='L280'> 280                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0i", <a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/3893.html' title='Multiple used in 35 places.'>ip_src</a> &amp; 0xFF);
+<a name='L281'> 281                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("]\n");
+<a name='L282'> 282         <font color='red'>}</font>
+<a name='L283'> 283 
+<a name='L284'> 284         <i><font color='green'>// Log the network dest</font></i>
+<a name='L285'> 285         <b>if</b> (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/4832.html' title='Multiple used in 26 places.'>nf2_action_flag</a> &amp; (1 &lt;&lt; <a href='../D/3300.html' title='Multiple defined in 2 places.'>OFPAT_SET_NW_DST</a>)) <font color='red'>{</font>
+<a name='L286'> 286                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("A Modify: nwdst: new value [");
+<a name='L287'> 287                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0i.", (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/3883.html' title='Multiple used in 35 places.'>ip_dst</a> &gt;&gt; 24) &amp; 0xFF);
+<a name='L288'> 288                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0i.", (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/3883.html' title='Multiple used in 35 places.'>ip_dst</a> &gt;&gt; 16) &amp; 0xFF);
+<a name='L289'> 289                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0i.", (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/3883.html' title='Multiple used in 35 places.'>ip_dst</a> &gt;&gt; 8) &amp; 0xFF);
+<a name='L290'> 290                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%0i", <a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/3883.html' title='Multiple used in 35 places.'>ip_dst</a> &amp; 0xFF);
+<a name='L291'> 291                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("]\n");
+<a name='L292'> 292         <font color='red'>}</font>
+<a name='L293'> 293 
+<a name='L294'> 294         <i><font color='green'>// Log the network TOS</font></i>
+<a name='L295'> 295         <b>if</b> (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/4832.html' title='Multiple used in 26 places.'>nf2_action_flag</a> &amp; (1 &lt;&lt; <a href='../D/3302.html' title='Multiple defined in 2 places.'>OFPAT_SET_NW_TOS</a>)) <font color='red'>{</font>
+<a name='L296'> 296                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("A Modify: nwtos: new value [%0X]\n",
+<a name='L297'> 297                     <a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/3896.html' title='Multiple used in 36 places.'>ip_tos</a> &amp; 0xFF);
+<a name='L298'> 298         <font color='red'>}</font>
+<a name='L299'> 299 
+<a name='L300'> 300         <i><font color='green'>// Log the transport source port</font></i>
+<a name='L301'> 301         <b>if</b> (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/4832.html' title='Multiple used in 26 places.'>nf2_action_flag</a> &amp; (1 &lt;&lt; <a href='../D/3306.html' title='Multiple defined in 2 places.'>OFPAT_SET_TP_SRC</a>)) <font color='red'>{</font>
+<a name='L302'> 302                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("A Modify: tsrc: new value [%0X]\n",
+<a name='L303'> 303                     <a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/7471.html' title='Multiple used in 14 places.'>transp_src</a>);
+<a name='L304'> 304         <font color='red'>}</font>
+<a name='L305'> 305 
+<a name='L306'> 306         <i><font color='green'>// Log the transport dest port</font></i>
+<a name='L307'> 307         <b>if</b> (<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/4832.html' title='Multiple used in 26 places.'>nf2_action_flag</a> &amp; (1 &lt;&lt; <a href='../D/3305.html' title='Multiple defined in 2 places.'>OFPAT_SET_TP_DST</a>)) <font color='red'>{</font>
+<a name='L308'> 308                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("A Modify: tdst: new value [%0X]\n",
+<a name='L309'> 309                     <a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>.<a href='../Y/7470.html' title='Multiple used in 14 places.'>transp_dst</a>);
+<a name='L310'> 310         <font color='red'>}</font>
+<a name='L311'> 311 <font color='darkred'>#endif</font>
+<a name='L312'> 312 <font color='red'>}</font>
+<a name='L313'> 313 
+<a name='L314'> 314 <b>static</b> <b>void</b>
+<a name='L315'> 315 <a href='../R/3413.html' title='Multiple refered from 10 places.'>log_action_raw</a>(<a href='../Y/4843.html' title='Multiple used in 56 places.'>nf2_of_action_wrap</a> *<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>)
+<a name='L316'> 316 <font color='red'>{</font>
+<a name='L317'> 317 <font color='darkred'>#ifdef</font> <a href='../Y/431.html' title='Multiple used in 11 places.'>HWTABLE_NO_DEBUG</a>
+<a name='L318'> 318         <b>return</b>;
+<a name='L319'> 319 <font color='darkred'>#else</font>
+<a name='L320'> 320         <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L321'> 321         <b>unsigned</b> <b>char</b> *<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>;
+<a name='L322'> 322 
+<a name='L323'> 323         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("A ");
+<a name='L324'> 324         <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> = (<b>unsigned</b> <b>char</b> *)<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>;
+<a name='L325'> 325         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <b>sizeof</b>(<a href='../D/8549.html' title='Multiple defined in 4 places.'>nf2_of_action_wrap</a>); ++<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L326'> 326                 <b>if</b> (!(<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> % 4)) <font color='red'>{</font>
+<a name='L327'> 327                         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>(" ");
+<a name='L328'> 328                 <font color='red'>}</font>
+<a name='L329'> 329                 <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("%02x", <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L330'> 330         <font color='red'>}</font>
+<a name='L331'> 331         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("\n");
+<a name='L332'> 332 <font color='darkred'>#endif</font>
+<a name='L333'> 333 <font color='red'>}</font>
+<a name='L334'> 334 
+<a name='L335'> 335 <b>void</b>
+<a name='L336'> 336 <a href='../R/3696.html' title='Multiple refered from 4 places.'>nf2_reset_card</a>(<b>struct</b> <a href='../Y/4857.html' title='Multiple used in 112 places.'>nf2device</a> *<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>)
+<a name='L337'> 337 <font color='red'>{</font>
+<a name='L338'> 338         <b>volatile</b> <b>unsigned</b> <b>int</b> <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>;
+<a name='L339'> 339 
+<a name='L340'> 340         <i><font color='green'>/* If we are operating on a NetFPGA enabled box, reset the card */</font></i>
+<a name='L341'> 341         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/928.html' title='Multiple defined in 3 places.'>CPCI_REG_CTRL</a>, (<b>void</b> *)&amp;<a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>);
+<a name='L342'> 342         <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a> |= 0x100;
+<a name='L343'> 343         <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/928.html' title='Multiple defined in 3 places.'>CPCI_REG_CTRL</a>, <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>);
+<a name='L344'> 344         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("Reset the NetFPGA.\n");
+<a name='L345'> 345         <a href='../Y/6831.html' title='Multiple used in 2 places.'>sleep</a>(2);
+<a name='L346'> 346 <font color='red'>}</font>
+<a name='L347'> 347 
+<a name='L348'> 348 <b>void</b>
+<a name='L349'> 349 <a href='../R/3642.html' title='Multiple refered from 4 places.'>nf2_clear_watchdog</a>(<b>struct</b> <a href='../Y/4857.html' title='Multiple used in 112 places.'>nf2device</a> *<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>)
+<a name='L350'> 350 <font color='red'>{</font>
+<a name='L351'> 351         <b>volatile</b> <b>unsigned</b> <b>int</b> <a href='../Y/2665.html' title='Multiple used in 12 places.'>enable_status</a>;
+<a name='L352'> 352 
+<a name='L353'> 353 <font color='darkred'>#ifndef</font> <a href='../Y/572.html' title='Multiple used in 3 places.'>NF2_WATCHDOG</a>
+<a name='L354'> 354         <b>return</b>;
+<a name='L355'> 355 <font color='darkred'>#endif</font>
+<a name='L356'> 356         <a href='../S/229.html#L682' title='Defined at 682 in cbench/openflow/hw-lib/nf2/nf2_drv.c.'>log_watchdog_info</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>);
+<a name='L357'> 357 
+<a name='L358'> 358         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/5971.html' title='Multiple defined in 2 places.'>WDT_ENABLE_FLG_REG</a>, (<b>void</b> *)&amp;<a href='../Y/2665.html' title='Multiple used in 12 places.'>enable_status</a>);
+<a name='L359'> 359         <a href='../Y/2665.html' title='Multiple used in 12 places.'>enable_status</a> &amp;= 0x1;
+<a name='L360'> 360 
+<a name='L361'> 361         <b>if</b> (<a href='../Y/2665.html' title='Multiple used in 12 places.'>enable_status</a> == <a href='../D/5949.html' title='Multiple defined in 2 places.'>WATCHDOG_DISABLE</a>) <font color='red'>{</font>
+<a name='L362'> 362                 <a href='../Y/2665.html' title='Multiple used in 12 places.'>enable_status</a> = <a href='../D/5950.html' title='Multiple defined in 2 places.'>WATCHDOG_ENABLE</a>;
+<a name='L363'> 363                 <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/5971.html' title='Multiple defined in 2 places.'>WDT_ENABLE_FLG_REG</a>, <a href='../Y/2665.html' title='Multiple used in 12 places.'>enable_status</a>);
+<a name='L364'> 364         <font color='red'>}</font>
+<a name='L365'> 365 <font color='red'>}</font>
+<a name='L366'> 366 
+<a name='L367'> 367 <i><font color='green'>/* Write a wildcard entry to the specified device and row. The row consists of</font></i>
+<a name='L368'> 368 <i><font color='green'> * the actual entry, its mask that specifies wildcards, as well as the action(s)</font></i>
+<a name='L369'> 369 <i><font color='green'> * to be taken if the row is matched</font></i>
+<a name='L370'> 370 <i><font color='green'> */</font></i>
+<a name='L371'> 371 <b>int</b>
+<a name='L372'> 372 <a href='../R/3701.html' title='Multiple refered from 14 places.'>nf2_write_of_wildcard</a>(<b>struct</b> <a href='../Y/4857.html' title='Multiple used in 112 places.'>nf2device</a> *<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <b>int</b> <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>,
+<a name='L373'> 373                       <a href='../Y/4844.html' title='Multiple used in 36 places.'>nf2_of_entry_wrap</a> *<a href='../Y/2701.html' title='Multiple used in 33 places.'>entry</a>, <a href='../Y/4845.html' title='Multiple used in 22 places.'>nf2_of_mask_wrap</a> *<a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>,
+<a name='L374'> 374                       <a href='../Y/4843.html' title='Multiple used in 56 places.'>nf2_of_action_wrap</a> *<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>)
+<a name='L375'> 375 <font color='red'>{</font>
+<a name='L376'> 376         <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L377'> 377         <b>unsigned</b> <b>int</b> <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>;
+<a name='L378'> 378 
+<a name='L379'> 379         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("** Begin wildcard entry write to row: %i\n", <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>);
+<a name='L380'> 380         <a href='../D/8266.html' title='Multiple defined in 2 places.'>log_entry</a>(<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>);
+<a name='L381'> 381         <a href='../D/8270.html' title='Multiple defined in 2 places.'>log_mask</a>(<a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>);
+<a name='L382'> 382         <a href='../D/8260.html' title='Multiple defined in 2 places.'>log_action</a>(<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>);
+<a name='L383'> 383         <a href='../D/8267.html' title='Multiple defined in 2 places.'>log_entry_raw</a>(<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>);
+<a name='L384'> 384         <a href='../D/8271.html' title='Multiple defined in 2 places.'>log_mask_raw</a>(<a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>);
+<a name='L385'> 385         <a href='../D/8261.html' title='Multiple defined in 2 places.'>log_action_raw</a>(<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>);
+<a name='L386'> 386 
+<a name='L387'> 387         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../D/3107.html' title='Multiple defined in 2 places.'>NF2_OF_ENTRY_WORD_LEN</a>; ++<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L388'> 388                 <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>,
+<a name='L389'> 389                                <a href='../D/3937.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_CMP_0_REG</a>
+<a name='L390'> 390                                + (4 * <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>), <a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L391'> 391         <font color='red'>}</font>
+<a name='L392'> 392 
+<a name='L393'> 393         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../D/3109.html' title='Multiple defined in 2 places.'>NF2_OF_MASK_WORD_LEN</a>; ++<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L394'> 394                 <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>,
+<a name='L395'> 395                                <a href='../D/3945.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_CMP_MASK_0_REG</a>
+<a name='L396'> 396                                + (4 * <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>), <a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L397'> 397         <font color='red'>}</font>
+<a name='L398'> 398 
+<a name='L399'> 399         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../D/3106.html' title='Multiple defined in 2 places.'>NF2_OF_ACTION_WORD_LEN</a>; ++<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L400'> 400                 <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>,
+<a name='L401'> 401                                <a href='../D/3894.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_ACTION_0_REG</a>
+<a name='L402'> 402                                + (4 * <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>), <a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L403'> 403         <font color='red'>}</font>
+<a name='L404'> 404 
+<a name='L405'> 405         <i><font color='green'>// Reset the stats for the row</font></i>
+<a name='L406'> 406         <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a> = 0;
+<a name='L407'> 407         <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>,
+<a name='L408'> 408                        <a href='../D/3905.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_BYTES_HIT_0_REG</a> + (4 * <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>),
+<a name='L409'> 409                        <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>);
+<a name='L410'> 410         <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/3987.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_PKTS_HIT_0_REG</a> + (4 * <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>),
+<a name='L411'> 411                        <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>);
+<a name='L412'> 412         <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>,
+<a name='L413'> 413                        <a href='../D/3955.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_LAST_SEEN_TS_0_REG</a> + (4 * <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>),
+<a name='L414'> 414                        <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>);
+<a name='L415'> 415         <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/4020.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_WRITE_ADDR_REG</a>, <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>);
+<a name='L416'> 416 
+<a name='L417'> 417         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("** End wildcard entry write to row: %i time(msec): %llu\n",
+<a name='L418'> 418                     <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>, <a href='../S/902.html#L116' title='Defined at 116 in cbench/openflow/lib/timeval.c.'>time_msec</a>());
+<a name='L419'> 419 
+<a name='L420'> 420         <b>return</b> 0;
+<a name='L421'> 421 <font color='red'>}</font>
+<a name='L422'> 422 
+<a name='L423'> 423 <b>int</b>
+<a name='L424'> 424 <a href='../R/3700.html' title='Multiple refered from 6 places.'>nf2_write_of_exact</a>(<b>struct</b> <a href='../Y/4857.html' title='Multiple used in 112 places.'>nf2device</a> *<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <b>int</b> <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>,
+<a name='L425'> 425                    <a href='../Y/4844.html' title='Multiple used in 36 places.'>nf2_of_entry_wrap</a> *<a href='../Y/2701.html' title='Multiple used in 33 places.'>entry</a>, <a href='../Y/4843.html' title='Multiple used in 56 places.'>nf2_of_action_wrap</a> *<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>)
+<a name='L426'> 426 <font color='red'>{</font>
+<a name='L427'> 427         <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L428'> 428         <b>unsigned</b> <b>int</b> <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>;
+<a name='L429'> 429         <b>unsigned</b> <b>int</b> <a href='../Y/3795.html' title='Multiple used in 107 places.'>index</a> = <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a> &lt;&lt; 7;
+<a name='L430'> 430 
+<a name='L431'> 431         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("** Begin exact match entry write to row: %i\n", <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>);
+<a name='L432'> 432         <a href='../D/8266.html' title='Multiple defined in 2 places.'>log_entry</a>(<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>);
+<a name='L433'> 433         <a href='../D/8260.html' title='Multiple defined in 2 places.'>log_action</a>(<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>);
+<a name='L434'> 434         <a href='../D/8267.html' title='Multiple defined in 2 places.'>log_entry_raw</a>(<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>);
+<a name='L435'> 435         <a href='../D/8261.html' title='Multiple defined in 2 places.'>log_action_raw</a>(<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>);
+<a name='L436'> 436 
+<a name='L437'> 437         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../D/3107.html' title='Multiple defined in 2 places.'>NF2_OF_ENTRY_WORD_LEN</a>; ++<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L438'> 438                 <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/5410.html' title='Multiple defined in 4 places.'>SRAM_BASE_ADDR</a> + <a href='../Y/3795.html' title='Multiple used in 107 places.'>index</a>
+<a name='L439'> 439                                + (4 * <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>), <a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L440'> 440         <font color='red'>}</font>
+<a name='L441'> 441 
+<a name='L442'> 442         <i><font color='green'>// blank out the counters</font></i>
+<a name='L443'> 443         <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a> = 0;
+<a name='L444'> 444         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../D/3108.html' title='Multiple defined in 2 places.'>NF2_OF_EXACT_COUNTERS_WORD_LEN</a>; ++<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L445'> 445                 <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/5410.html' title='Multiple defined in 4 places.'>SRAM_BASE_ADDR</a> + <a href='../Y/3795.html' title='Multiple used in 107 places.'>index</a>
+<a name='L446'> 446                                + <b>sizeof</b>(<a href='../D/8551.html' title='Multiple defined in 4 places.'>nf2_of_entry_wrap</a>)
+<a name='L447'> 447                                + (4 * <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>), <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>);
+<a name='L448'> 448         <font color='red'>}</font>
+<a name='L449'> 449 
+<a name='L450'> 450         <i><font color='green'>// write the actions</font></i>
+<a name='L451'> 451         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../D/3106.html' title='Multiple defined in 2 places.'>NF2_OF_ACTION_WORD_LEN</a>; ++<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L452'> 452                 <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/5410.html' title='Multiple defined in 4 places.'>SRAM_BASE_ADDR</a> + <a href='../Y/3795.html' title='Multiple used in 107 places.'>index</a>
+<a name='L453'> 453                                + <b>sizeof</b>(<a href='../D/8551.html' title='Multiple defined in 4 places.'>nf2_of_entry_wrap</a>)
+<a name='L454'> 454                                + <b>sizeof</b>(<a href='../D/8553.html' title='Multiple defined in 4 places.'>nf2_of_exact_counters_wrap</a>)
+<a name='L455'> 455                                + (4 * <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>), <a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L456'> 456         <font color='red'>}</font>
+<a name='L457'> 457 
+<a name='L458'> 458         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>
+<a name='L459'> 459             ("** End exact match entry write to row: %i time(msec): %llu\n",
+<a name='L460'> 460              <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>, <a href='../S/902.html#L116' title='Defined at 116 in cbench/openflow/lib/timeval.c.'>time_msec</a>());
+<a name='L461'> 461 
+<a name='L462'> 462         <b>return</b> 0;
+<a name='L463'> 463 <font color='red'>}</font>
+<a name='L464'> 464 
+<a name='L465'> 465 <i><font color='green'>/* Write wildcard action(s) to the specified device and row. */</font></i>
+<a name='L466'> 466 <b>int</b>
+<a name='L467'> 467 <a href='../R/3682.html' title='Multiple refered from 4 places.'>nf2_modify_write_of_wildcard</a>(<b>struct</b> <a href='../Y/4857.html' title='Multiple used in 112 places.'>nf2device</a> *<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <b>int</b> <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>,
+<a name='L468'> 468                              <a href='../Y/4844.html' title='Multiple used in 36 places.'>nf2_of_entry_wrap</a> *<a href='../Y/2701.html' title='Multiple used in 33 places.'>entry</a>, <a href='../Y/4845.html' title='Multiple used in 22 places.'>nf2_of_mask_wrap</a> *<a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>,
+<a name='L469'> 469                              <a href='../Y/4843.html' title='Multiple used in 56 places.'>nf2_of_action_wrap</a> *<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>)
+<a name='L470'> 470 <font color='red'>{</font>
+<a name='L471'> 471         <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L472'> 472         <b>unsigned</b> <b>int</b> <a href='../Y/1742.html' title='Multiple used in 8 places.'>bytes_reg_val</a>;
+<a name='L473'> 473         <b>unsigned</b> <b>int</b> <a href='../Y/5768.html' title='Multiple used in 8 places.'>pkts_reg_val</a>;
+<a name='L474'> 474         <b>unsigned</b> <b>int</b> <a href='../Y/4087.html' title='Multiple used in 8 places.'>last_reg_val</a>;
+<a name='L475'> 475 
+<a name='L476'> 476         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("** Begin wildcard modified action write to row: %i\n",
+<a name='L477'> 477                     <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>);
+<a name='L478'> 478         <a href='../D/8266.html' title='Multiple defined in 2 places.'>log_entry</a>(<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>);
+<a name='L479'> 479         <a href='../D/8270.html' title='Multiple defined in 2 places.'>log_mask</a>(<a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>);
+<a name='L480'> 480         <a href='../D/8260.html' title='Multiple defined in 2 places.'>log_action</a>(<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>);
+<a name='L481'> 481         <a href='../D/8267.html' title='Multiple defined in 2 places.'>log_entry_raw</a>(<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>);
+<a name='L482'> 482         <a href='../D/8271.html' title='Multiple defined in 2 places.'>log_mask_raw</a>(<a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>);
+<a name='L483'> 483         <a href='../D/8261.html' title='Multiple defined in 2 places.'>log_action_raw</a>(<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>);
+<a name='L484'> 484 
+<a name='L485'> 485         <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/4019.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_READ_ADDR_REG</a>, <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>);
+<a name='L486'> 486         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>,
+<a name='L487'> 487                       <a href='../D/3905.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_BYTES_HIT_0_REG</a> + (4 * <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>),
+<a name='L488'> 488                       &amp;<a href='../Y/1742.html' title='Multiple used in 8 places.'>bytes_reg_val</a>);
+<a name='L489'> 489         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>,
+<a name='L490'> 490                       <a href='../D/3987.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_PKTS_HIT_0_REG</a> + (4 * <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>),
+<a name='L491'> 491                       &amp;<a href='../Y/5768.html' title='Multiple used in 8 places.'>pkts_reg_val</a>);
+<a name='L492'> 492         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>,
+<a name='L493'> 493                       <a href='../D/3955.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_LAST_SEEN_TS_0_REG</a> + (4 * <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>),
+<a name='L494'> 494                       &amp;<a href='../Y/4087.html' title='Multiple used in 8 places.'>last_reg_val</a>);
+<a name='L495'> 495 
+<a name='L496'> 496         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../D/3107.html' title='Multiple defined in 2 places.'>NF2_OF_ENTRY_WORD_LEN</a>; ++<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L497'> 497                 <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/3937.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_CMP_0_REG</a>
+<a name='L498'> 498                                + (4 * <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>), <a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L499'> 499         <font color='red'>}</font>
+<a name='L500'> 500 
+<a name='L501'> 501         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../D/3109.html' title='Multiple defined in 2 places.'>NF2_OF_MASK_WORD_LEN</a>; ++<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L502'> 502                 <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/3945.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_CMP_MASK_0_REG</a>
+<a name='L503'> 503                                + (4 * <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>), <a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>-&gt;<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L504'> 504         <font color='red'>}</font>
+<a name='L505'> 505 
+<a name='L506'> 506         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../D/3106.html' title='Multiple defined in 2 places.'>NF2_OF_ACTION_WORD_LEN</a>; ++<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L507'> 507                 <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/3894.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_ACTION_0_REG</a>
+<a name='L508'> 508                                + (4 * <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>), <a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L509'> 509         <font color='red'>}</font>
+<a name='L510'> 510 
+<a name='L511'> 511         <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>,
+<a name='L512'> 512                        <a href='../D/3905.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_BYTES_HIT_0_REG</a> + (4 * <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>),
+<a name='L513'> 513                        <a href='../Y/1742.html' title='Multiple used in 8 places.'>bytes_reg_val</a>);
+<a name='L514'> 514         <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/3987.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_PKTS_HIT_0_REG</a> + (4 * <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>),
+<a name='L515'> 515                        <a href='../Y/5768.html' title='Multiple used in 8 places.'>pkts_reg_val</a>);
+<a name='L516'> 516         <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>,
+<a name='L517'> 517                        <a href='../D/3955.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_LAST_SEEN_TS_0_REG</a> + (4 * <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>),
+<a name='L518'> 518                        <a href='../Y/4087.html' title='Multiple used in 8 places.'>last_reg_val</a>);
+<a name='L519'> 519         <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/4020.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_WRITE_ADDR_REG</a>, <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>);
+<a name='L520'> 520 
+<a name='L521'> 521         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>
+<a name='L522'> 522             ("** End wildcard modified action write to row: %i time(msec): %llu\n",
+<a name='L523'> 523              <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>, <a href='../S/902.html#L116' title='Defined at 116 in cbench/openflow/lib/timeval.c.'>time_msec</a>());
+<a name='L524'> 524         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("   Bytes hit count: %d\n", <a href='../Y/1742.html' title='Multiple used in 8 places.'>bytes_reg_val</a>);
+<a name='L525'> 525         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("   Pkts  hit count: %d\n", <a href='../Y/5768.html' title='Multiple used in 8 places.'>pkts_reg_val</a>);
+<a name='L526'> 526         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("   Last seen      : %d\n", <a href='../Y/4087.html' title='Multiple used in 8 places.'>last_reg_val</a>);
+<a name='L527'> 527 
+<a name='L528'> 528         <b>return</b> 0;
+<a name='L529'> 529 <font color='red'>}</font>
+<a name='L530'> 530 
+<a name='L531'> 531 <b>int</b>
+<a name='L532'> 532 <a href='../R/3681.html' title='Multiple refered from 4 places.'>nf2_modify_write_of_exact</a>(<b>struct</b> <a href='../Y/4857.html' title='Multiple used in 112 places.'>nf2device</a> *<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <b>int</b> <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>,
+<a name='L533'> 533                           <a href='../Y/4843.html' title='Multiple used in 56 places.'>nf2_of_action_wrap</a> *<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>)
+<a name='L534'> 534 <font color='red'>{</font>
+<a name='L535'> 535         <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L536'> 536         <b>unsigned</b> <b>int</b> <a href='../Y/3795.html' title='Multiple used in 107 places.'>index</a> = <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a> &lt;&lt; 7;
+<a name='L537'> 537 
+<a name='L538'> 538         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("** Begin exact match modified action write to row: %i\n",
+<a name='L539'> 539                     <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>);
+<a name='L540'> 540         <a href='../D/8260.html' title='Multiple defined in 2 places.'>log_action</a>(<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>);
+<a name='L541'> 541         <a href='../D/8261.html' title='Multiple defined in 2 places.'>log_action_raw</a>(<a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>);
+<a name='L542'> 542 
+<a name='L543'> 543         <i><font color='green'>// write the actions</font></i>
+<a name='L544'> 544         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../D/3106.html' title='Multiple defined in 2 places.'>NF2_OF_ACTION_WORD_LEN</a>; ++<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L545'> 545                 <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/5410.html' title='Multiple defined in 4 places.'>SRAM_BASE_ADDR</a> + <a href='../Y/3795.html' title='Multiple used in 107 places.'>index</a>
+<a name='L546'> 546                                + <b>sizeof</b>(<a href='../D/8551.html' title='Multiple defined in 4 places.'>nf2_of_entry_wrap</a>)
+<a name='L547'> 547                                + <b>sizeof</b>(<a href='../D/8553.html' title='Multiple defined in 4 places.'>nf2_of_exact_counters_wrap</a>)
+<a name='L548'> 548                                + (4 * <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>), <a href='../Y/1286.html' title='Multiple used in 358 places.'>action</a>-&gt;<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L549'> 549         <font color='red'>}</font>
+<a name='L550'> 550 
+<a name='L551'> 551         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>
+<a name='L552'> 552             ("** End exact match modified action write to row: %i time(msec): %llu\n",
+<a name='L553'> 553              <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>, <a href='../S/902.html#L116' title='Defined at 116 in cbench/openflow/lib/timeval.c.'>time_msec</a>());
+<a name='L554'> 554 
+<a name='L555'> 555         <b>return</b> 0;
+<a name='L556'> 556 <font color='red'>}</font>
+<a name='L557'> 557 
+<a name='L558'> 558 <b>unsigned</b> <b>int</b>
+<a name='L559'> 559 <a href='../R/3659.html' title='Multiple refered from 4 places.'>nf2_get_exact_packet_count</a>(<b>struct</b> <a href='../Y/4857.html' title='Multiple used in 112 places.'>nf2device</a> *<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <b>int</b> <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>)
+<a name='L560'> 560 <font color='red'>{</font>
+<a name='L561'> 561         <b>unsigned</b> <b>int</b> <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a> = 0;
+<a name='L562'> 562         <b>unsigned</b> <b>int</b> <a href='../Y/3795.html' title='Multiple used in 107 places.'>index</a> = 0;
+<a name='L563'> 563 
+<a name='L564'> 564         <i><font color='green'>/* TODO: Need to scrape data from all 4 registers</font></i>
+<a name='L565'> 565 <i><font color='green'>         * in the case of a wildcarded source port and</font></i>
+<a name='L566'> 566 <i><font color='green'>         * forward all action type</font></i>
+<a name='L567'> 567 <i><font color='green'>         */</font></i>
+<a name='L568'> 568         <a href='../D/8553.html' title='Multiple defined in 4 places.'>nf2_of_exact_counters_wrap</a> <a href='../Y/2146.html' title='Multiple used in 19 places.'>counters</a>;
+<a name='L569'> 569         <a href='../Y/4419.html' title='Multiple used in 245 places.'>memset</a>(&amp;<a href='../Y/2146.html' title='Multiple used in 19 places.'>counters</a>, 0, <b>sizeof</b>(<a href='../D/8553.html' title='Multiple defined in 4 places.'>nf2_of_exact_counters_wrap</a>));
+<a name='L570'> 570 
+<a name='L571'> 571         <i><font color='green'>// build the index to our counters</font></i>
+<a name='L572'> 572         <a href='../Y/3795.html' title='Multiple used in 107 places.'>index</a> = <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a> &lt;&lt; 7;
+<a name='L573'> 573 
+<a name='L574'> 574         <i><font color='green'>// Read the first word into our struct, to not disturb the byte count</font></i>
+<a name='L575'> 575         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>,
+<a name='L576'> 576                       <a href='../D/5410.html' title='Multiple defined in 4 places.'>SRAM_BASE_ADDR</a> + <a href='../Y/3795.html' title='Multiple used in 107 places.'>index</a> + <b>sizeof</b>(<a href='../D/8551.html' title='Multiple defined in 4 places.'>nf2_of_entry_wrap</a>),
+<a name='L577'> 577                       &amp;<a href='../Y/2146.html' title='Multiple used in 19 places.'>counters</a>.<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>[0]);
+<a name='L578'> 578         <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a> = <a href='../Y/2146.html' title='Multiple used in 19 places.'>counters</a>.<a href='../Y/2146.html' title='Multiple used in 19 places.'>counters</a>.<a href='../Y/5744.html' title='Multiple used in 39 places.'>pkt_count</a>;
+<a name='L579'> 579 
+<a name='L580'> 580         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>
+<a name='L581'> 581             ("** Exact match packet count(delta) row: %i count: %i time(msec): %llu\n",
+<a name='L582'> 582              <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>, <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>, <a href='../S/902.html#L116' title='Defined at 116 in cbench/openflow/lib/timeval.c.'>time_msec</a>());
+<a name='L583'> 583 
+<a name='L584'> 584         <b>return</b> <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>;
+<a name='L585'> 585 <font color='red'>}</font>
+<a name='L586'> 586 
+<a name='L587'> 587 <b>unsigned</b> <b>int</b>
+<a name='L588'> 588 <a href='../R/3658.html' title='Multiple refered from 4 places.'>nf2_get_exact_byte_count</a>(<b>struct</b> <a href='../Y/4857.html' title='Multiple used in 112 places.'>nf2device</a> *<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <b>int</b> <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>)
+<a name='L589'> 589 <font color='red'>{</font>
+<a name='L590'> 590         <b>unsigned</b> <b>int</b> <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a> = 0;
+<a name='L591'> 591         <b>unsigned</b> <b>int</b> <a href='../Y/3795.html' title='Multiple used in 107 places.'>index</a> = 0;
+<a name='L592'> 592 
+<a name='L593'> 593         <i><font color='green'>/* TODO: Need to scrape data from all 4 registers</font></i>
+<a name='L594'> 594 <i><font color='green'>         * in the case of a wildcarded source port and</font></i>
+<a name='L595'> 595 <i><font color='green'>         * forward all action type</font></i>
+<a name='L596'> 596 <i><font color='green'>         */</font></i>
+<a name='L597'> 597         <a href='../D/8553.html' title='Multiple defined in 4 places.'>nf2_of_exact_counters_wrap</a> <a href='../Y/2146.html' title='Multiple used in 19 places.'>counters</a>;
+<a name='L598'> 598         <a href='../Y/4419.html' title='Multiple used in 245 places.'>memset</a>(&amp;<a href='../Y/2146.html' title='Multiple used in 19 places.'>counters</a>, 0, <b>sizeof</b>(<a href='../D/8553.html' title='Multiple defined in 4 places.'>nf2_of_exact_counters_wrap</a>));
+<a name='L599'> 599 
+<a name='L600'> 600         <i><font color='green'>// build the index to our counters</font></i>
+<a name='L601'> 601         <a href='../Y/3795.html' title='Multiple used in 107 places.'>index</a> = <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a> &lt;&lt; 7;
+<a name='L602'> 602 
+<a name='L603'> 603         <i><font color='green'>// Read the second word into our struct, to not disturb the packet count</font></i>
+<a name='L604'> 604         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/5410.html' title='Multiple defined in 4 places.'>SRAM_BASE_ADDR</a> + <a href='../Y/3795.html' title='Multiple used in 107 places.'>index</a> +
+<a name='L605'> 605                       <b>sizeof</b>(<a href='../D/8551.html' title='Multiple defined in 4 places.'>nf2_of_entry_wrap</a>) + 4, &amp;<a href='../Y/2146.html' title='Multiple used in 19 places.'>counters</a>.<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>[1]);
+<a name='L606'> 606         <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a> = <a href='../Y/2146.html' title='Multiple used in 19 places.'>counters</a>.<a href='../Y/2146.html' title='Multiple used in 19 places.'>counters</a>.<a href='../Y/1732.html' title='Multiple used in 68 places.'>byte_count</a>;
+<a name='L607'> 607 
+<a name='L608'> 608         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>
+<a name='L609'> 609             ("** Exact match byte count(delta) row: %i count: %i time(msec): %llu\n",
+<a name='L610'> 610              <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>, <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>, <a href='../S/902.html#L116' title='Defined at 116 in cbench/openflow/lib/timeval.c.'>time_msec</a>());
+<a name='L611'> 611 
+<a name='L612'> 612         <b>return</b> <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>;
+<a name='L613'> 613 <font color='red'>}</font>
+<a name='L614'> 614 
+<a name='L615'> 615 <b>unsigned</b> <b>int</b>
+<a name='L616'> 616 <a href='../R/3671.html' title='Multiple refered from 4 places.'>nf2_get_wildcard_packet_count</a>(<b>struct</b> <a href='../Y/4857.html' title='Multiple used in 112 places.'>nf2device</a> *<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <b>int</b> <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>)
+<a name='L617'> 617 <font color='red'>{</font>
+<a name='L618'> 618         <b>unsigned</b> <b>int</b> <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a> = 0;
+<a name='L619'> 619 
+<a name='L620'> 620         <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/4019.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_READ_ADDR_REG</a>, <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>);
+<a name='L621'> 621         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/3987.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_PKTS_HIT_0_REG</a>
+<a name='L622'> 622                       + (4 * <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>), &amp;<a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>);
+<a name='L623'> 623 
+<a name='L624'> 624         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>
+<a name='L625'> 625             ("** Wildcard packet count(sum) row: %i count: %i time(msec): %llu\n",
+<a name='L626'> 626              <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>, <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>, <a href='../S/902.html#L116' title='Defined at 116 in cbench/openflow/lib/timeval.c.'>time_msec</a>());
+<a name='L627'> 627 
+<a name='L628'> 628         <b>return</b> <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>;
+<a name='L629'> 629 <font color='red'>}</font>
+<a name='L630'> 630 
+<a name='L631'> 631 <b>unsigned</b> <b>int</b>
+<a name='L632'> 632 <a href='../R/3670.html' title='Multiple refered from 4 places.'>nf2_get_wildcard_byte_count</a>(<b>struct</b> <a href='../Y/4857.html' title='Multiple used in 112 places.'>nf2device</a> *<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <b>int</b> <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>)
+<a name='L633'> 633 <font color='red'>{</font>
+<a name='L634'> 634         <b>unsigned</b> <b>int</b> <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a> = 0;
+<a name='L635'> 635 
+<a name='L636'> 636         <a href='../D/10134.html' title='Multiple defined in 2 places.'>writeReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/4019.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_READ_ADDR_REG</a>, <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>);
+<a name='L637'> 637         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/3905.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_LOOKUP_BYTES_HIT_0_REG</a>
+<a name='L638'> 638                       + (4 * <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>), &amp;<a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>);
+<a name='L639'> 639 
+<a name='L640'> 640         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>
+<a name='L641'> 641             ("** Wildcard byte count(sum) row: %i count: %i time(msec): %llu\n",
+<a name='L642'> 642              <a href='../Y/6470.html' title='Multiple used in 91 places.'>row</a>, <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>, <a href='../S/902.html#L116' title='Defined at 116 in cbench/openflow/lib/timeval.c.'>time_msec</a>());
+<a name='L643'> 643 
+<a name='L644'> 644         <b>return</b> <a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>;
+<a name='L645'> 645 <font color='red'>}</font>
+<a name='L646'> 646 
+<a name='L647'> 647 <b>unsigned</b> <b>long</b> <b>int</b>
+<a name='L648'> 648 <a href='../R/3662.html' title='Multiple refered from 4 places.'>nf2_get_matched_count</a>(<b>struct</b> <a href='../Y/4857.html' title='Multiple used in 112 places.'>nf2device</a> *<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>)
+<a name='L649'> 649 <font color='red'>{</font>
+<a name='L650'> 650         <b>unsigned</b> <b>int</b> <a href='../Y/7720.html' title='Multiple used in 16 places.'>val_wild</a> = 0;
+<a name='L651'> 651         <b>unsigned</b> <b>int</b> <a href='../Y/7716.html' title='Multiple used in 16 places.'>val_exact</a> = 0;
+<a name='L652'> 652 
+<a name='L653'> 653         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/3865.html' title='Multiple defined in 2 places.'>OPENFLOW_LOOKUP_WILDCARD_HITS_REG</a>, &amp;<a href='../Y/7720.html' title='Multiple used in 16 places.'>val_wild</a>);
+<a name='L654'> 654         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/3854.html' title='Multiple defined in 2 places.'>OPENFLOW_LOOKUP_EXACT_HITS_REG</a>, &amp;<a href='../Y/7716.html' title='Multiple used in 16 places.'>val_exact</a>);
+<a name='L655'> 655 
+<a name='L656'> 656         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("** Wildcard Matched count: %i time(msec): %llu\n",
+<a name='L657'> 657                     <a href='../Y/7720.html' title='Multiple used in 16 places.'>val_wild</a>, <a href='../S/902.html#L116' title='Defined at 116 in cbench/openflow/lib/timeval.c.'>time_msec</a>());
+<a name='L658'> 658         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("** Exact Matched count: %i time(msec): %llu\n",
+<a name='L659'> 659                     <a href='../Y/7716.html' title='Multiple used in 16 places.'>val_exact</a>, <a href='../S/902.html#L116' title='Defined at 116 in cbench/openflow/lib/timeval.c.'>time_msec</a>());
+<a name='L660'> 660 
+<a name='L661'> 661         <b>return</b> ((<b>unsigned</b> <b>long</b> <b>int</b>)(<a href='../Y/7720.html' title='Multiple used in 16 places.'>val_wild</a> + <a href='../Y/7716.html' title='Multiple used in 16 places.'>val_exact</a>));
+<a name='L662'> 662 <font color='red'>}</font>
+<a name='L663'> 663 
+<a name='L664'> 664 <b>unsigned</b> <b>long</b> <b>int</b>
+<a name='L665'> 665 <a href='../R/3663.html' title='Multiple refered from 4 places.'>nf2_get_missed_count</a>(<b>struct</b> <a href='../Y/4857.html' title='Multiple used in 112 places.'>nf2device</a> *<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>)
+<a name='L666'> 666 <font color='red'>{</font>
+<a name='L667'> 667         <b>unsigned</b> <b>int</b> <a href='../Y/7720.html' title='Multiple used in 16 places.'>val_wild</a> = 0;
+<a name='L668'> 668         <b>unsigned</b> <b>int</b> <a href='../Y/7716.html' title='Multiple used in 16 places.'>val_exact</a> = 0;
+<a name='L669'> 669 
+<a name='L670'> 670         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/3866.html' title='Multiple defined in 2 places.'>OPENFLOW_LOOKUP_WILDCARD_MISSES_REG</a>, &amp;<a href='../Y/7720.html' title='Multiple used in 16 places.'>val_wild</a>);
+<a name='L671'> 671         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/3855.html' title='Multiple defined in 2 places.'>OPENFLOW_LOOKUP_EXACT_MISSES_REG</a>, &amp;<a href='../Y/7716.html' title='Multiple used in 16 places.'>val_exact</a>);
+<a name='L672'> 672 
+<a name='L673'> 673         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("** Wildcard Missed count: %i time(msec): %llu\n",
+<a name='L674'> 674                     <a href='../Y/7720.html' title='Multiple used in 16 places.'>val_wild</a>, <a href='../S/902.html#L116' title='Defined at 116 in cbench/openflow/lib/timeval.c.'>time_msec</a>());
+<a name='L675'> 675         <a href='../D/1151.html' title='Multiple defined in 4 places.'>DBG_VERBOSE</a>("** Exact Missed count: %i time(msec): %llu\n",
+<a name='L676'> 676                     <a href='../Y/7716.html' title='Multiple used in 16 places.'>val_exact</a>, <a href='../S/902.html#L116' title='Defined at 116 in cbench/openflow/lib/timeval.c.'>time_msec</a>());
+<a name='L677'> 677 
+<a name='L678'> 678         <b>return</b> ((<b>unsigned</b> <b>long</b> <b>int</b>)(<a href='../Y/7720.html' title='Multiple used in 16 places.'>val_wild</a> + <a href='../Y/7716.html' title='Multiple used in 16 places.'>val_exact</a>));
+<a name='L679'> 679 <font color='red'>}</font>
+<a name='L680'> 680 
+<a name='L681'> 681 <b>static</b> <b>void</b>
+<a name='L682'> 682 <a href='../R/3426.html' title='Multiple refered from 2 places.'>log_watchdog_info</a>(<b>struct</b> <a href='../Y/4857.html' title='Multiple used in 112 places.'>nf2device</a> *<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>)
+<a name='L683'> 683 <font color='red'>{</font>
+<a name='L684'> 684 <font color='darkred'>#ifdef</font> <a href='../Y/431.html' title='Multiple used in 11 places.'>HWTABLE_NO_DEBUG</a>
+<a name='L685'> 685         <b>return</b>;
+<a name='L686'> 686 <font color='darkred'>#else</font>
+<a name='L687'> 687 <font color='darkred'>#define</font> <a href='../R/183.html' title='Multiple refered from 2 places.'>CLK_CYCLE</a> 8
+<a name='L688'> 688         <b>unsigned</b> <b>int</b> <a href='../Y/4867.html' title='Multiple used in 9 places.'>nf2wdtinfo</a>;
+<a name='L689'> 689         <b>unsigned</b> <b>int</b> <a href='../Y/2638.html' title='Multiple used in 8 places.'>elapsed_time</a>;
+<a name='L690'> 690         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../D/5969.html' title='Multiple defined in 2 places.'>WDT_COUNTER_REG</a>, &amp;<a href='../Y/4867.html' title='Multiple used in 9 places.'>nf2wdtinfo</a>);
+<a name='L691'> 691         <a href='../Y/2638.html' title='Multiple used in 8 places.'>elapsed_time</a> = <a href='../Y/4867.html' title='Multiple used in 9 places.'>nf2wdtinfo</a> * <a href='../D/601.html' title='Multiple defined in 2 places.'>CLK_CYCLE</a> / 1000000;
+<a name='L692'> 692         <a href='../D/1152.html' title='Multiple defined in 4 places.'>DBG_VVERB</a>
+<a name='L693'> 693             ("%u (msec) passed since the watchdog counter has been cleared last time\n",
+<a name='L694'> 694               <a href='../Y/2638.html' title='Multiple used in 8 places.'>elapsed_time</a>);
+<a name='L695'> 695         <a href='../D/1152.html' title='Multiple defined in 4 places.'>DBG_VVERB</a>("NetFPGA WDT now clearing\n");
+<a name='L696'> 696 <font color='darkred'>#endif</font>
+<a name='L697'> 697 <font color='red'>}</font>
+<a name='L698'> 698 
+<a name='L699'> 699 <b>static</b> <b>void</b>
+<a name='L700'> 700 <a href='../R/3655.html' title='Multiple refered from 4 places.'>nf2_get_all_ports_info_addr</a>(<b>struct</b> <a href='../Y/4833.html' title='Multiple used in 2 places.'>nf2_all_ports_info_addr</a> *<a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>)
+<a name='L701'> 701 <font color='red'>{</font>
+<a name='L702'> 702         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6539.html' title='Multiple used in 12 places.'>rx_q_num_pkts_stored_reg</a>[0]
+<a name='L703'> 703                 = <a href='../D/2441.html' title='Multiple defined in 3 places.'>MAC_GRP_0_RX_QUEUE_NUM_PKTS_STORED_REG</a>;
+<a name='L704'> 704         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6535.html' title='Multiple used in 12 places.'>rx_q_num_pkts_dropped_full_reg</a>[0]
+<a name='L705'> 705                 = <a href='../D/2439.html' title='Multiple defined in 3 places.'>MAC_GRP_0_RX_QUEUE_NUM_PKTS_DROPPED_FULL_REG</a>;
+<a name='L706'> 706         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6533.html' title='Multiple used in 12 places.'>rx_q_num_pkts_dropped_bad_reg</a>[0]
+<a name='L707'> 707                 = <a href='../D/2438.html' title='Multiple defined in 3 places.'>MAC_GRP_0_RX_QUEUE_NUM_PKTS_DROPPED_BAD_REG</a>;
+<a name='L708'> 708         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6541.html' title='Multiple used in 12 places.'>rx_q_num_words_pushed_reg</a>[0]
+<a name='L709'> 709                 = <a href='../D/2442.html' title='Multiple defined in 3 places.'>MAC_GRP_0_RX_QUEUE_NUM_WORDS_PUSHED_REG</a>;
+<a name='L710'> 710         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6529.html' title='Multiple used in 12 places.'>rx_q_num_bytes_pushed_reg</a>[0]
+<a name='L711'> 711                 = <a href='../D/2436.html' title='Multiple defined in 3 places.'>MAC_GRP_0_RX_QUEUE_NUM_BYTES_PUSHED_REG</a>;
+<a name='L712'> 712         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6531.html' title='Multiple used in 12 places.'>rx_q_num_pkts_dequeued_reg</a>[0]
+<a name='L713'> 713                 = <a href='../D/2437.html' title='Multiple defined in 3 places.'>MAC_GRP_0_RX_QUEUE_NUM_PKTS_DEQUEUED_REG</a>;
+<a name='L714'> 714         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6537.html' title='Multiple used in 12 places.'>rx_q_num_pkts_in_queue_reg</a>[0]
+<a name='L715'> 715                 = <a href='../D/2440.html' title='Multiple defined in 3 places.'>MAC_GRP_0_RX_QUEUE_NUM_PKTS_IN_QUEUE_REG</a>;
+<a name='L716'> 716         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7540.html' title='Multiple used in 12 places.'>tx_q_num_pkts_in_queue_reg</a>[0]
+<a name='L717'> 717                 = <a href='../D/2445.html' title='Multiple defined in 3 places.'>MAC_GRP_0_TX_QUEUE_NUM_PKTS_IN_QUEUE_REG</a>;
+<a name='L718'> 718         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7542.html' title='Multiple used in 12 places.'>tx_q_num_pkts_sent_reg</a>[0]
+<a name='L719'> 719                 = <a href='../D/2446.html' title='Multiple defined in 3 places.'>MAC_GRP_0_TX_QUEUE_NUM_PKTS_SENT_REG</a>;
+<a name='L720'> 720         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7544.html' title='Multiple used in 12 places.'>tx_q_num_words_pushed_reg</a>[0]
+<a name='L721'> 721                 = <a href='../D/2447.html' title='Multiple defined in 3 places.'>MAC_GRP_0_TX_QUEUE_NUM_WORDS_PUSHED_REG</a>;
+<a name='L722'> 722         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7536.html' title='Multiple used in 12 places.'>tx_q_num_bytes_pushed_reg</a>[0]
+<a name='L723'> 723                 = <a href='../D/2443.html' title='Multiple defined in 3 places.'>MAC_GRP_0_TX_QUEUE_NUM_BYTES_PUSHED_REG</a>;
+<a name='L724'> 724         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7538.html' title='Multiple used in 12 places.'>tx_q_num_pkts_enqueued_reg</a>[0]
+<a name='L725'> 725                 = <a href='../D/2444.html' title='Multiple defined in 3 places.'>MAC_GRP_0_TX_QUEUE_NUM_PKTS_ENQUEUED_REG</a>;
+<a name='L726'> 726 
+<a name='L727'> 727         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6539.html' title='Multiple used in 12 places.'>rx_q_num_pkts_stored_reg</a>[1]
+<a name='L728'> 728                 = <a href='../D/2455.html' title='Multiple defined in 3 places.'>MAC_GRP_1_RX_QUEUE_NUM_PKTS_STORED_REG</a>;
+<a name='L729'> 729         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6535.html' title='Multiple used in 12 places.'>rx_q_num_pkts_dropped_full_reg</a>[1]
+<a name='L730'> 730                 = <a href='../D/2453.html' title='Multiple defined in 3 places.'>MAC_GRP_1_RX_QUEUE_NUM_PKTS_DROPPED_FULL_REG</a>;
+<a name='L731'> 731         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6533.html' title='Multiple used in 12 places.'>rx_q_num_pkts_dropped_bad_reg</a>[1]
+<a name='L732'> 732                 = <a href='../D/2452.html' title='Multiple defined in 3 places.'>MAC_GRP_1_RX_QUEUE_NUM_PKTS_DROPPED_BAD_REG</a>;
+<a name='L733'> 733         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6541.html' title='Multiple used in 12 places.'>rx_q_num_words_pushed_reg</a>[1]
+<a name='L734'> 734                 = <a href='../D/2456.html' title='Multiple defined in 3 places.'>MAC_GRP_1_RX_QUEUE_NUM_WORDS_PUSHED_REG</a>;
+<a name='L735'> 735         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6529.html' title='Multiple used in 12 places.'>rx_q_num_bytes_pushed_reg</a>[1]
+<a name='L736'> 736                 = <a href='../D/2450.html' title='Multiple defined in 3 places.'>MAC_GRP_1_RX_QUEUE_NUM_BYTES_PUSHED_REG</a>;
+<a name='L737'> 737         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6531.html' title='Multiple used in 12 places.'>rx_q_num_pkts_dequeued_reg</a>[1]
+<a name='L738'> 738                 = <a href='../D/2451.html' title='Multiple defined in 3 places.'>MAC_GRP_1_RX_QUEUE_NUM_PKTS_DEQUEUED_REG</a>;
+<a name='L739'> 739         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6537.html' title='Multiple used in 12 places.'>rx_q_num_pkts_in_queue_reg</a>[1]
+<a name='L740'> 740                 = <a href='../D/2454.html' title='Multiple defined in 3 places.'>MAC_GRP_1_RX_QUEUE_NUM_PKTS_IN_QUEUE_REG</a>;
+<a name='L741'> 741         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7540.html' title='Multiple used in 12 places.'>tx_q_num_pkts_in_queue_reg</a>[1]
+<a name='L742'> 742                 = <a href='../D/2459.html' title='Multiple defined in 3 places.'>MAC_GRP_1_TX_QUEUE_NUM_PKTS_IN_QUEUE_REG</a>;
+<a name='L743'> 743         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7542.html' title='Multiple used in 12 places.'>tx_q_num_pkts_sent_reg</a>[1]
+<a name='L744'> 744                 = <a href='../D/2460.html' title='Multiple defined in 3 places.'>MAC_GRP_1_TX_QUEUE_NUM_PKTS_SENT_REG</a>;
+<a name='L745'> 745         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7544.html' title='Multiple used in 12 places.'>tx_q_num_words_pushed_reg</a>[1]
+<a name='L746'> 746                 = <a href='../D/2461.html' title='Multiple defined in 3 places.'>MAC_GRP_1_TX_QUEUE_NUM_WORDS_PUSHED_REG</a>;
+<a name='L747'> 747         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7536.html' title='Multiple used in 12 places.'>tx_q_num_bytes_pushed_reg</a>[1]
+<a name='L748'> 748                 = <a href='../D/2457.html' title='Multiple defined in 3 places.'>MAC_GRP_1_TX_QUEUE_NUM_BYTES_PUSHED_REG</a>;
+<a name='L749'> 749         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7538.html' title='Multiple used in 12 places.'>tx_q_num_pkts_enqueued_reg</a>[1]
+<a name='L750'> 750                 = <a href='../D/2458.html' title='Multiple defined in 3 places.'>MAC_GRP_1_TX_QUEUE_NUM_PKTS_ENQUEUED_REG</a>;
+<a name='L751'> 751 
+<a name='L752'> 752         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6539.html' title='Multiple used in 12 places.'>rx_q_num_pkts_stored_reg</a>[2]
+<a name='L753'> 753                 = <a href='../D/2469.html' title='Multiple defined in 3 places.'>MAC_GRP_2_RX_QUEUE_NUM_PKTS_STORED_REG</a>;
+<a name='L754'> 754         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6535.html' title='Multiple used in 12 places.'>rx_q_num_pkts_dropped_full_reg</a>[2]
+<a name='L755'> 755                 = <a href='../D/2467.html' title='Multiple defined in 3 places.'>MAC_GRP_2_RX_QUEUE_NUM_PKTS_DROPPED_FULL_REG</a>;
+<a name='L756'> 756         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6533.html' title='Multiple used in 12 places.'>rx_q_num_pkts_dropped_bad_reg</a>[2]
+<a name='L757'> 757                 = <a href='../D/2466.html' title='Multiple defined in 3 places.'>MAC_GRP_2_RX_QUEUE_NUM_PKTS_DROPPED_BAD_REG</a>;
+<a name='L758'> 758         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6541.html' title='Multiple used in 12 places.'>rx_q_num_words_pushed_reg</a>[2]
+<a name='L759'> 759                 = <a href='../D/2470.html' title='Multiple defined in 3 places.'>MAC_GRP_2_RX_QUEUE_NUM_WORDS_PUSHED_REG</a>;
+<a name='L760'> 760         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6529.html' title='Multiple used in 12 places.'>rx_q_num_bytes_pushed_reg</a>[2]
+<a name='L761'> 761                 = <a href='../D/2464.html' title='Multiple defined in 3 places.'>MAC_GRP_2_RX_QUEUE_NUM_BYTES_PUSHED_REG</a>;
+<a name='L762'> 762         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6531.html' title='Multiple used in 12 places.'>rx_q_num_pkts_dequeued_reg</a>[2]
+<a name='L763'> 763                 = <a href='../D/2465.html' title='Multiple defined in 3 places.'>MAC_GRP_2_RX_QUEUE_NUM_PKTS_DEQUEUED_REG</a>;
+<a name='L764'> 764         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6537.html' title='Multiple used in 12 places.'>rx_q_num_pkts_in_queue_reg</a>[2]
+<a name='L765'> 765                 = <a href='../D/2468.html' title='Multiple defined in 3 places.'>MAC_GRP_2_RX_QUEUE_NUM_PKTS_IN_QUEUE_REG</a>;
+<a name='L766'> 766         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7540.html' title='Multiple used in 12 places.'>tx_q_num_pkts_in_queue_reg</a>[2]
+<a name='L767'> 767                 = <a href='../D/2473.html' title='Multiple defined in 3 places.'>MAC_GRP_2_TX_QUEUE_NUM_PKTS_IN_QUEUE_REG</a>;
+<a name='L768'> 768         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7542.html' title='Multiple used in 12 places.'>tx_q_num_pkts_sent_reg</a>[2]
+<a name='L769'> 769                 = <a href='../D/2474.html' title='Multiple defined in 3 places.'>MAC_GRP_2_TX_QUEUE_NUM_PKTS_SENT_REG</a>;
+<a name='L770'> 770         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7544.html' title='Multiple used in 12 places.'>tx_q_num_words_pushed_reg</a>[2]
+<a name='L771'> 771                 = <a href='../D/2475.html' title='Multiple defined in 3 places.'>MAC_GRP_2_TX_QUEUE_NUM_WORDS_PUSHED_REG</a>;
+<a name='L772'> 772         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7536.html' title='Multiple used in 12 places.'>tx_q_num_bytes_pushed_reg</a>[2]
+<a name='L773'> 773                 = <a href='../D/2471.html' title='Multiple defined in 3 places.'>MAC_GRP_2_TX_QUEUE_NUM_BYTES_PUSHED_REG</a>;
+<a name='L774'> 774         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7538.html' title='Multiple used in 12 places.'>tx_q_num_pkts_enqueued_reg</a>[2]
+<a name='L775'> 775                 = <a href='../D/2472.html' title='Multiple defined in 3 places.'>MAC_GRP_2_TX_QUEUE_NUM_PKTS_ENQUEUED_REG</a>;
+<a name='L776'> 776 
+<a name='L777'> 777         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6539.html' title='Multiple used in 12 places.'>rx_q_num_pkts_stored_reg</a>[3]
+<a name='L778'> 778                 = <a href='../D/2483.html' title='Multiple defined in 3 places.'>MAC_GRP_3_RX_QUEUE_NUM_PKTS_STORED_REG</a>;
+<a name='L779'> 779         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6535.html' title='Multiple used in 12 places.'>rx_q_num_pkts_dropped_full_reg</a>[3]
+<a name='L780'> 780                 = <a href='../D/2481.html' title='Multiple defined in 3 places.'>MAC_GRP_3_RX_QUEUE_NUM_PKTS_DROPPED_FULL_REG</a>;
+<a name='L781'> 781         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6533.html' title='Multiple used in 12 places.'>rx_q_num_pkts_dropped_bad_reg</a>[3]
+<a name='L782'> 782                 = <a href='../D/2480.html' title='Multiple defined in 3 places.'>MAC_GRP_3_RX_QUEUE_NUM_PKTS_DROPPED_BAD_REG</a>;
+<a name='L783'> 783         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6541.html' title='Multiple used in 12 places.'>rx_q_num_words_pushed_reg</a>[3]
+<a name='L784'> 784                 = <a href='../D/2484.html' title='Multiple defined in 3 places.'>MAC_GRP_3_RX_QUEUE_NUM_WORDS_PUSHED_REG</a>;
+<a name='L785'> 785         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6529.html' title='Multiple used in 12 places.'>rx_q_num_bytes_pushed_reg</a>[3]
+<a name='L786'> 786                 = <a href='../D/2478.html' title='Multiple defined in 3 places.'>MAC_GRP_3_RX_QUEUE_NUM_BYTES_PUSHED_REG</a>;
+<a name='L787'> 787         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6531.html' title='Multiple used in 12 places.'>rx_q_num_pkts_dequeued_reg</a>[3]
+<a name='L788'> 788                 = <a href='../D/2479.html' title='Multiple defined in 3 places.'>MAC_GRP_3_RX_QUEUE_NUM_PKTS_DEQUEUED_REG</a>;
+<a name='L789'> 789         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6537.html' title='Multiple used in 12 places.'>rx_q_num_pkts_in_queue_reg</a>[3]
+<a name='L790'> 790                 = <a href='../D/2482.html' title='Multiple defined in 3 places.'>MAC_GRP_3_RX_QUEUE_NUM_PKTS_IN_QUEUE_REG</a>;
+<a name='L791'> 791         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7540.html' title='Multiple used in 12 places.'>tx_q_num_pkts_in_queue_reg</a>[3]
+<a name='L792'> 792                 = <a href='../D/2487.html' title='Multiple defined in 3 places.'>MAC_GRP_3_TX_QUEUE_NUM_PKTS_IN_QUEUE_REG</a>;
+<a name='L793'> 793         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7542.html' title='Multiple used in 12 places.'>tx_q_num_pkts_sent_reg</a>[3]
+<a name='L794'> 794                 = <a href='../D/2488.html' title='Multiple defined in 3 places.'>MAC_GRP_3_TX_QUEUE_NUM_PKTS_SENT_REG</a>;
+<a name='L795'> 795         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7544.html' title='Multiple used in 12 places.'>tx_q_num_words_pushed_reg</a>[3]
+<a name='L796'> 796                 = <a href='../D/2489.html' title='Multiple defined in 3 places.'>MAC_GRP_3_TX_QUEUE_NUM_WORDS_PUSHED_REG</a>;
+<a name='L797'> 797         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7536.html' title='Multiple used in 12 places.'>tx_q_num_bytes_pushed_reg</a>[3]
+<a name='L798'> 798                 = <a href='../D/2485.html' title='Multiple defined in 3 places.'>MAC_GRP_3_TX_QUEUE_NUM_BYTES_PUSHED_REG</a>;
+<a name='L799'> 799         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7538.html' title='Multiple used in 12 places.'>tx_q_num_pkts_enqueued_reg</a>[3]
+<a name='L800'> 800                 = <a href='../D/2486.html' title='Multiple defined in 3 places.'>MAC_GRP_3_TX_QUEUE_NUM_PKTS_ENQUEUED_REG</a>;
+<a name='L801'> 801 <font color='red'>}</font>
+<a name='L802'> 802 
+<a name='L803'> 803 <b>int</b>
+<a name='L804'> 804 <a href='../R/3666.html' title='Multiple refered from 2 places.'>nf2_get_port_info</a>(<b>struct</b> <a href='../Y/4857.html' title='Multiple used in 112 places.'>nf2device</a> *<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <b>int</b> <a href='../Y/4868.html' title='Multiple used in 14 places.'>nf_port</a>,
+<a name='L805'> 805                   <b>struct</b> <a href='../Y/4847.html' title='Multiple used in 2 places.'>nf2_port_info</a> *<a href='../Y/4866.html' title='Multiple used in 59 places.'>nf2portinfo</a>)
+<a name='L806'> 806 <font color='red'>{</font>
+<a name='L807'> 807         <b>struct</b> <a href='../D/8501.html' title='Multiple defined in 2 places.'>nf2_all_ports_info_addr</a> *<a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>;
+<a name='L808'> 808 
+<a name='L809'> 809         <b>if</b> ((<a href='../Y/4868.html' title='Multiple used in 14 places.'>nf_port</a> &gt;= <a href='../D/3110.html' title='Multiple defined in 2 places.'>NF2_PORT_NUM</a>) || (<a href='../Y/4868.html' title='Multiple used in 14 places.'>nf_port</a> &lt; 0)) <font color='red'>{</font>
+<a name='L810'> 810                 <a href='../D/1142.html' title='Multiple defined in 4 places.'>DBG_ERROR</a>("Illegal port number\n");
+<a name='L811'> 811                 <b>return</b> 1;
+<a name='L812'> 812         <font color='red'>}</font>
+<a name='L813'> 813 
+<a name='L814'> 814         <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a> = <a href='../Y/1781.html' title='Multiple used in 32 places.'>calloc</a>(1, <b>sizeof</b>(<b>struct</b> <a href='../D/8501.html' title='Multiple defined in 2 places.'>nf2_all_ports_info_addr</a>));
+<a name='L815'> 815         <b>if</b> (<a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L816'> 816                 <a href='../D/1142.html' title='Multiple defined in 4 places.'>DBG_ERROR</a>("Could not allocate memory for port information gathering\n");
+<a name='L817'> 817                 <b>return</b> 1;
+<a name='L818'> 818         <font color='red'>}</font>
+<a name='L819'> 819         <a href='../D/8520.html' title='Multiple defined in 2 places.'>nf2_get_all_ports_info_addr</a>(<a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>);
+<a name='L820'> 820 
+<a name='L821'> 821         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6539.html' title='Multiple used in 12 places.'>rx_q_num_pkts_stored_reg</a>[<a href='../Y/4868.html' title='Multiple used in 14 places.'>nf_port</a>],
+<a name='L822'> 822                       &amp;(<a href='../Y/4866.html' title='Multiple used in 59 places.'>nf2portinfo</a>-&gt;<a href='../Y/6538.html' title='Multiple used in 6 places.'>rx_q_num_pkts_stored</a>));
+<a name='L823'> 823         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6535.html' title='Multiple used in 12 places.'>rx_q_num_pkts_dropped_full_reg</a>[<a href='../Y/4868.html' title='Multiple used in 14 places.'>nf_port</a>],
+<a name='L824'> 824                       &amp;(<a href='../Y/4866.html' title='Multiple used in 59 places.'>nf2portinfo</a>-&gt;<a href='../Y/6534.html' title='Multiple used in 7 places.'>rx_q_num_pkts_dropped_full</a>));
+<a name='L825'> 825         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6533.html' title='Multiple used in 12 places.'>rx_q_num_pkts_dropped_bad_reg</a>[<a href='../Y/4868.html' title='Multiple used in 14 places.'>nf_port</a>],
+<a name='L826'> 826                       &amp;(<a href='../Y/4866.html' title='Multiple used in 59 places.'>nf2portinfo</a>-&gt;<a href='../Y/6532.html' title='Multiple used in 7 places.'>rx_q_num_pkts_dropped_bad</a>));
+<a name='L827'> 827         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6541.html' title='Multiple used in 12 places.'>rx_q_num_words_pushed_reg</a>[<a href='../Y/4868.html' title='Multiple used in 14 places.'>nf_port</a>],
+<a name='L828'> 828                       &amp;(<a href='../Y/4866.html' title='Multiple used in 59 places.'>nf2portinfo</a>-&gt;<a href='../Y/6540.html' title='Multiple used in 5 places.'>rx_q_num_words_pushed</a>));
+<a name='L829'> 829         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6529.html' title='Multiple used in 12 places.'>rx_q_num_bytes_pushed_reg</a>[<a href='../Y/4868.html' title='Multiple used in 14 places.'>nf_port</a>],
+<a name='L830'> 830                       &amp;(<a href='../Y/4866.html' title='Multiple used in 59 places.'>nf2portinfo</a>-&gt;<a href='../Y/6528.html' title='Multiple used in 6 places.'>rx_q_num_bytes_pushed</a>));
+<a name='L831'> 831         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6531.html' title='Multiple used in 12 places.'>rx_q_num_pkts_dequeued_reg</a>[<a href='../Y/4868.html' title='Multiple used in 14 places.'>nf_port</a>],
+<a name='L832'> 832                       &amp;(<a href='../Y/4866.html' title='Multiple used in 59 places.'>nf2portinfo</a>-&gt;<a href='../Y/6530.html' title='Multiple used in 5 places.'>rx_q_num_pkts_dequeued</a>));
+<a name='L833'> 833         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/6537.html' title='Multiple used in 12 places.'>rx_q_num_pkts_in_queue_reg</a>[<a href='../Y/4868.html' title='Multiple used in 14 places.'>nf_port</a>],
+<a name='L834'> 834                       &amp;(<a href='../Y/4866.html' title='Multiple used in 59 places.'>nf2portinfo</a>-&gt;<a href='../Y/6536.html' title='Multiple used in 5 places.'>rx_q_num_pkts_in_queue</a>));
+<a name='L835'> 835         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7540.html' title='Multiple used in 12 places.'>tx_q_num_pkts_in_queue_reg</a>[<a href='../Y/4868.html' title='Multiple used in 14 places.'>nf_port</a>],
+<a name='L836'> 836                       &amp;(<a href='../Y/4866.html' title='Multiple used in 59 places.'>nf2portinfo</a>-&gt;<a href='../Y/7539.html' title='Multiple used in 5 places.'>tx_q_num_pkts_in_queue</a>));
+<a name='L837'> 837         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7542.html' title='Multiple used in 12 places.'>tx_q_num_pkts_sent_reg</a>[<a href='../Y/4868.html' title='Multiple used in 14 places.'>nf_port</a>],
+<a name='L838'> 838                       &amp;(<a href='../Y/4866.html' title='Multiple used in 59 places.'>nf2portinfo</a>-&gt;<a href='../Y/7541.html' title='Multiple used in 6 places.'>tx_q_num_pkts_sent</a>));
+<a name='L839'> 839         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7544.html' title='Multiple used in 12 places.'>tx_q_num_words_pushed_reg</a>[<a href='../Y/4868.html' title='Multiple used in 14 places.'>nf_port</a>],
+<a name='L840'> 840                       &amp;(<a href='../Y/4866.html' title='Multiple used in 59 places.'>nf2portinfo</a>-&gt;<a href='../Y/7543.html' title='Multiple used in 5 places.'>tx_q_num_words_pushed</a>));
+<a name='L841'> 841         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7536.html' title='Multiple used in 12 places.'>tx_q_num_bytes_pushed_reg</a>[<a href='../Y/4868.html' title='Multiple used in 14 places.'>nf_port</a>],
+<a name='L842'> 842                       &amp;(<a href='../Y/4866.html' title='Multiple used in 59 places.'>nf2portinfo</a>-&gt;<a href='../Y/7535.html' title='Multiple used in 6 places.'>tx_q_num_bytes_pushed</a>));
+<a name='L843'> 843         <a href='../D/9349.html' title='Multiple defined in 2 places.'>readReg</a>(<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>, <a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>-&gt;<a href='../Y/7538.html' title='Multiple used in 12 places.'>tx_q_num_pkts_enqueued_reg</a>[<a href='../Y/4868.html' title='Multiple used in 14 places.'>nf_port</a>],
+<a name='L844'> 844                       &amp;(<a href='../Y/4866.html' title='Multiple used in 59 places.'>nf2portinfo</a>-&gt;<a href='../Y/7537.html' title='Multiple used in 5 places.'>tx_q_num_pkts_enqueued</a>));
+<a name='L845'> 845         <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/4856.html' title='Multiple used in 133 places.'>nf2addr</a>);
+<a name='L846'> 846         <b>return</b> 0;
+<a name='L847'> 847 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L58'>[^]</a><a href='#L804'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

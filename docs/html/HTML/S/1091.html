@@ -1,0 +1,148 @@
+<html>
+<head>
+<title>libraries/libcli/libcli.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1172.html'>libraries</a>/<a href='../files/1173.html'>libcli</a>/libcli.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/688.html' title='Multiple included from 7 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <font color='darkred'>#ifndef</font> <a href='../S/1091.html#L2' title='Defined at 2 in libraries/libcli/libcli.h.'>__LIBCLI_H__</a>
+<a name='L2'>   2 <font color='darkred'>#define</font> <a href='../S/1091.html#L1' title='Refered from 1 in libraries/libcli/libcli.h.'>__LIBCLI_H__</a>
+<a name='L3'>   3 
+<a name='L4'>   4 <i><font color='green'>// vim:sw=4 tw=120 et</font></i>
+<a name='L5'>   5 
+<a name='L6'>   6 <font color='darkred'>#include</font> &lt;stdio.h&gt;
+<a name='L7'>   7 <font color='darkred'>#include</font> &lt;stdarg.h&gt;
+<a name='L8'>   8 <font color='darkred'>#include</font> &lt;sys/time.h&gt;
+<a name='L9'>   9 
+<a name='L10'>  10 <font color='darkred'>#define</font> <a href='../S/1091.html#L13' title='Refered from 13 in libraries/libcli/libcli.h.'>LIBCLI_VERSION_MAJOR</a>    1
+<a name='L11'>  11 <font color='darkred'>#define</font> LIBCLI_VERISON_MINOR    9
+<a name='L12'>  12 <font color='darkred'>#define</font> LIBCLI_VERISON_REVISION 7
+<a name='L13'>  13 <font color='darkred'>#define</font> LIBCLI_VERSION          ((<a href='../S/1091.html#L10' title='Defined at 10 in libraries/libcli/libcli.h.'>LIBCLI_VERSION_MAJOR</a> &lt;&lt; 16) | (LIBCLI_VERSION_MINOR &lt;&lt; 8) | LIBCLI_VERSION_REVISION)
+<a name='L14'>  14 
+<a name='L15'>  15 <font color='darkred'>#define</font> <a href='../R/181.html' title='Multiple refered from 83 places.'>CLI_OK</a>                  0
+<a name='L16'>  16 <font color='darkred'>#define</font> <a href='../R/177.html' title='Multiple refered from 61 places.'>CLI_ERROR</a>               -1
+<a name='L17'>  17 <font color='darkred'>#define</font> <a href='../R/182.html' title='Multiple refered from 6 places.'>CLI_QUIT</a>                -2
+<a name='L18'>  18 <font color='darkred'>#define</font> <a href='../R/178.html' title='Multiple refered from 2 places.'>CLI_ERROR_ARG</a>           -3
+<a name='L19'>  19 
+<a name='L20'>  20 <font color='darkred'>#define</font> <a href='../R/872.html' title='Multiple refered from 9 places.'>MAX_HISTORY</a>             256
+<a name='L21'>  21 
+<a name='L22'>  22 <font color='darkred'>#define</font> <a href='../R/1468.html' title='Multiple refered from 38 places.'>PRIVILEGE_UNPRIVILEGED</a>  0
+<a name='L23'>  23 <font color='darkred'>#define</font> <a href='../R/1467.html' title='Multiple refered from 28 places.'>PRIVILEGE_PRIVILEGED</a>    15
+<a name='L24'>  24 <font color='darkred'>#define</font> <a href='../R/910.html' title='Multiple refered from 10 places.'>MODE_ANY</a>                -1
+<a name='L25'>  25 <font color='darkred'>#define</font> <a href='../R/912.html' title='Multiple refered from 62 places.'>MODE_EXEC</a>               0
+<a name='L26'>  26 <font color='darkred'>#define</font> <a href='../R/911.html' title='Multiple refered from 2 places.'>MODE_CONFIG</a>             1
+<a name='L27'>  27 
+<a name='L28'>  28 <font color='darkred'>#define</font> LIBCLI_HAS_ENABLE       1
+<a name='L29'>  29 
+<a name='L30'>  30 <font color='darkred'>#define</font> <a href='../S/1090.html#L1955' title='Refered from 1955 in libraries/libcli/libcli.c.'>PRINT_PLAIN</a>             0
+<a name='L31'>  31 <font color='darkred'>#define</font> <a href='../R/1459.html' title='Multiple refered from 3 places.'>PRINT_FILTERED</a>          0x01
+<a name='L32'>  32 <font color='darkred'>#define</font> <a href='../R/1457.html' title='Multiple refered from 3 places.'>PRINT_BUFFERED</a>          0x02
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#define</font> <a href='../R/179.html' title='Multiple refered from 8 places.'>CLI_MAX_LINE_LENGTH</a>     4096
+<a name='L35'>  35 <font color='darkred'>#define</font> <a href='../R/180.html' title='Multiple refered from 7 places.'>CLI_MAX_LINE_WORDS</a>      128
+<a name='L36'>  36 
+<a name='L37'>  37 <b>struct</b> <a href='../R/2373.html' title='Multiple refered from 18 places.'>cli_def</a> <font color='red'>{</font>
+<a name='L38'>  38     <b>int</b> completion_callback;
+<a name='L39'>  39     <b>struct</b> <a href='../S/1091.html#L77' title='Defined at 77 in libraries/libcli/libcli.h.'>cli_command</a> *<a href='../Y/2014.html' title='Multiple used in 25 places.'>commands</a>;
+<a name='L40'>  40     <b>int</b> (*<a href='../Y/1528.html' title='Multiple used in 7 places.'>auth_callback</a>)(<b>const</b> <b>char</b> *, <b>const</b> <b>char</b> *);
+<a name='L41'>  41     <b>int</b> (*<a href='../S/935.html#L763' title='Defined at 763 in src/cli.c.'>regular_callback</a>)(<b>struct</b> <a href='../S/1091.html#L37' title='Defined at 37 in libraries/libcli/libcli.h.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>);
+<a name='L42'>  42     <b>int</b> (*<a href='../Y/2663.html' title='Multiple used in 7 places.'>enable_callback</a>)(<b>const</b> <b>char</b> *);
+<a name='L43'>  43     <b>char</b> *<a href='../Y/1596.html' title='Multiple used in 9 places.'>banner</a>;
+<a name='L44'>  44     <b>struct</b> <a href='../S/1090.html#L36' title='Defined at 36 in libraries/libcli/libcli.c.'>unp</a> *<a href='../Y/7693.html' title='Multiple used in 10 places.'>users</a>;
+<a name='L45'>  45     <b>char</b> *<a href='../Y/2664.html' title='Multiple used in 6 places.'>enable_password</a>;
+<a name='L46'>  46     <b>char</b> *<a href='../Y/3641.html' title='Multiple used in 18 places.'>history</a>[<a href='../S/1091.html#L20' title='Defined at 20 in libraries/libcli/libcli.h.'>MAX_HISTORY</a>];
+<a name='L47'>  47     <b>char</b> <a href='../Y/6753.html' title='Multiple used in 10 places.'>showprompt</a>;
+<a name='L48'>  48     <b>char</b> *<a href='../Y/5948.html' title='Multiple used in 7 places.'>promptchar</a>;
+<a name='L49'>  49     <b>char</b> *<a href='../Y/3671.html' title='Multiple used in 22 places.'>hostname</a>;
+<a name='L50'>  50     <b>char</b> *<a href='../Y/4485.html' title='Multiple used in 9 places.'>modestring</a>;
+<a name='L51'>  51     <b>int</b> <a href='../Y/5914.html' title='Multiple used in 19 places.'>privilege</a>;
+<a name='L52'>  52     <b>int</b> <a href='../Y/4483.html' title='Multiple used in 57 places.'>mode</a>;
+<a name='L53'>  53     <b>int</b> <a href='../S/849.html#L59' title='Defined at 59 in cbench/openflow/lib/rconn.c.'>state</a>;
+<a name='L54'>  54     <b>struct</b> <a href='../S/1091.html#L71' title='Defined at 71 in libraries/libcli/libcli.h.'>cli_filter</a> *<a href='../Y/3085.html' title='Multiple used in 20 places.'>filters</a>;
+<a name='L55'>  55     <b>void</b> (*<a href='../Y/5894.html' title='Multiple used in 4 places.'>print_callback</a>)(<b>struct</b> <a href='../S/1091.html#L37' title='Defined at 37 in libraries/libcli/libcli.h.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>const</b> <b>char</b> *<a href='../Y/7093.html' title='Multiple used in 347 places.'>string</a>);
+<a name='L56'>  56     <a href='../Y/328.html' title='Multiple used in 113 places.'>FILE</a> *<a href='../Y/1910.html' title='Multiple used in 83 places.'>client</a>;
+<a name='L57'>  57     <i><font color='green'>/* internal buffers */</font></i>
+<a name='L58'>  58     <b>void</b> *<a href='../Y/2077.html' title='Multiple used in 80 places.'>conn</a>;
+<a name='L59'>  59     <b>void</b> *service;
+<a name='L60'>  60     <b>char</b> *<a href='../Y/2013.html' title='Multiple used in 4 places.'>commandname</a>; <i><font color='green'>// temporary buffer for cli_command_name() to prevent leak</font></i>
+<a name='L61'>  61     <b>char</b> *<a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>;
+<a name='L62'>  62     <b>unsigned</b> <a href='../Y/1699.html' title='Multiple used in 7 places.'>buf_size</a>;
+<a name='L63'>  63     <b>struct</b> <a href='../Y/7388.html' title='Multiple used in 197 places.'>timeval</a> <a href='../Y/7375.html' title='Multiple used in 7 places.'>timeout_tm</a>;
+<a name='L64'>  64     <a href='../Y/7369.html' title='Multiple used in 80 places.'>time_t</a> <a href='../S/935.html#L773' title='Defined at 773 in src/cli.c.'>idle_timeout</a>;
+<a name='L65'>  65     <b>int</b> (*<a href='../Y/3714.html' title='Multiple used in 4 places.'>idle_timeout_callback</a>)(<b>struct</b> <a href='../S/1091.html#L37' title='Defined at 37 in libraries/libcli/libcli.h.'>cli_def</a> *);
+<a name='L66'>  66     <a href='../Y/7369.html' title='Multiple used in 80 places.'>time_t</a> <a href='../Y/4067.html' title='Multiple used in 7 places.'>last_action</a>;
+<a name='L67'>  67     <b>int</b> <a href='../Y/7296.html' title='Multiple used in 6 places.'>telnet_protocol</a>;
+<a name='L68'>  68     <b>void</b> *<a href='../Y/7683.html' title='Multiple used in 3 places.'>user_context</a>;
+<a name='L69'>  69 <font color='red'>}</font>;
+<a name='L70'>  70 
+<a name='L71'>  71 <b>struct</b> <a href='../R/2379.html' title='Multiple refered from 6 places.'>cli_filter</a> <font color='red'>{</font>
+<a name='L72'>  72     <b>int</b> (*<a href='../Y/3075.html' title='Multiple used in 66 places.'>filter</a>)(<b>struct</b> <a href='../S/1091.html#L37' title='Defined at 37 in libraries/libcli/libcli.h.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>const</b> <b>char</b> *<a href='../Y/7093.html' title='Multiple used in 347 places.'>string</a>, <b>void</b> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L73'>  73     <b>void</b> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L74'>  74     <b>struct</b> <a href='../S/1091.html#L71' title='Defined at 71 in libraries/libcli/libcli.h.'>cli_filter</a> *<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L75'>  75 <font color='red'>}</font>;
+<a name='L76'>  76 
+<a name='L77'>  77 <b>struct</b> <a href='../R/2368.html' title='Multiple refered from 17 places.'>cli_command</a> <font color='red'>{</font>
+<a name='L78'>  78     <b>char</b> *<a href='../S/333.html#L92' title='Defined at 92 in cbench/openflow/utilities/dpctl.c.'>command</a>;
+<a name='L79'>  79     <b>int</b> (*<a href='../Y/1775.html' title='Multiple used in 63 places.'>callback</a>)(<b>struct</b> <a href='../S/1091.html#L37' title='Defined at 37 in libraries/libcli/libcli.h.'>cli_def</a> *, <b>const</b> <b>char</b> *, <b>char</b> **, <b>int</b>);
+<a name='L80'>  80     <b>unsigned</b> <b>int</b> <a href='../Y/7637.html' title='Multiple used in 7 places.'>unique_len</a>;
+<a name='L81'>  81     <b>char</b> *<a href='../Y/3603.html' title='Multiple used in 13 places.'>help</a>;
+<a name='L82'>  82     <b>int</b> <a href='../Y/5914.html' title='Multiple used in 19 places.'>privilege</a>;
+<a name='L83'>  83     <b>int</b> <a href='../Y/4483.html' title='Multiple used in 57 places.'>mode</a>;
+<a name='L84'>  84     <b>struct</b> <a href='../S/1091.html#L77' title='Defined at 77 in libraries/libcli/libcli.h.'>cli_command</a> *<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L85'>  85     <b>struct</b> <a href='../S/1091.html#L77' title='Defined at 77 in libraries/libcli/libcli.h.'>cli_command</a> *<a href='../Y/1872.html' title='Multiple used in 26 places.'>children</a>;
+<a name='L86'>  86     <b>struct</b> <a href='../S/1091.html#L77' title='Defined at 77 in libraries/libcli/libcli.h.'>cli_command</a> *<a href='../Y/5641.html' title='Multiple used in 32 places.'>parent</a>;
+<a name='L87'>  87 <font color='red'>}</font>;
+<a name='L88'>  88 
+<a name='L89'>  89 <b>struct</b> <a href='../S/1091.html#L37' title='Defined at 37 in libraries/libcli/libcli.h.'>cli_def</a> *<a href='../S/1090.html#L463' title='Defined at 463 in libraries/libcli/libcli.c.'>cli_init</a>();
+<a name='L90'>  90 <b>int</b> <a href='../S/1090.html#L520' title='Defined at 520 in libraries/libcli/libcli.c.'>cli_done</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>);
+<a name='L91'>  91 <b>struct</b> <a href='../S/1091.html#L77' title='Defined at 77 in libraries/libcli/libcli.h.'>cli_command</a> *<a href='../S/1090.html#L296' title='Defined at 296 in libraries/libcli/libcli.c.'>cli_register_command</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>struct</b> <a href='../Y/1903.html' title='Multiple used in 8 places.'>cli_command</a> *<a href='../Y/5641.html' title='Multiple used in 32 places.'>parent</a>, <b>const</b> <b>char</b> *<a href='../Y/2011.html' title='Multiple used in 60 places.'>command</a>,
+<a name='L92'>  92                                          <b>int</b> (*<a href='../Y/1775.html' title='Multiple used in 63 places.'>callback</a>)(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *, <b>const</b> <b>char</b> *, <b>char</b> **, <b>int</b>), <b>int</b> <a href='../Y/5914.html' title='Multiple used in 19 places.'>privilege</a>,
+<a name='L93'>  93                                          <b>int</b> <a href='../Y/4483.html' title='Multiple used in 57 places.'>mode</a>, <b>const</b> <b>char</b> *<a href='../Y/3603.html' title='Multiple used in 13 places.'>help</a>);
+<a name='L94'>  94 <b>int</b> <a href='../S/1090.html#L358' title='Defined at 358 in libraries/libcli/libcli.c.'>cli_unregister_command</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>const</b> <b>char</b> *<a href='../Y/2011.html' title='Multiple used in 60 places.'>command</a>);
+<a name='L95'>  95 <b>int</b> <a href='../S/1090.html#L887' title='Defined at 887 in libraries/libcli/libcli.c.'>cli_run_command</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>const</b> <b>char</b> *<a href='../Y/2011.html' title='Multiple used in 60 places.'>command</a>);
+<a name='L96'>  96 <b>int</b> <a href='../S/1090.html#L1069' title='Defined at 1069 in libraries/libcli/libcli.c.'>cli_loop</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>int</b> <a href='../Y/6903.html' title='Multiple used in 59 places.'>sockfd</a>);
+<a name='L97'>  97 <b>int</b> <a href='../S/1090.html#L1820' title='Defined at 1820 in libraries/libcli/libcli.c.'>cli_file</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <a href='../Y/328.html' title='Multiple used in 113 places.'>FILE</a> *<a href='../Y/3032.html' title='Multiple used in 33 places.'>fh</a>, <b>int</b> <a href='../Y/5914.html' title='Multiple used in 19 places.'>privilege</a>, <b>int</b> <a href='../Y/4483.html' title='Multiple used in 57 places.'>mode</a>);
+<a name='L98'>  98 <b>void</b> <a href='../S/1090.html#L113' title='Defined at 113 in libraries/libcli/libcli.c.'>cli_set_auth_callback</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>int</b> (*<a href='../Y/1528.html' title='Multiple used in 7 places.'>auth_callback</a>)(<b>const</b> <b>char</b> *, <b>const</b> <b>char</b> *));
+<a name='L99'>  99 <b>void</b> <a href='../S/1090.html#L118' title='Defined at 118 in libraries/libcli/libcli.c.'>cli_set_enable_callback</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>int</b> (*<a href='../Y/2663.html' title='Multiple used in 7 places.'>enable_callback</a>)(<b>const</b> <b>char</b> *));
+<a name='L100'> 100 <b>void</b> <a href='../S/1090.html#L123' title='Defined at 123 in libraries/libcli/libcli.c.'>cli_allow_user</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>const</b> <b>char</b> *<a href='../Y/7692.html' title='Multiple used in 20 places.'>username</a>, <b>const</b> <b>char</b> *<a href='../Y/5655.html' title='Multiple used in 20 places.'>password</a>);
+<a name='L101'> 101 <b>void</b> <a href='../S/1090.html#L157' title='Defined at 157 in libraries/libcli/libcli.c.'>cli_allow_enable</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>const</b> <b>char</b> *<a href='../Y/5655.html' title='Multiple used in 20 places.'>password</a>);
+<a name='L102'> 102 <b>void</b> <a href='../S/1090.html#L166' title='Defined at 166 in libraries/libcli/libcli.c.'>cli_deny_user</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>const</b> <b>char</b> *<a href='../Y/7692.html' title='Multiple used in 20 places.'>username</a>);
+<a name='L103'> 103 <b>void</b> <a href='../S/1090.html#L187' title='Defined at 187 in libraries/libcli/libcli.c.'>cli_set_banner</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>const</b> <b>char</b> *<a href='../Y/1596.html' title='Multiple used in 9 places.'>banner</a>);
+<a name='L104'> 104 <b>void</b> <a href='../S/1090.html#L194' title='Defined at 194 in libraries/libcli/libcli.c.'>cli_set_hostname</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>const</b> <b>char</b> *<a href='../Y/3671.html' title='Multiple used in 22 places.'>hostname</a>);
+<a name='L105'> 105 <b>void</b> <a href='../S/1090.html#L201' title='Defined at 201 in libraries/libcli/libcli.c.'>cli_set_promptchar</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>const</b> <b>char</b> *<a href='../Y/5948.html' title='Multiple used in 7 places.'>promptchar</a>);
+<a name='L106'> 106 <b>void</b> <a href='../S/1090.html#L260' title='Defined at 260 in libraries/libcli/libcli.c.'>cli_set_modestring</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>const</b> <b>char</b> *<a href='../Y/4485.html' title='Multiple used in 9 places.'>modestring</a>);
+<a name='L107'> 107 <b>int</b> <a href='../S/1090.html#L246' title='Defined at 246 in libraries/libcli/libcli.c.'>cli_set_privilege</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>int</b> <a href='../Y/5914.html' title='Multiple used in 19 places.'>privilege</a>);
+<a name='L108'> 108 <b>int</b> <a href='../S/1090.html#L267' title='Defined at 267 in libraries/libcli/libcli.c.'>cli_set_configmode</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>int</b> <a href='../Y/4483.html' title='Multiple used in 57 places.'>mode</a>, <b>const</b> <b>char</b> *<a href='../Y/2053.html' title='Multiple used in 4 places.'>config_desc</a>);
+<a name='L109'> 109 <b>void</b> <a href='../S/1090.html#L1020' title='Defined at 1020 in libraries/libcli/libcli.c.'>cli_reprompt</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>);
+<a name='L110'> 110 <b>void</b> <a href='../S/1090.html#L1026' title='Defined at 1026 in libraries/libcli/libcli.c.'>cli_regular</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>int</b> (*<a href='../Y/1775.html' title='Multiple used in 63 places.'>callback</a>)(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>));
+<a name='L111'> 111 <b>void</b> <a href='../S/1090.html#L1032' title='Defined at 1032 in libraries/libcli/libcli.c.'>cli_regular_interval</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>int</b> <a href='../Y/6629.html' title='Multiple used in 16 places.'>seconds</a>);
+<a name='L112'> 112 <b>void</b> <a href='../D/7132.html' title='Multiple defined in 7 places.'>cli_print</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>const</b> <b>char</b> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...) <b>__attribute__</b>((<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a> (<a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>, 2, 3)));
+<a name='L113'> 113 <b>void</b> <a href='../S/1090.html#L1927' title='Defined at 1927 in libraries/libcli/libcli.c.'>cli_bufprint</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>const</b> <b>char</b> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...) <b>__attribute__</b>((<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a> (<a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>, 2, 3)));
+<a name='L114'> 114 <b>void</b> <a href='../S/1090.html#L1936' title='Defined at 1936 in libraries/libcli/libcli.c.'>cli_vabufprint</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>const</b> <b>char</b> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a> <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L115'> 115 <b>void</b> <a href='../S/1090.html#L1950' title='Defined at 1950 in libraries/libcli/libcli.c.'>cli_error</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>const</b> <b>char</b> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...) <b>__attribute__</b>((<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a> (<a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>, 2, 3)));
+<a name='L116'> 116 <b>void</b> <a href='../S/1090.html#L2200' title='Defined at 2200 in libraries/libcli/libcli.c.'>cli_print_callback</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>void</b> (*<a href='../Y/1775.html' title='Multiple used in 63 places.'>callback</a>)(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *, <b>const</b> <b>char</b> *));
+<a name='L117'> 117 <b>void</b> <a href='../S/1090.html#L573' title='Defined at 573 in libraries/libcli/libcli.c.'>cli_free_history</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>);
+<a name='L118'> 118 <b>void</b> <a href='../S/1090.html#L2205' title='Defined at 2205 in libraries/libcli/libcli.c.'>cli_set_idle_timeout</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>unsigned</b> <b>int</b> <a href='../Y/6629.html' title='Multiple used in 16 places.'>seconds</a>);
+<a name='L119'> 119 <b>void</b> <a href='../S/1090.html#L2213' title='Defined at 2213 in libraries/libcli/libcli.c.'>cli_set_idle_timeout_callback</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>unsigned</b> <b>int</b> <a href='../Y/6629.html' title='Multiple used in 16 places.'>seconds</a>, <b>int</b> (*<a href='../Y/1775.html' title='Multiple used in 63 places.'>callback</a>)(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *));
+<a name='L120'> 120 
+<a name='L121'> 121 <i><font color='green'>// Enable or disable telnet protocol negotiation.</font></i>
+<a name='L122'> 122 <i><font color='green'>// Note that this is enabled by default and must be changed before cli_loop() is run.</font></i>
+<a name='L123'> 123 <b>void</b> <a href='../S/1090.html#L2219' title='Defined at 2219 in libraries/libcli/libcli.c.'>cli_telnet_protocol</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>int</b> <a href='../Y/7296.html' title='Multiple used in 6 places.'>telnet_protocol</a>);
+<a name='L124'> 124 
+<a name='L125'> 125 <i><font color='green'>// Set/get user context</font></i>
+<a name='L126'> 126 <b>void</b> <a href='../S/1090.html#L2223' title='Defined at 2223 in libraries/libcli/libcli.c.'>cli_set_context</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>void</b> *<a href='../Y/2109.html' title='Multiple used in 93 places.'>context</a>);
+<a name='L127'> 127 <b>void</b> *<a href='../S/1090.html#L2227' title='Defined at 2227 in libraries/libcli/libcli.c.'>cli_get_context</a>(<b>struct</b> <a href='../Y/1905.html' title='Multiple used in 133 places.'>cli_def</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>);
+<a name='L128'> 128 
+<a name='L129'> 129 <font color='darkred'>#endif</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

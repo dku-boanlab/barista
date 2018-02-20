@@ -1,0 +1,128 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/conversation.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/conversation.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/374.html' title='Multiple included from 4 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* conversation.h</font></i>
+<a name='L2'>   2 <i><font color='green'> * Routines for building lists of packets that are part of a "conversation"</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * $Id: conversation.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L5'>   5 <i><font color='green'> *</font></i>
+<a name='L6'>   6 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L7'>   7 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L8'>   8 <i><font color='green'> * Copyright 1998 Gerald Combs</font></i>
+<a name='L9'>   9 <i><font color='green'> *</font></i>
+<a name='L10'>  10 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L11'>  11 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L12'>  12 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L13'>  13 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L14'>  14 <i><font color='green'> *</font></i>
+<a name='L15'>  15 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L16'>  16 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L17'>  17 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L18'>  18 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L21'>  21 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L22'>  22 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L23'>  23 <i><font color='green'> */</font></i>
+<a name='L24'>  24 
+<a name='L25'>  25 <font color='darkred'>#ifndef</font> <a href='../S/360.html#L26' title='Defined at 26 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/conversation.h.'>__CONVERSATION_H__</a>
+<a name='L26'>  26 <font color='darkred'>#define</font> <a href='../S/360.html#L25' title='Refered from 25 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/conversation.h.'>__CONVERSATION_H__</a>
+<a name='L27'>  27 
+<a name='L28'>  28 <font color='darkred'>#ifdef</font> <a href='../Y/1158.html' title='Multiple used in 106 places.'>__cplusplus</a>
+<a name='L29'>  29 <b>extern</b> "C" <font color='red'>{</font>
+<a name='L30'>  30 <font color='darkred'>#endif</font> <i><font color='green'>/* __cplusplus */</font></i>
+<a name='L31'>  31 
+<a name='L32'>  32 <i><font color='green'>/*</font></i>
+<a name='L33'>  33 <i><font color='green'> * Flags to pass to "conversation_new()" to indicate that the address 2</font></i>
+<a name='L34'>  34 <i><font color='green'> * and/or port 2 values for the conversation should be wildcards.</font></i>
+<a name='L35'>  35 <i><font color='green'> * The CONVERSATION_TEMPLATE option tells that any of the other supplied</font></i>
+<a name='L36'>  36 <i><font color='green'> * port and / or address wildcards will be used to match an infinite number</font></i>
+<a name='L37'>  37 <i><font color='green'> * of new connections to the conversation(s) that have the CONVERSATION_-</font></i>
+<a name='L38'>  38 <i><font color='green'> * TEMPLATE flag set. Any conversation created without the CONVERSATION_-</font></i>
+<a name='L39'>  39 <i><font color='green'> * TEMPLATE flag will be altered once the first connections (connection</font></i>
+<a name='L40'>  40 <i><font color='green'> * oriented protocols only) to include the newly found information which</font></i>
+<a name='L41'>  41 <i><font color='green'> * matched the wildcard options.</font></i>
+<a name='L42'>  42 <i><font color='green'> */</font></i>
+<a name='L43'>  43 <font color='darkred'>#define</font> NO_ADDR2 0x01
+<a name='L44'>  44 <font color='darkred'>#define</font> NO_PORT2 0x02
+<a name='L45'>  45 <font color='darkred'>#define</font> NO_PORT2_FORCE 0x04
+<a name='L46'>  46 <font color='darkred'>#define</font> CONVERSATION_TEMPLATE 0x08
+<a name='L47'>  47 
+<a name='L48'>  48 <i><font color='green'>/*</font></i>
+<a name='L49'>  49 <i><font color='green'> * Flags to pass to "find_conversation()" to indicate that the address B</font></i>
+<a name='L50'>  50 <i><font color='green'> * and/or port B search arguments are wildcards.</font></i>
+<a name='L51'>  51 <i><font color='green'> */</font></i>
+<a name='L52'>  52 <font color='darkred'>#define</font> NO_ADDR_B 0x01
+<a name='L53'>  53 <font color='darkred'>#define</font> NO_PORT_B 0x02
+<a name='L54'>  54 
+<a name='L55'>  55 <font color='darkred'>#include</font> "<a href='446.html'>packet.h</a>"             <i><font color='green'>/* for conversation dissector type */</font></i>
+<a name='L56'>  56 
+<a name='L57'>  57 <i><font color='green'>/*</font></i>
+<a name='L58'>  58 <i><font color='green'> * Data structure representing a conversation.</font></i>
+<a name='L59'>  59 <i><font color='green'> */</font></i>
+<a name='L60'>  60 <b>typedef</b> <b>struct</b> <a href='../R/2521.html' title='Multiple refered from 2 places.'>conversation_key</a> <font color='red'>{</font>
+<a name='L61'>  61         <b>struct</b> <a href='../D/7244.html' title='Multiple defined in 2 places.'>conversation_key</a> *<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L62'>  62         <a href='../S/498.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/address.h.'>address</a> <a href='../Y/1323.html' title='Multiple used in 17 places.'>addr1</a>;
+<a name='L63'>  63         <a href='../S/498.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/address.h.'>address</a> <a href='../Y/1324.html' title='Multiple used in 16 places.'>addr2</a>;
+<a name='L64'>  64         <a href='../S/498.html#L153' title='Defined at 153 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/address.h.'>port_type</a> <a href='../Y/6161.html' title='Multiple used in 7 places.'>ptype</a>;
+<a name='L65'>  65         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/5792.html' title='Multiple used in 2 places.'>port1</a>;
+<a name='L66'>  66         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/5793.html' title='Multiple used in 2 places.'>port2</a>;
+<a name='L67'>  67 <font color='red'>}</font> <a href='../R/2521.html' title='Multiple refered from 2 places.'>conversation_key</a>;
+<a name='L68'>  68 
+<a name='L69'>  69 <b>typedef</b> <b>struct</b> <a href='../R/2520.html' title='Multiple refered from 4 places.'>conversation</a> <font color='red'>{</font>
+<a name='L70'>  70         <b>struct</b> <a href='../S/360.html#L69' title='Defined at 69 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/conversation.h.'>conversation</a> *<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;      <i><font color='green'>/* pointer to next conversation on hash chain */</font></i>
+<a name='L71'>  71         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3795.html' title='Multiple used in 107 places.'>index</a>;                  <i><font color='green'>/* unique ID for conversation */</font></i>
+<a name='L72'>  72         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/6718.html' title='Multiple used in 2 places.'>setup_frame</a>;    <i><font color='green'>/* frame number that setup this conversation */</font></i>
+<a name='L73'>  73         <a href='../Y/391.html' title='Multiple used in 20 places.'>GSList</a> *<a href='../Y/2263.html' title='Multiple used in 2 places.'>data_list</a>;              <i><font color='green'>/* list of data associated with conversation */</font></i>
+<a name='L74'>  74         <a href='../S/446.html#L98' title='Defined at 98 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/packet.h.'>dissector_handle_t</a> <a href='../Y/2440.html' title='Multiple used in 4 places.'>dissector_handle</a>;
+<a name='L75'>  75                                         <i><font color='green'>/* handle for protocol dissector client associated with conversation */</font></i>
+<a name='L76'>  76         <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a>   <a href='../Y/5506.html' title='Multiple used in 62 places.'>options</a>;                <i><font color='green'>/* wildcard flags */</font></i>
+<a name='L77'>  77         <a href='../D/7244.html' title='Multiple defined in 2 places.'>conversation_key</a> *<a href='../Y/4005.html' title='Multiple used in 2 places.'>key_ptr</a>;      <i><font color='green'>/* pointer to the key for this conversation */</font></i>
+<a name='L78'>  78 <font color='red'>}</font> <a href='../R/2522.html' title='Multiple refered from 9 places.'>conversation_t</a>;
+<a name='L79'>  79 
+<a name='L80'>  80 <b>extern</b> <b>void</b> conversation_init(<b>void</b>);
+<a name='L81'>  81 
+<a name='L82'>  82 <b>extern</b> <a href='../S/360.html#L78' title='Defined at 78 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/conversation.h.'>conversation_t</a> *conversation_new(<a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/6718.html' title='Multiple used in 2 places.'>setup_frame</a>, <a href='../S/498.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/address.h.'>address</a> *<a href='../Y/1323.html' title='Multiple used in 17 places.'>addr1</a>, <a href='../S/498.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/address.h.'>address</a> *<a href='../Y/1324.html' title='Multiple used in 16 places.'>addr2</a>,
+<a name='L83'>  83     <a href='../S/498.html#L153' title='Defined at 153 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/address.h.'>port_type</a> <a href='../Y/6161.html' title='Multiple used in 7 places.'>ptype</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/5792.html' title='Multiple used in 2 places.'>port1</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/5793.html' title='Multiple used in 2 places.'>port2</a>, <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/5506.html' title='Multiple used in 62 places.'>options</a>);
+<a name='L84'>  84 
+<a name='L85'>  85 <b>extern</b> <a href='../S/360.html#L78' title='Defined at 78 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/conversation.h.'>conversation_t</a> *find_conversation(<a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> frame_num, <a href='../S/498.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/address.h.'>address</a> *<a href='../Y/1327.html' title='Multiple used in 2 places.'>addr_a</a>, <a href='../S/498.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/address.h.'>address</a> *<a href='../Y/1328.html' title='Multiple used in 2 places.'>addr_b</a>,
+<a name='L86'>  86     <a href='../S/498.html#L153' title='Defined at 153 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/address.h.'>port_type</a> <a href='../Y/6161.html' title='Multiple used in 7 places.'>ptype</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/5794.html' title='Multiple used in 2 places.'>port_a</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/5798.html' title='Multiple used in 2 places.'>port_b</a>, <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/5506.html' title='Multiple used in 62 places.'>options</a>);
+<a name='L87'>  87 
+<a name='L88'>  88 <b>extern</b> <b>void</b> conversation_add_proto_data(<a href='../S/360.html#L78' title='Defined at 78 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/conversation.h.'>conversation_t</a> *<a href='../Y/2123.html' title='Multiple used in 11 places.'>conv</a>, <b>int</b> <a href='../Y/5957.html' title='Multiple used in 226 places.'>proto</a>,
+<a name='L89'>  89     <b>void</b> *<a href='../Y/5964.html' title='Multiple used in 3 places.'>proto_data</a>);
+<a name='L90'>  90 <b>extern</b> <b>void</b> *conversation_get_proto_data(<a href='../S/360.html#L78' title='Defined at 78 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/conversation.h.'>conversation_t</a> *<a href='../Y/2123.html' title='Multiple used in 11 places.'>conv</a>, <b>int</b> <a href='../Y/5957.html' title='Multiple used in 226 places.'>proto</a>);
+<a name='L91'>  91 <b>extern</b> <b>void</b> conversation_delete_proto_data(<a href='../S/360.html#L78' title='Defined at 78 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/conversation.h.'>conversation_t</a> *<a href='../Y/2123.html' title='Multiple used in 11 places.'>conv</a>, <b>int</b> <a href='../Y/5957.html' title='Multiple used in 226 places.'>proto</a>);
+<a name='L92'>  92 
+<a name='L93'>  93 <b>extern</b> <b>void</b> conversation_set_dissector(<a href='../S/360.html#L78' title='Defined at 78 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/conversation.h.'>conversation_t</a> *<a href='../S/360.html#L69' title='Defined at 69 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/conversation.h.'>conversation</a>,
+<a name='L94'>  94     <a href='../S/446.html#L98' title='Defined at 98 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/packet.h.'>dissector_handle_t</a> <a href='../Y/3536.html' title='Multiple used in 30 places.'>handle</a>);
+<a name='L95'>  95 <b>extern</b> <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a>
+<a name='L96'>  96 try_conversation_dissector(<a href='../S/498.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/address.h.'>address</a> *<a href='../Y/1327.html' title='Multiple used in 2 places.'>addr_a</a>, <a href='../S/498.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/address.h.'>address</a> *<a href='../Y/1328.html' title='Multiple used in 2 places.'>addr_b</a>, <a href='../S/498.html#L153' title='Defined at 153 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/address.h.'>port_type</a> <a href='../Y/6161.html' title='Multiple used in 7 places.'>ptype</a>,
+<a name='L97'>  97     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/5794.html' title='Multiple used in 2 places.'>port_a</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/5798.html' title='Multiple used in 2 places.'>port_b</a>, <a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/7512.html' title='Multiple used in 508 places.'>tvb</a>, <a href='../S/441.html#L182' title='Defined at 182 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/packet_info.h.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>,
+<a name='L98'>  98     <a href='../S/488.html#L264' title='Defined at 264 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>proto_tree</a> *<a href='../S/252.html#L280' title='Defined at 280 in cbench/openflow/tests/test-stp.c.'>tree</a>);
+<a name='L99'>  99 
+<a name='L100'> 100 <i><font color='green'>/* These routines are used to set undefined values for a conversation */</font></i>
+<a name='L101'> 101 
+<a name='L102'> 102 <b>extern</b> <b>void</b> conversation_set_port2(<a href='../S/360.html#L78' title='Defined at 78 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/conversation.h.'>conversation_t</a> *<a href='../Y/2123.html' title='Multiple used in 11 places.'>conv</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a>);
+<a name='L103'> 103 <b>extern</b> <b>void</b> conversation_set_addr2(<a href='../S/360.html#L78' title='Defined at 78 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/conversation.h.'>conversation_t</a> *<a href='../Y/2123.html' title='Multiple used in 11 places.'>conv</a>, <a href='../S/498.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/address.h.'>address</a> *<a href='../Y/1322.html' title='Multiple used in 61 places.'>addr</a>);
+<a name='L104'> 104 
+<a name='L105'> 105 <font color='darkred'>#ifdef</font> <a href='../Y/1158.html' title='Multiple used in 106 places.'>__cplusplus</a>
+<a name='L106'> 106 <font color='red'>}</font>
+<a name='L107'> 107 <font color='darkred'>#endif</font> <i><font color='green'>/* __cplusplus */</font></i>
+<a name='L108'> 108 
+<a name='L109'> 109 <font color='darkred'>#endif</font> <i><font color='green'>/* conversation.h */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

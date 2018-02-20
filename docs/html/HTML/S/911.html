@@ -1,0 +1,409 @@
+<html>
+<head>
+<title>cbench/openflow/lib/svec.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/svec.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L47'>[^]</a><a href='#L358'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L47' title='Defined at 47.'>svec_init</a>
+<li><a href='#L55' title='Defined at 55.'>svec_destroy</a>
+<li><a href='#L62' title='Defined at 62.'>svec_clear</a>
+<li><a href='#L73' title='Defined at 73.'>svec_add</a>
+<li><a href='#L79' title='Defined at 79.'>svec_expand</a>
+<li><a href='#L88' title='Defined at 88.'>svec_add_nocopy</a>
+<li><a href='#L95' title='Defined at 95.'>svec_append</a>
+<li><a href='#L104' title='Defined at 104.'>svec_terminate</a>
+<li><a href='#L111' title='Defined at 111.'>compare_strings</a>
+<li><a href='#L119' title='Defined at 119.'>svec_sort</a>
+<li><a href='#L125' title='Defined at 125.'>svec_sort_unique</a>
+<li><a href='#L132' title='Defined at 132.'>svec_unique</a>
+<li><a href='#L154' title='Defined at 154.'>svec_diff</a>
+<li><a href='#L203' title='Defined at 203.'>svec_contains</a>
+<li><a href='#L209' title='Defined at 209.'>svec_find</a>
+<li><a href='#L220' title='Defined at 220.'>svec_is_sorted</a>
+<li><a href='#L233' title='Defined at 233.'>svec_is_unique</a>
+<li><a href='#L239' title='Defined at 239.'>svec_get_duplicate</a>
+<li><a href='#L254' title='Defined at 254.'>svec_swap</a>
+<li><a href='#L262' title='Defined at 262.'>svec_print</a>
+<li><a href='#L275' title='Defined at 275.'>svec_parse_words</a>
+<li><a href='#L319' title='Defined at 319.'>svec_equal</a>
+<li><a href='#L335' title='Defined at 335.'>svec_join</a>
+<li><a href='#L351' title='Defined at 351.'>svec_back</a>
+<li><a href='#L358' title='Defined at 358.'>svec_pop_back</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008, 2009 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> *</font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> *</font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> "<a href='839.html'>svec.h</a>"
+<a name='L36'>  36 <font color='darkred'>#include</font> &lt;assert.h&gt;
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;ctype.h&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;stdlib.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> &lt;string.h&gt;
+<a name='L40'>  40 <font color='darkred'>#include</font> "<a href='908.html'>dynamic-string.h</a>"
+<a name='L41'>  41 <font color='darkred'>#include</font> "<a href='../I/69.html'>util.h</a>"
+<a name='L42'>  42 
+<a name='L43'>  43 <font color='darkred'>#define</font> <a href='../R/1643.html' title='Multiple refered from 13 places.'>THIS_MODULE</a> VLM_svec
+<a name='L44'>  44 <font color='darkred'>#include</font> "<a href='859.html'>vlog.h</a>"
+<a name='L45'>  45 
+<a name='L46'>  46 <b>void</b>
+<a name='L47'>  47 <a href='../R/4666.html' title='Multiple refered from 9 places.'>svec_init</a>(<b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>)
+<a name='L48'>  48 <font color='red'>{</font>
+<a name='L49'>  49     <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L50'>  50     <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> = 0;
+<a name='L51'>  51     <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/1381.html' title='Multiple used in 21 places.'>allocated</a> = 0;
+<a name='L52'>  52 <font color='red'>}</font>
+<a name='L53'>  53 
+<a name='L54'>  54 <b>void</b>
+<a name='L55'>  55 <a href='../R/4660.html' title='Multiple refered from 5 places.'>svec_destroy</a>(<b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>)
+<a name='L56'>  56 <font color='red'>{</font>
+<a name='L57'>  57     <a href='../S/911.html#L62' title='Defined at 62 in cbench/openflow/lib/svec.c.'>svec_clear</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>);
+<a name='L58'>  58     <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>);
+<a name='L59'>  59 <font color='red'>}</font>
+<a name='L60'>  60 
+<a name='L61'>  61 <b>void</b>
+<a name='L62'>  62 <a href='../R/4658.html' title='Multiple refered from 4 places.'>svec_clear</a>(<b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>) 
+<a name='L63'>  63 <font color='red'>{</font>
+<a name='L64'>  64     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L65'>  65 
+<a name='L66'>  66     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L67'>  67         <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L68'>  68     <font color='red'>}</font>
+<a name='L69'>  69     <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> = 0;
+<a name='L70'>  70 <font color='red'>}</font>
+<a name='L71'>  71 
+<a name='L72'>  72 <b>void</b>
+<a name='L73'>  73 <a href='../R/4654.html' title='Multiple refered from 13 places.'>svec_add</a>(<b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>, <b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>)
+<a name='L74'>  74 <font color='red'>{</font>
+<a name='L75'>  75     <a href='../S/911.html#L88' title='Defined at 88 in cbench/openflow/lib/svec.c.'>svec_add_nocopy</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>, <a href='../S/878.html#L98' title='Defined at 98 in cbench/openflow/lib/util.c.'>xstrdup</a>(<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>));
+<a name='L76'>  76 <font color='red'>}</font>
+<a name='L77'>  77 
+<a name='L78'>  78 <b>static</b> <b>void</b>
+<a name='L79'>  79 <a href='../R/4663.html' title='Multiple refered from 2 places.'>svec_expand</a>(<b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>)
+<a name='L80'>  80 <font color='red'>{</font>
+<a name='L81'>  81     <b>if</b> (<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> &gt;= <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/1381.html' title='Multiple used in 21 places.'>allocated</a>) <font color='red'>{</font>
+<a name='L82'>  82         <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a> = <a href='../S/878.html#L122' title='Defined at 122 in cbench/openflow/lib/util.c.'>x2nrealloc</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>, &amp;<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/1381.html' title='Multiple used in 21 places.'>allocated</a>,
+<a name='L83'>  83                                  <b>sizeof</b> *<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>);
+<a name='L84'>  84     <font color='red'>}</font>
+<a name='L85'>  85 <font color='red'>}</font>
+<a name='L86'>  86 
+<a name='L87'>  87 <b>void</b>
+<a name='L88'>  88 <a href='../R/4655.html' title='Multiple refered from 2 places.'>svec_add_nocopy</a>(<b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>, <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>)
+<a name='L89'>  89 <font color='red'>{</font>
+<a name='L90'>  90     <a href='../S/911.html#L79' title='Defined at 79 in cbench/openflow/lib/svec.c.'>svec_expand</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>);
+<a name='L91'>  91     <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>++] = <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;
+<a name='L92'>  92 <font color='red'>}</font>
+<a name='L93'>  93 
+<a name='L94'>  94 <b>void</b>
+<a name='L95'>  95 <a href='../R/4656.html' title='Multiple refered from 2 places.'>svec_append</a>(<b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>, <b>const</b> <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/5526.html' title='Multiple used in 6 places.'>other</a>)
+<a name='L96'>  96 <font color='red'>{</font>
+<a name='L97'>  97     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L98'>  98     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../Y/5526.html' title='Multiple used in 6 places.'>other</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L99'>  99         <a href='../S/911.html#L73' title='Defined at 73 in cbench/openflow/lib/svec.c.'>svec_add</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>, <a href='../Y/5526.html' title='Multiple used in 6 places.'>other</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L100'> 100     <font color='red'>}</font>
+<a name='L101'> 101 <font color='red'>}</font>
+<a name='L102'> 102 
+<a name='L103'> 103 <b>void</b>
+<a name='L104'> 104 <a href='../S/839.html#L54' title='Refered from 54 in cbench/openflow/lib/svec.h.'>svec_terminate</a>(<b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>)
+<a name='L105'> 105 <font color='red'>{</font>
+<a name='L106'> 106     <a href='../S/911.html#L79' title='Defined at 79 in cbench/openflow/lib/svec.c.'>svec_expand</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>);
+<a name='L107'> 107     <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>] = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L108'> 108 <font color='red'>}</font>
+<a name='L109'> 109 
+<a name='L110'> 110 <b>static</b> <b>int</b>
+<a name='L111'> 111 <a href='../R/2476.html' title='Multiple refered from 2 places.'>compare_strings</a>(<b>const</b> <b>void</b> *<a href='../Y/1251.html' title='Multiple used in 6 places.'>a_</a>, <b>const</b> <b>void</b> *<a href='../Y/1566.html' title='Multiple used in 13 places.'>b_</a>)
+<a name='L112'> 112 <font color='red'>{</font>
+<a name='L113'> 113     <b>char</b> *<b>const</b> *<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> = <a href='../Y/1251.html' title='Multiple used in 6 places.'>a_</a>;
+<a name='L114'> 114     <b>char</b> *<b>const</b> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> = <a href='../Y/1566.html' title='Multiple used in 13 places.'>b_</a>;
+<a name='L115'> 115     <b>return</b> <a href='../Y/7082.html' title='Multiple used in 371 places.'>strcmp</a>(*<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>);
+<a name='L116'> 116 <font color='red'>}</font>
+<a name='L117'> 117 
+<a name='L118'> 118 <b>void</b>
+<a name='L119'> 119 <a href='../R/4673.html' title='Multiple refered from 3 places.'>svec_sort</a>(<b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>)
+<a name='L120'> 120 <font color='red'>{</font>
+<a name='L121'> 121     <a href='../Y/6196.html' title='Multiple used in 4 places.'>qsort</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>, <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>, <b>sizeof</b> *<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>, <a href='../S/911.html#L111' title='Defined at 111 in cbench/openflow/lib/svec.c.'>compare_strings</a>);
+<a name='L122'> 122 <font color='red'>}</font>
+<a name='L123'> 123 
+<a name='L124'> 124 <b>void</b>
+<a name='L125'> 125 <a href='../S/839.html#L56' title='Refered from 56 in cbench/openflow/lib/svec.h.'>svec_sort_unique</a>(<b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>)
+<a name='L126'> 126 <font color='red'>{</font>
+<a name='L127'> 127     <a href='../S/911.html#L119' title='Defined at 119 in cbench/openflow/lib/svec.c.'>svec_sort</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>);
+<a name='L128'> 128     <a href='../S/911.html#L132' title='Defined at 132 in cbench/openflow/lib/svec.c.'>svec_unique</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>);
+<a name='L129'> 129 <font color='red'>}</font>
+<a name='L130'> 130 
+<a name='L131'> 131 <b>void</b>
+<a name='L132'> 132 <a href='../R/4677.html' title='Multiple refered from 2 places.'>svec_unique</a>(<b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>)
+<a name='L133'> 133 <font color='red'>{</font>
+<a name='L134'> 134     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../S/911.html#L220' title='Defined at 220 in cbench/openflow/lib/svec.c.'>svec_is_sorted</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>));
+<a name='L135'> 135     <b>if</b> (<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> &gt; 1) <font color='red'>{</font>
+<a name='L136'> 136         <i><font color='green'>/* This algorithm is lazy and sub-optimal, but it's "obviously correct"</font></i>
+<a name='L137'> 137 <i><font color='green'>         * and asymptotically optimal . */</font></i>
+<a name='L138'> 138         <b>struct</b> <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a> <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>;
+<a name='L139'> 139         <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L140'> 140 
+<a name='L141'> 141         <a href='../S/911.html#L47' title='Defined at 47 in cbench/openflow/lib/svec.c.'>svec_init</a>(&amp;<a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>);
+<a name='L142'> 142         <a href='../S/911.html#L73' title='Defined at 73 in cbench/openflow/lib/svec.c.'>svec_add</a>(&amp;<a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>, <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[0]);
+<a name='L143'> 143         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 1; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L144'> 144             <b>if</b> (<a href='../Y/7082.html' title='Multiple used in 371 places.'>strcmp</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> - 1], <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>])) <font color='red'>{</font>
+<a name='L145'> 145                 <a href='../S/911.html#L73' title='Defined at 73 in cbench/openflow/lib/svec.c.'>svec_add</a>(&amp;<a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>, <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L146'> 146             <font color='red'>}</font>
+<a name='L147'> 147         <font color='red'>}</font>
+<a name='L148'> 148         <a href='../S/911.html#L254' title='Defined at 254 in cbench/openflow/lib/svec.c.'>svec_swap</a>(&amp;<a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>, <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>);
+<a name='L149'> 149         <a href='../S/911.html#L55' title='Defined at 55 in cbench/openflow/lib/svec.c.'>svec_destroy</a>(&amp;<a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>);
+<a name='L150'> 150     <font color='red'>}</font>
+<a name='L151'> 151 <font color='red'>}</font>
+<a name='L152'> 152 
+<a name='L153'> 153 <b>void</b>
+<a name='L154'> 154 <a href='../S/839.html#L58' title='Refered from 58 in cbench/openflow/lib/svec.h.'>svec_diff</a>(<b>const</b> <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <b>const</b> <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>,
+<a name='L155'> 155           <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/1253.html' title='Multiple used in 8 places.'>a_only</a>, <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/1654.html' title='Multiple used in 6 places.'>both</a>, <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/1568.html' title='Multiple used in 8 places.'>b_only</a>)
+<a name='L156'> 156 <font color='red'>{</font>
+<a name='L157'> 157     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>, <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>;
+<a name='L158'> 158 
+<a name='L159'> 159     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../S/911.html#L220' title='Defined at 220 in cbench/openflow/lib/svec.c.'>svec_is_sorted</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>));
+<a name='L160'> 160     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../S/911.html#L220' title='Defined at 220 in cbench/openflow/lib/svec.c.'>svec_is_sorted</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>));
+<a name='L161'> 161     <b>if</b> (<a href='../Y/1253.html' title='Multiple used in 8 places.'>a_only</a>) <font color='red'>{</font>
+<a name='L162'> 162         <a href='../S/911.html#L47' title='Defined at 47 in cbench/openflow/lib/svec.c.'>svec_init</a>(<a href='../Y/1253.html' title='Multiple used in 8 places.'>a_only</a>);
+<a name='L163'> 163     <font color='red'>}</font>
+<a name='L164'> 164     <b>if</b> (<a href='../Y/1654.html' title='Multiple used in 6 places.'>both</a>) <font color='red'>{</font>
+<a name='L165'> 165         <a href='../S/911.html#L47' title='Defined at 47 in cbench/openflow/lib/svec.c.'>svec_init</a>(<a href='../Y/1654.html' title='Multiple used in 6 places.'>both</a>);
+<a name='L166'> 166     <font color='red'>}</font>
+<a name='L167'> 167     <b>if</b> (<a href='../Y/1568.html' title='Multiple used in 8 places.'>b_only</a>) <font color='red'>{</font>
+<a name='L168'> 168         <a href='../S/911.html#L47' title='Defined at 47 in cbench/openflow/lib/svec.c.'>svec_init</a>(<a href='../Y/1568.html' title='Multiple used in 8 places.'>b_only</a>);
+<a name='L169'> 169     <font color='red'>}</font>
+<a name='L170'> 170     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> &amp;&amp; <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a> &lt; <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>; ) <font color='red'>{</font>
+<a name='L171'> 171         <b>int</b> <a href='../Y/1940.html' title='Multiple used in 3 places.'>cmp</a> = <a href='../Y/7082.html' title='Multiple used in 371 places.'>strcmp</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>], <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>]);
+<a name='L172'> 172         <b>if</b> (<a href='../Y/1940.html' title='Multiple used in 3 places.'>cmp</a> &lt; 0) <font color='red'>{</font>
+<a name='L173'> 173             <b>if</b> (<a href='../Y/1253.html' title='Multiple used in 8 places.'>a_only</a>) <font color='red'>{</font>
+<a name='L174'> 174                 <a href='../S/911.html#L73' title='Defined at 73 in cbench/openflow/lib/svec.c.'>svec_add</a>(<a href='../Y/1253.html' title='Multiple used in 8 places.'>a_only</a>, <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L175'> 175             <font color='red'>}</font>
+<a name='L176'> 176             <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++;
+<a name='L177'> 177         <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../Y/1940.html' title='Multiple used in 3 places.'>cmp</a> &gt; 0) <font color='red'>{</font>
+<a name='L178'> 178             <b>if</b> (<a href='../Y/1568.html' title='Multiple used in 8 places.'>b_only</a>) <font color='red'>{</font>
+<a name='L179'> 179                 <a href='../S/911.html#L73' title='Defined at 73 in cbench/openflow/lib/svec.c.'>svec_add</a>(<a href='../Y/1568.html' title='Multiple used in 8 places.'>b_only</a>, <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>]);
+<a name='L180'> 180             <font color='red'>}</font>
+<a name='L181'> 181             <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>++;
+<a name='L182'> 182         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L183'> 183             <b>if</b> (<a href='../Y/1654.html' title='Multiple used in 6 places.'>both</a>) <font color='red'>{</font>
+<a name='L184'> 184                 <a href='../S/911.html#L73' title='Defined at 73 in cbench/openflow/lib/svec.c.'>svec_add</a>(<a href='../Y/1654.html' title='Multiple used in 6 places.'>both</a>, <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L185'> 185             <font color='red'>}</font>
+<a name='L186'> 186             <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++;
+<a name='L187'> 187             <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>++;
+<a name='L188'> 188         <font color='red'>}</font>
+<a name='L189'> 189     <font color='red'>}</font>
+<a name='L190'> 190     <b>if</b> (<a href='../Y/1253.html' title='Multiple used in 8 places.'>a_only</a>) <font color='red'>{</font>
+<a name='L191'> 191         <b>for</b> (; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L192'> 192             <a href='../S/911.html#L73' title='Defined at 73 in cbench/openflow/lib/svec.c.'>svec_add</a>(<a href='../Y/1253.html' title='Multiple used in 8 places.'>a_only</a>, <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L193'> 193         <font color='red'>}</font>
+<a name='L194'> 194     <font color='red'>}</font>
+<a name='L195'> 195     <b>if</b> (<a href='../Y/1568.html' title='Multiple used in 8 places.'>b_only</a>) <font color='red'>{</font>
+<a name='L196'> 196         <b>for</b> (; <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a> &lt; <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>; <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>++) <font color='red'>{</font>
+<a name='L197'> 197             <a href='../S/911.html#L73' title='Defined at 73 in cbench/openflow/lib/svec.c.'>svec_add</a>(<a href='../Y/1568.html' title='Multiple used in 8 places.'>b_only</a>, <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>]);
+<a name='L198'> 198         <font color='red'>}</font>
+<a name='L199'> 199     <font color='red'>}</font>
+<a name='L200'> 200 <font color='red'>}</font>
+<a name='L201'> 201 
+<a name='L202'> 202 <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a>
+<a name='L203'> 203 <a href='../S/839.html#L60' title='Refered from 60 in cbench/openflow/lib/svec.h.'>svec_contains</a>(<b>const</b> <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>, <b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>)
+<a name='L204'> 204 <font color='red'>{</font>
+<a name='L205'> 205     <b>return</b> <a href='../S/911.html#L209' title='Defined at 209 in cbench/openflow/lib/svec.c.'>svec_find</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>, <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>) != <a href='../Y/823.html' title='Multiple used in 53 places.'>SIZE_MAX</a>;
+<a name='L206'> 206 <font color='red'>}</font>
+<a name='L207'> 207 
+<a name='L208'> 208 <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a>
+<a name='L209'> 209 <a href='../R/4664.html' title='Multiple refered from 3 places.'>svec_find</a>(<b>const</b> <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>, <b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>)
+<a name='L210'> 210 <font color='red'>{</font>
+<a name='L211'> 211     <b>char</b> **<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>;
+<a name='L212'> 212 
+<a name='L213'> 213     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../S/911.html#L220' title='Defined at 220 in cbench/openflow/lib/svec.c.'>svec_is_sorted</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>));
+<a name='L214'> 214     <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> = bsearch(&amp;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>, <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>, <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>, <b>sizeof</b> *<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>,
+<a name='L215'> 215                 <a href='../S/911.html#L111' title='Defined at 111 in cbench/openflow/lib/svec.c.'>compare_strings</a>);
+<a name='L216'> 216     <b>return</b> <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> ? <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> - <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a> : <a href='../Y/823.html' title='Multiple used in 53 places.'>SIZE_MAX</a>;
+<a name='L217'> 217 <font color='red'>}</font>
+<a name='L218'> 218 
+<a name='L219'> 219 <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a>
+<a name='L220'> 220 <a href='../R/4667.html' title='Multiple refered from 6 places.'>svec_is_sorted</a>(<b>const</b> <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>)
+<a name='L221'> 221 <font color='red'>{</font>
+<a name='L222'> 222     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L223'> 223 
+<a name='L224'> 224     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 1; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L225'> 225         <b>if</b> (<a href='../Y/7082.html' title='Multiple used in 371 places.'>strcmp</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> - 1], <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]) &gt; 0) <font color='red'>{</font>
+<a name='L226'> 226             <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L227'> 227         <font color='red'>}</font>
+<a name='L228'> 228     <font color='red'>}</font>
+<a name='L229'> 229     <b>return</b> <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>;
+<a name='L230'> 230 <font color='red'>}</font>
+<a name='L231'> 231 
+<a name='L232'> 232 <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a>
+<a name='L233'> 233 <a href='../S/839.html#L63' title='Refered from 63 in cbench/openflow/lib/svec.h.'>svec_is_unique</a>(<b>const</b> <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>)
+<a name='L234'> 234 <font color='red'>{</font>
+<a name='L235'> 235     <b>return</b> <a href='../S/911.html#L239' title='Defined at 239 in cbench/openflow/lib/svec.c.'>svec_get_duplicate</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>) == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L236'> 236 <font color='red'>}</font>
+<a name='L237'> 237 
+<a name='L238'> 238 <b>const</b> <b>char</b> *
+<a name='L239'> 239 <a href='../R/4665.html' title='Multiple refered from 2 places.'>svec_get_duplicate</a>(<b>const</b> <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>)
+<a name='L240'> 240 <font color='red'>{</font>
+<a name='L241'> 241     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../S/911.html#L220' title='Defined at 220 in cbench/openflow/lib/svec.c.'>svec_is_sorted</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>));
+<a name='L242'> 242     <b>if</b> (<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> &gt; 1) <font color='red'>{</font>
+<a name='L243'> 243         <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L244'> 244         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 1; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L245'> 245             <b>if</b> (!<a href='../Y/7082.html' title='Multiple used in 371 places.'>strcmp</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> - 1], <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>])) <font color='red'>{</font>
+<a name='L246'> 246                 <b>return</b> <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>];
+<a name='L247'> 247             <font color='red'>}</font>
+<a name='L248'> 248         <font color='red'>}</font>
+<a name='L249'> 249     <font color='red'>}</font>
+<a name='L250'> 250     <b>return</b> <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L251'> 251 <font color='red'>}</font>
+<a name='L252'> 252 
+<a name='L253'> 253 <b>void</b>
+<a name='L254'> 254 <a href='../R/4675.html' title='Multiple refered from 2 places.'>svec_swap</a>(<b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>)
+<a name='L255'> 255 <font color='red'>{</font>
+<a name='L256'> 256     <b>struct</b> <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a> <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a> = *<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>;
+<a name='L257'> 257     *<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> = *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>;
+<a name='L258'> 258     *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> = <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>;
+<a name='L259'> 259 <font color='red'>}</font>
+<a name='L260'> 260 
+<a name='L261'> 261 <b>void</b>
+<a name='L262'> 262 <a href='../S/839.html#L66' title='Refered from 66 in cbench/openflow/lib/svec.h.'>svec_print</a>(<b>const</b> <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>, <b>const</b> <b>char</b> *<a href='../Y/7390.html' title='Multiple used in 22 places.'>title</a>)
+<a name='L263'> 263 <font color='red'>{</font>
+<a name='L264'> 264     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L265'> 265 
+<a name='L266'> 266     <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("%s:\n", <a href='../Y/7390.html' title='Multiple used in 22 places.'>title</a>);
+<a name='L267'> 267     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L268'> 268         <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("\"%s\"\n", <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L269'> 269     <font color='red'>}</font>
+<a name='L270'> 270 <font color='red'>}</font>
+<a name='L271'> 271 
+<a name='L272'> 272 <i><font color='green'>/* Breaks 'words' into words at white space, respecting shell-like quoting</font></i>
+<a name='L273'> 273 <i><font color='green'> * conventions, and appends the words to 'svec'. */</font></i>
+<a name='L274'> 274 <b>void</b>
+<a name='L275'> 275 <a href='../S/839.html#L67' title='Refered from 67 in cbench/openflow/lib/svec.h.'>svec_parse_words</a>(<b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>, <b>const</b> <b>char</b> *<a href='../Y/7891.html' title='Multiple used in 34 places.'>words</a>)
+<a name='L276'> 276 <font color='red'>{</font>
+<a name='L277'> 277     <b>struct</b> <a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a> <a href='../Y/7887.html' title='Multiple used in 9 places.'>word</a> = <a href='../S/908.html#L52' title='Defined at 52 in cbench/openflow/lib/dynamic-string.h.'>DS_EMPTY_INITIALIZER</a>;
+<a name='L278'> 278     <b>const</b> <b>char</b> *<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>, *<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>;
+<a name='L279'> 279 
+<a name='L280'> 280     <b>for</b> (<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> = <a href='../Y/7891.html' title='Multiple used in 34 places.'>words</a>; *<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> != '\0'; <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> = <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>) <font color='red'>{</font>
+<a name='L281'> 281         <b>int</b> <a href='../Y/6221.html' title='Multiple used in 8 places.'>quote</a> = 0;
+<a name='L282'> 282 
+<a name='L283'> 283         <b>while</b> (<a href='../Y/3949.html' title='Multiple used in 13 places.'>isspace</a>((<b>unsigned</b> <b>char</b>) *<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>)) <font color='red'>{</font>
+<a name='L284'> 284             <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>++;
+<a name='L285'> 285         <font color='red'>}</font>
+<a name='L286'> 286         <b>if</b> (*<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> == '\0') <font color='red'>{</font>
+<a name='L287'> 287             <b>break</b>;
+<a name='L288'> 288         <font color='red'>}</font>
+<a name='L289'> 289 
+<a name='L290'> 290         <a href='../S/907.html#L52' title='Defined at 52 in cbench/openflow/lib/dynamic-string.c.'>ds_clear</a>(&amp;<a href='../Y/7887.html' title='Multiple used in 9 places.'>word</a>);
+<a name='L291'> 291         <b>for</b> (<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a> = <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>; *<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a> != '\0'; <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>++) <font color='red'>{</font>
+<a name='L292'> 292             <b>if</b> (*<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a> == <a href='../Y/6221.html' title='Multiple used in 8 places.'>quote</a>) <font color='red'>{</font>
+<a name='L293'> 293                 <a href='../Y/6221.html' title='Multiple used in 8 places.'>quote</a> = 0;
+<a name='L294'> 294             <font color='red'>}</font> <b>else</b> <b>if</b> (*<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a> == '\'' || *<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a> == '"') <font color='red'>{</font>
+<a name='L295'> 295                 <a href='../Y/6221.html' title='Multiple used in 8 places.'>quote</a> = *<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>;
+<a name='L296'> 296             <font color='red'>}</font> <b>else</b> <b>if</b> (*<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a> == '\\' &amp;&amp; (!<a href='../Y/6221.html' title='Multiple used in 8 places.'>quote</a> || <a href='../Y/6221.html' title='Multiple used in 8 places.'>quote</a> == '"')) <font color='red'>{</font>
+<a name='L297'> 297                 <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>++;
+<a name='L298'> 298                 <b>if</b> (*<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a> == '\0') <font color='red'>{</font>
+<a name='L299'> 299                     <a href='../S/859.html#L151' title='Defined at 151 in cbench/openflow/lib/vlog.h.'>VLOG_WARN</a>("%s: ends in trailing backslash", <a href='../Y/7891.html' title='Multiple used in 34 places.'>words</a>);
+<a name='L300'> 300                     <b>break</b>;
+<a name='L301'> 301                 <font color='red'>}</font>
+<a name='L302'> 302                 <a href='../S/907.html#L86' title='Defined at 86 in cbench/openflow/lib/dynamic-string.c.'>ds_put_char</a>(&amp;<a href='../Y/7887.html' title='Multiple used in 9 places.'>word</a>, *<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>);
+<a name='L303'> 303             <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../Y/3949.html' title='Multiple used in 13 places.'>isspace</a>((<b>unsigned</b> <b>char</b>) *<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>) &amp;&amp; !<a href='../Y/6221.html' title='Multiple used in 8 places.'>quote</a>) <font color='red'>{</font>
+<a name='L304'> 304                 <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>++;
+<a name='L305'> 305                 <b>break</b>;
+<a name='L306'> 306             <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L307'> 307                 <a href='../S/907.html#L86' title='Defined at 86 in cbench/openflow/lib/dynamic-string.c.'>ds_put_char</a>(&amp;<a href='../Y/7887.html' title='Multiple used in 9 places.'>word</a>, *<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>);
+<a name='L308'> 308             <font color='red'>}</font>
+<a name='L309'> 309         <font color='red'>}</font>
+<a name='L310'> 310         <a href='../S/911.html#L73' title='Defined at 73 in cbench/openflow/lib/svec.c.'>svec_add</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>, <a href='../S/907.html#L198' title='Defined at 198 in cbench/openflow/lib/dynamic-string.c.'>ds_cstr</a>(&amp;<a href='../Y/7887.html' title='Multiple used in 9 places.'>word</a>));
+<a name='L311'> 311         <b>if</b> (<a href='../Y/6221.html' title='Multiple used in 8 places.'>quote</a>) <font color='red'>{</font>
+<a name='L312'> 312             <a href='../S/859.html#L151' title='Defined at 151 in cbench/openflow/lib/vlog.h.'>VLOG_WARN</a>("%s: word ends inside quoted string", <a href='../Y/7891.html' title='Multiple used in 34 places.'>words</a>);
+<a name='L313'> 313         <font color='red'>}</font>
+<a name='L314'> 314     <font color='red'>}</font>
+<a name='L315'> 315     <a href='../S/907.html#L208' title='Defined at 208 in cbench/openflow/lib/dynamic-string.c.'>ds_destroy</a>(&amp;<a href='../Y/7887.html' title='Multiple used in 9 places.'>word</a>);
+<a name='L316'> 316 <font color='red'>}</font>
+<a name='L317'> 317 
+<a name='L318'> 318 <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a>
+<a name='L319'> 319 <a href='../S/839.html#L68' title='Refered from 68 in cbench/openflow/lib/svec.h.'>svec_equal</a>(<b>const</b> <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <b>const</b> <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>)
+<a name='L320'> 320 <font color='red'>{</font>
+<a name='L321'> 321     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L322'> 322 
+<a name='L323'> 323     <b>if</b> (<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> != <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>) <font color='red'>{</font>
+<a name='L324'> 324         <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L325'> 325     <font color='red'>}</font>
+<a name='L326'> 326     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L327'> 327         <b>if</b> (<a href='../Y/7082.html' title='Multiple used in 371 places.'>strcmp</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>], <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>])) <font color='red'>{</font>
+<a name='L328'> 328             <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L329'> 329         <font color='red'>}</font>
+<a name='L330'> 330     <font color='red'>}</font>
+<a name='L331'> 331     <b>return</b> <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>;
+<a name='L332'> 332 <font color='red'>}</font>
+<a name='L333'> 333 
+<a name='L334'> 334 <b>char</b> *
+<a name='L335'> 335 <a href='../S/839.html#L69' title='Refered from 69 in cbench/openflow/lib/svec.h.'>svec_join</a>(<b>const</b> <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>, <b>const</b> <b>char</b> *<a href='../Y/2324.html' title='Multiple used in 5 places.'>delimiter</a>)
+<a name='L336'> 336 <font color='red'>{</font>
+<a name='L337'> 337     <b>struct</b> <a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a> <a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>;
+<a name='L338'> 338     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L339'> 339 
+<a name='L340'> 340     <a href='../S/907.html#L44' title='Defined at 44 in cbench/openflow/lib/dynamic-string.c.'>ds_init</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>);
+<a name='L341'> 341     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L342'> 342         <b>if</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>) <font color='red'>{</font>
+<a name='L343'> 343             <a href='../S/907.html#L104' title='Defined at 104 in cbench/openflow/lib/dynamic-string.c.'>ds_put_cstr</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, <a href='../Y/2324.html' title='Multiple used in 5 places.'>delimiter</a>);
+<a name='L344'> 344         <font color='red'>}</font>
+<a name='L345'> 345         <a href='../S/907.html#L104' title='Defined at 104 in cbench/openflow/lib/dynamic-string.c.'>ds_put_cstr</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L346'> 346     <font color='red'>}</font>
+<a name='L347'> 347     <b>return</b> <a href='../S/907.html#L198' title='Defined at 198 in cbench/openflow/lib/dynamic-string.c.'>ds_cstr</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>);
+<a name='L348'> 348 <font color='red'>}</font>
+<a name='L349'> 349 
+<a name='L350'> 350 <b>const</b> <b>char</b> *
+<a name='L351'> 351 <a href='../R/4657.html' title='Multiple refered from 2 places.'>svec_back</a>(<b>const</b> <b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>)
+<a name='L352'> 352 <font color='red'>{</font>
+<a name='L353'> 353     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>);
+<a name='L354'> 354     <b>return</b> <a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> - 1];
+<a name='L355'> 355 <font color='red'>}</font>
+<a name='L356'> 356 
+<a name='L357'> 357 <b>void</b>
+<a name='L358'> 358 <a href='../R/4671.html' title='Multiple refered from 2 places.'>svec_pop_back</a>(<b>struct</b> <a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a> *<a href='../Y/7171.html' title='Multiple used in 51 places.'>svec</a>)
+<a name='L359'> 359 <font color='red'>{</font>
+<a name='L360'> 360     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>);
+<a name='L361'> 361     <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>[--<a href='../S/839.html#L40' title='Defined at 40 in cbench/openflow/lib/svec.h.'>svec</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>]);
+<a name='L362'> 362 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L47'>[^]</a><a href='#L358'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

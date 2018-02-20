@@ -1,0 +1,106 @@
+<html>
+<head>
+<title>components/include/lldp.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1155.html'>components</a>/<a href='../files/1156.html'>include</a>/lldp.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='990.html#L15' title='Included from 15 in components/include/topo_mgmt.h.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright 2015-2018 NSSLab, KAIST</font></i>
+<a name='L3'>   3 <i><font color='green'> */</font></i>
+<a name='L4'>   4 
+<a name='L5'>   5 <i><font color='green'>/**</font></i>
+<a name='L6'>   6 <i><font color='green'> * \file</font></i>
+<a name='L7'>   7 <i><font color='green'> * \author Yeonkeun Kim &lt;yeonk@kaist.ac.kr&gt;</font></i>
+<a name='L8'>   8 <i><font color='green'> */</font></i>
+<a name='L9'>   9 
+<a name='L10'>  10 <font color='darkred'>#pragma</font> once
+<a name='L11'>  11 
+<a name='L12'>  12 <font color='darkred'>#define</font> <a href='../R/478.html' title='Multiple refered from 4 places.'>ETHERTYPE_LLDP</a> 0x88cc
+<a name='L13'>  13 
+<a name='L14'>  14 <b>struct</b> <a href='../R/4810.html' title='Multiple refered from 7 places.'>tlv_header</a> <font color='red'>{</font>
+<a name='L15'>  15     <b>union</b> <font color='red'>{</font>
+<a name='L16'>  16         <b>struct</b> <font color='red'>{</font>
+<a name='L17'>  17             <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>:9;
+<a name='L18'>  18             <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>:7; <i><font color='green'>/* One of the LLDP_TLVT_ */</font></i>
+<a name='L19'>  19         <font color='red'>}</font>;
+<a name='L20'>  20         <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>;
+<a name='L21'>  21     <font color='red'>}</font>;
+<a name='L22'>  22     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>[0];         <i><font color='green'>/* 0 ~ 511 bytes */</font></i>
+<a name='L23'>  23 <font color='red'>}</font>;
+<a name='L24'>  24 
+<a name='L25'>  25 <b>enum</b> lldp_tlv_type <font color='red'>{</font>
+<a name='L26'>  26     <i><font color='green'>/* Mandatory */</font></i>
+<a name='L27'>  27     <a href='../R/782.html' title='Multiple refered from 2 places.'>LLDP_TLVT_EOL</a> = 0,      <i><font color='green'>/* End of LLDPDU */</font></i>
+<a name='L28'>  28     <a href='../S/964.html#L92' title='Refered from 92 in components/topo_mgmt.c.'>LLDP_TLVT_CHASSISID</a>,    <i><font color='green'>/* Chassis ID */</font></i>
+<a name='L29'>  29     <a href='../R/783.html' title='Multiple refered from 2 places.'>LLDP_TLVT_PORTID</a>,       <i><font color='green'>/* Port ID */</font></i>
+<a name='L30'>  30     <a href='../S/964.html#L109' title='Refered from 109 in components/topo_mgmt.c.'>LLDP_TLVT_TTL</a>,          <i><font color='green'>/* Time To Live */</font></i>
+<a name='L31'>  31 
+<a name='L32'>  32     <i><font color='green'>/* Optional */</font></i>
+<a name='L33'>  33     LLDP_TLVT_PORT_DESC,    <i><font color='green'>/* Port Description */</font></i>
+<a name='L34'>  34     LLDP_TLVT_SYSTEM_NAME,  <i><font color='green'>/* System Name */</font></i>
+<a name='L35'>  35     <a href='../R/784.html' title='Multiple refered from 2 places.'>LLDP_TLVT_SYSTEM_DESC</a>,  <i><font color='green'>/* System Description */</font></i>
+<a name='L36'>  36     LLDP_TLVT_SYSTEM_CAPA,  <i><font color='green'>/* System Capabilities */</font></i>
+<a name='L37'>  37     LLDP_TLVT_MGMT_ADDR,    <i><font color='green'>/* Management Address */</font></i>
+<a name='L38'>  38 
+<a name='L39'>  39     LLDP_TLVT_ORGANIZ = 127 <i><font color='green'>/* Organizationally Specific TLVs */</font></i>
+<a name='L40'>  40 <font color='red'>}</font>;
+<a name='L41'>  41 
+<a name='L42'>  42 <b>typedef</b> <b>struct</b> _lldp_eol <font color='red'>{</font>
+<a name='L43'>  43     <b>struct</b> <a href='../D/9914.html' title='Multiple defined in 3 places.'>tlv_header</a> <a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>;
+<a name='L44'>  44 <font color='red'>}</font> <a href='../R/3386.html' title='Multiple refered from 2 places.'>lldp_eol</a>;
+<a name='L45'>  45 
+<a name='L46'>  46 <b>enum</b> lldp_chassis_id_subtype <font color='red'>{</font>
+<a name='L47'>  47     LLDP_CHASSISID_SUBTYPE_COMPONENT = 1,
+<a name='L48'>  48     LLDP_CHASSISID_SUBTYPE_IFALIAS,
+<a name='L49'>  49     LLDP_CHASSISID_SUBTYPE_PORT_COMPONENT,
+<a name='L50'>  50     <a href='../S/964.html#L94' title='Refered from 94 in components/topo_mgmt.c.'>LLDP_CHASSISID_SUBTYPE_MACADDR</a>,
+<a name='L51'>  51     LLDP_CHASSISID_SUBTYPE_NETADDR,
+<a name='L52'>  52     LLDP_CHASSISID_SUBTYPE_IFNAME,
+<a name='L53'>  53     LLDP_CHASSISID_SUBTYPE_LOCAL
+<a name='L54'>  54 <font color='red'>}</font>;
+<a name='L55'>  55 
+<a name='L56'>  56 <b>typedef</b> <b>struct</b> _lldp_chassis_id <font color='red'>{</font>
+<a name='L57'>  57     <b>struct</b> <a href='../D/9914.html' title='Multiple defined in 3 places.'>tlv_header</a> <a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>;
+<a name='L58'>  58     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/7146.html' title='Multiple used in 20 places.'>subtype</a>;  <i><font color='green'>/* One of the LLDP_CHASSISID_SUBTYPE_ */</font></i>
+<a name='L59'>  59     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>[0];  <i><font color='green'>/* 1 ~ 255 bytes */</font></i>
+<a name='L60'>  60 <font color='red'>}</font> <a href='../R/3385.html' title='Multiple refered from 2 places.'>lldp_chassis_id</a>;
+<a name='L61'>  61 
+<a name='L62'>  62 <b>enum</b> lldp_port_id_subtype <font color='red'>{</font>
+<a name='L63'>  63     LLDP_PORTID_SUBTYPE_IFALIAS = 1,
+<a name='L64'>  64     <a href='../R/780.html' title='Multiple refered from 2 places.'>LLDP_PORTID_SUBTYPE_COMPONENT</a>,
+<a name='L65'>  65     LLDP_PORTID_SUBTYPE_MACADDR,
+<a name='L66'>  66     LLDP_PORTID_SUBTYPE_NETADDR,
+<a name='L67'>  67     LLDP_PORTID_SUBTYPE_IFNAME,
+<a name='L68'>  68     LLDP_PORTID_SUBTYPE_AGENTCID,
+<a name='L69'>  69     LLDP_PORTID_SUBTYPE_LOCAL
+<a name='L70'>  70 <font color='red'>}</font>;
+<a name='L71'>  71 
+<a name='L72'>  72 <b>typedef</b> <b>struct</b> _lldp_port_id <font color='red'>{</font>
+<a name='L73'>  73     <b>struct</b> <a href='../D/9914.html' title='Multiple defined in 3 places.'>tlv_header</a> <a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>;
+<a name='L74'>  74     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/7146.html' title='Multiple used in 20 places.'>subtype</a>;  <i><font color='green'>/* One of the LLDP_PORTID_SUBTYPE_ */</font></i>
+<a name='L75'>  75     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>[0];  <i><font color='green'>/* 1 ~ 255 bytes */</font></i>
+<a name='L76'>  76 <font color='red'>}</font> <a href='../R/3387.html' title='Multiple refered from 3 places.'>lldp_port_id</a>;
+<a name='L77'>  77 
+<a name='L78'>  78 <b>typedef</b> <b>struct</b> _lldp_ttl <font color='red'>{</font>
+<a name='L79'>  79     <b>struct</b> <a href='../D/9914.html' title='Multiple defined in 3 places.'>tlv_header</a> <a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>;
+<a name='L80'>  80     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7506.html' title='Multiple used in 12 places.'>ttl</a>;
+<a name='L81'>  81 <font color='red'>}</font> <a href='../R/3389.html' title='Multiple refered from 2 places.'>lldp_ttl</a>;
+<a name='L82'>  82 
+<a name='L83'>  83 <b>typedef</b> <b>struct</b> _lldp_system_desc <font color='red'>{</font>
+<a name='L84'>  84     <b>struct</b> <a href='../D/9914.html' title='Multiple defined in 3 places.'>tlv_header</a> <a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>;
+<a name='L85'>  85     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>[0];
+<a name='L86'>  86 <font color='red'>}</font> <a href='../R/3388.html' title='Multiple refered from 3 places.'>lldp_system_desc</a>;
+<a name='L87'>  87 
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

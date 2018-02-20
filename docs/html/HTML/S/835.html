@@ -1,0 +1,349 @@
+<html>
+<head>
+<title>cbench/openflow/lib/socket-util.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/socket-util.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L56'>[^]</a><a href='#L311'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L56' title='Defined at 56.'>set_nonblocking</a>
+<li><a href='#L75' title='Defined at 75.'>set_socket_priority</a>
+<li><a href='#L83' title='Defined at 83.'>get_max_fds</a>
+<li><a href='#L105' title='Defined at 105.'>lookup_ip</a>
+<li><a href='#L127' title='Defined at 127.'>get_socket_error</a>
+<li><a href='#L140' title='Defined at 140.'>check_connection_completion</a>
+<li><a href='#L167' title='Defined at 167.'>drain_rcvbuf</a>
+<li><a href='#L207' title='Defined at 207.'>drain_fd</a>
+<li><a href='#L224' title='Defined at 224.'>make_sockaddr_un</a>
+<li><a href='#L241' title='Defined at 241.'>make_unix_socket</a>
+<li><a href='#L311' title='Defined at 311.'>get_unix_name_len</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> * </font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> * </font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> * </font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> * </font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> "<a href='863.html'>socket-util.h</a>"
+<a name='L36'>  36 <font color='darkred'>#include</font> &lt;arpa/inet.h&gt;
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;errno.h&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;fcntl.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> &lt;netdb.h&gt;
+<a name='L40'>  40 <font color='darkred'>#include</font> &lt;poll.h&gt;
+<a name='L41'>  41 <font color='darkred'>#include</font> &lt;stddef.h&gt;
+<a name='L42'>  42 <font color='darkred'>#include</font> &lt;stdio.h&gt;
+<a name='L43'>  43 <font color='darkred'>#include</font> &lt;string.h&gt;
+<a name='L44'>  44 <font color='darkred'>#include</font> &lt;sys/resource.h&gt;
+<a name='L45'>  45 <font color='darkred'>#include</font> &lt;sys/un.h&gt;
+<a name='L46'>  46 <font color='darkred'>#include</font> &lt;unistd.h&gt;
+<a name='L47'>  47 <font color='darkred'>#include</font> "<a href='888.html'>fatal-signal.h</a>"
+<a name='L48'>  48 <font color='darkred'>#include</font> "<a href='../I/69.html'>util.h</a>"
+<a name='L49'>  49 
+<a name='L50'>  50 <font color='darkred'>#include</font> "<a href='859.html'>vlog.h</a>"
+<a name='L51'>  51 <font color='darkred'>#define</font> <a href='../R/1643.html' title='Multiple refered from 13 places.'>THIS_MODULE</a> VLM_socket_util
+<a name='L52'>  52 
+<a name='L53'>  53 <i><font color='green'>/* Sets 'fd' to non-blocking mode.  Returns 0 if successful, otherwise a</font></i>
+<a name='L54'>  54 <i><font color='green'> * positive errno value. */</font></i>
+<a name='L55'>  55 <b>int</b>
+<a name='L56'>  56 <a href='../R/4430.html' title='Multiple refered from 14 places.'>set_nonblocking</a>(<b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>)
+<a name='L57'>  57 <font color='red'>{</font>
+<a name='L58'>  58     <b>int</b> <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a> = <a href='../Y/3013.html' title='Multiple used in 29 places.'>fcntl</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/341.html' title='Multiple used in 12 places.'>F_GETFL</a>, 0);
+<a name='L59'>  59     <b>if</b> (<a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a> != -1) <font color='red'>{</font>
+<a name='L60'>  60         <b>if</b> (<a href='../Y/3013.html' title='Multiple used in 29 places.'>fcntl</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/344.html' title='Multiple used in 13 places.'>F_SETFL</a>, <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a> | <a href='../Y/634.html' title='Multiple used in 13 places.'>O_NONBLOCK</a>) != -1) <font color='red'>{</font>
+<a name='L61'>  61             <b>return</b> 0;
+<a name='L62'>  62         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L63'>  63             <a href='../S/859.html#L150' title='Defined at 150 in cbench/openflow/lib/vlog.h.'>VLOG_ERR</a>("fcntl(F_SETFL) failed: %s", <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>));
+<a name='L64'>  64             <b>return</b> <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>;
+<a name='L65'>  65         <font color='red'>}</font>
+<a name='L66'>  66     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L67'>  67         <a href='../S/859.html#L150' title='Defined at 150 in cbench/openflow/lib/vlog.h.'>VLOG_ERR</a>("fcntl(F_GETFL) failed: %s", <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>));
+<a name='L68'>  68         <b>return</b> <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>;
+<a name='L69'>  69     <font color='red'>}</font>
+<a name='L70'>  70 <font color='red'>}</font>
+<a name='L71'>  71 
+<a name='L72'>  72 <i><font color='green'>/** Sets the priority for the socket. Returns 0 if successful,</font></i>
+<a name='L73'>  73 <i><font color='green'> * otherwise a positive errno value */</font></i>
+<a name='L74'>  74 <b>int</b>
+<a name='L75'>  75 <a href='../R/4435.html' title='Multiple refered from 2 places.'>set_socket_priority</a>(<b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <b>int</b> <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>)
+<a name='L76'>  76 <font color='red'>{</font>
+<a name='L77'>  77     <b>int</b> <a href='../Y/5908.html' title='Multiple used in 2 places.'>prio</a> = <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>;
+<a name='L78'>  78     <b>return</b> <a href='../Y/6713.html' title='Multiple used in 17 places.'>setsockopt</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/831.html' title='Multiple used in 17 places.'>SOL_SOCKET</a>, SO_PRIORITY, (<b>char</b> *)&amp;<a href='../Y/5908.html' title='Multiple used in 2 places.'>prio</a>, <b>sizeof</b>(<a href='../Y/5908.html' title='Multiple used in 2 places.'>prio</a>));
+<a name='L79'>  79 <font color='red'>}</font>
+<a name='L80'>  80 
+<a name='L81'>  81 <i><font color='green'>/* Returns the maximum valid FD value, plus 1. */</font></i>
+<a name='L82'>  82 <b>int</b>
+<a name='L83'>  83 <a href='../R/3171.html' title='Multiple refered from 2 places.'>get_max_fds</a>(<b>void</b>)
+<a name='L84'>  84 <font color='red'>{</font>
+<a name='L85'>  85     <b>static</b> <b>int</b> <a href='../Y/4368.html' title='Multiple used in 5 places.'>max_fds</a> = -1;
+<a name='L86'>  86     <b>if</b> (<a href='../Y/4368.html' title='Multiple used in 5 places.'>max_fds</a> &lt; 0) <font color='red'>{</font>
+<a name='L87'>  87         <b>struct</b> rlimit <a href='../Y/6224.html' title='Multiple used in 137 places.'>r</a>;
+<a name='L88'>  88         <b>if</b> (!getrlimit(RLIMIT_NOFILE, &amp;<a href='../Y/6224.html' title='Multiple used in 137 places.'>r</a>)
+<a name='L89'>  89             &amp;&amp; <a href='../Y/6224.html' title='Multiple used in 137 places.'>r</a>.<a href='../Y/6451.html' title='Multiple used in 4 places.'>rlim_cur</a> != RLIM_INFINITY
+<a name='L90'>  90             &amp;&amp; <a href='../Y/6224.html' title='Multiple used in 137 places.'>r</a>.<a href='../Y/6451.html' title='Multiple used in 4 places.'>rlim_cur</a> != RLIM_SAVED_MAX
+<a name='L91'>  91             &amp;&amp; <a href='../Y/6224.html' title='Multiple used in 137 places.'>r</a>.<a href='../Y/6451.html' title='Multiple used in 4 places.'>rlim_cur</a> != RLIM_SAVED_CUR) <font color='red'>{</font>
+<a name='L92'>  92             <a href='../Y/4368.html' title='Multiple used in 5 places.'>max_fds</a> = <a href='../Y/6224.html' title='Multiple used in 137 places.'>r</a>.<a href='../Y/6451.html' title='Multiple used in 4 places.'>rlim_cur</a>;
+<a name='L93'>  93         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L94'>  94             <a href='../S/859.html#L151' title='Defined at 151 in cbench/openflow/lib/vlog.h.'>VLOG_WARN</a>("failed to obtain fd limit, defaulting to 1024");
+<a name='L95'>  95             <a href='../Y/4368.html' title='Multiple used in 5 places.'>max_fds</a> = 1024;
+<a name='L96'>  96         <font color='red'>}</font>
+<a name='L97'>  97     <font color='red'>}</font>
+<a name='L98'>  98     <b>return</b> <a href='../Y/4368.html' title='Multiple used in 5 places.'>max_fds</a>;
+<a name='L99'>  99 <font color='red'>}</font>
+<a name='L100'> 100 
+<a name='L101'> 101 <i><font color='green'>/* Translates 'host_name', which may be a DNS name or an IP address, into a</font></i>
+<a name='L102'> 102 <i><font color='green'> * numeric IP address in '*addr'.  Returns 0 if successful, otherwise a</font></i>
+<a name='L103'> 103 <i><font color='green'> * positive errno value. */</font></i>
+<a name='L104'> 104 <b>int</b>
+<a name='L105'> 105 <a href='../R/3431.html' title='Multiple refered from 4 places.'>lookup_ip</a>(<b>const</b> <b>char</b> *<a href='../Y/3663.html' title='Multiple used in 13 places.'>host_name</a>, <b>struct</b> <a href='../Y/3768.html' title='Multiple used in 89 places.'>in_addr</a> *<a href='../Y/1322.html' title='Multiple used in 61 places.'>addr</a>) 
+<a name='L106'> 106 <font color='red'>{</font>
+<a name='L107'> 107     <b>if</b> (!<a href='../Y/3804.html' title='Multiple used in 11 places.'>inet_aton</a>(<a href='../Y/3663.html' title='Multiple used in 13 places.'>host_name</a>, <a href='../Y/1322.html' title='Multiple used in 61 places.'>addr</a>)) <font color='red'>{</font>
+<a name='L108'> 108         <b>struct</b> hostent *<a href='../Y/3591.html' title='Multiple used in 3 places.'>he</a> = gethostbyname(<a href='../Y/3663.html' title='Multiple used in 13 places.'>host_name</a>);
+<a name='L109'> 109         <b>if</b> (<a href='../Y/3591.html' title='Multiple used in 3 places.'>he</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L110'> 110             <b>struct</b> <a href='../D/10099.html' title='Multiple defined in 2 places.'>vlog_rate_limit</a> <a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a> = <a href='../S/859.html#L107' title='Defined at 107 in cbench/openflow/lib/vlog.h.'>VLOG_RATE_LIMIT_INIT</a>(1, 5);
+<a name='L111'> 111             <a href='../S/859.html#L170' title='Defined at 170 in cbench/openflow/lib/vlog.h.'>VLOG_ERR_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "gethostbyname(%s): %s", <a href='../Y/3663.html' title='Multiple used in 13 places.'>host_name</a>,
+<a name='L112'> 112                         (<a href='../Y/3529.html' title='Multiple used in 4 places.'>h_errno</a> == HOST_NOT_FOUND ? "host not found"
+<a name='L113'> 113                          : <a href='../Y/3529.html' title='Multiple used in 4 places.'>h_errno</a> == TRY_AGAIN ? "try again"
+<a name='L114'> 114                          : <a href='../Y/3529.html' title='Multiple used in 4 places.'>h_errno</a> == NO_RECOVERY ? "non-recoverable error"
+<a name='L115'> 115                          : <a href='../Y/3529.html' title='Multiple used in 4 places.'>h_errno</a> == NO_ADDRESS ? "no address"
+<a name='L116'> 116                          : "unknown error"));
+<a name='L117'> 117             <b>return</b> <a href='../Y/275.html' title='Multiple used in 14 places.'>ENOENT</a>;
+<a name='L118'> 118         <font color='red'>}</font>
+<a name='L119'> 119         <a href='../Y/1322.html' title='Multiple used in 61 places.'>addr</a>-&gt;<a href='../Y/6559.html' title='Multiple used in 125 places.'>s_addr</a> = *(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> *) <a href='../Y/3591.html' title='Multiple used in 3 places.'>he</a>-&gt;h_addr;
+<a name='L120'> 120     <font color='red'>}</font>
+<a name='L121'> 121     <b>return</b> 0;
+<a name='L122'> 122 <font color='red'>}</font>
+<a name='L123'> 123 
+<a name='L124'> 124 <i><font color='green'>/* Returns the error condition associated with socket 'fd' and resets the</font></i>
+<a name='L125'> 125 <i><font color='green'> * socket's error status. */</font></i>
+<a name='L126'> 126 <b>int</b>
+<a name='L127'> 127 <a href='../R/3185.html' title='Multiple refered from 2 places.'>get_socket_error</a>(<b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>) 
+<a name='L128'> 128 <font color='red'>{</font>
+<a name='L129'> 129     <b>int</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L130'> 130     <a href='../Y/6904.html' title='Multiple used in 17 places.'>socklen_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a> = <b>sizeof</b>(<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>);
+<a name='L131'> 131     <b>if</b> (<a href='../Y/3428.html' title='Multiple used in 2 places.'>getsockopt</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/831.html' title='Multiple used in 17 places.'>SOL_SOCKET</a>, SO_ERROR, &amp;<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>, &amp;<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>) &lt; 0) <font color='red'>{</font>
+<a name='L132'> 132         <b>struct</b> <a href='../D/10099.html' title='Multiple defined in 2 places.'>vlog_rate_limit</a> <a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a> = <a href='../S/859.html#L107' title='Defined at 107 in cbench/openflow/lib/vlog.h.'>VLOG_RATE_LIMIT_INIT</a>(5, 10);
+<a name='L133'> 133         <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> = <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>;
+<a name='L134'> 134         <a href='../S/859.html#L170' title='Defined at 170 in cbench/openflow/lib/vlog.h.'>VLOG_ERR_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "getsockopt(SO_ERROR): %s", <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>));
+<a name='L135'> 135     <font color='red'>}</font>
+<a name='L136'> 136     <b>return</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L137'> 137 <font color='red'>}</font>
+<a name='L138'> 138 
+<a name='L139'> 139 <b>int</b>
+<a name='L140'> 140 <a href='../R/2339.html' title='Multiple refered from 4 places.'>check_connection_completion</a>(<b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>) 
+<a name='L141'> 141 <font color='red'>{</font>
+<a name='L142'> 142     <b>struct</b> <a href='../Y/5784.html' title='Multiple used in 34 places.'>pollfd</a> <a href='../Y/5723.html' title='Multiple used in 29 places.'>pfd</a>;
+<a name='L143'> 143     <b>int</b> <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>;
+<a name='L144'> 144 
+<a name='L145'> 145     <a href='../Y/5723.html' title='Multiple used in 29 places.'>pfd</a>.<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a> = <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>;
+<a name='L146'> 146     <a href='../Y/5723.html' title='Multiple used in 29 places.'>pfd</a>.<a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a> = <a href='../Y/690.html' title='Multiple used in 21 places.'>POLLOUT</a>;
+<a name='L147'> 147     <b>do</b> <font color='red'>{</font>
+<a name='L148'> 148         <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../Y/5779.html' title='Multiple used in 7 places.'>poll</a>(&amp;<a href='../Y/5723.html' title='Multiple used in 29 places.'>pfd</a>, 1, 0);
+<a name='L149'> 149     <font color='red'>}</font> <b>while</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> &lt; 0 &amp;&amp; <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a> == <a href='../Y/266.html' title='Multiple used in 24 places.'>EINTR</a>);
+<a name='L150'> 150     <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> == 1) <font color='red'>{</font>
+<a name='L151'> 151         <b>return</b> <a href='../S/835.html#L127' title='Defined at 127 in cbench/openflow/lib/socket-util.c.'>get_socket_error</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>);
+<a name='L152'> 152     <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> &lt; 0) <font color='red'>{</font>
+<a name='L153'> 153         <b>static</b> <b>struct</b> <a href='../D/10099.html' title='Multiple defined in 2 places.'>vlog_rate_limit</a> <a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a> = <a href='../S/859.html#L107' title='Defined at 107 in cbench/openflow/lib/vlog.h.'>VLOG_RATE_LIMIT_INIT</a>(5, 10);
+<a name='L154'> 154         <a href='../S/859.html#L170' title='Defined at 170 in cbench/openflow/lib/vlog.h.'>VLOG_ERR_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "poll: %s", <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>));
+<a name='L155'> 155         <b>return</b> <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>;
+<a name='L156'> 156     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L157'> 157         <b>return</b> <a href='../Y/259.html' title='Multiple used in 75 places.'>EAGAIN</a>;
+<a name='L158'> 158     <font color='red'>}</font>
+<a name='L159'> 159 <font color='red'>}</font>
+<a name='L160'> 160 
+<a name='L161'> 161 <i><font color='green'>/* Drain all the data currently in the receive queue of a datagram socket (and</font></i>
+<a name='L162'> 162 <i><font color='green'> * possibly additional data).  There is no way to know how many packets are in</font></i>
+<a name='L163'> 163 <i><font color='green'> * the receive queue, but we do know that the total number of bytes queued does</font></i>
+<a name='L164'> 164 <i><font color='green'> * not exceed the receive buffer size, so we pull packets until none are left</font></i>
+<a name='L165'> 165 <i><font color='green'> * or we've read that many bytes. */</font></i>
+<a name='L166'> 166 <b>int</b>
+<a name='L167'> 167 <a href='../R/2827.html' title='Multiple refered from 3 places.'>drain_rcvbuf</a>(<b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>)
+<a name='L168'> 168 <font color='red'>{</font>
+<a name='L169'> 169     <a href='../Y/6904.html' title='Multiple used in 17 places.'>socklen_t</a> <a href='../Y/6274.html' title='Multiple used in 3 places.'>rcvbuf_len</a>;
+<a name='L170'> 170     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6273.html' title='Multiple used in 6 places.'>rcvbuf</a>;
+<a name='L171'> 171 
+<a name='L172'> 172     <a href='../Y/6274.html' title='Multiple used in 3 places.'>rcvbuf_len</a> = <b>sizeof</b> <a href='../Y/6273.html' title='Multiple used in 6 places.'>rcvbuf</a>;
+<a name='L173'> 173     <b>if</b> (<a href='../Y/3428.html' title='Multiple used in 2 places.'>getsockopt</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/831.html' title='Multiple used in 17 places.'>SOL_SOCKET</a>, <a href='../Y/839.html' title='Multiple used in 2 places.'>SO_RCVBUF</a>, &amp;<a href='../Y/6273.html' title='Multiple used in 6 places.'>rcvbuf</a>, &amp;<a href='../Y/6274.html' title='Multiple used in 3 places.'>rcvbuf_len</a>) &lt; 0) <font color='red'>{</font>
+<a name='L174'> 174         <b>static</b> <b>struct</b> <a href='../D/10099.html' title='Multiple defined in 2 places.'>vlog_rate_limit</a> <a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a> = <a href='../S/859.html#L107' title='Defined at 107 in cbench/openflow/lib/vlog.h.'>VLOG_RATE_LIMIT_INIT</a>(5, 10);
+<a name='L175'> 175         <a href='../S/859.html#L170' title='Defined at 170 in cbench/openflow/lib/vlog.h.'>VLOG_ERR_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "getsockopt(SO_RCVBUF) failed: %s", <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>));
+<a name='L176'> 176         <b>return</b> <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>;
+<a name='L177'> 177     <font color='red'>}</font>
+<a name='L178'> 178     <b>while</b> (<a href='../Y/6273.html' title='Multiple used in 6 places.'>rcvbuf</a> &gt; 0) <font color='red'>{</font>
+<a name='L179'> 179         <i><font color='green'>/* In Linux, specifying MSG_TRUNC in the flags argument causes the</font></i>
+<a name='L180'> 180 <i><font color='green'>         * datagram length to be returned, even if that is longer than the</font></i>
+<a name='L181'> 181 <i><font color='green'>         * buffer provided.  Thus, we can use a 1-byte buffer to discard the</font></i>
+<a name='L182'> 182 <i><font color='green'>         * incoming datagram and still be able to account how many bytes were</font></i>
+<a name='L183'> 183 <i><font color='green'>         * removed from the receive buffer.</font></i>
+<a name='L184'> 184 <i><font color='green'>         *</font></i>
+<a name='L185'> 185 <i><font color='green'>         * On other Unix-like OSes, MSG_TRUNC has no effect in the flags</font></i>
+<a name='L186'> 186 <i><font color='green'>         * argument. */</font></i>
+<a name='L187'> 187 <font color='darkred'>#ifdef</font> <a href='../Y/1167.html' title='Multiple used in 2 places.'>__linux__</a>
+<a name='L188'> 188 <font color='darkred'>#define</font> <a href='../R/155.html' title='Multiple refered from 9 places.'>BUFFER_SIZE</a> 1
+<a name='L189'> 189 <font color='darkred'>#else</font>
+<a name='L190'> 190 <font color='darkred'>#define</font> <a href='../R/155.html' title='Multiple refered from 9 places.'>BUFFER_SIZE</a> 2048
+<a name='L191'> 191 <font color='darkred'>#endif</font>
+<a name='L192'> 192         <b>char</b> <a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>[<a href='../D/519.html' title='Multiple defined in 5 places.'>BUFFER_SIZE</a>];
+<a name='L193'> 193         <a href='../Y/6954.html' title='Multiple used in 20 places.'>ssize_t</a> <a href='../Y/4574.html' title='Multiple used in 31 places.'>n_bytes</a> = <a href='../Y/6310.html' title='Multiple used in 12 places.'>recv</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>, <b>sizeof</b> <a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>,
+<a name='L194'> 194                                <a href='../Y/548.html' title='Multiple used in 2 places.'>MSG_TRUNC</a> | <a href='../Y/546.html' title='Multiple used in 5 places.'>MSG_DONTWAIT</a>);
+<a name='L195'> 195         <b>if</b> (<a href='../Y/4574.html' title='Multiple used in 31 places.'>n_bytes</a> &lt;= 0 || <a href='../Y/4574.html' title='Multiple used in 31 places.'>n_bytes</a> &gt;= <a href='../Y/6273.html' title='Multiple used in 6 places.'>rcvbuf</a>) <font color='red'>{</font>
+<a name='L196'> 196             <b>break</b>;
+<a name='L197'> 197         <font color='red'>}</font>
+<a name='L198'> 198         <a href='../Y/6273.html' title='Multiple used in 6 places.'>rcvbuf</a> -= <a href='../Y/4574.html' title='Multiple used in 31 places.'>n_bytes</a>;
+<a name='L199'> 199     <font color='red'>}</font>
+<a name='L200'> 200     <b>return</b> 0;
+<a name='L201'> 201 <font color='red'>}</font>
+<a name='L202'> 202 
+<a name='L203'> 203 <i><font color='green'>/* Reads and discards up to 'n' datagrams from 'fd', stopping as soon as no</font></i>
+<a name='L204'> 204 <i><font color='green'> * more data can be immediately read.  ('fd' should therefore be in</font></i>
+<a name='L205'> 205 <i><font color='green'> * non-blocking mode.)*/</font></i>
+<a name='L206'> 206 <b>void</b>
+<a name='L207'> 207 <a href='../R/2826.html' title='Multiple refered from 2 places.'>drain_fd</a>(<b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4609.html' title='Multiple used in 3 places.'>n_packets</a>)
+<a name='L208'> 208 <font color='red'>{</font>
+<a name='L209'> 209     <b>for</b> (; <a href='../Y/4609.html' title='Multiple used in 3 places.'>n_packets</a> &gt; 0; <a href='../Y/4609.html' title='Multiple used in 3 places.'>n_packets</a>--) <font color='red'>{</font>
+<a name='L210'> 210         <i><font color='green'>/* 'buffer' only needs to be 1 byte long in most circumstances.  This</font></i>
+<a name='L211'> 211 <i><font color='green'>         * size is defensive against the possibility that we someday want to</font></i>
+<a name='L212'> 212 <i><font color='green'>         * use a Linux tap device without TUN_NO_PI, in which case a buffer</font></i>
+<a name='L213'> 213 <i><font color='green'>         * smaller than sizeof(struct tun_pi) will give EINVAL on read. */</font></i>
+<a name='L214'> 214         <b>char</b> <a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>[128];
+<a name='L215'> 215         <b>if</b> (<a href='../Y/6277.html' title='Multiple used in 17 places.'>read</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>, <b>sizeof</b> <a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>) &lt;= 0) <font color='red'>{</font>
+<a name='L216'> 216             <b>break</b>;
+<a name='L217'> 217         <font color='red'>}</font>
+<a name='L218'> 218     <font color='red'>}</font>
+<a name='L219'> 219 <font color='red'>}</font>
+<a name='L220'> 220 
+<a name='L221'> 221 <i><font color='green'>/* Stores in '*un' a sockaddr_un that refers to file 'name'.  Stores in</font></i>
+<a name='L222'> 222 <i><font color='green'> * '*un_len' the size of the sockaddr_un. */</font></i>
+<a name='L223'> 223 <b>static</b> <b>void</b>
+<a name='L224'> 224 <a href='../R/3496.html' title='Multiple refered from 2 places.'>make_sockaddr_un</a>(<b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>, <b>struct</b> <a href='../Y/6900.html' title='Multiple used in 13 places.'>sockaddr_un</a>* <a href='../Y/7632.html' title='Multiple used in 23 places.'>un</a>, <a href='../Y/6904.html' title='Multiple used in 17 places.'>socklen_t</a> *<a href='../Y/7633.html' title='Multiple used in 14 places.'>un_len</a>)
+<a name='L225'> 225 <font color='red'>{</font>
+<a name='L226'> 226     <a href='../Y/7632.html' title='Multiple used in 23 places.'>un</a>-&gt;<a href='../Y/7164.html' title='Multiple used in 5 places.'>sun_family</a> = <a href='../Y/21.html' title='Multiple used in 5 places.'>AF_UNIX</a>;
+<a name='L227'> 227     <a href='../Y/7102.html' title='Multiple used in 59 places.'>strncpy</a>(<a href='../Y/7632.html' title='Multiple used in 23 places.'>un</a>-&gt;<a href='../Y/7166.html' title='Multiple used in 17 places.'>sun_path</a>, <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>, <b>sizeof</b> <a href='../Y/7632.html' title='Multiple used in 23 places.'>un</a>-&gt;<a href='../Y/7166.html' title='Multiple used in 17 places.'>sun_path</a>);
+<a name='L228'> 228     <a href='../Y/7632.html' title='Multiple used in 23 places.'>un</a>-&gt;<a href='../Y/7166.html' title='Multiple used in 17 places.'>sun_path</a>[<b>sizeof</b> <a href='../Y/7632.html' title='Multiple used in 23 places.'>un</a>-&gt;<a href='../Y/7166.html' title='Multiple used in 17 places.'>sun_path</a> - 1] = '\0';
+<a name='L229'> 229     *<a href='../Y/7633.html' title='Multiple used in 14 places.'>un_len</a> = (<a href='../Y/5075.html' title='Multiple used in 34 places.'>offsetof</a>(<b>struct</b> <a href='../Y/6900.html' title='Multiple used in 13 places.'>sockaddr_un</a>, <a href='../Y/7166.html' title='Multiple used in 17 places.'>sun_path</a>)
+<a name='L230'> 230                 + <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a> (<a href='../Y/7632.html' title='Multiple used in 23 places.'>un</a>-&gt;<a href='../Y/7166.html' title='Multiple used in 17 places.'>sun_path</a>) + 1);
+<a name='L231'> 231 <font color='red'>}</font>
+<a name='L232'> 232 
+<a name='L233'> 233 <i><font color='green'>/* Creates a Unix domain socket in the given 'style' (either SOCK_DGRAM or</font></i>
+<a name='L234'> 234 <i><font color='green'> * SOCK_STREAM) that is bound to '*bind_path' (if 'bind_path' is non-null) and</font></i>
+<a name='L235'> 235 <i><font color='green'> * connected to '*connect_path' (if 'connect_path' is non-null).  If 'nonblock'</font></i>
+<a name='L236'> 236 <i><font color='green'> * is true, the socket is made non-blocking.  If 'passcred' is true, the socket</font></i>
+<a name='L237'> 237 <i><font color='green'> * is configured to receive SCM_CREDENTIALS control messages.</font></i>
+<a name='L238'> 238 <i><font color='green'> *</font></i>
+<a name='L239'> 239 <i><font color='green'> * Returns the socket's fd if successful, otherwise a negative errno value. */</font></i>
+<a name='L240'> 240 <b>int</b>
+<a name='L241'> 241 <a href='../R/3501.html' title='Multiple refered from 5 places.'>make_unix_socket</a>(<b>int</b> <a href='../Y/7121.html' title='Multiple used in 3 places.'>style</a>, <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/4927.html' title='Multiple used in 3 places.'>nonblock</a>, <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/5650.html' title='Multiple used in 3 places.'>passcred</a> <a href='../D/5808.html' title='Multiple defined in 5 places.'>UNUSED</a>,
+<a name='L242'> 242                  <b>const</b> <b>char</b> *<a href='../Y/1623.html' title='Multiple used in 19 places.'>bind_path</a>, <b>const</b> <b>char</b> *<a href='../Y/2097.html' title='Multiple used in 21 places.'>connect_path</a>)
+<a name='L243'> 243 <font color='red'>{</font>
+<a name='L244'> 244     <b>int</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L245'> 245     <b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>;
+<a name='L246'> 246 
+<a name='L247'> 247     <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a> = <a href='../Y/6901.html' title='Multiple used in 21 places.'>socket</a>(PF_UNIX, <a href='../Y/7121.html' title='Multiple used in 3 places.'>style</a>, 0);
+<a name='L248'> 248     <b>if</b> (<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a> &lt; 0) <font color='red'>{</font>
+<a name='L249'> 249         <b>return</b> -<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>;
+<a name='L250'> 250     <font color='red'>}</font>
+<a name='L251'> 251 
+<a name='L252'> 252     <i><font color='green'>/* Set nonblocking mode right away, if we want it.  This prevents blocking</font></i>
+<a name='L253'> 253 <i><font color='green'>     * in connect(), if connect_path != NULL.  (In turn, that's a corner case:</font></i>
+<a name='L254'> 254 <i><font color='green'>     * it will only happen if style is SOCK_STREAM or SOCK_SEQPACKET, and only</font></i>
+<a name='L255'> 255 <i><font color='green'>     * if a backlog of un-accepted connections has built up in the kernel.)  */</font></i>
+<a name='L256'> 256     <b>if</b> (<a href='../Y/4927.html' title='Multiple used in 3 places.'>nonblock</a>) <font color='red'>{</font>
+<a name='L257'> 257         <b>int</b> <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a> = <a href='../Y/3013.html' title='Multiple used in 29 places.'>fcntl</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/341.html' title='Multiple used in 12 places.'>F_GETFL</a>, 0);
+<a name='L258'> 258         <b>if</b> (<a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a> == -1) <font color='red'>{</font>
+<a name='L259'> 259             <b>goto</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L260'> 260         <font color='red'>}</font>
+<a name='L261'> 261         <b>if</b> (<a href='../Y/3013.html' title='Multiple used in 29 places.'>fcntl</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/344.html' title='Multiple used in 13 places.'>F_SETFL</a>, <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a> | <a href='../Y/634.html' title='Multiple used in 13 places.'>O_NONBLOCK</a>) == -1) <font color='red'>{</font>
+<a name='L262'> 262             <b>goto</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L263'> 263         <font color='red'>}</font>
+<a name='L264'> 264     <font color='red'>}</font>
+<a name='L265'> 265 
+<a name='L266'> 266     <b>if</b> (<a href='../Y/1623.html' title='Multiple used in 19 places.'>bind_path</a>) <font color='red'>{</font>
+<a name='L267'> 267         <b>struct</b> <a href='../Y/6900.html' title='Multiple used in 13 places.'>sockaddr_un</a> <a href='../Y/7632.html' title='Multiple used in 23 places.'>un</a>;
+<a name='L268'> 268         <a href='../Y/6904.html' title='Multiple used in 17 places.'>socklen_t</a> <a href='../Y/7633.html' title='Multiple used in 14 places.'>un_len</a>;
+<a name='L269'> 269         <a href='../S/835.html#L224' title='Defined at 224 in cbench/openflow/lib/socket-util.c.'>make_sockaddr_un</a>(<a href='../Y/1623.html' title='Multiple used in 19 places.'>bind_path</a>, &amp;<a href='../Y/7632.html' title='Multiple used in 23 places.'>un</a>, &amp;<a href='../Y/7633.html' title='Multiple used in 14 places.'>un_len</a>);
+<a name='L270'> 270         <b>if</b> (<a href='../Y/7645.html' title='Multiple used in 9 places.'>unlink</a>(<a href='../Y/7632.html' title='Multiple used in 23 places.'>un</a>.<a href='../Y/7166.html' title='Multiple used in 17 places.'>sun_path</a>) &amp;&amp; <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a> != <a href='../Y/275.html' title='Multiple used in 14 places.'>ENOENT</a>) <font color='red'>{</font>
+<a name='L271'> 271             <a href='../S/859.html#L151' title='Defined at 151 in cbench/openflow/lib/vlog.h.'>VLOG_WARN</a>("unlinking \"%s\": %s\n", <a href='../Y/7632.html' title='Multiple used in 23 places.'>un</a>.<a href='../Y/7166.html' title='Multiple used in 17 places.'>sun_path</a>, <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>));
+<a name='L272'> 272         <font color='red'>}</font>
+<a name='L273'> 273         <a href='../S/891.html#L194' title='Defined at 194 in cbench/openflow/lib/fatal-signal.c.'>fatal_signal_add_file_to_unlink</a>(<a href='../Y/1623.html' title='Multiple used in 19 places.'>bind_path</a>);
+<a name='L274'> 274         <b>if</b> (<a href='../Y/1622.html' title='Multiple used in 14 places.'>bind</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, (<b>struct</b> <a href='../Y/6895.html' title='Multiple used in 43 places.'>sockaddr</a>*) &amp;<a href='../Y/7632.html' title='Multiple used in 23 places.'>un</a>, <a href='../Y/7633.html' title='Multiple used in 14 places.'>un_len</a>)
+<a name='L275'> 275             || fchmod(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, S_IRWXU)) <font color='red'>{</font>
+<a name='L276'> 276             <b>goto</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L277'> 277         <font color='red'>}</font>
+<a name='L278'> 278     <font color='red'>}</font>
+<a name='L279'> 279 
+<a name='L280'> 280     <b>if</b> (<a href='../Y/2097.html' title='Multiple used in 21 places.'>connect_path</a>) <font color='red'>{</font>
+<a name='L281'> 281         <b>struct</b> <a href='../Y/6900.html' title='Multiple used in 13 places.'>sockaddr_un</a> <a href='../Y/7632.html' title='Multiple used in 23 places.'>un</a>;
+<a name='L282'> 282         <a href='../Y/6904.html' title='Multiple used in 17 places.'>socklen_t</a> <a href='../Y/7633.html' title='Multiple used in 14 places.'>un_len</a>;
+<a name='L283'> 283         <a href='../S/835.html#L224' title='Defined at 224 in cbench/openflow/lib/socket-util.c.'>make_sockaddr_un</a>(<a href='../Y/2097.html' title='Multiple used in 21 places.'>connect_path</a>, &amp;<a href='../Y/7632.html' title='Multiple used in 23 places.'>un</a>, &amp;<a href='../Y/7633.html' title='Multiple used in 14 places.'>un_len</a>);
+<a name='L284'> 284         <b>if</b> (<a href='../Y/2093.html' title='Multiple used in 10 places.'>connect</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, (<b>struct</b> <a href='../Y/6895.html' title='Multiple used in 43 places.'>sockaddr</a>*) &amp;<a href='../Y/7632.html' title='Multiple used in 23 places.'>un</a>, <a href='../Y/7633.html' title='Multiple used in 14 places.'>un_len</a>)
+<a name='L285'> 285             &amp;&amp; <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a> != <a href='../Y/265.html' title='Multiple used in 6 places.'>EINPROGRESS</a>) <font color='red'>{</font>
+<a name='L286'> 286             <b>goto</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L287'> 287         <font color='red'>}</font>
+<a name='L288'> 288     <font color='red'>}</font>
+<a name='L289'> 289 
+<a name='L290'> 290 <font color='darkred'>#ifdef</font> <a href='../Y/758.html' title='Multiple used in 6 places.'>SCM_CREDENTIALS</a>
+<a name='L291'> 291     <b>if</b> (<a href='../Y/5650.html' title='Multiple used in 3 places.'>passcred</a>) <font color='red'>{</font>
+<a name='L292'> 292         <b>int</b> <a href='../Y/2662.html' title='Multiple used in 11 places.'>enable</a> = 1;
+<a name='L293'> 293         <b>if</b> (<a href='../Y/6713.html' title='Multiple used in 17 places.'>setsockopt</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/831.html' title='Multiple used in 17 places.'>SOL_SOCKET</a>, SO_PASSCRED, &amp;<a href='../Y/2662.html' title='Multiple used in 11 places.'>enable</a>, <b>sizeof</b>(<a href='../Y/2662.html' title='Multiple used in 11 places.'>enable</a>))) <font color='red'>{</font>
+<a name='L294'> 294             <b>goto</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L295'> 295         <font color='red'>}</font>
+<a name='L296'> 296     <font color='red'>}</font>
+<a name='L297'> 297 <font color='darkred'>#endif</font>
+<a name='L298'> 298 
+<a name='L299'> 299     <b>return</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>;
+<a name='L300'> 300 
+<a name='L301'> 301 <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>:
+<a name='L302'> 302     <b>if</b> (<a href='../Y/1623.html' title='Multiple used in 19 places.'>bind_path</a>) <font color='red'>{</font>
+<a name='L303'> 303         <a href='../S/891.html#L213' title='Defined at 213 in cbench/openflow/lib/fatal-signal.c.'>fatal_signal_remove_file_to_unlink</a>(<a href='../Y/1623.html' title='Multiple used in 19 places.'>bind_path</a>);
+<a name='L304'> 304     <font color='red'>}</font>
+<a name='L305'> 305     <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> = <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>;
+<a name='L306'> 306     <a href='../Y/1918.html' title='Multiple used in 102 places.'>close</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>);
+<a name='L307'> 307     <b>return</b> -<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L308'> 308 <font color='red'>}</font>
+<a name='L309'> 309 
+<a name='L310'> 310 <b>int</b>
+<a name='L311'> 311 <a href='../R/3187.html' title='Multiple refered from 2 places.'>get_unix_name_len</a>(<a href='../Y/6904.html' title='Multiple used in 17 places.'>socklen_t</a> <a href='../Y/7165.html' title='Multiple used in 4 places.'>sun_len</a>)
+<a name='L312'> 312 <font color='red'>{</font>
+<a name='L313'> 313     <b>return</b> (<a href='../Y/7165.html' title='Multiple used in 4 places.'>sun_len</a> &gt;= <a href='../Y/5075.html' title='Multiple used in 34 places.'>offsetof</a>(<b>struct</b> <a href='../Y/6900.html' title='Multiple used in 13 places.'>sockaddr_un</a>, <a href='../Y/7166.html' title='Multiple used in 17 places.'>sun_path</a>)
+<a name='L314'> 314             ? <a href='../Y/7165.html' title='Multiple used in 4 places.'>sun_len</a> - <a href='../Y/5075.html' title='Multiple used in 34 places.'>offsetof</a>(<b>struct</b> <a href='../Y/6900.html' title='Multiple used in 13 places.'>sockaddr_un</a>, <a href='../Y/7166.html' title='Multiple used in 17 places.'>sun_path</a>)
+<a name='L315'> 315             : 0);
+<a name='L316'> 316 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L56'>[^]</a><a href='#L311'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

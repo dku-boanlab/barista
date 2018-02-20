@@ -1,0 +1,27 @@
+var struct__summary__tally =
+[
+    [ "bytes", "struct__summary__tally.html#a5eb00f0fe0034595adade532b129eb51", null ],
+    [ "cfilter", "struct__summary__tally.html#a39b289f8a142ae765ffce2aaa034cc94", null ],
+    [ "dfilter", "struct__summary__tally.html#aca8b256c324f89915ae49f05330e0a5d", null ],
+    [ "drops", "struct__summary__tally.html#afec61c1bec5c21d6a9bb30e3417fca77", null ],
+    [ "drops_known", "struct__summary__tally.html#a6ce215b15595b591b1a0b54e655034d4", null ],
+    [ "elapsed_time", "struct__summary__tally.html#ad996ad5f0049df0b26f1bc22164d7530", null ],
+    [ "encap_type", "struct__summary__tally.html#a3af89d54d5ed5cae8eb510ff6943d2ce", null ],
+    [ "file_length", "struct__summary__tally.html#af5252677c1f884f40fab044416075835", null ],
+    [ "filename", "struct__summary__tally.html#af50c0b0b274bd8d2dd1c8d2c8a501e50", null ],
+    [ "filtered_bytes", "struct__summary__tally.html#ad4c59f61fc12ba41902e31f400b14d19", null ],
+    [ "filtered_count", "struct__summary__tally.html#a1a0704d56659bbae64524f761987f265", null ],
+    [ "filtered_start", "struct__summary__tally.html#ad1152fbc0bf744616f2373b5b8dcfd42", null ],
+    [ "filtered_stop", "struct__summary__tally.html#aae20d0dc96cab3ecabf494e0a9007f87", null ],
+    [ "has_snap", "struct__summary__tally.html#a1fe8787881b6809437dec9b4d18930fb", null ],
+    [ "iface", "struct__summary__tally.html#ac4c7deddfe176a58b11b8152e7d7d9b1", null ],
+    [ "iface_descr", "struct__summary__tally.html#a0327cc8f2a6249012a13c44b83ecaece", null ],
+    [ "marked_bytes", "struct__summary__tally.html#aa37bef2f8f9c7b5455124cea34ca50f0", null ],
+    [ "marked_count", "struct__summary__tally.html#ad8682c694d0d63951bf37d637073e29f", null ],
+    [ "marked_start", "struct__summary__tally.html#a67251663379859a3aab5c502f80f3283", null ],
+    [ "marked_stop", "struct__summary__tally.html#ada4e9808479476e898d350f50506a9e2", null ],
+    [ "packet_count", "struct__summary__tally.html#af3221ceb1b7ddb89e519d8403e33cbc3", null ],
+    [ "snap", "struct__summary__tally.html#aaf83d410725f3663b2b59b7436b5f053", null ],
+    [ "start_time", "struct__summary__tally.html#ac8a735ebc82bdf1d87d8c5a0e33ae184", null ],
+    [ "stop_time", "struct__summary__tally.html#a941741e30436447d5bda3027dca78002", null ]
+];

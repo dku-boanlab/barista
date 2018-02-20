@@ -1,0 +1,120 @@
+<html>
+<head>
+<title>components/dit.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1155.html'>components</a>/dit.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L31'>[^]</a><a href='#L68'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L31' title='Defined at 31.'>dit_main</a>
+<li><a href='#L44' title='Defined at 44.'>dit_cleanup</a>
+<li><a href='#L58' title='Defined at 58.'>dit_cli</a>
+<li><a href='#L68' title='Defined at 68.'>dit_handler</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright 2015-2018 NSSLab, KAIST</font></i>
+<a name='L3'>   3 <i><font color='green'> */</font></i>
+<a name='L4'>   4 
+<a name='L5'>   5 <i><font color='green'>/**</font></i>
+<a name='L6'>   6 <i><font color='green'> * \ingroup compnt</font></i>
+<a name='L7'>   7 <i><font color='green'> * @{</font></i>
+<a name='L8'>   8 <i><font color='green'> * \defgroup dit Control Message Integrity</font></i>
+<a name='L9'>   9 <i><font color='green'> * \brief (Security) control message integrity</font></i>
+<a name='L10'>  10 <i><font color='green'> * @{</font></i>
+<a name='L11'>  11 <i><font color='green'> */</font></i>
+<a name='L12'>  12 
+<a name='L13'>  13 <i><font color='green'>/**</font></i>
+<a name='L14'>  14 <i><font color='green'> * \file</font></i>
+<a name='L15'>  15 <i><font color='green'> * \author Jaehyun Nam &lt;namjh@kaist.ac.kr&gt;</font></i>
+<a name='L16'>  16 <i><font color='green'> */</font></i>
+<a name='L17'>  17 
+<a name='L18'>  18 <font color='darkred'>#include</font> "<a href='987.html'>dit.h</a>"
+<a name='L19'>  19 
+<a name='L20'>  20 <i><font color='green'>/** \brief Control message integrity ID */</font></i>
+<a name='L21'>  21 <font color='darkred'>#define</font> <a href='../R/364.html' title='Multiple refered from 3 places.'>DIT_ID</a> 3807334438
+<a name='L22'>  22 
+<a name='L23'>  23 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L24'>  24 
+<a name='L25'>  25 <i><font color='green'>/**</font></i>
+<a name='L26'>  26 <i><font color='green'> * \brief The main function</font></i>
+<a name='L27'>  27 <i><font color='green'> * \param activated The activation flag of this component</font></i>
+<a name='L28'>  28 <i><font color='green'> * \param argc The number of arguments</font></i>
+<a name='L29'>  29 <i><font color='green'> * \param argv Arguments</font></i>
+<a name='L30'>  30 <i><font color='green'> */</font></i>
+<a name='L31'>  31 <b>int</b> <a href='../S/979.html#L143' title='Refered from 143 in components/include/component_list.h.'>dit_main</a>(<b>int</b> *<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>, <b>int</b> <a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a>, <b>char</b> **<a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>)
+<a name='L32'>  32 <font color='red'>{</font>
+<a name='L33'>  33     <a href='../D/2419.html' title='Multiple defined in 6 places.'>LOG_INFO</a>(<a href='../S/996.html#L21' title='Defined at 21 in components/dit.c.'>DIT_ID</a>, "Init - Internal message integrity");
+<a name='L34'>  34 
+<a name='L35'>  35     <a href='../D/6825.html' title='Multiple defined in 6 places.'>activate</a>();
+<a name='L36'>  36 
+<a name='L37'>  37     <b>return</b> 0;
+<a name='L38'>  38 <font color='red'>}</font>
+<a name='L39'>  39 
+<a name='L40'>  40 <i><font color='green'>/**</font></i>
+<a name='L41'>  41 <i><font color='green'> * \brief The cleanup function</font></i>
+<a name='L42'>  42 <i><font color='green'> * \param activated The activation flag of this component</font></i>
+<a name='L43'>  43 <i><font color='green'> */</font></i>
+<a name='L44'>  44 <b>int</b> <a href='../S/979.html#L143' title='Refered from 143 in components/include/component_list.h.'>dit_cleanup</a>(<b>int</b> *<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>)
+<a name='L45'>  45 <font color='red'>{</font>
+<a name='L46'>  46     <a href='../D/2419.html' title='Multiple defined in 6 places.'>LOG_INFO</a>(<a href='../S/996.html#L21' title='Defined at 21 in components/dit.c.'>DIT_ID</a>, "Clean up - Internal message integrity");
+<a name='L47'>  47 
+<a name='L48'>  48     <a href='../D/7280.html' title='Multiple defined in 6 places.'>deactivate</a>();
+<a name='L49'>  49 
+<a name='L50'>  50     <b>return</b> 0;
+<a name='L51'>  51 <font color='red'>}</font>
+<a name='L52'>  52 
+<a name='L53'>  53 <i><font color='green'>/**</font></i>
+<a name='L54'>  54 <i><font color='green'> * \brief The CLI function</font></i>
+<a name='L55'>  55 <i><font color='green'> * \param cli The CLI pointer</font></i>
+<a name='L56'>  56 <i><font color='green'> * \param args Arguments</font></i>
+<a name='L57'>  57 <i><font color='green'> */</font></i>
+<a name='L58'>  58 <b>int</b> <a href='../S/979.html#L143' title='Refered from 143 in components/include/component_list.h.'>dit_cli</a>(<a href='../D/7177.html' title='Multiple defined in 6 places.'>cli_t</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>char</b> **<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L59'>  59 <font color='red'>{</font>
+<a name='L60'>  60     <b>return</b> 0;
+<a name='L61'>  61 <font color='red'>}</font>
+<a name='L62'>  62 
+<a name='L63'>  63 <i><font color='green'>/**</font></i>
+<a name='L64'>  64 <i><font color='green'> * \brief The handler function</font></i>
+<a name='L65'>  65 <i><font color='green'> * \param ev Read-only event</font></i>
+<a name='L66'>  66 <i><font color='green'> * \param ev_out Read-write event (if this component has the write permission)</font></i>
+<a name='L67'>  67 <i><font color='green'> */</font></i>
+<a name='L68'>  68 <b>int</b> <a href='../S/979.html#L143' title='Refered from 143 in components/include/component_list.h.'>dit_handler</a>(<b>const</b> <a href='../D/7743.html' title='Multiple defined in 7 places.'>event_t</a> *<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>, <a href='../D/7740.html' title='Multiple defined in 7 places.'>event_out_t</a> *<a href='../Y/2897.html' title='Multiple used in 49 places.'>ev_out</a>)
+<a name='L69'>  69 <font color='red'>{</font>
+<a name='L70'>  70     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/5427.html' title='Multiple used in 4 places.'>old_checksum</a> = <a href='../Y/2897.html' title='Multiple used in 49 places.'>ev_out</a>-&gt;<a href='../Y/1869.html' title='Multiple used in 20 places.'>checksum</a>;
+<a name='L71'>  71     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/1869.html' title='Multiple used in 20 places.'>checksum</a> = 0;
+<a name='L72'>  72 
+<a name='L73'>  73     <a href='../Y/2897.html' title='Multiple used in 49 places.'>ev_out</a>-&gt;<a href='../Y/1869.html' title='Multiple used in 20 places.'>checksum</a> = 0;
+<a name='L74'>  74     <a href='../Y/1869.html' title='Multiple used in 20 places.'>checksum</a> = <a href='../D/8005.html' title='Multiple defined in 2 places.'>hash_func</a>((<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> *)<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>-&gt;<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>-&gt;<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> / <b>sizeof</b>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a>));
+<a name='L75'>  75 
+<a name='L76'>  76     <b>if</b> (<a href='../Y/5427.html' title='Multiple used in 4 places.'>old_checksum</a> == 0) <font color='red'>{</font>
+<a name='L77'>  77         <i><font color='green'>// generate checksum</font></i>
+<a name='L78'>  78         <a href='../Y/2897.html' title='Multiple used in 49 places.'>ev_out</a>-&gt;<a href='../Y/1869.html' title='Multiple used in 20 places.'>checksum</a> = <a href='../Y/1869.html' title='Multiple used in 20 places.'>checksum</a>;
+<a name='L79'>  79     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L80'>  80         <i><font color='green'>// check checksum</font></i>
+<a name='L81'>  81         <b>if</b> (<a href='../Y/5427.html' title='Multiple used in 4 places.'>old_checksum</a> != <a href='../Y/1869.html' title='Multiple used in 20 places.'>checksum</a>) <font color='red'>{</font>
+<a name='L82'>  82             <a href='../D/2421.html' title='Multiple defined in 6 places.'>LOG_WARN</a>(<a href='../S/996.html#L21' title='Defined at 21 in components/dit.c.'>DIT_ID</a>, "Malformed internal message (old: %x, curr: %x)", <a href='../Y/5427.html' title='Multiple used in 4 places.'>old_checksum</a>, <a href='../Y/1869.html' title='Multiple used in 20 places.'>checksum</a>);
+<a name='L83'>  83             <b>return</b> -1;
+<a name='L84'>  84         <font color='red'>}</font>
+<a name='L85'>  85     <font color='red'>}</font>
+<a name='L86'>  86 
+<a name='L87'>  87     <b>return</b> 0;
+<a name='L88'>  88 <font color='red'>}</font>
+<a name='L89'>  89 
+<a name='L90'>  90 <i><font color='green'>/**</font></i>
+<a name='L91'>  91 <i><font color='green'> * @}</font></i>
+<a name='L92'>  92 <i><font color='green'> *</font></i>
+<a name='L93'>  93 <i><font color='green'> * @}</font></i>
+<a name='L94'>  94 <i><font color='green'> */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L31'>[^]</a><a href='#L68'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/epan.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/419.html' title='Multiple included from 9 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* epan.h</font></i>
+<a name='L2'>   2 <i><font color='green'> *</font></i>
+<a name='L3'>   3 <i><font color='green'> * $Id: epan.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L4'>   4 <i><font color='green'> *</font></i>
+<a name='L5'>   5 <i><font color='green'> * Wireshark Protocol Analyzer Library</font></i>
+<a name='L6'>   6 <i><font color='green'> *</font></i>
+<a name='L7'>   7 <i><font color='green'> * Copyright (c) 2001 by Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L8'>   8 <i><font color='green'> *</font></i>
+<a name='L9'>   9 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L10'>  10 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L11'>  11 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L12'>  12 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L13'>  13 <i><font color='green'> *</font></i>
+<a name='L14'>  14 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L15'>  15 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L16'>  16 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L17'>  17 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L18'>  18 <i><font color='green'> *</font></i>
+<a name='L19'>  19 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L20'>  20 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L21'>  21 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L22'>  22 <i><font color='green'> */</font></i>
+<a name='L23'>  23 
+<a name='L24'>  24 <font color='darkred'>#ifndef</font> <a href='../S/501.html#L25' title='Defined at 25 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h.'>EPAN_H</a>
+<a name='L25'>  25 <font color='darkred'>#define</font> <a href='../S/501.html#L24' title='Refered from 24 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h.'>EPAN_H</a>
+<a name='L26'>  26 
+<a name='L27'>  27 <font color='darkred'>#include</font> &lt;glib.h&gt;
+<a name='L28'>  28 <font color='darkred'>#include</font> "<a href='482.html'>frame_data.h</a>"
+<a name='L29'>  29 <font color='darkred'>#include</font> "<a href='502.html'>column_info.h</a>"
+<a name='L30'>  30 <font color='darkred'>#include</font> "<a href='347.html'>register.h</a>"
+<a name='L31'>  31 
+<a name='L32'>  32 <b>typedef</b> <b>struct</b> <a href='../S/385.html#L37' title='Defined at 37 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan_dissect.h.'>_epan_dissect_t</a> <a href='../R/2889.html' title='Multiple refered from 23 places.'>epan_dissect_t</a>;
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> "<a href='456.html'>dfilter/dfilter.h</a>"
+<a name='L35'>  35 
+<a name='L36'>  36 <i><font color='green'>/* init the whole epan module, this is used to be called only once in a program */</font></i>
+<a name='L37'>  37 <b>void</b> epan_init(<b>void</b> (*<a href='../Y/6335.html' title='Multiple used in 2 places.'>register_all_protocols</a>)(<a href='../Y/6336.html' title='Multiple used in 9 places.'>register_cb</a> <a href='../Y/1818.html' title='Multiple used in 85 places.'>cb</a>, <a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a> <a href='../Y/1911.html' title='Multiple used in 9 places.'>client_data</a>),
+<a name='L38'>  38                <b>void</b> (*<a href='../Y/6334.html' title='Multiple used in 2 places.'>register_all_handoffs</a>)(<a href='../Y/6336.html' title='Multiple used in 9 places.'>register_cb</a> <a href='../Y/1818.html' title='Multiple used in 85 places.'>cb</a>, <a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a> <a href='../Y/1911.html' title='Multiple used in 9 places.'>client_data</a>),
+<a name='L39'>  39                <a href='../Y/6336.html' title='Multiple used in 9 places.'>register_cb</a> <a href='../Y/1818.html' title='Multiple used in 85 places.'>cb</a>,
+<a name='L40'>  40                <b>void</b> *<a href='../Y/1911.html' title='Multiple used in 9 places.'>client_data</a>,
+<a name='L41'>  41                <b>void</b> (*<a href='../Y/6385.html' title='Multiple used in 3 places.'>report_failure</a>)(<b>const</b> <b>char</b> *, <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a>),
+<a name='L42'>  42                <b>void</b> (*<a href='../Y/6386.html' title='Multiple used in 3 places.'>report_open_failure</a>)(<b>const</b> <b>char</b> *, <b>int</b>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a>),
+<a name='L43'>  43                <b>void</b> (*<a href='../Y/6387.html' title='Multiple used in 3 places.'>report_read_failure</a>)(<b>const</b> <b>char</b> *, <b>int</b>));
+<a name='L44'>  44 <i><font color='green'>/* cleanup the whole epan module, this is used to be called only once in a program */</font></i>
+<a name='L45'>  45 <b>void</b> epan_cleanup(<b>void</b>);
+<a name='L46'>  46 <i><font color='green'>/* Initialize the table of conversations. */</font></i>
+<a name='L47'>  47 <b>void</b> epan_conversation_init(<b>void</b>);
+<a name='L48'>  48 <i><font color='green'>/* Initialize the table of circuits. */</font></i>
+<a name='L49'>  49 <i><font color='green'>/* XXX - what is a circuit and should this better be combined with epan_conversation_init? */</font></i>
+<a name='L50'>  50 <b>void</b> epan_circuit_init(<b>void</b>);
+<a name='L51'>  51 
+<a name='L52'>  52 <i><font color='green'>/* A client will create one epan_t for an entire dissection session.</font></i>
+<a name='L53'>  53 <i><font color='green'> * A single epan_t will be used to analyze the entire sequence of packets,</font></i>
+<a name='L54'>  54 <i><font color='green'> * sequentially, in a single session. A session corresponds to a single</font></i>
+<a name='L55'>  55 <i><font color='green'> * packet trace file. The reaons epan_t exists is that some packets in</font></i>
+<a name='L56'>  56 <i><font color='green'> * some protocols cannot be decoded without knowledge of previous packets.</font></i>
+<a name='L57'>  57 <i><font color='green'> * This inter-packet "state" is stored in the epan_t.</font></i>
+<a name='L58'>  58 <i><font color='green'> */</font></i>
+<a name='L59'>  59 <i><font color='green'>/* XXX - NOTE: epan_t, epan_new and epan_free are currently unused! */</font></i>
+<a name='L60'>  60 <b>typedef</b> <b>struct</b> epan_session <a href='../R/2890.html' title='Multiple refered from 2 places.'>epan_t</a>;
+<a name='L61'>  61 
+<a name='L62'>  62 <a href='../S/501.html#L60' title='Defined at 60 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h.'>epan_t</a>*
+<a name='L63'>  63 epan_new(<b>void</b>);
+<a name='L64'>  64 
+<a name='L65'>  65 <b>void</b>
+<a name='L66'>  66 epan_free(<a href='../S/501.html#L60' title='Defined at 60 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h.'>epan_t</a>*);
+<a name='L67'>  67 
+<a name='L68'>  68 <b>extern</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>*
+<a name='L69'>  69 epan_get_version(<b>void</b>);
+<a name='L70'>  70 
+<a name='L71'>  71 <i><font color='green'>/* get a new single packet dissection */</font></i>
+<a name='L72'>  72 <i><font color='green'>/* should be freed using epan_dissect_free() after packet dissection completed */</font></i>
+<a name='L73'>  73 <a href='../S/501.html#L32' title='Defined at 32 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h.'>epan_dissect_t</a>*
+<a name='L74'>  74 epan_dissect_new(<a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> create_proto_tree, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> proto_tree_visible);
+<a name='L75'>  75 
+<a name='L76'>  76 <i><font color='green'>/* run a single packet dissection */</font></i>
+<a name='L77'>  77 <b>void</b>
+<a name='L78'>  78 epan_dissect_run(<a href='../S/501.html#L32' title='Defined at 32 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h.'>epan_dissect_t</a> *<a href='../Y/2632.html' title='Multiple used in 21 places.'>edt</a>, <b>void</b>* <a href='../Y/6114.html' title='Multiple used in 10 places.'>pseudo_header</a>,
+<a name='L79'>  79         <b>const</b> <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>* <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/3223.html' title='Multiple used in 7 places.'>frame_data</a> *<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, column_info *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>);
+<a name='L80'>  80 
+<a name='L81'>  81 <i><font color='green'>/* Prime a proto_tree using the fields/protocols used in a dfilter. */</font></i>
+<a name='L82'>  82 <b>void</b>
+<a name='L83'>  83 epan_dissect_prime_dfilter(<a href='../S/501.html#L32' title='Defined at 32 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h.'>epan_dissect_t</a> *<a href='../Y/2632.html' title='Multiple used in 21 places.'>edt</a>, <b>const</b> <a href='../S/456.html#L29' title='Defined at 29 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfilter.h.'>dfilter_t</a> *dfcode);
+<a name='L84'>  84 
+<a name='L85'>  85 <i><font color='green'>/* fill the dissect run output into the packet list columns */</font></i>
+<a name='L86'>  86 <b>void</b>
+<a name='L87'>  87 epan_dissect_fill_in_columns(<a href='../S/501.html#L32' title='Defined at 32 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h.'>epan_dissect_t</a> *<a href='../Y/2632.html' title='Multiple used in 21 places.'>edt</a>);
+<a name='L88'>  88 
+<a name='L89'>  89 <i><font color='green'>/* free a single packet dissection */</font></i>
+<a name='L90'>  90 <b>void</b>
+<a name='L91'>  91 epan_dissect_free(<a href='../S/501.html#L32' title='Defined at 32 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h.'>epan_dissect_t</a>* <a href='../Y/2632.html' title='Multiple used in 21 places.'>edt</a>);
+<a name='L92'>  92 
+<a name='L93'>  93 <font color='darkred'>#endif</font> <i><font color='green'>/* EPAN_H */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

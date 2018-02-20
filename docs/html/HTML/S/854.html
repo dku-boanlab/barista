@@ -1,0 +1,309 @@
+<html>
+<head>
+<title>cbench/openflow/lib/poll-loop.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/poll-loop.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L93'>[^]</a><a href='#L266'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L93' title='Defined at 93.'>poll_fd_wait</a>
+<li><a href='#L106' title='Defined at 106.'>poll_timer_wait</a>
+<li><a href='#L119' title='Defined at 119.'>poll_immediate_wake</a>
+<li><a href='#L124' title='Defined at 124.'>PRINTF_FORMAT</a>
+<li><a href='#L154' title='Defined at 154.'>poll_block</a>
+<li><a href='#L232' title='Defined at 232.'>poll_fd_callback</a>
+<li><a href='#L253' title='Defined at 253.'>poll_cancel</a>
+<li><a href='#L266' title='Defined at 266.'>new_waiter</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008, 2009 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> * </font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> * </font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> * </font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> * </font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> "<a href='901.html'>poll-loop.h</a>"
+<a name='L36'>  36 <font color='darkred'>#include</font> &lt;assert.h&gt;
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;errno.h&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;poll.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> &lt;stdlib.h&gt;
+<a name='L40'>  40 <font color='darkred'>#include</font> &lt;string.h&gt;
+<a name='L41'>  41 <font color='darkred'>#include</font> "<a href='893.html'>backtrace.h</a>"
+<a name='L42'>  42 <font color='darkred'>#include</font> "<a href='908.html'>dynamic-string.h</a>"
+<a name='L43'>  43 <font color='darkred'>#include</font> "<a href='916.html'>list.h</a>"
+<a name='L44'>  44 <font color='darkred'>#include</font> "<a href='812.html'>timeval.h</a>"
+<a name='L45'>  45 
+<a name='L46'>  46 <font color='darkred'>#define</font> <a href='../R/1643.html' title='Multiple refered from 13 places.'>THIS_MODULE</a> VLM_poll_loop
+<a name='L47'>  47 <font color='darkred'>#include</font> "<a href='859.html'>vlog.h</a>"
+<a name='L48'>  48 
+<a name='L49'>  49 <i><font color='green'>/* An event that will wake the following call to poll_block(). */</font></i>
+<a name='L50'>  50 <b>struct</b> <a href='../R/4058.html' title='Multiple refered from 16 places.'>poll_waiter</a> <font color='red'>{</font>
+<a name='L51'>  51     <i><font color='green'>/* Set when the waiter is created. */</font></i>
+<a name='L52'>  52     <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>;           <i><font color='green'>/* Element in global waiters list. */</font></i>
+<a name='L53'>  53     <b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>;                     <i><font color='green'>/* File descriptor. */</font></i>
+<a name='L54'>  54     <b>short</b> <b>int</b> <a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a>;           <i><font color='green'>/* Events to wait for (POLLIN, POLLOUT). */</font></i>
+<a name='L55'>  55     <a href='../S/901.html#L65' title='Defined at 65 in cbench/openflow/lib/poll-loop.h.'>poll_fd_func</a> *<a href='../Y/3277.html' title='Multiple used in 38 places.'>function</a>;     <i><font color='green'>/* Callback function, if any, or null. */</font></i>
+<a name='L56'>  56     <b>void</b> *<a href='../Y/1539.html' title='Multiple used in 86 places.'>aux</a>;                  <i><font color='green'>/* Argument to callback function. */</font></i>
+<a name='L57'>  57     <b>struct</b> <a href='../S/893.html#L41' title='Defined at 41 in cbench/openflow/lib/backtrace.h.'>backtrace</a> *<a href='../S/893.html#L41' title='Defined at 41 in cbench/openflow/lib/backtrace.h.'>backtrace</a>; <i><font color='green'>/* Optionally, event that created waiter. */</font></i>
+<a name='L58'>  58 
+<a name='L59'>  59     <i><font color='green'>/* Set only when poll_block() is called. */</font></i>
+<a name='L60'>  60     <b>struct</b> <a href='../Y/5784.html' title='Multiple used in 34 places.'>pollfd</a> *<a href='../Y/5784.html' title='Multiple used in 34 places.'>pollfd</a>;      <i><font color='green'>/* Pointer to element of the pollfds array</font></i>
+<a name='L61'>  61 <i><font color='green'>                                   (null if added from a callback). */</font></i>
+<a name='L62'>  62 <font color='red'>}</font>;
+<a name='L63'>  63 
+<a name='L64'>  64 <i><font color='green'>/* All active poll waiters. */</font></i>
+<a name='L65'>  65 <b>static</b> <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> <a href='../Y/7840.html' title='Multiple used in 4 places.'>waiters</a> = <a href='../S/916.html#L49' title='Defined at 49 in cbench/openflow/lib/list.h.'>LIST_INITIALIZER</a>(&amp;<a href='../Y/7840.html' title='Multiple used in 4 places.'>waiters</a>);
+<a name='L66'>  66 
+<a name='L67'>  67 <i><font color='green'>/* Number of elements in the waiters list. */</font></i>
+<a name='L68'>  68 <b>static</b> <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4625.html' title='Multiple used in 5 places.'>n_waiters</a>;
+<a name='L69'>  69 
+<a name='L70'>  70 <i><font color='green'>/* Max time to wait in next call to poll_block(), in milliseconds, or -1 to</font></i>
+<a name='L71'>  71 <i><font color='green'> * wait forever. */</font></i>
+<a name='L72'>  72 <b>static</b> <b>int</b> <a href='../D/9898.html' title='Multiple defined in 2 places.'>timeout</a> = -1;
+<a name='L73'>  73 
+<a name='L74'>  74 <i><font color='green'>/* Backtrace of 'timeout''s registration, if debugging is enabled. */</font></i>
+<a name='L75'>  75 <b>static</b> <b>struct</b> <a href='../S/893.html#L41' title='Defined at 41 in cbench/openflow/lib/backtrace.h.'>backtrace</a> <a href='../Y/7374.html' title='Multiple used in 4 places.'>timeout_backtrace</a>;
+<a name='L76'>  76 
+<a name='L77'>  77 <i><font color='green'>/* Callback currently running, to allow verifying that poll_cancel() is not</font></i>
+<a name='L78'>  78 <i><font color='green'> * being called on a running callback. */</font></i>
+<a name='L79'>  79 <font color='darkred'>#ifndef</font> <a href='../D/2918.html' title='Multiple defined in 3 places.'>NDEBUG</a>
+<a name='L80'>  80 <b>static</b> <b>struct</b> <a href='../S/854.html#L50' title='Defined at 50 in cbench/openflow/lib/poll-loop.c.'>poll_waiter</a> *<a href='../Y/6510.html' title='Multiple used in 5 places.'>running_cb</a>;
+<a name='L81'>  81 <font color='darkred'>#endif</font>
+<a name='L82'>  82 
+<a name='L83'>  83 <b>static</b> <b>struct</b> <a href='../S/854.html#L50' title='Defined at 50 in cbench/openflow/lib/poll-loop.c.'>poll_waiter</a> *<a href='../S/854.html#L266' title='Defined at 266 in cbench/openflow/lib/poll-loop.c.'>new_waiter</a>(<b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <b>short</b> <b>int</b> <a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a>);
+<a name='L84'>  84 
+<a name='L85'>  85 <i><font color='green'>/* Registers 'fd' as waiting for the specified 'events' (which should be POLLIN</font></i>
+<a name='L86'>  86 <i><font color='green'> * or POLLOUT or POLLIN | POLLOUT).  The following call to poll_block() will</font></i>
+<a name='L87'>  87 <i><font color='green'> * wake up when 'fd' becomes ready for one or more of the requested events.</font></i>
+<a name='L88'>  88 <i><font color='green'> *</font></i>
+<a name='L89'>  89 <i><font color='green'> * The event registration is one-shot: only the following call to poll_block()</font></i>
+<a name='L90'>  90 <i><font color='green'> * is affected.  The event will need to be re-registered after poll_block() is</font></i>
+<a name='L91'>  91 <i><font color='green'> * called if it is to persist. */</font></i>
+<a name='L92'>  92 <b>struct</b> <a href='../S/854.html#L50' title='Defined at 50 in cbench/openflow/lib/poll-loop.c.'>poll_waiter</a> *
+<a name='L93'>  93 <a href='../R/4054.html' title='Multiple refered from 14 places.'>poll_fd_wait</a>(<b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <b>short</b> <b>int</b> <a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a>)
+<a name='L94'>  94 <font color='red'>{</font>
+<a name='L95'>  95     <b>return</b> <a href='../S/854.html#L266' title='Defined at 266 in cbench/openflow/lib/poll-loop.c.'>new_waiter</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a>);
+<a name='L96'>  96 <font color='red'>}</font>
+<a name='L97'>  97 
+<a name='L98'>  98 <i><font color='green'>/* Causes the following call to poll_block() to block for no more than 'msec'</font></i>
+<a name='L99'>  99 <i><font color='green'> * milliseconds.  If 'msec' is nonpositive, the following call to poll_block()</font></i>
+<a name='L100'> 100 <i><font color='green'> * will not block at all.</font></i>
+<a name='L101'> 101 <i><font color='green'> *</font></i>
+<a name='L102'> 102 <i><font color='green'> * The timer registration is one-shot: only the following call to poll_block()</font></i>
+<a name='L103'> 103 <i><font color='green'> * is affected.  The timer will need to be re-registered after poll_block() is</font></i>
+<a name='L104'> 104 <i><font color='green'> * called if it is to persist. */</font></i>
+<a name='L105'> 105 <b>void</b>
+<a name='L106'> 106 <a href='../R/4057.html' title='Multiple refered from 10 places.'>poll_timer_wait</a>(<b>int</b> <a href='../Y/4516.html' title='Multiple used in 4 places.'>msec</a>)
+<a name='L107'> 107 <font color='red'>{</font>
+<a name='L108'> 108     <b>if</b> (<a href='../D/9898.html' title='Multiple defined in 2 places.'>timeout</a> &lt; 0 || <a href='../Y/4516.html' title='Multiple used in 4 places.'>msec</a> &lt; <a href='../D/9898.html' title='Multiple defined in 2 places.'>timeout</a>) <font color='red'>{</font>
+<a name='L109'> 109         <a href='../D/9898.html' title='Multiple defined in 2 places.'>timeout</a> = <a href='../D/2530.html' title='Multiple defined in 9 places.'>MAX</a>(0, <a href='../Y/4516.html' title='Multiple used in 4 places.'>msec</a>);
+<a name='L110'> 110         <b>if</b> (<a href='../S/859.html#L162' title='Defined at 162 in cbench/openflow/lib/vlog.h.'>VLOG_IS_DBG_ENABLED</a>()) <font color='red'>{</font>
+<a name='L111'> 111             <a href='../S/874.html#L110' title='Defined at 110 in cbench/openflow/lib/backtrace.c.'>backtrace_capture</a>(&amp;<a href='../Y/7374.html' title='Multiple used in 4 places.'>timeout_backtrace</a>);
+<a name='L112'> 112         <font color='red'>}</font>
+<a name='L113'> 113     <font color='red'>}</font>
+<a name='L114'> 114 <font color='red'>}</font>
+<a name='L115'> 115 
+<a name='L116'> 116 <i><font color='green'>/* Causes the following call to poll_block() to wake up immediately, without</font></i>
+<a name='L117'> 117 <i><font color='green'> * blocking. */</font></i>
+<a name='L118'> 118 <b>void</b>
+<a name='L119'> 119 <a href='../R/4055.html' title='Multiple refered from 15 places.'>poll_immediate_wake</a>(<b>void</b>)
+<a name='L120'> 120 <font color='red'>{</font>
+<a name='L121'> 121     <a href='../S/854.html#L106' title='Defined at 106 in cbench/openflow/lib/poll-loop.c.'>poll_timer_wait</a>(0);
+<a name='L122'> 122 <font color='red'>}</font>
+<a name='L123'> 123 
+<a name='L124'> 124 <b>static</b> <b>void</b> <a href='../R/1456.html' title='Multiple refered from 12 places.'>PRINTF_FORMAT</a>(2, 3)
+<a name='L125'> 125 <a href='../Y/4232.html' title='Multiple used in 3 places.'>log_wakeup</a>(<b>const</b> <b>struct</b> <a href='../Y/1585.html' title='Multiple used in 3 places.'>backtrace</a> *<a href='../Y/1585.html' title='Multiple used in 3 places.'>backtrace</a>, <b>const</b> <b>char</b> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...)
+<a name='L126'> 126 <font color='red'>{</font>
+<a name='L127'> 127     <b>struct</b> <a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a> <a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>;
+<a name='L128'> 128     <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a> <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>;
+<a name='L129'> 129 
+<a name='L130'> 130     <a href='../S/907.html#L44' title='Defined at 44 in cbench/openflow/lib/dynamic-string.c.'>ds_init</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>);
+<a name='L131'> 131     <a href='../Y/7712.html' title='Multiple used in 43 places.'>va_start</a>(<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>);
+<a name='L132'> 132     <a href='../S/907.html#L121' title='Defined at 121 in cbench/openflow/lib/dynamic-string.c.'>ds_put_format_valist</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>);
+<a name='L133'> 133     <a href='../Y/7710.html' title='Multiple used in 47 places.'>va_end</a>(<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>);
+<a name='L134'> 134 
+<a name='L135'> 135     <b>if</b> (<a href='../S/893.html#L41' title='Defined at 41 in cbench/openflow/lib/backtrace.h.'>backtrace</a>) <font color='red'>{</font>
+<a name='L136'> 136         <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L137'> 137 
+<a name='L138'> 138         <a href='../S/907.html#L86' title='Defined at 86 in cbench/openflow/lib/dynamic-string.c.'>ds_put_char</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, ':');
+<a name='L139'> 139         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../S/893.html#L41' title='Defined at 41 in cbench/openflow/lib/backtrace.h.'>backtrace</a>-&gt;<a href='../Y/4589.html' title='Multiple used in 6 places.'>n_frames</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L140'> 140             <a href='../S/907.html#L111' title='Defined at 111 in cbench/openflow/lib/dynamic-string.c.'>ds_put_format</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, " 0x%x", <a href='../S/893.html#L41' title='Defined at 41 in cbench/openflow/lib/backtrace.h.'>backtrace</a>-&gt;<a href='../Y/3231.html' title='Multiple used in 5 places.'>frames</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]);
+<a name='L141'> 141         <font color='red'>}</font>
+<a name='L142'> 142     <font color='red'>}</font>
+<a name='L143'> 143     <a href='../S/859.html#L153' title='Defined at 153 in cbench/openflow/lib/vlog.h.'>VLOG_DBG</a>("%s", <a href='../S/907.html#L198' title='Defined at 198 in cbench/openflow/lib/dynamic-string.c.'>ds_cstr</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>));
+<a name='L144'> 144     <a href='../S/907.html#L208' title='Defined at 208 in cbench/openflow/lib/dynamic-string.c.'>ds_destroy</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>);
+<a name='L145'> 145 <font color='red'>}</font>
+<a name='L146'> 146 
+<a name='L147'> 147 <i><font color='green'>/* Blocks until one or more of the events registered with poll_fd_wait()</font></i>
+<a name='L148'> 148 <i><font color='green'> * occurs, or until the minimum duration registered with poll_timer_wait()</font></i>
+<a name='L149'> 149 <i><font color='green'> * elapses, or not at all if poll_immediate_wake() has been called.</font></i>
+<a name='L150'> 150 <i><font color='green'> *</font></i>
+<a name='L151'> 151 <i><font color='green'> * Also executes any autonomous subroutines registered with poll_fd_callback(),</font></i>
+<a name='L152'> 152 <i><font color='green'> * if their file descriptors have become ready. */</font></i>
+<a name='L153'> 153 <b>void</b>
+<a name='L154'> 154 <a href='../R/4050.html' title='Multiple refered from 10 places.'>poll_block</a>(<b>void</b>)
+<a name='L155'> 155 <font color='red'>{</font>
+<a name='L156'> 156     <b>static</b> <b>struct</b> <a href='../Y/5784.html' title='Multiple used in 34 places.'>pollfd</a> *<a href='../Y/5785.html' title='Multiple used in 16 places.'>pollfds</a>;
+<a name='L157'> 157     <b>static</b> <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4382.html' title='Multiple used in 4 places.'>max_pollfds</a>;
+<a name='L158'> 158 
+<a name='L159'> 159     <b>struct</b> <a href='../S/854.html#L50' title='Defined at 50 in cbench/openflow/lib/poll-loop.c.'>poll_waiter</a> *<a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>;
+<a name='L160'> 160     <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>;
+<a name='L161'> 161     <b>int</b> <a href='../Y/4611.html' title='Multiple used in 11 places.'>n_pollfds</a>;
+<a name='L162'> 162     <b>int</b> <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>;
+<a name='L163'> 163 
+<a name='L164'> 164     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(!<a href='../Y/6510.html' title='Multiple used in 5 places.'>running_cb</a>);
+<a name='L165'> 165     <b>if</b> (<a href='../Y/4382.html' title='Multiple used in 4 places.'>max_pollfds</a> &lt; <a href='../Y/4625.html' title='Multiple used in 5 places.'>n_waiters</a>) <font color='red'>{</font>
+<a name='L166'> 166         <a href='../Y/4382.html' title='Multiple used in 4 places.'>max_pollfds</a> = <a href='../Y/4625.html' title='Multiple used in 5 places.'>n_waiters</a>;
+<a name='L167'> 167         <a href='../Y/5785.html' title='Multiple used in 16 places.'>pollfds</a> = <a href='../S/878.html#L71' title='Defined at 71 in cbench/openflow/lib/util.c.'>xrealloc</a>(<a href='../Y/5785.html' title='Multiple used in 16 places.'>pollfds</a>, <a href='../Y/4382.html' title='Multiple used in 4 places.'>max_pollfds</a> * <b>sizeof</b> *<a href='../Y/5785.html' title='Multiple used in 16 places.'>pollfds</a>);
+<a name='L168'> 168     <font color='red'>}</font>
+<a name='L169'> 169 
+<a name='L170'> 170     <a href='../Y/4611.html' title='Multiple used in 11 places.'>n_pollfds</a> = 0;
+<a name='L171'> 171     <a href='../S/916.html#L73' title='Defined at 73 in cbench/openflow/lib/list.h.'>LIST_FOR_EACH</a> (<a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>, <b>struct</b> <a href='../S/854.html#L50' title='Defined at 50 in cbench/openflow/lib/poll-loop.c.'>poll_waiter</a>, <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>, &amp;<a href='../Y/7840.html' title='Multiple used in 4 places.'>waiters</a>) <font color='red'>{</font>
+<a name='L172'> 172         <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/5784.html' title='Multiple used in 34 places.'>pollfd</a> = &amp;<a href='../Y/5785.html' title='Multiple used in 16 places.'>pollfds</a>[<a href='../Y/4611.html' title='Multiple used in 11 places.'>n_pollfds</a>];
+<a name='L173'> 173         <a href='../Y/5785.html' title='Multiple used in 16 places.'>pollfds</a>[<a href='../Y/4611.html' title='Multiple used in 11 places.'>n_pollfds</a>].<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a> = <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>;
+<a name='L174'> 174         <a href='../Y/5785.html' title='Multiple used in 16 places.'>pollfds</a>[<a href='../Y/4611.html' title='Multiple used in 11 places.'>n_pollfds</a>].<a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a> = <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a>;
+<a name='L175'> 175         <a href='../Y/5785.html' title='Multiple used in 16 places.'>pollfds</a>[<a href='../Y/4611.html' title='Multiple used in 11 places.'>n_pollfds</a>].<a href='../Y/6440.html' title='Multiple used in 22 places.'>revents</a> = 0;
+<a name='L176'> 176         <a href='../Y/4611.html' title='Multiple used in 11 places.'>n_pollfds</a>++;
+<a name='L177'> 177     <font color='red'>}</font>
+<a name='L178'> 178 
+<a name='L179'> 179     <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../S/902.html#L146' title='Defined at 146 in cbench/openflow/lib/timeval.c.'>time_poll</a>(<a href='../Y/5785.html' title='Multiple used in 16 places.'>pollfds</a>, <a href='../Y/4611.html' title='Multiple used in 11 places.'>n_pollfds</a>, <a href='../D/9898.html' title='Multiple defined in 2 places.'>timeout</a>);
+<a name='L180'> 180     <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> &lt; 0) <font color='red'>{</font>
+<a name='L181'> 181         <b>static</b> <b>struct</b> <a href='../D/10099.html' title='Multiple defined in 2 places.'>vlog_rate_limit</a> <a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a> = <a href='../S/859.html#L107' title='Defined at 107 in cbench/openflow/lib/vlog.h.'>VLOG_RATE_LIMIT_INIT</a>(1, 5);
+<a name='L182'> 182         <a href='../S/859.html#L170' title='Defined at 170 in cbench/openflow/lib/vlog.h.'>VLOG_ERR_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "poll: %s", <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(-<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>));
+<a name='L183'> 183     <font color='red'>}</font> <b>else</b> <b>if</b> (!<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> &amp;&amp; <a href='../S/859.html#L162' title='Defined at 162 in cbench/openflow/lib/vlog.h.'>VLOG_IS_DBG_ENABLED</a>()) <font color='red'>{</font>
+<a name='L184'> 184         <a href='../Y/4232.html' title='Multiple used in 3 places.'>log_wakeup</a>(&amp;<a href='../Y/7374.html' title='Multiple used in 4 places.'>timeout_backtrace</a>, "%d-ms timeout", <a href='../D/9898.html' title='Multiple defined in 2 places.'>timeout</a>);
+<a name='L185'> 185     <font color='red'>}</font>
+<a name='L186'> 186 
+<a name='L187'> 187     <b>for</b> (<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a> = <a href='../Y/7840.html' title='Multiple used in 4 places.'>waiters</a>.<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>; <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a> != &amp;<a href='../Y/7840.html' title='Multiple used in 4 places.'>waiters</a>; ) <font color='red'>{</font>
+<a name='L188'> 188         <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a> = <a href='../S/840.html#L88' title='Defined at 88 in cbench/openflow/lib/util.h.'>CONTAINER_OF</a>(<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>, <b>struct</b> <a href='../S/854.html#L50' title='Defined at 50 in cbench/openflow/lib/poll-loop.c.'>poll_waiter</a>, <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L189'> 189         <b>if</b> (!<a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/5784.html' title='Multiple used in 34 places.'>pollfd</a> || !<a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/5784.html' title='Multiple used in 34 places.'>pollfd</a>-&gt;<a href='../Y/6440.html' title='Multiple used in 22 places.'>revents</a>) <font color='red'>{</font>
+<a name='L190'> 190             <b>if</b> (<a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/3277.html' title='Multiple used in 38 places.'>function</a>) <font color='red'>{</font>
+<a name='L191'> 191                 <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a> = <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>-&gt;<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L192'> 192                 <b>continue</b>;
+<a name='L193'> 193             <font color='red'>}</font>
+<a name='L194'> 194         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L195'> 195             <b>if</b> (<a href='../S/859.html#L162' title='Defined at 162 in cbench/openflow/lib/vlog.h.'>VLOG_IS_DBG_ENABLED</a>()) <font color='red'>{</font>
+<a name='L196'> 196                 <a href='../Y/4232.html' title='Multiple used in 3 places.'>log_wakeup</a>(<a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../S/893.html#L41' title='Defined at 41 in cbench/openflow/lib/backtrace.h.'>backtrace</a>, "%s%s%s%s%s on fd %d",
+<a name='L197'> 197                            <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/5784.html' title='Multiple used in 34 places.'>pollfd</a>-&gt;<a href='../Y/6440.html' title='Multiple used in 22 places.'>revents</a> &amp; <a href='../Y/688.html' title='Multiple used in 21 places.'>POLLIN</a> ? "[POLLIN]" : "",
+<a name='L198'> 198                            <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/5784.html' title='Multiple used in 34 places.'>pollfd</a>-&gt;<a href='../Y/6440.html' title='Multiple used in 22 places.'>revents</a> &amp; <a href='../Y/690.html' title='Multiple used in 21 places.'>POLLOUT</a> ? "[POLLOUT]" : "",
+<a name='L199'> 199                            <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/5784.html' title='Multiple used in 34 places.'>pollfd</a>-&gt;<a href='../Y/6440.html' title='Multiple used in 22 places.'>revents</a> &amp; POLLERR ? "[POLLERR]" : "",
+<a name='L200'> 200                            <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/5784.html' title='Multiple used in 34 places.'>pollfd</a>-&gt;<a href='../Y/6440.html' title='Multiple used in 22 places.'>revents</a> &amp; POLLHUP ? "[POLLHUP]" : "",
+<a name='L201'> 201                            <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/5784.html' title='Multiple used in 34 places.'>pollfd</a>-&gt;<a href='../Y/6440.html' title='Multiple used in 22 places.'>revents</a> &amp; POLLNVAL ? "[POLLNVAL]" : "",
+<a name='L202'> 202                            <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>);
+<a name='L203'> 203             <font color='red'>}</font>
+<a name='L204'> 204 
+<a name='L205'> 205             <b>if</b> (<a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/3277.html' title='Multiple used in 38 places.'>function</a>) <font color='red'>{</font>
+<a name='L206'> 206 <font color='darkred'>#ifndef</font> <a href='../D/2918.html' title='Multiple defined in 3 places.'>NDEBUG</a>
+<a name='L207'> 207                 <a href='../Y/6510.html' title='Multiple used in 5 places.'>running_cb</a> = <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>;
+<a name='L208'> 208 <font color='darkred'>#endif</font>
+<a name='L209'> 209                 <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/3277.html' title='Multiple used in 38 places.'>function</a>(<a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/5784.html' title='Multiple used in 34 places.'>pollfd</a>-&gt;<a href='../Y/6440.html' title='Multiple used in 22 places.'>revents</a>, <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/1539.html' title='Multiple used in 86 places.'>aux</a>);
+<a name='L210'> 210 <font color='darkred'>#ifndef</font> <a href='../D/2918.html' title='Multiple defined in 3 places.'>NDEBUG</a>
+<a name='L211'> 211                 <a href='../Y/6510.html' title='Multiple used in 5 places.'>running_cb</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L212'> 212 <font color='darkred'>#endif</font>
+<a name='L213'> 213             <font color='red'>}</font>
+<a name='L214'> 214         <font color='red'>}</font>
+<a name='L215'> 215         <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a> = <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>-&gt;<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L216'> 216         <a href='../S/854.html#L253' title='Defined at 253 in cbench/openflow/lib/poll-loop.c.'>poll_cancel</a>(<a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>);
+<a name='L217'> 217     <font color='red'>}</font>
+<a name='L218'> 218 
+<a name='L219'> 219     <a href='../D/9898.html' title='Multiple defined in 2 places.'>timeout</a> = -1;
+<a name='L220'> 220     <a href='../Y/7374.html' title='Multiple used in 4 places.'>timeout_backtrace</a>.<a href='../Y/4589.html' title='Multiple used in 6 places.'>n_frames</a> = 0;
+<a name='L221'> 221 <font color='red'>}</font>
+<a name='L222'> 222 
+<a name='L223'> 223 <i><font color='green'>/* Registers 'function' to be called with argument 'aux' by poll_block() when</font></i>
+<a name='L224'> 224 <i><font color='green'> * 'fd' becomes ready for one of the events in 'events', which should be POLLIN</font></i>
+<a name='L225'> 225 <i><font color='green'> * or POLLOUT or POLLIN | POLLOUT.</font></i>
+<a name='L226'> 226 <i><font color='green'> *</font></i>
+<a name='L227'> 227 <i><font color='green'> * The callback registration persists until the event actually occurs.  At that</font></i>
+<a name='L228'> 228 <i><font color='green'> * point, it is automatically de-registered.  The callback function must</font></i>
+<a name='L229'> 229 <i><font color='green'> * re-register the event by calling poll_fd_callback() again within the</font></i>
+<a name='L230'> 230 <i><font color='green'> * callback, if it wants to be called back again later. */</font></i>
+<a name='L231'> 231 <b>struct</b> <a href='../S/854.html#L50' title='Defined at 50 in cbench/openflow/lib/poll-loop.c.'>poll_waiter</a> *
+<a name='L232'> 232 <a href='../R/4052.html' title='Multiple refered from 6 places.'>poll_fd_callback</a>(<b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <b>short</b> <b>int</b> <a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a>, <a href='../Y/5780.html' title='Multiple used in 2 places.'>poll_fd_func</a> *<a href='../Y/3277.html' title='Multiple used in 38 places.'>function</a>, <b>void</b> *<a href='../Y/1539.html' title='Multiple used in 86 places.'>aux</a>)
+<a name='L233'> 233 <font color='red'>{</font>
+<a name='L234'> 234     <b>struct</b> <a href='../S/854.html#L50' title='Defined at 50 in cbench/openflow/lib/poll-loop.c.'>poll_waiter</a> *<a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a> = <a href='../S/854.html#L266' title='Defined at 266 in cbench/openflow/lib/poll-loop.c.'>new_waiter</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a>);
+<a name='L235'> 235     <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/3277.html' title='Multiple used in 38 places.'>function</a> = <a href='../Y/3277.html' title='Multiple used in 38 places.'>function</a>;
+<a name='L236'> 236     <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/1539.html' title='Multiple used in 86 places.'>aux</a> = <a href='../Y/1539.html' title='Multiple used in 86 places.'>aux</a>;
+<a name='L237'> 237     <b>return</b> <a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>;
+<a name='L238'> 238 <font color='red'>}</font>
+<a name='L239'> 239 
+<a name='L240'> 240 <i><font color='green'>/* Cancels the file descriptor event registered with poll_fd_wait() or</font></i>
+<a name='L241'> 241 <i><font color='green'> * poll_fd_callback().  'pw' must be the struct poll_waiter returned by one of</font></i>
+<a name='L242'> 242 <i><font color='green'> * those functions.</font></i>
+<a name='L243'> 243 <i><font color='green'> *</font></i>
+<a name='L244'> 244 <i><font color='green'> * An event registered with poll_fd_wait() may be canceled from its time of</font></i>
+<a name='L245'> 245 <i><font color='green'> * registration until the next call to poll_block().  At that point, the event</font></i>
+<a name='L246'> 246 <i><font color='green'> * is automatically canceled by the system and its poll_waiter is freed.</font></i>
+<a name='L247'> 247 <i><font color='green'> *</font></i>
+<a name='L248'> 248 <i><font color='green'> * An event registered with poll_fd_callback() may be canceled from its time of</font></i>
+<a name='L249'> 249 <i><font color='green'> * registration until its callback is actually called.  At that point, the</font></i>
+<a name='L250'> 250 <i><font color='green'> * event is automatically canceled by the system and its poll_waiter is</font></i>
+<a name='L251'> 251 <i><font color='green'> * freed. */</font></i>
+<a name='L252'> 252 <b>void</b>
+<a name='L253'> 253 <a href='../R/4051.html' title='Multiple refered from 6 places.'>poll_cancel</a>(<b>struct</b> <a href='../Y/5783.html' title='Multiple used in 2 places.'>poll_waiter</a> *<a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>)
+<a name='L254'> 254 <font color='red'>{</font>
+<a name='L255'> 255     <b>if</b> (<a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>) <font color='red'>{</font>
+<a name='L256'> 256         <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a> != <a href='../Y/6510.html' title='Multiple used in 5 places.'>running_cb</a>);
+<a name='L257'> 257         <a href='../S/845.html#L104' title='Defined at 104 in cbench/openflow/lib/list.c.'>list_remove</a>(&amp;<a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L258'> 258         <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>-&gt;<a href='../S/893.html#L41' title='Defined at 41 in cbench/openflow/lib/backtrace.h.'>backtrace</a>);
+<a name='L259'> 259         <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/6183.html' title='Multiple used in 143 places.'>pw</a>);
+<a name='L260'> 260         <a href='../Y/4625.html' title='Multiple used in 5 places.'>n_waiters</a>--;
+<a name='L261'> 261     <font color='red'>}</font>
+<a name='L262'> 262 <font color='red'>}</font>
+<a name='L263'> 263 
+<a name='L264'> 264 <i><font color='green'>/* Creates and returns a new poll_waiter for 'fd' and 'events'. */</font></i>
+<a name='L265'> 265 <b>static</b> <b>struct</b> <a href='../S/854.html#L50' title='Defined at 50 in cbench/openflow/lib/poll-loop.c.'>poll_waiter</a> *
+<a name='L266'> 266 <a href='../R/3627.html' title='Multiple refered from 3 places.'>new_waiter</a>(<b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <b>short</b> <b>int</b> <a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a>)
+<a name='L267'> 267 <font color='red'>{</font>
+<a name='L268'> 268     <b>struct</b> <a href='../S/854.html#L50' title='Defined at 50 in cbench/openflow/lib/poll-loop.c.'>poll_waiter</a> *<a href='../Y/7839.html' title='Multiple used in 11 places.'>waiter</a> = <a href='../S/878.html#L51' title='Defined at 51 in cbench/openflow/lib/util.c.'>xcalloc</a>(1, <b>sizeof</b> *<a href='../Y/7839.html' title='Multiple used in 11 places.'>waiter</a>);
+<a name='L269'> 269     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a> &gt;= 0);
+<a name='L270'> 270     <a href='../Y/7839.html' title='Multiple used in 11 places.'>waiter</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a> = <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>;
+<a name='L271'> 271     <a href='../Y/7839.html' title='Multiple used in 11 places.'>waiter</a>-&gt;<a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a> = <a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a>;
+<a name='L272'> 272     <b>if</b> (<a href='../S/859.html#L162' title='Defined at 162 in cbench/openflow/lib/vlog.h.'>VLOG_IS_DBG_ENABLED</a>()) <font color='red'>{</font>
+<a name='L273'> 273         <a href='../Y/7839.html' title='Multiple used in 11 places.'>waiter</a>-&gt;<a href='../S/893.html#L41' title='Defined at 41 in cbench/openflow/lib/backtrace.h.'>backtrace</a> = <a href='../D/10153.html' title='Multiple defined in 2 places.'>xmalloc</a>(<b>sizeof</b> *<a href='../Y/7839.html' title='Multiple used in 11 places.'>waiter</a>-&gt;<a href='../S/893.html#L41' title='Defined at 41 in cbench/openflow/lib/backtrace.h.'>backtrace</a>);
+<a name='L274'> 274         <a href='../S/874.html#L110' title='Defined at 110 in cbench/openflow/lib/backtrace.c.'>backtrace_capture</a>(<a href='../Y/7839.html' title='Multiple used in 11 places.'>waiter</a>-&gt;<a href='../S/893.html#L41' title='Defined at 41 in cbench/openflow/lib/backtrace.h.'>backtrace</a>);
+<a name='L275'> 275     <font color='red'>}</font>
+<a name='L276'> 276     <a href='../S/845.html#L85' title='Defined at 85 in cbench/openflow/lib/list.c.'>list_push_back</a>(&amp;<a href='../Y/7840.html' title='Multiple used in 4 places.'>waiters</a>, &amp;<a href='../Y/7839.html' title='Multiple used in 11 places.'>waiter</a>-&gt;<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L277'> 277     <a href='../Y/4625.html' title='Multiple used in 5 places.'>n_waiters</a>++;
+<a name='L278'> 278     <b>return</b> <a href='../Y/7839.html' title='Multiple used in 11 places.'>waiter</a>;
+<a name='L279'> 279 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L93'>[^]</a><a href='#L266'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

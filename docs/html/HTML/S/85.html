@@ -1,0 +1,163 @@
+<html>
+<head>
+<title>cbench/oflops/example_modules/openflow_dummy/dummy.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1101.html'>oflops</a>/<a href='../files/1103.html'>example_modules</a>/<a href='../files/1111.html'>openflow_dummy</a>/dummy.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L16'>[^]</a><a href='#L127'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L16' title='Defined at 16.'>name</a>
+<li><a href='#L38' title='Defined at 38.'>init</a>
+<li><a href='#L79' title='Defined at 79.'>start</a>
+<li><a href='#L87' title='Defined at 87.'>handle_timer_event</a>
+<li><a href='#L97' title='Defined at 97.'>get_pcap_filter</a>
+<li><a href='#L107' title='Defined at 107.'>handle_pcap_event</a>
+<li><a href='#L111' title='Defined at 111.'>of_event_packet_in</a>
+<li><a href='#L115' title='Defined at 115.'>of_event_echo_request</a>
+<li><a href='#L119' title='Defined at 119.'>of_event_port_status</a>
+<li><a href='#L123' title='Defined at 123.'>of_event_other</a>
+<li><a href='#L127' title='Defined at 127.'>handle_snmp_event</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <font color='darkred'>#include</font> &lt;<a href='829.html'>sys/queue.h</a>&gt;
+<a name='L2'>   2  
+<a name='L3'>   3 <font color='darkred'>#include</font> "<a href='../I/25.html'>context.h</a>"
+<a name='L4'>   4 <font color='darkred'>#include</font> "<a href='17.html'>utils.h</a>"
+<a name='L5'>   5 <font color='darkred'>#include</font> "<a href='../I/47.html'>log.h</a>"
+<a name='L6'>   6 
+<a name='L7'>   7 <i><font color='green'>/** @ingroup modules</font></i>
+<a name='L8'>   8 <i><font color='green'> * Dummy module.</font></i>
+<a name='L9'>   9 <i><font color='green'> * This module implements all the functions of the oflops modules.</font></i>
+<a name='L10'>  10 <i><font color='green'> *</font></i>
+<a name='L11'>  11 <i><font color='green'> * Copyright (C) t-labs, 2010</font></i>
+<a name='L12'>  12 <i><font color='green'> * @author crotsos</font></i>
+<a name='L13'>  13 <i><font color='green'> * @date June, 2010</font></i>
+<a name='L14'>  14 <i><font color='green'> * </font></i>
+<a name='L15'>  15 <i><font color='green'> * @return name of module */</font></i>
+<a name='L16'>  16 <b>char</b> * <a href='../R/3559.html' title='Multiple refered from 876 places.'>name</a>() <font color='red'>{</font>
+<a name='L17'>  17         <b>return</b> "openflow_dummy";
+<a name='L18'>  18 <font color='red'>}</font>
+<a name='L19'>  19 
+<a name='L20'>  20 <i><font color='green'>/** Some constants to help me with conversions</font></i>
+<a name='L21'>  21 <i><font color='green'> */</font></i>
+<a name='L22'>  22 <b>const</b> <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/6626.html' title='Multiple used in 43 places.'>sec_to_usec</a> = 1000000;
+<a name='L23'>  23 <b>const</b> <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/1735.html' title='Multiple used in 39 places.'>byte_to_bits</a> = 8, <a href='../Y/4399.html' title='Multiple used in 39 places.'>mbits_to_bits</a> = 1024*1024;
+<a name='L24'>  24 
+<a name='L25'>  25 <i><font color='green'>/** packet size limits</font></i>
+<a name='L26'>  26 <i><font color='green'> */</font></i>
+<a name='L27'>  27 <font color='darkred'>#define</font> <a href='../R/904.html' title='Multiple refered from 13 places.'>MIN_PKT_SIZE</a> 64
+<a name='L28'>  28 <font color='darkred'>#define</font> <a href='../R/886.html' title='Multiple refered from 13 places.'>MAX_PKT_SIZE</a> 1500
+<a name='L29'>  29 
+<a name='L30'>  30 <i><font color='green'>/** Send sequence</font></i>
+<a name='L31'>  31 <i><font color='green'> */</font></i>
+<a name='L32'>  32 <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/6663.html' title='Multiple used in 15 places.'>sendno</a>;
+<a name='L33'>  33 
+<a name='L34'>  34 <i><font color='green'>/**</font></i>
+<a name='L35'>  35 <i><font color='green'> * Initialization code with parameters</font></i>
+<a name='L36'>  36 <i><font color='green'> * @param ctx </font></i>
+<a name='L37'>  37 <i><font color='green'> */</font></i>
+<a name='L38'>  38 <b>int</b> <a href='../R/3287.html' title='Multiple refered from 18 places.'>init</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>char</b> * <a href='../Y/2069.html' title='Multiple used in 93 places.'>config_str</a>) <font color='red'>{</font>
+<a name='L39'>  39   <b>char</b> *<a href='../Y/5842.html' title='Multiple used in 174 places.'>pos</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L40'>  40   <b>char</b> *<a href='../Y/5638.html' title='Multiple used in 225 places.'>param</a> = <a href='../Y/2069.html' title='Multiple used in 93 places.'>config_str</a>;
+<a name='L41'>  41   <b>char</b> *<a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L42'>  42   <i><font color='green'>//init counters</font></i>
+<a name='L43'>  43   <a href='../Y/6663.html' title='Multiple used in 15 places.'>sendno</a> = 0;
+<a name='L44'>  44   <a href='../Y/955.html' title='Multiple used in 18 places.'>TAILQ_INIT</a>(&amp;<a href='../Y/4550.html' title='Multiple used in 6 places.'>my_tailq_head</a>);
+<a name='L45'>  45   <a href='../Y/3095.html' title='Multiple used in 34 places.'>finished</a> = 0;
+<a name='L46'>  46   <i><font color='green'>//open file for storing measurement</font></i>
+<a name='L47'>  47   <a href='../Y/4410.html' title='Multiple used in 17 places.'>measure_output</a> = <a href='../Y/3190.html' title='Multiple used in 43 places.'>fopen</a>("measure.log", "w");
+<a name='L48'>  48 
+<a name='L49'>  49   <b>while</b>(*<a href='../Y/2069.html' title='Multiple used in 93 places.'>config_str</a> == ' ') <font color='red'>{</font>
+<a name='L50'>  50     <a href='../Y/2069.html' title='Multiple used in 93 places.'>config_str</a>++;
+<a name='L51'>  51   <font color='red'>}</font>
+<a name='L52'>  52   <a href='../Y/5638.html' title='Multiple used in 225 places.'>param</a> = <a href='../Y/2069.html' title='Multiple used in 93 places.'>config_str</a>;
+<a name='L53'>  53   <b>while</b>(1) <font color='red'>{</font>
+<a name='L54'>  54     <a href='../Y/5842.html' title='Multiple used in 174 places.'>pos</a> = <a href='../Y/3795.html' title='Multiple used in 107 places.'>index</a>(<a href='../Y/5638.html' title='Multiple used in 225 places.'>param</a>, ' ');
+<a name='L55'>  55 
+<a name='L56'>  56     <b>if</b>((<a href='../Y/5842.html' title='Multiple used in 174 places.'>pos</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>)) <font color='red'>{</font>
+<a name='L57'>  57       <b>if</b> (*<a href='../Y/5638.html' title='Multiple used in 225 places.'>param</a> != '\0') <font color='red'>{</font>
+<a name='L58'>  58         <a href='../Y/5842.html' title='Multiple used in 174 places.'>pos</a> = <a href='../Y/5638.html' title='Multiple used in 225 places.'>param</a> + <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../Y/5638.html' title='Multiple used in 225 places.'>param</a>) + 1;
+<a name='L59'>  59       <font color='red'>}</font> <b>else</b>
+<a name='L60'>  60         <b>break</b>;
+<a name='L61'>  61     <font color='red'>}</font>
+<a name='L62'>  62     *<a href='../Y/5842.html' title='Multiple used in 174 places.'>pos</a>='\0';
+<a name='L63'>  63     <a href='../Y/5842.html' title='Multiple used in 174 places.'>pos</a>++;
+<a name='L64'>  64     <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a> = <a href='../Y/3795.html' title='Multiple used in 107 places.'>index</a>(<a href='../Y/5638.html' title='Multiple used in 225 places.'>param</a>,'=');
+<a name='L65'>  65     *<a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a> = '\0';
+<a name='L66'>  66     <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>++;
+<a name='L67'>  67     <i><font color='green'>//fprintf(stderr, "param = %s, value = %s\n", param, value);</font></i>
+<a name='L68'>  68     <b>if</b>(<a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L69'>  69       <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("value : %s \n", <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>);
+<a name='L70'>  70     <font color='red'>}</font>
+<a name='L71'>  71   <font color='red'>}</font> 
+<a name='L72'>  72 
+<a name='L73'>  73   <b>return</b> 0;
+<a name='L74'>  74 <font color='red'>}</font>
+<a name='L75'>  75 
+<a name='L76'>  76 <i><font color='green'>/** Initialization</font></i>
+<a name='L77'>  77 <i><font color='green'> * @param ctx pointer to opaque context</font></i>
+<a name='L78'>  78 <i><font color='green'> */</font></i>
+<a name='L79'>  79 <b>int</b> <a href='../R/4512.html' title='Multiple refered from 167 places.'>start</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> * <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>) <font color='red'>{</font>
+<a name='L80'>  80   <b>return</b> 0;
+<a name='L81'>  81 <font color='red'>}</font>
+<a name='L82'>  82 
+<a name='L83'>  83 <i><font color='green'>/** Handle timer event</font></i>
+<a name='L84'>  84 <i><font color='green'> * @param ctx pointer to opaque context</font></i>
+<a name='L85'>  85 <i><font color='green'> * @param te pointer to timer event</font></i>
+<a name='L86'>  86 <i><font color='green'> */</font></i>
+<a name='L87'>  87 <b>int</b> <a href='../R/3193.html' title='Multiple refered from 3 places.'>handle_timer_event</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> * <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>struct</b> <a href='../Y/7377.html' title='Multiple used in 19 places.'>timer_event</a> *<a href='../Y/7295.html' title='Multiple used in 60 places.'>te</a>) <font color='red'>{</font>
+<a name='L88'>  88   <b>return</b> 0;
+<a name='L89'>  89 <font color='red'>}</font>
+<a name='L90'>  90 
+<a name='L91'>  91 <i><font color='green'>/** Register pcap filter.</font></i>
+<a name='L92'>  92 <i><font color='green'> * @param ctx pointer to opaque context</font></i>
+<a name='L93'>  93 <i><font color='green'> * @param ofc enumeration of channel that filter is being asked for</font></i>
+<a name='L94'>  94 <i><font color='green'> * @param filter filter string for pcap</font></i>
+<a name='L95'>  95 <i><font color='green'> * @param buflen length of buffer</font></i>
+<a name='L96'>  96 <i><font color='green'> */</font></i>
+<a name='L97'>  97 <b>int</b> <a href='../R/3180.html' title='Multiple refered from 3 places.'>get_pcap_filter</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <a href='../Y/5076.html' title='Multiple used in 49 places.'>oflops_channel_name</a> <a href='../Y/5060.html' title='Multiple used in 47 places.'>ofc</a>, <b>char</b> * <a href='../Y/3075.html' title='Multiple used in 66 places.'>filter</a>, <b>int</b> <a href='../Y/1713.html' title='Multiple used in 72 places.'>buflen</a>) <font color='red'>{</font>
+<a name='L98'>  98   <b>return</b> <a href='../Y/6891.html' title='Multiple used in 224 places.'>snprintf</a>(<a href='../Y/3075.html' title='Multiple used in 66 places.'>filter</a>,<a href='../Y/1713.html' title='Multiple used in 72 places.'>buflen</a>," ");
+<a name='L99'>  99 <font color='red'>}</font>
+<a name='L100'> 100 
+<a name='L101'> 101 
+<a name='L102'> 102 <i><font color='green'>/** Handle pcap event.</font></i>
+<a name='L103'> 103 <i><font color='green'> * @param ctx pointer to opaque context</font></i>
+<a name='L104'> 104 <i><font color='green'> * @param pe pcap event</font></i>
+<a name='L105'> 105 <i><font color='green'> * @param ch enumeration of channel that pcap event is triggered</font></i>
+<a name='L106'> 106 <i><font color='green'> */</font></i>
+<a name='L107'> 107 <b>int</b> <a href='../R/3191.html' title='Multiple refered from 3 places.'>handle_pcap_event</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>struct</b> <a href='../Y/5671.html' title='Multiple used in 22 places.'>pcap_event</a> * <a href='../Y/5698.html' title='Multiple used in 154 places.'>pe</a>, <a href='../Y/5076.html' title='Multiple used in 49 places.'>oflops_channel_name</a> <a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>) <font color='red'>{</font>
+<a name='L108'> 108   <b>return</b> 0;
+<a name='L109'> 109 <font color='red'>}</font>
+<a name='L110'> 110 
+<a name='L111'> 111 <b>int</b> <a href='../R/3767.html' title='Multiple refered from 3 places.'>of_event_packet_in</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>const</b> <b>struct</b> <a href='../Y/5229.html' title='Multiple used in 18 places.'>ofp_packet_in</a> * <a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>) <font color='red'>{</font>
+<a name='L112'> 112   <b>return</b> 0;
+<a name='L113'> 113 <font color='red'>}</font>
+<a name='L114'> 114 
+<a name='L115'> 115 <b>int</b> <a href='../R/3765.html' title='Multiple refered from 3 places.'>of_event_echo_request</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>const</b> <b>struct</b> <a href='../Y/5176.html' title='Multiple used in 54 places.'>ofp_header</a> * <a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>) <font color='red'>{</font>
+<a name='L116'> 116   <b>return</b> 0;
+<a name='L117'> 117 <font color='red'>}</font>
+<a name='L118'> 118 
+<a name='L119'> 119 <b>int</b> <a href='../R/3768.html' title='Multiple refered from 3 places.'>of_event_port_status</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>const</b> <b>struct</b> <a href='../Y/5300.html' title='Multiple used in 12 places.'>ofp_port_status</a> * <a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>) <font color='red'>{</font>
+<a name='L120'> 120   <b>return</b> 0;
+<a name='L121'> 121 <font color='red'>}</font>
+<a name='L122'> 122 
+<a name='L123'> 123 <b>int</b> <a href='../R/3766.html' title='Multiple refered from 3 places.'>of_event_other</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>const</b> <b>struct</b> <a href='../Y/5176.html' title='Multiple used in 54 places.'>ofp_header</a> * <a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>) <font color='red'>{</font>
+<a name='L124'> 124   <b>return</b> 0;
+<a name='L125'> 125 <font color='red'>}</font>
+<a name='L126'> 126 
+<a name='L127'> 127 <b>int</b> <a href='../R/3192.html' title='Multiple refered from 3 places.'>handle_snmp_event</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> * <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>struct</b> <a href='../Y/6876.html' title='Multiple used in 17 places.'>snmp_event</a> * <a href='../Y/6614.html' title='Multiple used in 47 places.'>se</a>) <font color='red'>{</font>
+<a name='L128'> 128   <b>return</b> 0;
+<a name='L129'> 129 <font color='red'>}</font>
+<a name='L130'> 130                         
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L16'>[^]</a><a href='#L127'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

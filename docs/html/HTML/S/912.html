@@ -1,0 +1,121 @@
+<html>
+<head>
+<title>cbench/openflow/lib/flow.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/flow.h</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L75'>[^]</a><a href='#L87'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/98.html' title='Multiple included from 26 places.'>INCLUDED FROM</a></h2>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L75' title='Defined at 75.'>flow_compare</a>
+<li><a href='#L81' title='Defined at 81.'>flow_equal</a>
+<li><a href='#L87' title='Defined at 87.'>flow_hash</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008, 2009 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> * </font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> * </font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> * </font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> * </font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 <font color='darkred'>#ifndef</font> <a href='../D/1822.html' title='Multiple defined in 2 places.'>FLOW_H</a>
+<a name='L34'>  34 <font color='darkred'>#define</font> <a href='../R/611.html' title='Multiple refered from 2 places.'>FLOW_H</a> 1
+<a name='L35'>  35 
+<a name='L36'>  36 <font color='darkred'>#include</font> &lt;stdbool.h&gt;
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;stdint.h&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;string.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> "<a href='../I/207.html'>hash.h</a>"
+<a name='L40'>  40 <font color='darkred'>#include</font> "<a href='../I/69.html'>util.h</a>"
+<a name='L41'>  41 
+<a name='L42'>  42 <b>struct</b> <a href='../D/8818.html' title='Multiple defined in 3 places.'>ofp_match</a>;
+<a name='L43'>  43 <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a>;
+<a name='L44'>  44 
+<a name='L45'>  45 <i><font color='green'>/* Identification data for a flow.</font></i>
+<a name='L46'>  46 <i><font color='green'>   All fields are in network byte order.</font></i>
+<a name='L47'>  47 <i><font color='green'>   In decreasing order by size, so that flow structures can be hashed or</font></i>
+<a name='L48'>  48 <i><font color='green'>   compared bytewise. */</font></i>
+<a name='L49'>  49 <b>struct</b> <a href='../R/3040.html' title='Multiple refered from 1412 places.'>flow</a> <font color='red'>{</font>
+<a name='L50'>  50     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/5018.html' title='Multiple used in 62 places.'>nw_src</a>;            <i><font color='green'>/* IP source address. */</font></i>
+<a name='L51'>  51     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/5015.html' title='Multiple used in 78 places.'>nw_dst</a>;            <i><font color='green'>/* IP destination address. */</font></i>
+<a name='L52'>  52     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/3786.html' title='Multiple used in 144 places.'>in_port</a>;           <i><font color='green'>/* Input switch port. */</font></i>
+<a name='L53'>  53     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/2464.html' title='Multiple used in 65 places.'>dl_vlan</a>;           <i><font color='green'>/* Input VLAN id. */</font></i>
+<a name='L54'>  54     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/2463.html' title='Multiple used in 81 places.'>dl_type</a>;           <i><font color='green'>/* Ethernet frame type. */</font></i>
+<a name='L55'>  55     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7446.html' title='Multiple used in 54 places.'>tp_src</a>;            <i><font color='green'>/* TCP/UDP source port. */</font></i>
+<a name='L56'>  56     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7444.html' title='Multiple used in 55 places.'>tp_dst</a>;            <i><font color='green'>/* TCP/UDP destination port. */</font></i>
+<a name='L57'>  57     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/2462.html' title='Multiple used in 77 places.'>dl_src</a>[6];          <i><font color='green'>/* Ethernet source address. */</font></i>
+<a name='L58'>  58     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/2461.html' title='Multiple used in 96 places.'>dl_dst</a>[6];          <i><font color='green'>/* Ethernet destination address. */</font></i>
+<a name='L59'>  59     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/2465.html' title='Multiple used in 33 places.'>dl_vlan_pcp</a>;        <i><font color='green'>/* Input VLAN priority. */</font></i>
+<a name='L60'>  60     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5020.html' title='Multiple used in 36 places.'>nw_tos</a>;             <i><font color='green'>/* IPv4 DSCP. */</font></i>
+<a name='L61'>  61     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5017.html' title='Multiple used in 95 places.'>nw_proto</a>;           <i><font color='green'>/* IP protocol. */</font></i>
+<a name='L62'>  62     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[3];
+<a name='L63'>  63 <font color='red'>}</font>;
+<a name='L64'>  64 <a href='../D/522.html' title='Multiple defined in 2 places.'>BUILD_ASSERT_DECL</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a>) == 36);
+<a name='L65'>  65 
+<a name='L66'>  66 <b>int</b> <a href='../D/7839.html' title='Multiple defined in 2 places.'>flow_extract</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/3786.html' title='Multiple used in 144 places.'>in_port</a>, <b>struct</b> <a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a> *);
+<a name='L67'>  67 <b>void</b> <a href='../D/7842.html' title='Multiple defined in 2 places.'>flow_fill_match</a>(<b>struct</b> <a href='../Y/5195.html' title='Multiple used in 19 places.'>ofp_match</a> *, <b>const</b> <b>struct</b> <a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a> *,
+<a name='L68'>  68                      <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7877.html' title='Multiple used in 308 places.'>wildcards</a>);
+<a name='L69'>  69 <b>void</b> <a href='../S/856.html#L246' title='Defined at 246 in cbench/openflow/lib/flow.c.'>flow_print</a>(<a href='../Y/328.html' title='Multiple used in 113 places.'>FILE</a> *, <b>const</b> <b>struct</b> <a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a> *);
+<a name='L70'>  70 <b>static</b> <b>inline</b> <b>int</b> <a href='../S/912.html#L75' title='Defined at 75 in cbench/openflow/lib/flow.h.'>flow_compare</a>(<b>const</b> <b>struct</b> <a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a> *, <b>const</b> <b>struct</b> <a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a> *);
+<a name='L71'>  71 <b>static</b> <b>inline</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../S/912.html#L81' title='Defined at 81 in cbench/openflow/lib/flow.h.'>flow_equal</a>(<b>const</b> <b>struct</b> <a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a> *, <b>const</b> <b>struct</b> <a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a> *);
+<a name='L72'>  72 <b>static</b> <b>inline</b> <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../S/912.html#L87' title='Defined at 87 in cbench/openflow/lib/flow.h.'>flow_hash</a>(<b>const</b> <b>struct</b> <a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a> *, <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/1602.html' title='Multiple used in 9 places.'>basis</a>);
+<a name='L73'>  73 
+<a name='L74'>  74 <b>static</b> <b>inline</b> <b>int</b>
+<a name='L75'>  75 <a href='../R/3042.html' title='Multiple refered from 6 places.'>flow_compare</a>(<b>const</b> <b>struct</b> <a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a> *<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <b>const</b> <b>struct</b> <a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>)
+<a name='L76'>  76 <font color='red'>{</font>
+<a name='L77'>  77     <b>return</b> <a href='../Y/4416.html' title='Multiple used in 69 places.'>memcmp</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <b>sizeof</b> *<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>);
+<a name='L78'>  78 <font color='red'>}</font>
+<a name='L79'>  79 
+<a name='L80'>  80 <b>static</b> <b>inline</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a>
+<a name='L81'>  81 <a href='../S/912.html#L71' title='Refered from 71 in cbench/openflow/lib/flow.h.'>flow_equal</a>(<b>const</b> <b>struct</b> <a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a> *<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <b>const</b> <b>struct</b> <a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>)
+<a name='L82'>  82 <font color='red'>{</font>
+<a name='L83'>  83     <b>return</b> !<a href='../S/912.html#L75' title='Defined at 75 in cbench/openflow/lib/flow.h.'>flow_compare</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>);
+<a name='L84'>  84 <font color='red'>}</font>
+<a name='L85'>  85 
+<a name='L86'>  86 <b>static</b> <b>inline</b> <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a>
+<a name='L87'>  87 <a href='../S/912.html#L72' title='Refered from 72 in cbench/openflow/lib/flow.h.'>flow_hash</a>(<b>const</b> <b>struct</b> <a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a> *<a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a>, <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/1602.html' title='Multiple used in 9 places.'>basis</a>)
+<a name='L88'>  88 <font color='red'>{</font>
+<a name='L89'>  89     <a href='../D/522.html' title='Multiple defined in 2 places.'>BUILD_ASSERT_DECL</a>(!(<b>sizeof</b> *<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a> % <b>sizeof</b>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a>)));
+<a name='L90'>  90     <b>return</b> <a href='../S/813.html#L65' title='Defined at 65 in cbench/openflow/lib/hash.c.'>hash_words</a>((<b>const</b> <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> *) <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>,
+<a name='L91'>  91                       <b>sizeof</b> *<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a> / <b>sizeof</b>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a>), <a href='../Y/1602.html' title='Multiple used in 9 places.'>basis</a>);
+<a name='L92'>  92 <font color='red'>}</font>
+<a name='L93'>  93 
+<a name='L94'>  94 <font color='darkred'>#endif</font> <i><font color='green'>/* flow.h */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L75'>[^]</a><a href='#L87'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

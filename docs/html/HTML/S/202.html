@@ -1,0 +1,169 @@
+<html>
+<head>
+<title>cbench/openflow/udatapath/table.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1143.html'>udatapath</a>/table.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/148.html' title='Multiple included from 19 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> * </font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> * </font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> * </font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> * </font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <i><font color='green'>/* Individual switching tables.  Generally grouped together in a chain (see</font></i>
+<a name='L35'>  35 <i><font color='green'> * chain.h). */</font></i>
+<a name='L36'>  36 
+<a name='L37'>  37 <font color='darkred'>#ifndef</font> <a href='../D/5533.html' title='Multiple defined in 2 places.'>TABLE_H</a>
+<a name='L38'>  38 <font color='darkred'>#define</font> <a href='../R/1625.html' title='Multiple refered from 2 places.'>TABLE_H</a> 1
+<a name='L39'>  39 
+<a name='L40'>  40 <font color='darkred'>#include</font> &lt;stddef.h&gt;
+<a name='L41'>  41 <font color='darkred'>#include</font> &lt;stdint.h&gt;
+<a name='L42'>  42 
+<a name='L43'>  43 <b>struct</b> <a href='../D/7268.html' title='Multiple defined in 2 places.'>datapath</a>; <i><font color='green'>/* Forward declaration for delete operation */</font></i>
+<a name='L44'>  44 <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a>;
+<a name='L45'>  45 <b>struct</b> <a href='../D/9770.html' title='Multiple defined in 2 places.'>sw_flow_key</a>;
+<a name='L46'>  46 <b>struct</b> <a href='../D/8736.html' title='Multiple defined in 3 places.'>ofp_action_header</a>;
+<a name='L47'>  47 <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a>;
+<a name='L48'>  48 
+<a name='L49'>  49 <i><font color='green'>/* Table statistics. */</font></i>
+<a name='L50'>  50 <b>struct</b> <a href='../R/4694.html' title='Multiple refered from 6 places.'>sw_table_stats</a> <font color='red'>{</font>
+<a name='L51'>  51     <b>const</b> <b>char</b> *<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;            <i><font color='green'>/* Human-readable name. */</font></i>
+<a name='L52'>  52     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7877.html' title='Multiple used in 308 places.'>wildcards</a>;          <i><font color='green'>/* Bitmap of OFPFW_* wildcards that are</font></i>
+<a name='L53'>  53 <i><font color='green'>                                    supported by the table. */</font></i>
+<a name='L54'>  54     <b>unsigned</b> <b>int</b> <a href='../Y/4588.html' title='Multiple used in 45 places.'>n_flows</a>;        <i><font color='green'>/* Number of active flows. */</font></i>
+<a name='L55'>  55     <b>unsigned</b> <b>int</b> <a href='../Y/4370.html' title='Multiple used in 32 places.'>max_flows</a>;      <i><font color='green'>/* Flow capacity. */</font></i>
+<a name='L56'>  56     <b>unsigned</b> <b>long</b> <b>int</b> <a href='../Y/4600.html' title='Multiple used in 22 places.'>n_lookup</a>;  <i><font color='green'>/* Number of packets looked up. */</font></i>
+<a name='L57'>  57     <b>unsigned</b> <b>long</b> <b>int</b> <a href='../Y/4601.html' title='Multiple used in 23 places.'>n_matched</a>; <i><font color='green'>/* Number of packets that have hit. */</font></i>
+<a name='L58'>  58 <font color='red'>}</font>;
+<a name='L59'>  59 
+<a name='L60'>  60 <i><font color='green'>/* Position within an iteration of a sw_table.</font></i>
+<a name='L61'>  61 <i><font color='green'> *</font></i>
+<a name='L62'>  62 <i><font color='green'> * The contents are private to the table implementation, except that a position</font></i>
+<a name='L63'>  63 <i><font color='green'> * initialized to all-zero-bits represents the start of a table. */</font></i>
+<a name='L64'>  64 <b>struct</b> <a href='../R/4693.html' title='Multiple refered from 8 places.'>sw_table_position</a> <font color='red'>{</font>
+<a name='L65'>  65     <b>unsigned</b> <b>long</b> <a href='../Y/5911.html' title='Multiple used in 123 places.'>private</a>[4];
+<a name='L66'>  66 <font color='red'>}</font>;
+<a name='L67'>  67 
+<a name='L68'>  68 <i><font color='green'>/* A single table of flows.  */</font></i>
+<a name='L69'>  69 <b>struct</b> <a href='../R/4689.html' title='Multiple refered from 96 places.'>sw_table</a> <font color='red'>{</font>
+<a name='L70'>  70     <i><font color='green'>/* The number of packets that have been looked up and matched,</font></i>
+<a name='L71'>  71 <i><font color='green'>     * respecitvely.  To make these 100% accurate, they should be atomic.  </font></i>
+<a name='L72'>  72 <i><font color='green'>     * However, we're primarily concerned about speed. */</font></i>
+<a name='L73'>  73     <b>unsigned</b> <b>long</b> <b>long</b> <a href='../Y/4600.html' title='Multiple used in 22 places.'>n_lookup</a>;
+<a name='L74'>  74     <b>unsigned</b> <b>long</b> <b>long</b> <a href='../Y/4601.html' title='Multiple used in 23 places.'>n_matched</a>;
+<a name='L75'>  75 
+<a name='L76'>  76     <i><font color='green'>/* Searches 'table' for a flow matching 'key', which must not have any</font></i>
+<a name='L77'>  77 <i><font color='green'>     * wildcard fields.  Returns the flow if successful, a null pointer</font></i>
+<a name='L78'>  78 <i><font color='green'>     * otherwise. */</font></i>
+<a name='L79'>  79     <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a> *(*<a href='../Y/4243.html' title='Multiple used in 16 places.'>lookup</a>)(<b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *<a href='../Y/7225.html' title='Multiple used in 105 places.'>table</a>,
+<a name='L80'>  80                               <b>const</b> <b>struct</b> <a href='../D/9770.html' title='Multiple defined in 2 places.'>sw_flow_key</a> *<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>);
+<a name='L81'>  81 
+<a name='L82'>  82     <i><font color='green'>/* Inserts 'flow' into 'table', replacing any duplicate flow.  Returns</font></i>
+<a name='L83'>  83 <i><font color='green'>     * 0 if successful or a negative error.  Error can be due to an</font></i>
+<a name='L84'>  84 <i><font color='green'>     * over-capacity table or because the flow is not one of the kind that</font></i>
+<a name='L85'>  85 <i><font color='green'>     * the table accepts.</font></i>
+<a name='L86'>  86 <i><font color='green'>     *</font></i>
+<a name='L87'>  87 <i><font color='green'>     * If successful, 'flow' becomes owned by 'table', otherwise it is</font></i>
+<a name='L88'>  88 <i><font color='green'>     * retained by the caller. */</font></i>
+<a name='L89'>  89     <b>int</b> (*<a href='../Y/3843.html' title='Multiple used in 16 places.'>insert</a>)(<b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *<a href='../Y/7225.html' title='Multiple used in 105 places.'>table</a>, <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a> *<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>);
+<a name='L90'>  90 
+<a name='L91'>  91     <i><font color='green'>/* Modifies the actions in 'table' that match 'key'.  If 'strict'</font></i>
+<a name='L92'>  92 <i><font color='green'>     * set, wildcards and priority must match.  Returns the number of flows</font></i>
+<a name='L93'>  93 <i><font color='green'>     * that were modified. */</font></i>
+<a name='L94'>  94     <b>int</b> (*<a href='../Y/4488.html' title='Multiple used in 19 places.'>modify</a>)(<b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *<a href='../Y/7225.html' title='Multiple used in 105 places.'>table</a>, <b>const</b> <b>struct</b> <a href='../D/9770.html' title='Multiple defined in 2 places.'>sw_flow_key</a> *<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>,
+<a name='L95'>  95             <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>, <b>int</b> <a href='../Y/7092.html' title='Multiple used in 128 places.'>strict</a>,
+<a name='L96'>  96             <b>const</b> <b>struct</b> <a href='../D/8736.html' title='Multiple defined in 3 places.'>ofp_action_header</a> *<a href='../Y/1294.html' title='Multiple used in 157 places.'>actions</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/1295.html' title='Multiple used in 192 places.'>actions_len</a>);
+<a name='L97'>  97 
+<a name='L98'>  98     <i><font color='green'>/* Checks whether 'table' has an equal priotiry  entry of thethat conflicts</font></i>
+<a name='L99'>  99 <i><font color='green'>     * with 'key'.  If 'strict' is set, wildcards must match.</font></i>
+<a name='L100'> 100 <i><font color='green'>     * Returns the number of flows that were modified. */</font></i>
+<a name='L101'> 101     <b>int</b> (*<a href='../Y/3558.html' title='Multiple used in 12 places.'>has_conflict</a>)(<b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *<a href='../Y/7225.html' title='Multiple used in 105 places.'>table</a>, <b>const</b> <b>struct</b> <a href='../D/9770.html' title='Multiple defined in 2 places.'>sw_flow_key</a> *<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>,
+<a name='L102'> 102                         <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>, <b>int</b> <a href='../Y/7092.html' title='Multiple used in 128 places.'>strict</a>);
+<a name='L103'> 103 
+<a name='L104'> 104     <i><font color='green'>/* Deletes from 'table' any and all flows that match 'key' from</font></i>
+<a name='L105'> 105 <i><font color='green'>     * 'table'.  If 'out_port' is not OFPP_NONE, then matching entries</font></i>
+<a name='L106'> 106 <i><font color='green'>     * must have that port as an argument for an output action.  If </font></i>
+<a name='L107'> 107 <i><font color='green'>     * 'strict' is set, wildcards and priority must match.  Returns the</font></i>
+<a name='L108'> 108 <i><font color='green'>     * number of flows that were deleted. */</font></i>
+<a name='L109'> 109     <b>int</b> (*<a href='../Y/2320.html' title='Multiple used in 25 places.'>delete</a>)(<b>struct</b> <a href='../D/7268.html' title='Multiple defined in 2 places.'>datapath</a> *<a href='../Y/2499.html' title='Multiple used in 612 places.'>dp</a>, <b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *<a href='../Y/7225.html' title='Multiple used in 105 places.'>table</a>, 
+<a name='L110'> 110                   <b>const</b> <b>struct</b> <a href='../D/9770.html' title='Multiple defined in 2 places.'>sw_flow_key</a> *<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>, 
+<a name='L111'> 111                   <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5548.html' title='Multiple used in 164 places.'>out_port</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>, <b>int</b> <a href='../Y/7092.html' title='Multiple used in 128 places.'>strict</a>);
+<a name='L112'> 112 
+<a name='L113'> 113     <i><font color='green'>/* Performs timeout processing on all the flow entries in 'table'.</font></i>
+<a name='L114'> 114 <i><font color='green'>     * Appends all the flow entries removed from 'table' to 'deleted' for the</font></i>
+<a name='L115'> 115 <i><font color='green'>     * caller to free. */</font></i>
+<a name='L116'> 116     <b>void</b> (*<a href='../D/9898.html' title='Multiple defined in 2 places.'>timeout</a>)(<b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *<a href='../Y/7225.html' title='Multiple used in 105 places.'>table</a>, <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> *<a href='../Y/2322.html' title='Multiple used in 29 places.'>deleted</a>);
+<a name='L117'> 117 
+<a name='L118'> 118     <i><font color='green'>/* Destroys 'table', which must not have any users. */</font></i>
+<a name='L119'> 119     <b>void</b> (*<a href='../D/7308.html' title='Multiple defined in 12 places.'>destroy</a>)(<b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *<a href='../Y/7225.html' title='Multiple used in 105 places.'>table</a>);
+<a name='L120'> 120 
+<a name='L121'> 121     <i><font color='green'>/* Iterates through the flow entries in 'table', passing each one</font></i>
+<a name='L122'> 122 <i><font color='green'>     * matches 'key' and output port 'out_port' to 'callback'.  The </font></i>
+<a name='L123'> 123 <i><font color='green'>     * callback function should return 0 to continue iteration or a </font></i>
+<a name='L124'> 124 <i><font color='green'>     * nonzero error code to stop.  The iterator function returns either </font></i>
+<a name='L125'> 125 <i><font color='green'>     * 0 if the table iteration completed or the value returned by the </font></i>
+<a name='L126'> 126 <i><font color='green'>     * callback function otherwise.</font></i>
+<a name='L127'> 127 <i><font color='green'>     *</font></i>
+<a name='L128'> 128 <i><font color='green'>     * The iteration starts at 'position', which may be initialized to</font></i>
+<a name='L129'> 129 <i><font color='green'>     * all-zero-bits to iterate from the beginning of the table.  If the</font></i>
+<a name='L130'> 130 <i><font color='green'>     * iteration terminates due to an error from the callback function,</font></i>
+<a name='L131'> 131 <i><font color='green'>     * 'position' is updated to a value that can be passed back to the</font></i>
+<a name='L132'> 132 <i><font color='green'>     * iterator function to resume iteration later with the following</font></i>
+<a name='L133'> 133 <i><font color='green'>     * flow. */</font></i>
+<a name='L134'> 134     <b>int</b> (*<a href='../Y/3961.html' title='Multiple used in 22 places.'>iterate</a>)(<b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *<a href='../Y/7225.html' title='Multiple used in 105 places.'>table</a>,
+<a name='L135'> 135                <b>const</b> <b>struct</b> <a href='../D/9770.html' title='Multiple defined in 2 places.'>sw_flow_key</a> *<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5548.html' title='Multiple used in 164 places.'>out_port</a>,
+<a name='L136'> 136                <b>struct</b> <a href='../D/9781.html' title='Multiple defined in 2 places.'>sw_table_position</a> *<a href='../Y/5843.html' title='Multiple used in 69 places.'>position</a>,
+<a name='L137'> 137                <b>int</b> (*<a href='../Y/1775.html' title='Multiple used in 63 places.'>callback</a>)(<b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a> *<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>, <b>void</b> *<a href='../Y/5911.html' title='Multiple used in 123 places.'>private</a>),
+<a name='L138'> 138                <b>void</b> *<a href='../Y/5911.html' title='Multiple used in 123 places.'>private</a>);
+<a name='L139'> 139 
+<a name='L140'> 140     <i><font color='green'>/* Dumps statistics for 'table' into 'stats'. */</font></i>
+<a name='L141'> 141     <b>void</b> (*<a href='../Y/7023.html' title='Multiple used in 238 places.'>stats</a>)(<b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *<a href='../Y/7225.html' title='Multiple used in 105 places.'>table</a>, <b>struct</b> <a href='../D/9782.html' title='Multiple defined in 2 places.'>sw_table_stats</a> *<a href='../Y/7023.html' title='Multiple used in 238 places.'>stats</a>);
+<a name='L142'> 142 <font color='red'>}</font>;
+<a name='L143'> 143 
+<a name='L144'> 144 <b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *<a href='../D/9810.html' title='Multiple defined in 2 places.'>table_hash_create</a>(<b>unsigned</b> <b>int</b> <a href='../Y/5789.html' title='Multiple used in 12 places.'>polynomial</a>,
+<a name='L145'> 145                                    <b>unsigned</b> <b>int</b> <a href='../Y/4572.html' title='Multiple used in 12 places.'>n_buckets</a>);
+<a name='L146'> 146 <b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *<a href='../D/9800.html' title='Multiple defined in 2 places.'>table_hash2_create</a>(<b>unsigned</b> <b>int</b> <a href='../Y/5786.html' title='Multiple used in 6 places.'>poly0</a>, <b>unsigned</b> <b>int</b> <a href='../Y/1691.html' title='Multiple used in 6 places.'>buckets0</a>,
+<a name='L147'> 147                                     <b>unsigned</b> <b>int</b> <a href='../Y/5787.html' title='Multiple used in 10 places.'>poly1</a>, <b>unsigned</b> <b>int</b> <a href='../Y/1692.html' title='Multiple used in 6 places.'>buckets1</a>);
+<a name='L148'> 148 <b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *<a href='../D/9820.html' title='Multiple defined in 2 places.'>table_linear_create</a>(<b>unsigned</b> <b>int</b> <a href='../Y/4370.html' title='Multiple used in 32 places.'>max_flows</a>);
+<a name='L149'> 149 
+<a name='L150'> 150 <font color='darkred'>#endif</font> <i><font color='green'>/* table.h */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

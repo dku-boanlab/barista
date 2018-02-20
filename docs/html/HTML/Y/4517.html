@@ -1,0 +1,960 @@
+<html>
+<head>
+<title>msg</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/9.html#L83'>msg</a>                83 app_events/app_event.c     msg_t msg = {0}; \
+<a href='../S/9.html#L84'>msg</a>                84 app_events/app_event.c     msg.id = i; \
+<a href='../S/9.html#L85'>msg</a>                85 app_events/app_event.c     msg.type = t; \
+<a href='../S/9.html#L86'>msg</a>                86 app_events/app_event.c     memmove(msg.data, d, s); \
+<a href='../S/9.html#L87'>msg</a>                87 app_events/app_event.c     zmq_send(c-&gt;push_sock, &amp;msg, sizeof(msg_t), 0); \
+<a href='../S/9.html#L91'>msg</a>                91 app_events/app_event.c     msg_t msg = {0}; \
+<a href='../S/9.html#L92'>msg</a>                92 app_events/app_event.c     msg.id = i; \
+<a href='../S/9.html#L93'>msg</a>                93 app_events/app_event.c     msg.type = t; \
+<a href='../S/9.html#L94'>msg</a>                94 app_events/app_event.c     memmove(msg.data, d, s); \
+<a href='../S/9.html#L95'>msg</a>                95 app_events/app_event.c     zmq_send(c-&gt;req_sock, &amp;msg, sizeof(msg_t), 0); \
+<a href='../S/9.html#L96'>msg</a>                96 app_events/app_event.c     zmq_recv(c-&gt;req_sock, &amp;msg, sizeof(msg_t), 0); \
+<a href='../S/9.html#L97'>msg</a>                97 app_events/app_event.c     memmove(o-&gt;data, msg.data, s); \
+<a href='../S/9.html#L98'>msg</a>                98 app_events/app_event.c     msg.ret; \
+<a href='../S/9.html#L305'>msg</a>               305 app_events/app_event.c         msg_t msg = {0};
+<a href='../S/9.html#L307'>msg</a>               307 app_events/app_event.c         zmq_recv(recv, &amp;msg, sizeof(msg_t), 0);
+<a href='../S/9.html#L309'>msg</a>               309 app_events/app_event.c         switch (msg.type) {
+<a href='../S/9.html#L314'>msg</a>               314 app_events/app_event.c             sw_rw_raise(msg.id, AV_SW_GET_INFO, sizeof(switch_t), (switch_t *)msg.data);
+<a href='../S/9.html#L317'>msg</a>               317 app_events/app_event.c             sw_rw_raise(msg.id, AV_SW_GET_ALL_INFO, sizeof(switch_t), (switch_t *)msg.data);
+<a href='../S/9.html#L320'>msg</a>               320 app_events/app_event.c             host_rw_raise(msg.id, AV_HOST_GET_INFO, sizeof(host_t), (host_t *)msg.data);
+<a href='../S/9.html#L323'>msg</a>               323 app_events/app_event.c             host_rw_raise(msg.id, AV_HOST_GET_ALL_INFO, sizeof(host_t), (host_t *)msg.data);
+<a href='../S/9.html#L326'>msg</a>               326 app_events/app_event.c             port_rw_raise(msg.id, AV_LINK_GET_INFO, sizeof(port_t), (port_t *)msg.data);
+<a href='../S/9.html#L329'>msg</a>               329 app_events/app_event.c             port_rw_raise(msg.id, AV_LINK_GET_ALL_INFO, sizeof(port_t), (port_t *)msg.data);
+<a href='../S/9.html#L332'>msg</a>               332 app_events/app_event.c             flow_rw_raise(msg.id, AV_FLOW_GET_INFO, sizeof(flow_t), (flow_t *)msg.data);
+<a href='../S/9.html#L335'>msg</a>               335 app_events/app_event.c             flow_rw_raise(msg.id, AV_FLOW_GET_ALL_INFO, sizeof(flow_t), (flow_t *)msg.data);
+<a href='../S/9.html#L342'>msg</a>               342 app_events/app_event.c         zmq_send(recv, &amp;msg, sizeof(msg_t), 0);
+<a href='../S/9.html#L368'>msg</a>               368 app_events/app_event.c         msg_t msg = {0};
+<a href='../S/9.html#L370'>msg</a>               370 app_events/app_event.c         zmq_recv(av_pull_sock, &amp;msg, sizeof(msg_t), 0);
+<a href='../S/9.html#L372'>msg</a>               372 app_events/app_event.c         switch (msg.type) {
+<a href='../S/9.html#L377'>msg</a>               377 app_events/app_event.c             pktin_av_raise(msg.id, AV_DP_RECEIVE_PACKET, sizeof(pktin_t), (const pktin_t *)msg.data);
+<a href='../S/9.html#L380'>msg</a>               380 app_events/app_event.c             flow_av_raise(msg.id, AV_DP_FLOW_EXPIRED, sizeof(flow_t), (const flow_t *)msg.data);
+<a href='../S/9.html#L383'>msg</a>               383 app_events/app_event.c             flow_av_raise(msg.id, AV_DP_FLOW_DELETED, sizeof(flow_t), (const flow_t *)msg.data);
+<a href='../S/9.html#L386'>msg</a>               386 app_events/app_event.c             port_av_raise(msg.id, AV_DP_PORT_ADDED, sizeof(port_t), (const port_t *)msg.data);
+<a href='../S/9.html#L389'>msg</a>               389 app_events/app_event.c             port_av_raise(msg.id, AV_DP_PORT_MODIFIED, sizeof(port_t), (const port_t *)msg.data);
+<a href='../S/9.html#L392'>msg</a>               392 app_events/app_event.c             port_av_raise(msg.id, AV_DP_PORT_DELETED, sizeof(port_t), (const port_t *)msg.data);
+<a href='../S/9.html#L398'>msg</a>               398 app_events/app_event.c             pktout_av_raise(msg.id, AV_DP_SEND_PACKET, sizeof(pktout_t), (const pktout_t *)msg.data);
+<a href='../S/9.html#L401'>msg</a>               401 app_events/app_event.c             flow_av_raise(msg.id, AV_DP_INSERT_FLOW, sizeof(flow_t), (const flow_t *)msg.data);
+<a href='../S/9.html#L404'>msg</a>               404 app_events/app_event.c             flow_av_raise(msg.id, AV_DP_MODIFY_FLOW, sizeof(flow_t), (const flow_t *)msg.data);
+<a href='../S/9.html#L407'>msg</a>               407 app_events/app_event.c             flow_av_raise(msg.id, AV_DP_DELETE_FLOW, sizeof(flow_t), (const flow_t *)msg.data);
+<a href='../S/9.html#L413'>msg</a>               413 app_events/app_event.c             log_av_raise(msg.id, AV_LOG_DEBUG, strlen((const char *)msg.data), (const char *)msg.data);
+<a href='../S/9.html#L416'>msg</a>               416 app_events/app_event.c             log_av_raise(msg.id, AV_LOG_INFO, strlen((const char *)msg.data), (const char *)msg.data);
+<a href='../S/9.html#L419'>msg</a>               419 app_events/app_event.c             log_av_raise(msg.id, AV_LOG_WARN, strlen((const char *)msg.data), (const char *)msg.data);
+<a href='../S/9.html#L422'>msg</a>               422 app_events/app_event.c             log_av_raise(msg.id, AV_LOG_ERROR, strlen((const char *)msg.data), (const char *)msg.data);
+<a href='../S/9.html#L425'>msg</a>               425 app_events/app_event.c             log_av_raise(msg.id, AV_LOG_FATAL, strlen((const char *)msg.data), (const char *)msg.data);
+<a href='../S/28.html#L26'>msg</a>                26 cbench/oflops/cbench/fakeswitch.c static int debug_msg(struct fakeswitch * fs, char * msg, ...);
+<a href='../S/28.html#L29'>msg</a>                29 cbench/oflops/cbench/fakeswitch.c static int parse_set_config(struct ofp_header * msg);
+<a href='../S/28.html#L183'>msg</a>               183 cbench/oflops/cbench/fakeswitch.c static int parse_set_config(struct ofp_header * msg) {
+<a href='../S/28.html#L185'>msg</a>               185 cbench/oflops/cbench/fakeswitch.c 	assert(msg-&gt;type == OFPT_SET_CONFIG);
+<a href='../S/28.html#L186'>msg</a>               186 cbench/oflops/cbench/fakeswitch.c 	sc = (struct ofp_switch_config *) msg;
+<a href='../S/28.html#L546'>msg</a>               546 cbench/oflops/cbench/fakeswitch.c static int debug_msg(struct fakeswitch * fs, char * msg, ...)
+<a href='../S/28.html#L552'>msg</a>               552 cbench/oflops/cbench/fakeswitch.c     va_start(aq,msg);
+<a href='../S/28.html#L553'>msg</a>               553 cbench/oflops/cbench/fakeswitch.c     vfprintf(stderr,msg,aq);
+<a href='../S/28.html#L554'>msg</a>               554 cbench/oflops/cbench/fakeswitch.c     if(msg[strlen(msg)-1] != '\n')
+<a href='../S/108.html#L281'>msg</a>               281 cbench/oflops/example_modules/openflow_action_delay/action_delay.c   char msg[1024];
+<a href='../S/108.html#L294'>msg</a>               294 cbench/oflops/example_modules/openflow_action_delay/action_delay.c   snprintf(msg, 1024, "OFPT_ERROR_DELAY:%lu", (long unsigned)delay_false_modificaton);
+<a href='../S/108.html#L295'>msg</a>               295 cbench/oflops/example_modules/openflow_action_delay/action_delay.c   oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/108.html#L296'>msg</a>               296 cbench/oflops/example_modules/openflow_action_delay/action_delay.c   snprintf(msg, 1024, "OFPT_INSERT_DELAY:%lu", (long unsigned)delay_modificaton);
+<a href='../S/108.html#L297'>msg</a>               297 cbench/oflops/example_modules/openflow_action_delay/action_delay.c   oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/108.html#L331'>msg</a>               331 cbench/oflops/example_modules/openflow_action_delay/action_delay.c     snprintf(msg, 1024, "statistics:port:%d:%u:%u:%u:%.4f:%d", 
+<a href='../S/108.html#L335'>msg</a>               335 cbench/oflops/example_modules/openflow_action_delay/action_delay.c     oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/108.html#L341'>msg</a>               341 cbench/oflops/example_modules/openflow_action_delay/action_delay.c       snprintf(msg, 1024, "%u", (uint32_t)delay[xid]);
+<a href='../S/108.html#L342'>msg</a>               342 cbench/oflops/example_modules/openflow_action_delay/action_delay.c       oflops_log(now, OFPT_ECHO_REPLY_MSG, msg);
+<a href='../S/108.html#L353'>msg</a>               353 cbench/oflops/example_modules/openflow_action_delay/action_delay.c   snprintf(msg, 1024, "statistics:echo:%u:%u:%u:%d", mean, median, std, (trans_id - 1));
+<a href='../S/108.html#L354'>msg</a>               354 cbench/oflops/example_modules/openflow_action_delay/action_delay.c   oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/108.html#L460'>msg</a>               460 cbench/oflops/example_modules/openflow_action_delay/action_delay.c   char msg[1024];
+<a href='../S/108.html#L494'>msg</a>               494 cbench/oflops/example_modules/openflow_action_delay/action_delay.c 	  snprintf(msg, 1024, "%d:%d", ntohs(err_p-&gt;type), ntohs(err_p-&gt;code));
+<a href='../S/108.html#L495'>msg</a>               495 cbench/oflops/example_modules/openflow_action_delay/action_delay.c 	  oflops_log(pe-&gt;pcaphdr.ts, OFPT_ERROR_MSG, msg);
+<a href='../S/108.html#L496'>msg</a>               496 cbench/oflops/example_modules/openflow_action_delay/action_delay.c 	  fprintf(stderr, "OFPT_ERROR_MSG:%s\n", msg);
+<a href='../S/108.html#L553'>msg</a>               553 cbench/oflops/example_modules/openflow_action_delay/action_delay.c   char msg[1024], out_buf[1024];
+<a href='../S/108.html#L559'>msg</a>               559 cbench/oflops/example_modules/openflow_action_delay/action_delay.c     snprint_value(msg, len, vars-&gt;name, vars-&gt;name_length, vars);
+<a href='../S/108.html#L563'>msg</a>               563 cbench/oflops/example_modules/openflow_action_delay/action_delay.c 	snprintf(out_buf, len, "cpu : %s %%", msg);
+<a href='../S/108.html#L573'>msg</a>               573 cbench/oflops/example_modules/openflow_action_delay/action_delay.c 		 (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/108.html#L582'>msg</a>               582 cbench/oflops/example_modules/openflow_action_delay/action_delay.c 		 (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/75.html#L115'>msg</a>               115 cbench/oflops/example_modules/openflow_action_install/action.c   char msg[1024];
+<a href='../S/75.html#L123'>msg</a>               123 cbench/oflops/example_modules/openflow_action_install/action.c   snprintf(msg, 1024,  "Intializing module %s", name());
+<a href='../S/75.html#L127'>msg</a>               127 cbench/oflops/example_modules/openflow_action_install/action.c   oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/75.html#L207'>msg</a>               207 cbench/oflops/example_modules/openflow_action_install/action.c   char msg[1024];
+<a href='../S/75.html#L245'>msg</a>               245 cbench/oflops/example_modules/openflow_action_install/action.c     snprintf(msg, 1024, "statistics:port:%d:%lld:%lld:%.4f:%d", 
+<a href='../S/75.html#L247'>msg</a>               247 cbench/oflops/example_modules/openflow_action_install/action.c     oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/75.html#L349'>msg</a>               349 cbench/oflops/example_modules/openflow_action_install/action.c   char msg[1024];
+<a href='../S/75.html#L366'>msg</a>               366 cbench/oflops/example_modules/openflow_action_install/action.c 	snprintf(msg, 1024, "OFPT_ERROR(type: %d, code: %d)", ntohs(err_p-&gt;type), ntohs(err_p-&gt;code));
+<a href='../S/75.html#L367'>msg</a>               367 cbench/oflops/example_modules/openflow_action_install/action.c 	oflops_log(pe-&gt;pcaphdr.ts, OFPT_ERROR_MSG, msg);
+<a href='../S/75.html#L368'>msg</a>               368 cbench/oflops/example_modules/openflow_action_install/action.c 	fprintf(stderr, "%s\n", msg);
+<a href='../S/75.html#L378'>msg</a>               378 cbench/oflops/example_modules/openflow_action_install/action.c       snprintf(msg, 1024, "INSERT_DELAY:%d", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/75.html#L379'>msg</a>               379 cbench/oflops/example_modules/openflow_action_install/action.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/75.html#L430'>msg</a>               430 cbench/oflops/example_modules/openflow_action_install/action.c   char msg[1024], log[1024];
+<a href='../S/75.html#L434'>msg</a>               434 cbench/oflops/example_modules/openflow_action_install/action.c     snprint_value(msg, len, vars-&gt;name, vars-&gt;name_length, vars);
+<a href='../S/75.html#L437'>msg</a>               437 cbench/oflops/example_modules/openflow_action_install/action.c       snprintf(log, len, "cpu : %s %%", msg);
+<a href='../S/75.html#L445'>msg</a>               445 cbench/oflops/example_modules/openflow_action_install/action.c 		   (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/75.html#L454'>msg</a>               454 cbench/oflops/example_modules/openflow_action_install/action.c 		   (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/77.html#L271'>msg</a>               271 cbench/oflops/example_modules/openflow_action_measurement/action.c   char msg[1024];
+<a href='../S/77.html#L283'>msg</a>               283 cbench/oflops/example_modules/openflow_action_measurement/action.c   snprintf(msg, 1024, "OFPT_ERROR_DELAY:%lld", delay_false_modificaton);
+<a href='../S/77.html#L284'>msg</a>               284 cbench/oflops/example_modules/openflow_action_measurement/action.c   oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/77.html#L285'>msg</a>               285 cbench/oflops/example_modules/openflow_action_measurement/action.c   snprintf(msg, 1024, "OFPT_INSERT_DELAY:%lld", delay_modificaton);
+<a href='../S/77.html#L286'>msg</a>               286 cbench/oflops/example_modules/openflow_action_measurement/action.c   oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/77.html#L319'>msg</a>               319 cbench/oflops/example_modules/openflow_action_measurement/action.c     snprintf(msg, 1024, "statistics:port:%d:%lld:%lld:%.4f:%d", 
+<a href='../S/77.html#L321'>msg</a>               321 cbench/oflops/example_modules/openflow_action_measurement/action.c     oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/77.html#L332'>msg</a>               332 cbench/oflops/example_modules/openflow_action_measurement/action.c   snprintf(msg, 1024, "ofp_echo_statistics:%lld:%lld", 
+<a href='../S/77.html#L334'>msg</a>               334 cbench/oflops/example_modules/openflow_action_measurement/action.c   oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/77.html#L438'>msg</a>               438 cbench/oflops/example_modules/openflow_action_measurement/action.c   char msg[1024];
+<a href='../S/77.html#L465'>msg</a>               465 cbench/oflops/example_modules/openflow_action_measurement/action.c 	  snprintf(msg, 1024, "%d", time_diff(&amp;ofp_ping_timestamp[ntohl(ofp-&gt;xid)], &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/77.html#L466'>msg</a>               466 cbench/oflops/example_modules/openflow_action_measurement/action.c 	  oflops_log(pe-&gt;pcaphdr.ts, OFPT_ECHO_REPLY_MSG, msg);
+<a href='../S/77.html#L474'>msg</a>               474 cbench/oflops/example_modules/openflow_action_measurement/action.c 	  snprintf(msg, 1024, "%d:%d", ntohs(err_p-&gt;type), ntohs(err_p-&gt;code));
+<a href='../S/77.html#L475'>msg</a>               475 cbench/oflops/example_modules/openflow_action_measurement/action.c 	  oflops_log(pe-&gt;pcaphdr.ts, OFPT_ERROR_MSG, msg);
+<a href='../S/77.html#L476'>msg</a>               476 cbench/oflops/example_modules/openflow_action_measurement/action.c 	  fprintf(stderr, "OFPT_ERROR_MSG:%s\n", msg);
+<a href='../S/77.html#L531'>msg</a>               531 cbench/oflops/example_modules/openflow_action_measurement/action.c   char msg[1024], log[1024];
+<a href='../S/77.html#L537'>msg</a>               537 cbench/oflops/example_modules/openflow_action_measurement/action.c     snprint_value(msg, len, vars-&gt;name, vars-&gt;name_length, vars);
+<a href='../S/77.html#L540'>msg</a>               540 cbench/oflops/example_modules/openflow_action_measurement/action.c       snprintf(log, len, "cpu : %s %%", msg);
+<a href='../S/77.html#L548'>msg</a>               548 cbench/oflops/example_modules/openflow_action_measurement/action.c 		   (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/77.html#L557'>msg</a>               557 cbench/oflops/example_modules/openflow_action_measurement/action.c 		   (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/73.html#L135'>msg</a>               135 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c   char msg[1024];
+<a href='../S/73.html#L143'>msg</a>               143 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c   snprintf(msg, 1024,  "Intializing module %s", name());
+<a href='../S/73.html#L152'>msg</a>               152 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c   oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/73.html#L226'>msg</a>               226 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c   char msg[1024];
+<a href='../S/73.html#L276'>msg</a>               276 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c       snprintf(msg, 1024, "statistics:port:%d:%u:%u:%u:%.4f:%d", 
+<a href='../S/73.html#L280'>msg</a>               280 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c       oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/73.html#L287'>msg</a>               287 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c     snprintf(msg, 1024, "OFP_ECHO:%d:%ld.%06ld:%ld.%06ld", i, echo_data[i].snd.tv_sec, echo_data[i].snd.tv_usec, 
+<a href='../S/73.html#L289'>msg</a>               289 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c     oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/73.html#L298'>msg</a>               298 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c     snprintf(msg, 1024, "statistics:echo:%u:%u:%u:%d", mean, median, std, echo_data_count);
+<a href='../S/73.html#L299'>msg</a>               299 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c     oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/73.html#L400'>msg</a>               400 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c   char msg[1024];
+<a href='../S/73.html#L417'>msg</a>               417 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c 	snprintf(msg, 1024, "OFPT_ERROR(type: %d, code: %d)", ntohs(err_p-&gt;type), ntohs(err_p-&gt;code));
+<a href='../S/73.html#L418'>msg</a>               418 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c 	oflops_log(pe-&gt;pcaphdr.ts, OFPT_ERROR_MSG, msg);
+<a href='../S/73.html#L419'>msg</a>               419 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c 	fprintf(stderr, "%s\n", msg);
+<a href='../S/73.html#L442'>msg</a>               442 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/73.html#L443'>msg</a>               443 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c       snprintf(msg, 1024, "INSERT_DELAY:%d", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/73.html#L444'>msg</a>               444 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/73.html#L496'>msg</a>               496 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c   char msg[1024], log[1024];
+<a href='../S/73.html#L500'>msg</a>               500 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c     snprint_value(msg, len, vars-&gt;name, vars-&gt;name_length, vars);
+<a href='../S/73.html#L507'>msg</a>               507 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c 		 (int)vars-&gt;name[ vars-&gt;name_length - 1], msg);
+<a href='../S/73.html#L518'>msg</a>               518 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c 		 (int)(int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/73.html#L528'>msg</a>               528 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c 		 (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/100.html#L140'>msg</a>               140 cbench/oflops/example_modules/openflow_add_flow/add_flow.c   char msg[1024];
+<a href='../S/100.html#L148'>msg</a>               148 cbench/oflops/example_modules/openflow_add_flow/add_flow.c   snprintf(msg, 1024,  "Intializing module %s", name());
+<a href='../S/100.html#L158'>msg</a>               158 cbench/oflops/example_modules/openflow_add_flow/add_flow.c   oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/100.html#L234'>msg</a>               234 cbench/oflops/example_modules/openflow_add_flow/add_flow.c   char msg[1024];
+<a href='../S/100.html#L284'>msg</a>               284 cbench/oflops/example_modules/openflow_add_flow/add_flow.c       snprintf(msg, 1024, "statistics:port:%d:%u:%u:%u:%.4f:%d", 
+<a href='../S/100.html#L288'>msg</a>               288 cbench/oflops/example_modules/openflow_add_flow/add_flow.c       oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/100.html#L295'>msg</a>               295 cbench/oflops/example_modules/openflow_add_flow/add_flow.c     snprintf(msg, 1024, "OFP_ECHO:%d:%ld.%06ld:%ld.%06ld", i, echo_data[i].snd.tv_sec, echo_data[i].snd.tv_usec, 
+<a href='../S/100.html#L297'>msg</a>               297 cbench/oflops/example_modules/openflow_add_flow/add_flow.c     oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/100.html#L306'>msg</a>               306 cbench/oflops/example_modules/openflow_add_flow/add_flow.c     snprintf(msg, 1024, "statistics:echo:%u:%u:%u:%d", mean, median, std, echo_data_count);
+<a href='../S/100.html#L307'>msg</a>               307 cbench/oflops/example_modules/openflow_add_flow/add_flow.c     oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/100.html#L416'>msg</a>               416 cbench/oflops/example_modules/openflow_add_flow/add_flow.c   char msg[1024];
+<a href='../S/100.html#L433'>msg</a>               433 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	snprintf(msg, 1024, "OFPT_ERROR(type: %d, code: %d)", ntohs(err_p-&gt;type), ntohs(err_p-&gt;code));
+<a href='../S/100.html#L434'>msg</a>               434 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	oflops_log(pe-&gt;pcaphdr.ts, OFPT_ERROR_MSG, msg);
+<a href='../S/100.html#L435'>msg</a>               435 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	fprintf(stderr, "%s\n", msg);
+<a href='../S/100.html#L457'>msg</a>               457 cbench/oflops/example_modules/openflow_add_flow/add_flow.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/100.html#L459'>msg</a>               459 cbench/oflops/example_modules/openflow_add_flow/add_flow.c       snprintf(msg, 1024, "INSERT_DELAY:%d", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/100.html#L460'>msg</a>               460 cbench/oflops/example_modules/openflow_add_flow/add_flow.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/100.html#L477'>msg</a>               477 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	  oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/100.html#L480'>msg</a>               480 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	  snprintf(msg, 1024, "INSERT_DELAY:%u", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/100.html#L481'>msg</a>               481 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	  oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/100.html#L531'>msg</a>               531 cbench/oflops/example_modules/openflow_add_flow/add_flow.c   char msg[1024], log[1024];
+<a href='../S/100.html#L535'>msg</a>               535 cbench/oflops/example_modules/openflow_add_flow/add_flow.c     snprint_value(msg, len, vars-&gt;name, vars-&gt;name_length, vars);
+<a href='../S/100.html#L542'>msg</a>               542 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 		 (int)vars-&gt;name[ vars-&gt;name_length - 1], msg);
+<a href='../S/100.html#L553'>msg</a>               553 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 		 (int)(int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/100.html#L563'>msg</a>               563 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 		 (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/90.html#L208'>msg</a>               208 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c   char msg[1024];
+<a href='../S/90.html#L255'>msg</a>               255 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c       snprintf(msg, 1024, "statistics:port:%d.%d:%u:%u:%u:%.4f:%d", 
+<a href='../S/90.html#L257'>msg</a>               257 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c       printf("%s\n", msg);
+<a href='../S/90.html#L258'>msg</a>               258 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c       oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/90.html#L273'>msg</a>               273 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c       snprintf(msg, 1024, "STATS_REPLY:%d:%lu.%06lu:%u", 
+<a href='../S/90.html#L275'>msg</a>               275 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c       oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/90.html#L292'>msg</a>               292 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c       snprintf(msg, 1024, "statistics:stats:%u:%u:%u:%.4f:%d", 
+<a href='../S/90.html#L294'>msg</a>               294 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c       printf("%s\n", msg);
+<a href='../S/90.html#L295'>msg</a>               295 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c       oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/90.html#L434'>msg</a>               434 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c   char msg[100];
+<a href='../S/90.html#L438'>msg</a>               438 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c     sprintf(msg, "%d", trans_id);
+<a href='../S/90.html#L439'>msg</a>               439 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c     printf("flow stats request send with xid %s\n", msg);  
+<a href='../S/90.html#L441'>msg</a>               441 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c     oflops_log(te-&gt;sched_time, OFPT_STATS_REQUEST_FLOW, msg);
+<a href='../S/90.html#L477'>msg</a>               477 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c   char msg[1024], log[1024];
+<a href='../S/90.html#L481'>msg</a>               481 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c     snprint_value(msg, len, vars-&gt;name, vars-&gt;name_length, vars);
+<a href='../S/90.html#L486'>msg</a>               486 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c 	snprintf(log, len, "cpu : %s %%", msg);
+<a href='../S/90.html#L497'>msg</a>               497 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c 		 msg);
+<a href='../S/90.html#L506'>msg</a>               506 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c 		 (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/90.html#L638'>msg</a>               638 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c   char msg[100];
+<a href='../S/90.html#L646'>msg</a>               646 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c       sprintf(msg, "%d", ntohl(ofph-&gt;xid));
+<a href='../S/90.html#L648'>msg</a>               648 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c       oflops_log(now, OFPT_STATS_REPLY_FLOW, msg);
+<a href='../S/90.html#L679'>msg</a>               679 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c     sprintf(msg, "OFPT_ERROR(type: %d, code: %d)", ntohs(err_p-&gt;type), ntohs(err_p-&gt;code));
+<a href='../S/90.html#L680'>msg</a>               680 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c     fprintf(stderr, "%s\n", msg);
+<a href='../S/90.html#L681'>msg</a>               681 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c     perror_and_exit(msg, 1);
+<a href='../S/106.html#L177'>msg</a>               177 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c   char msg[1024];
+<a href='../S/106.html#L226'>msg</a>               226 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c       snprintf(msg, 1024, "statistics:port:%d.%d:%lld:%lld:%.4f:%d", 
+<a href='../S/106.html#L228'>msg</a>               228 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c       oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/106.html#L253'>msg</a>               253 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c       snprintf(msg, 1024, "stats_stats:%lld:%lld:%d", mean, std, count[0][0]);
+<a href='../S/106.html#L254'>msg</a>               254 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c       oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/106.html#L389'>msg</a>               389 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c   char msg[100];
+<a href='../S/106.html#L392'>msg</a>               392 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c     sprintf(msg, "%d", trans_id);
+<a href='../S/106.html#L393'>msg</a>               393 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c     printf("flow stats request send with xid %s\n", msg);  
+<a href='../S/106.html#L395'>msg</a>               395 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c     oflops_log(te-&gt;sched_time, OFPT_STATS_REQUEST_FLOW, msg);
+<a href='../S/106.html#L421'>msg</a>               421 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c   char msg[1024], log[1024];
+<a href='../S/106.html#L425'>msg</a>               425 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c     snprint_value(msg, len, vars-&gt;name, vars-&gt;name_length, vars);
+<a href='../S/106.html#L428'>msg</a>               428 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c       snprintf(log, len, "cpu : %s %%", msg);
+<a href='../S/106.html#L436'>msg</a>               436 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c 		   (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/106.html#L445'>msg</a>               445 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c 		   (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/106.html#L575'>msg</a>               575 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c   char msg[100];
+<a href='../S/106.html#L583'>msg</a>               583 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c       sprintf(msg, "%d", ntohl(ofph-&gt;xid));
+<a href='../S/106.html#L585'>msg</a>               585 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c       oflops_log(now, OFPT_STATS_REPLY_FLOW, msg);
+<a href='../S/106.html#L598'>msg</a>               598 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c     sprintf(msg, "OFPT_ERROR(type: %d, code: %d)", ntohs(err_p-&gt;type), ntohs(err_p-&gt;code));
+<a href='../S/106.html#L599'>msg</a>               599 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c     fprintf(stderr, "%s\n", msg);
+<a href='../S/106.html#L600'>msg</a>               600 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c     perror_and_exit(msg, 1);
+<a href='../S/97.html#L209'>msg</a>               209 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c   char msg[1024];
+<a href='../S/97.html#L259'>msg</a>               259 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c       snprintf(msg, 1024, "statistics:port:%d.%d:%u:%u:%u:%.4f:%d", 
+<a href='../S/97.html#L261'>msg</a>               261 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c       printf("%s\n", msg);
+<a href='../S/97.html#L262'>msg</a>               262 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c       oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/97.html#L275'>msg</a>               275 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c       snprintf(msg, 1024, "STATS_REPLY:%d:%lu.%06lu:%u", 
+<a href='../S/97.html#L277'>msg</a>               277 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c       oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/97.html#L292'>msg</a>               292 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c       snprintf(msg, 1024, "statistics:stats:%u:%u:u:%.4f:%d", 
+<a href='../S/97.html#L294'>msg</a>               294 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c       printf("%s\n", msg);
+<a href='../S/97.html#L295'>msg</a>               295 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c       oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/97.html#L434'>msg</a>               434 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c   char msg[100];
+<a href='../S/97.html#L438'>msg</a>               438 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c     sprintf(msg, "%d", trans_id);
+<a href='../S/97.html#L439'>msg</a>               439 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c     printf("flow stats request send with xid %s\n", msg);  
+<a href='../S/97.html#L441'>msg</a>               441 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c     oflops_log(te-&gt;sched_time, OFPT_STATS_REQUEST_FLOW, msg);
+<a href='../S/97.html#L477'>msg</a>               477 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c   char msg[1024], log[1024];
+<a href='../S/97.html#L481'>msg</a>               481 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c     snprint_value(msg, len, vars-&gt;name, vars-&gt;name_length, vars);
+<a href='../S/97.html#L486'>msg</a>               486 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c 	snprintf(log, len, "cpu : %s %%", msg);
+<a href='../S/97.html#L497'>msg</a>               497 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c 		 msg);
+<a href='../S/97.html#L506'>msg</a>               506 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c 		 (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/97.html#L640'>msg</a>               640 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c   char msg[100];
+<a href='../S/97.html#L648'>msg</a>               648 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c       sprintf(msg, "%d", ntohl(ofph-&gt;xid));
+<a href='../S/97.html#L650'>msg</a>               650 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c       oflops_log(now, OFPT_STATS_REPLY_FLOW, msg);
+<a href='../S/97.html#L680'>msg</a>               680 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c     sprintf(msg, "OFPT_ERROR(type: %d, code: %d)", ntohs(err_p-&gt;type), ntohs(err_p-&gt;code));
+<a href='../S/97.html#L681'>msg</a>               681 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c     fprintf(stderr, "%s\n", msg);
+<a href='../S/97.html#L682'>msg</a>               682 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c     perror_and_exit(msg, 1);
+<a href='../S/81.html#L140'>msg</a>               140 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c   char msg[1024];
+<a href='../S/81.html#L148'>msg</a>               148 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c   snprintf(msg, 1024,  "Intializing module %s", name());
+<a href='../S/81.html#L158'>msg</a>               158 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c   oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/81.html#L245'>msg</a>               245 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c   char msg[1024];
+<a href='../S/81.html#L295'>msg</a>               295 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c       snprintf(msg, 1024, "statistics:port:%d:%u:%u:%u:%.4f:%d", 
+<a href='../S/81.html#L299'>msg</a>               299 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c       oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/81.html#L306'>msg</a>               306 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c     snprintf(msg, 1024, "OFP_ECHO:%d:%ld.%06ld:%ld.%06ld", i, echo_data[i].snd.tv_sec, echo_data[i].snd.tv_usec, 
+<a href='../S/81.html#L308'>msg</a>               308 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c     oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/81.html#L317'>msg</a>               317 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c     snprintf(msg, 1024, "statistics:echo:%u:%u:%u:%d", mean, median, std, echo_data_count);
+<a href='../S/81.html#L318'>msg</a>               318 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c     oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/81.html#L427'>msg</a>               427 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c   char msg[1024];
+<a href='../S/81.html#L444'>msg</a>               444 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	snprintf(msg, 1024, "OFPT_ERROR(type: %d, code: %d)", ntohs(err_p-&gt;type), ntohs(err_p-&gt;code));
+<a href='../S/81.html#L445'>msg</a>               445 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	oflops_log(pe-&gt;pcaphdr.ts, OFPT_ERROR_MSG, msg);
+<a href='../S/81.html#L446'>msg</a>               446 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	fprintf(stderr, "%s\n", msg);
+<a href='../S/81.html#L468'>msg</a>               468 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/81.html#L470'>msg</a>               470 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c       snprintf(msg, 1024, "INSERT_DELAY:%d", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/81.html#L471'>msg</a>               471 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/81.html#L488'>msg</a>               488 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	  oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/81.html#L491'>msg</a>               491 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	  snprintf(msg, 1024, "INSERT_DELAY:%u", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/81.html#L492'>msg</a>               492 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	  oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/81.html#L542'>msg</a>               542 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c   char msg[1024], log[1024];
+<a href='../S/81.html#L546'>msg</a>               546 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c     snprint_value(msg, len, vars-&gt;name, vars-&gt;name_length, vars);
+<a href='../S/81.html#L553'>msg</a>               553 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 		 (int)vars-&gt;name[ vars-&gt;name_length - 1], msg);
+<a href='../S/81.html#L564'>msg</a>               564 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 		 (int)(int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/81.html#L574'>msg</a>               574 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 		 (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/88.html#L92'>msg</a>                92 cbench/oflops/example_modules/openflow_packet_in/pktin.c   char msg[1024];
+<a href='../S/88.html#L101'>msg</a>               101 cbench/oflops/example_modules/openflow_packet_in/pktin.c   snprintf(msg, 1024,  "Intializing module %s", name());
+<a href='../S/88.html#L105'>msg</a>               105 cbench/oflops/example_modules/openflow_packet_in/pktin.c   oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/88.html#L166'>msg</a>               166 cbench/oflops/example_modules/openflow_packet_in/pktin.c   char msg[1024];
+<a href='../S/88.html#L185'>msg</a>               185 cbench/oflops/example_modules/openflow_packet_in/pktin.c     snprintf(msg, 1024, "statistics:port:%lld:%lld:%.4f:%d", mean, std, loss, count);
+<a href='../S/88.html#L186'>msg</a>               186 cbench/oflops/example_modules/openflow_packet_in/pktin.c     oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/88.html#L216'>msg</a>               216 cbench/oflops/example_modules/openflow_packet_in/pktin.c   char msg[1024];
+<a href='../S/88.html#L239'>msg</a>               239 cbench/oflops/example_modules/openflow_packet_in/pktin.c 	snprintf(msg, 1024, 
+<a href='../S/88.html#L248'>msg</a>               248 cbench/oflops/example_modules/openflow_packet_in/pktin.c 	oflops_log(pe-&gt;pcaphdr.ts, OFPT_PACKET_IN_MSG, msg);
+<a href='../S/88.html#L263'>msg</a>               263 cbench/oflops/example_modules/openflow_packet_in/pktin.c   char msg[1024], log[1024];
+<a href='../S/88.html#L267'>msg</a>               267 cbench/oflops/example_modules/openflow_packet_in/pktin.c     snprint_value(msg, len, vars-&gt;name, vars-&gt;name_length, vars);
+<a href='../S/88.html#L270'>msg</a>               270 cbench/oflops/example_modules/openflow_packet_in/pktin.c       snprintf(log, len, "cpu : %s %%", msg);
+<a href='../S/88.html#L278'>msg</a>               278 cbench/oflops/example_modules/openflow_packet_in/pktin.c 		   (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/88.html#L287'>msg</a>               287 cbench/oflops/example_modules/openflow_packet_in/pktin.c 		   (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/103.html#L117'>msg</a>               117 cbench/oflops/example_modules/openflow_packet_out/packet_out.c   char msg[1024];
+<a href='../S/103.html#L126'>msg</a>               126 cbench/oflops/example_modules/openflow_packet_out/packet_out.c   snprintf(msg, 1024,  "Intializing module %s", name());
+<a href='../S/103.html#L130'>msg</a>               130 cbench/oflops/example_modules/openflow_packet_out/packet_out.c   oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/103.html#L203'>msg</a>               203 cbench/oflops/example_modules/openflow_packet_out/packet_out.c   char msg[1024];
+<a href='../S/103.html#L214'>msg</a>               214 cbench/oflops/example_modules/openflow_packet_out/packet_out.c       snprintf(msg, 1024, "%lu.%06lu:%lu.%06lu:%d",
+<a href='../S/103.html#L218'>msg</a>               218 cbench/oflops/example_modules/openflow_packet_out/packet_out.c       oflops_log(now, OFPT_PACKET_IN_MSG, msg);
+<a href='../S/103.html#L232'>msg</a>               232 cbench/oflops/example_modules/openflow_packet_out/packet_out.c     snprintf(msg, 1024, "statistics:%lu:%lu:%lu:%f:%d", (long unsigned)mean, (long unsigned)median, 
+<a href='../S/103.html#L236'>msg</a>               236 cbench/oflops/example_modules/openflow_packet_out/packet_out.c     oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/103.html#L245'>msg</a>               245 cbench/oflops/example_modules/openflow_packet_out/packet_out.c   char msg[1024], log_buf[1024];
+<a href='../S/103.html#L249'>msg</a>               249 cbench/oflops/example_modules/openflow_packet_out/packet_out.c     snprint_value(msg, 1024, vars-&gt;name, vars-&gt;name_length, vars);
+<a href='../S/103.html#L257'>msg</a>               257 cbench/oflops/example_modules/openflow_packet_out/packet_out.c 		 vars-&gt;name[ vars-&gt;name_length - 1],msg);
+<a href='../S/103.html#L268'>msg</a>               268 cbench/oflops/example_modules/openflow_packet_out/packet_out.c 		 (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/103.html#L278'>msg</a>               278 cbench/oflops/example_modules/openflow_packet_out/packet_out.c 		 (int)ctx-&gt;channels[i].outOID[ctx-&gt;channels[i].outOID_len-1], msg);
+<a href='../S/84.html#L272'>msg</a>               272 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c       char msg[400];
+<a href='../S/84.html#L274'>msg</a>               274 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c       snprintf(msg, 400, "case %d : mean = %f, var=%f", i, mean, var); //, sqrt(var));
+<a href='../S/84.html#L275'>msg</a>               275 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c       oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/84.html#L358'>msg</a>               358 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c 	char *msg = xmalloc(sizeof("OFPT_ERROR(type: XXXXXXXXXX, code: XXXXXXXXXX)"));
+<a href='../S/84.html#L359'>msg</a>               359 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c 	sprintf(msg, "OFPT_ERROR(type: %d, code: %d)", ntohs(err_p-&gt;type), ntohs(err_p-&gt;code));
+<a href='../S/84.html#L360'>msg</a>               360 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c 	oflops_log(pe-&gt;pcaphdr.ts, OFPT_ERROR_MSG, msg);
+<a href='../S/84.html#L361'>msg</a>               361 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c 	fprintf(stderr, "%s\n", msg);
+<a href='../S/94.html#L208'>msg</a>               208 cbench/oflops/example_modules/snmp_queue_delay/queue_delay.c   char msg[1024], line[1024];
+<a href='../S/94.html#L255'>msg</a>               255 cbench/oflops/example_modules/snmp_queue_delay/queue_delay.c 	snprint_value(msg, 1024, vars-&gt;name, vars-&gt;name_length, vars);
+<a href='../S/94.html#L256'>msg</a>               256 cbench/oflops/example_modules/snmp_queue_delay/queue_delay.c 	printf("result msg: %s\n", msg);
+<a href='../S/94.html#L292'>msg</a>               292 cbench/oflops/example_modules/snmp_queue_delay/queue_delay.c     snprintf(msg, 1024, "delay:%d:%u:%u:%u:%.4f:%d", 
+<a href='../S/94.html#L295'>msg</a>               295 cbench/oflops/example_modules/snmp_queue_delay/queue_delay.c     oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/94.html#L300'>msg</a>               300 cbench/oflops/example_modules/snmp_queue_delay/queue_delay.c 	snprintf(msg, 1024, "pktgen:%d:%s", datarate[i], line);
+<a href='../S/94.html#L301'>msg</a>               301 cbench/oflops/example_modules/snmp_queue_delay/queue_delay.c 	oflops_log(now, GENERIC_MSG, msg);
+<a href='../S/94.html#L302'>msg</a>               302 cbench/oflops/example_modules/snmp_queue_delay/queue_delay.c 	printf("%s\n", msg);
+<a href='../S/10.html#L326'>msg</a>               326 cbench/oflops/msg.c       char *msg = xmalloc(sizeof("OFPT_ERROR(type: XXXXXXXXXX, code: XXXXXXXXXX)"));
+<a href='../S/10.html#L327'>msg</a>               327 cbench/oflops/msg.c       sprintf(msg, "OFPT_ERROR(type: %d, code: %d)", ntohs(err_p-&gt;type), ntohs(err_p-&gt;code));
+<a href='../S/10.html#L328'>msg</a>               328 cbench/oflops/msg.c       oflops_log(hdr.ts, OFPT_ERROR_MSG, msg);
+<a href='../S/14.html#L39'>msg</a>                39 cbench/oflops/oflops.c   char msg[1024];
+<a href='../S/14.html#L76'>msg</a>                76 cbench/oflops/oflops.c       snprintf(msg, 1024, "%s:%u:%u",ctx-&gt;channels[j].dev, ps.ps_recv, ps.ps_drop);
+<a href='../S/14.html#L77'>msg</a>                77 cbench/oflops/oflops.c       oflops_log(now, PCAP_MSG, msg);
+<a href='../S/14.html#L78'>msg</a>                78 cbench/oflops/oflops.c       printf("%s\n", msg);
+<a href='../S/121.html#L132'>msg</a>               132 cbench/oflops/test_module.c int oflops_send_raw_mesg(struct oflops_context *ctx, oflops_channel_name ch, void * msg, int len)
+<a href='../S/121.html#L153'>msg</a>               153 cbench/oflops/test_module.c 	ret = write( ctx-&gt;channels[ch].raw_sock, msg, len);
+<a href='../S/55.html#L179'>msg</a>               179 cbench/oflops/test_module.h int oflops_send_raw_mesg(struct oflops_context *ctx, oflops_channel_name ch, void * msg, int len);
+<a href='../S/16.html#L54'>msg</a>                54 cbench/oflops/traffic_generator.c printf_and_check(char *filename, char *msg) {
+<a href='../S/16.html#L60'>msg</a>                60 cbench/oflops/traffic_generator.c   if (fprintf(ctrl, "%s\n", msg) &lt; 0)
+<a href='../S/122.html#L86'>msg</a>                86 cbench/oflops/utils.c fail(const char * msg) {
+<a href='../S/122.html#L87'>msg</a>                87 cbench/oflops/utils.c   printf("error: %s\n", msg);
+<a href='../S/17.html#L38'>msg</a>                38 cbench/oflops/utils.h void fail(const char *msg);
+<a href='../S/766.html#L221'>msg</a>               221 cbench/openflow/controller/controller.c     struct ofpbuf *msg;
+<a href='../S/766.html#L225'>msg</a>               225 cbench/openflow/controller/controller.c     msg = rconn_recv(sw-&gt;rconn);
+<a href='../S/766.html#L226'>msg</a>               226 cbench/openflow/controller/controller.c     if (msg) {
+<a href='../S/766.html#L227'>msg</a>               227 cbench/openflow/controller/controller.c         lswitch_process_packet(sw-&gt;lswitch, sw-&gt;rconn, msg);
+<a href='../S/766.html#L228'>msg</a>               228 cbench/openflow/controller/controller.c         ofpbuf_delete(msg);
+<a href='../S/282.html#L82'>msg</a>                82 cbench/openflow/datapath/forward.c 	   const void *msg)
+<a href='../S/282.html#L84'>msg</a>                84 cbench/openflow/datapath/forward.c 	return dp_send_hello(chain-&gt;dp, sender, msg);
+<a href='../S/282.html#L89'>msg</a>                89 cbench/openflow/datapath/forward.c 		     const void *msg)
+<a href='../S/282.html#L91'>msg</a>                91 cbench/openflow/datapath/forward.c 	return dp_send_barrier_reply(chain-&gt;dp, sender, msg);
+<a href='../S/282.html#L96'>msg</a>                96 cbench/openflow/datapath/forward.c 		      const void *msg) 
+<a href='../S/282.html#L103'>msg</a>               103 cbench/openflow/datapath/forward.c 			const void *msg)
+<a href='../S/282.html#L110'>msg</a>               110 cbench/openflow/datapath/forward.c 		const void *msg)
+<a href='../S/282.html#L112'>msg</a>               112 cbench/openflow/datapath/forward.c 	const struct ofp_switch_config *osc = msg;
+<a href='../S/282.html#L129'>msg</a>               129 cbench/openflow/datapath/forward.c 		const void *msg)
+<a href='../S/282.html#L131'>msg</a>               131 cbench/openflow/datapath/forward.c 	const struct ofp_packet_out *opo = msg;
+<a href='../S/282.html#L173'>msg</a>               173 cbench/openflow/datapath/forward.c 				  msg, ntohs(opo-&gt;header.length));
+<a href='../S/282.html#L188'>msg</a>               188 cbench/openflow/datapath/forward.c 	      const void *msg)
+<a href='../S/282.html#L190'>msg</a>               190 cbench/openflow/datapath/forward.c 	const struct ofp_port_mod *opm = msg;
+<a href='../S/282.html#L199'>msg</a>               199 cbench/openflow/datapath/forward.c 		  const void *msg) 
+<a href='../S/282.html#L201'>msg</a>               201 cbench/openflow/datapath/forward.c 	return dp_send_echo_reply(chain-&gt;dp, sender, msg);
+<a href='../S/282.html#L206'>msg</a>               206 cbench/openflow/datapath/forward.c 		  const void *msg) 
+<a href='../S/282.html#L376'>msg</a>               376 cbench/openflow/datapath/forward.c recv_flow(struct sw_chain *chain, const struct sender *sender, const void *msg)
+<a href='../S/282.html#L378'>msg</a>               378 cbench/openflow/datapath/forward.c 	const struct ofp_flow_mod *ofm = msg;
+<a href='../S/282.html#L406'>msg</a>               406 cbench/openflow/datapath/forward.c 		const void *msg)
+<a href='../S/282.html#L408'>msg</a>               408 cbench/openflow/datapath/forward.c 	const struct ofp_vendor_header *ovh = msg;
+<a href='../S/282.html#L413'>msg</a>               413 cbench/openflow/datapath/forward.c 		return private_recv_msg(chain, sender, msg);
+<a href='../S/282.html#L415'>msg</a>               415 cbench/openflow/datapath/forward.c 		return openflow_ext_recv_msg(chain, sender, msg);
+<a href='../S/282.html#L421'>msg</a>               421 cbench/openflow/datapath/forward.c 				  OFPBRC_BAD_VENDOR, msg, ntohs(ovh-&gt;header.length));
+<a href='../S/282.html#L430'>msg</a>               430 cbench/openflow/datapath/forward.c 		  const void *msg, size_t length)
+<a href='../S/282.html#L488'>msg</a>               488 cbench/openflow/datapath/forward.c 	oh = (struct ofp_header *) msg;
+<a href='../S/282.html#L497'>msg</a>               497 cbench/openflow/datapath/forward.c 				  OFPBRC_BAD_VERSION, msg, length);
+<a href='../S/282.html#L513'>msg</a>               513 cbench/openflow/datapath/forward.c 			return pkt-&gt;handler(chain, sender, msg);
+<a href='../S/282.html#L517'>msg</a>               517 cbench/openflow/datapath/forward.c 			  OFPBRC_BAD_TYPE, msg, length);
+<a href='../S/832.html#L260'>msg</a>               260 cbench/openflow/lib/dhcp-client.c         struct dhcp_msg msg;
+<a href='../S/832.html#L261'>msg</a>               261 cbench/openflow/lib/dhcp-client.c         dhclient_msg_init(cli, DHCPRELEASE, &amp;msg);
+<a href='../S/832.html#L262'>msg</a>               262 cbench/openflow/lib/dhcp-client.c         msg.ciaddr = cli-&gt;ipaddr;
+<a href='../S/832.html#L263'>msg</a>               263 cbench/openflow/lib/dhcp-client.c         do_send_msg(cli, &amp;msg);
+<a href='../S/832.html#L264'>msg</a>               264 cbench/openflow/lib/dhcp-client.c         dhcp_msg_uninit(&amp;msg);
+<a href='../S/832.html#L525'>msg</a>               525 cbench/openflow/lib/dhcp-client.c make_dhcpdiscover(struct dhclient *cli, struct dhcp_msg *msg)
+<a href='../S/832.html#L528'>msg</a>               528 cbench/openflow/lib/dhcp-client.c     dhclient_msg_init(cli, DHCPDISCOVER, msg);
+<a href='../S/832.html#L530'>msg</a>               530 cbench/openflow/lib/dhcp-client.c         dhcp_msg_put_ip(msg, DHCP_CODE_REQUESTED_IP, cli-&gt;ipaddr);
+<a href='../S/832.html#L535'>msg</a>               535 cbench/openflow/lib/dhcp-client.c make_dhcprequest(struct dhclient *cli, struct dhcp_msg *msg)
+<a href='../S/832.html#L537'>msg</a>               537 cbench/openflow/lib/dhcp-client.c     dhclient_msg_init(cli, DHCPREQUEST, msg);
+<a href='../S/832.html#L538'>msg</a>               538 cbench/openflow/lib/dhcp-client.c     msg-&gt;ciaddr = dhclient_get_ip(cli);
+<a href='../S/832.html#L540'>msg</a>               540 cbench/openflow/lib/dhcp-client.c         dhcp_msg_put_ip(msg, DHCP_CODE_SERVER_IDENTIFIER, cli-&gt;server_ip);
+<a href='../S/832.html#L542'>msg</a>               542 cbench/openflow/lib/dhcp-client.c     dhcp_msg_put_ip(msg, DHCP_CODE_REQUESTED_IP, cli-&gt;ipaddr);
+<a href='../S/832.html#L578'>msg</a>               578 cbench/openflow/lib/dhcp-client.c dhcp_receive(struct dhclient *cli, unsigned int msgs, struct dhcp_msg *msg)
+<a href='../S/832.html#L580'>msg</a>               580 cbench/openflow/lib/dhcp-client.c     while (do_receive_msg(cli, msg)) {
+<a href='../S/832.html#L581'>msg</a>               581 cbench/openflow/lib/dhcp-client.c         if (msg-&gt;type &gt; 31 || !((1u &lt;&lt; msg-&gt;type) &amp; msgs)) {
+<a href='../S/832.html#L583'>msg</a>               583 cbench/openflow/lib/dhcp-client.c                         dhcp_type_name(msg-&gt;type), state_name(cli-&gt;state),
+<a href='../S/832.html#L584'>msg</a>               584 cbench/openflow/lib/dhcp-client.c                         dhcp_msg_to_string(msg, false, &amp;cli-&gt;s));
+<a href='../S/832.html#L585'>msg</a>               585 cbench/openflow/lib/dhcp-client.c         } else if (msg-&gt;xid != cli-&gt;xid) {
+<a href='../S/832.html#L588'>msg</a>               588 cbench/openflow/lib/dhcp-client.c                         dhcp_type_name(msg-&gt;type), msg-&gt;xid,
+<a href='../S/832.html#L590'>msg</a>               590 cbench/openflow/lib/dhcp-client.c                         dhcp_msg_to_string(msg, false, &amp;cli-&gt;s));
+<a href='../S/832.html#L594'>msg</a>               594 cbench/openflow/lib/dhcp-client.c         dhcp_msg_uninit(msg);
+<a href='../S/832.html#L600'>msg</a>               600 cbench/openflow/lib/dhcp-client.c validate_offered_options(struct dhclient *cli, const struct dhcp_msg *msg)
+<a href='../S/832.html#L603'>msg</a>               603 cbench/openflow/lib/dhcp-client.c     if (!dhcp_msg_get_secs(msg, DHCP_CODE_LEASE_TIME, 0, &amp;lease)) {
+<a href='../S/832.html#L604'>msg</a>               604 cbench/openflow/lib/dhcp-client.c         VLOG_WARN_RL(&amp;rl, "%s lacks lease time: %s", dhcp_type_name(msg-&gt;type),
+<a href='../S/832.html#L605'>msg</a>               605 cbench/openflow/lib/dhcp-client.c                      dhcp_msg_to_string(msg, false, &amp;cli-&gt;s));
+<a href='../S/832.html#L606'>msg</a>               606 cbench/openflow/lib/dhcp-client.c     } else if (!dhcp_msg_get_ip(msg, DHCP_CODE_SUBNET_MASK, 0, &amp;netmask)) {
+<a href='../S/832.html#L607'>msg</a>               607 cbench/openflow/lib/dhcp-client.c         VLOG_WARN_RL(&amp;rl, "%s lacks netmask: %s", dhcp_type_name(msg-&gt;type),
+<a href='../S/832.html#L608'>msg</a>               608 cbench/openflow/lib/dhcp-client.c                      dhcp_msg_to_string(msg, false, &amp;cli-&gt;s));
+<a href='../S/832.html#L611'>msg</a>               611 cbench/openflow/lib/dhcp-client.c                      dhcp_type_name(msg-&gt;type), lease,
+<a href='../S/832.html#L612'>msg</a>               612 cbench/openflow/lib/dhcp-client.c                      dhcp_msg_to_string(msg, false, &amp;cli-&gt;s));
+<a href='../S/832.html#L613'>msg</a>               613 cbench/openflow/lib/dhcp-client.c     } else if (cli-&gt;validate_offer &amp;&amp; !cli-&gt;validate_offer(msg, cli-&gt;aux)) {
+<a href='../S/832.html#L615'>msg</a>               615 cbench/openflow/lib/dhcp-client.c                     dhcp_msg_to_string(msg, false, &amp;cli-&gt;s));
+<a href='../S/832.html#L625'>msg</a>               625 cbench/openflow/lib/dhcp-client.c     struct dhcp_msg msg;
+<a href='../S/832.html#L632'>msg</a>               632 cbench/openflow/lib/dhcp-client.c     for (; dhcp_receive(cli, 1u &lt;&lt; DHCPOFFER, &amp;msg); dhcp_msg_uninit(&amp;msg)) {
+<a href='../S/832.html#L633'>msg</a>               633 cbench/openflow/lib/dhcp-client.c         if (!validate_offered_options(cli, &amp;msg)) {
+<a href='../S/832.html#L636'>msg</a>               636 cbench/openflow/lib/dhcp-client.c         if (!dhcp_msg_get_ip(&amp;msg, DHCP_CODE_SERVER_IDENTIFIER,
+<a href='../S/832.html#L639'>msg</a>               639 cbench/openflow/lib/dhcp-client.c                          dhcp_msg_to_string(&amp;msg, false, &amp;cli-&gt;s));
+<a href='../S/832.html#L644'>msg</a>               644 cbench/openflow/lib/dhcp-client.c                     dhcp_msg_to_string(&amp;msg, false, &amp;cli-&gt;s));
+<a href='../S/832.html#L645'>msg</a>               645 cbench/openflow/lib/dhcp-client.c         cli-&gt;ipaddr = msg.yiaddr;
+<a href='../S/832.html#L700'>msg</a>               700 cbench/openflow/lib/dhcp-client.c     struct dhcp_msg msg;
+<a href='../S/832.html#L702'>msg</a>               702 cbench/openflow/lib/dhcp-client.c     if (!dhcp_receive(cli, (1u &lt;&lt; DHCPACK) | (1u &lt;&lt; DHCPNAK), &amp;msg)) {
+<a href='../S/832.html#L704'>msg</a>               704 cbench/openflow/lib/dhcp-client.c     } else if (msg.type == DHCPNAK) {
+<a href='../S/832.html#L705'>msg</a>               705 cbench/openflow/lib/dhcp-client.c         dhcp_msg_uninit(&amp;msg);
+<a href='../S/832.html#L708'>msg</a>               708 cbench/openflow/lib/dhcp-client.c     } else if (!validate_offered_options(cli, &amp;msg)) {
+<a href='../S/832.html#L709'>msg</a>               709 cbench/openflow/lib/dhcp-client.c         dhcp_msg_uninit(&amp;msg);
+<a href='../S/832.html#L715'>msg</a>               715 cbench/openflow/lib/dhcp-client.c             if (!same_binding(cli-&gt;binding, &amp;msg)) {
+<a href='../S/832.html#L722'>msg</a>               722 cbench/openflow/lib/dhcp-client.c         dhcp_msg_copy(cli-&gt;binding, &amp;msg);
+<a href='../S/832.html#L724'>msg</a>               724 cbench/openflow/lib/dhcp-client.c         dhcp_msg_get_secs(&amp;msg, DHCP_CODE_LEASE_TIME, 0, &amp;lease);
+<a href='../S/832.html#L725'>msg</a>               725 cbench/openflow/lib/dhcp-client.c         dhcp_msg_get_secs(&amp;msg, DHCP_CODE_T1, 0, &amp;t1);
+<a href='../S/832.html#L726'>msg</a>               726 cbench/openflow/lib/dhcp-client.c         dhcp_msg_get_secs(&amp;msg, DHCP_CODE_T2, 0, &amp;t2);
+<a href='../S/832.html#L741'>msg</a>               741 cbench/openflow/lib/dhcp-client.c         cli-&gt;ipaddr = msg.yiaddr;
+<a href='../S/832.html#L742'>msg</a>               742 cbench/openflow/lib/dhcp-client.c         dhcp_msg_get_ip(&amp;msg, DHCP_CODE_SUBNET_MASK, 0, &amp;cli-&gt;netmask);
+<a href='../S/832.html#L743'>msg</a>               743 cbench/openflow/lib/dhcp-client.c         if (!dhcp_msg_get_ip(&amp;msg, DHCP_CODE_ROUTER, 0, &amp;cli-&gt;router)) {
+<a href='../S/832.html#L747'>msg</a>               747 cbench/openflow/lib/dhcp-client.c         VLOG_DBG("Bound: %s", dhcp_msg_to_string(&amp;msg, false, &amp;cli-&gt;s));
+<a href='../S/832.html#L880'>msg</a>               880 cbench/openflow/lib/dhcp-client.c         struct dhcp_msg msg;
+<a href='../S/832.html#L881'>msg</a>               881 cbench/openflow/lib/dhcp-client.c         make_packet(cli, &amp;msg);
+<a href='../S/832.html#L883'>msg</a>               883 cbench/openflow/lib/dhcp-client.c             cli-&gt;modify_request(&amp;msg, cli-&gt;aux);
+<a href='../S/832.html#L885'>msg</a>               885 cbench/openflow/lib/dhcp-client.c         do_send_msg(cli, &amp;msg);
+<a href='../S/832.html#L889'>msg</a>               889 cbench/openflow/lib/dhcp-client.c         dhcp_msg_uninit(&amp;msg);
+<a href='../S/832.html#L895'>msg</a>               895 cbench/openflow/lib/dhcp-client.c                   struct dhcp_msg *msg)
+<a href='../S/832.html#L897'>msg</a>               897 cbench/openflow/lib/dhcp-client.c     dhcp_msg_init(msg);
+<a href='../S/832.html#L898'>msg</a>               898 cbench/openflow/lib/dhcp-client.c     msg-&gt;op = DHCP_BOOTREQUEST;
+<a href='../S/832.html#L899'>msg</a>               899 cbench/openflow/lib/dhcp-client.c     msg-&gt;xid = cli-&gt;xid;
+<a href='../S/832.html#L900'>msg</a>               900 cbench/openflow/lib/dhcp-client.c     msg-&gt;secs = cli-&gt;secs;
+<a href='../S/832.html#L901'>msg</a>               901 cbench/openflow/lib/dhcp-client.c     msg-&gt;type = type;
+<a href='../S/832.html#L902'>msg</a>               902 cbench/openflow/lib/dhcp-client.c     memcpy(msg-&gt;chaddr, netdev_get_etheraddr(cli-&gt;netdev), ETH_ADDR_LEN);
+<a href='../S/832.html#L923'>msg</a>               923 cbench/openflow/lib/dhcp-client.c do_receive_msg(struct dhclient *cli, struct dhcp_msg *msg)
+<a href='../S/832.html#L964'>msg</a>               964 cbench/openflow/lib/dhcp-client.c         error = dhcp_parse(msg, &amp;b);
+<a href='../S/832.html#L968'>msg</a>               968 cbench/openflow/lib/dhcp-client.c                             dhcp_msg_to_string(msg, false, &amp;cli-&gt;s)); 
+<a href='../S/832.html#L970'>msg</a>               970 cbench/openflow/lib/dhcp-client.c                 VLOG_INFO_RL(&amp;rl, "received %s", dhcp_type_name(msg-&gt;type));
+<a href='../S/832.html#L983'>msg</a>               983 cbench/openflow/lib/dhcp-client.c do_send_msg(struct dhclient *cli, const struct dhcp_msg *msg)
+<a href='../S/832.html#L995'>msg</a>               995 cbench/openflow/lib/dhcp-client.c     dhcp_assemble(msg, &amp;b);
+<a href='../S/832.html#L1047'>msg</a>              1047 cbench/openflow/lib/dhcp-client.c             VLOG_DBG("sending %s", dhcp_msg_to_string(msg, false, &amp;cli-&gt;s)); 
+<a href='../S/832.html#L1049'>msg</a>              1049 cbench/openflow/lib/dhcp-client.c             VLOG_INFO("sending %s", dhcp_type_name(msg-&gt;type));
+<a href='../S/841.html#L119'>msg</a>               119 cbench/openflow/lib/dhcp.c dhcp_msg_init(struct dhcp_msg *msg)
+<a href='../S/841.html#L121'>msg</a>               121 cbench/openflow/lib/dhcp.c     memset(msg, 0, sizeof *msg);
+<a href='../S/841.html#L127'>msg</a>               127 cbench/openflow/lib/dhcp.c dhcp_msg_uninit(struct dhcp_msg *msg)
+<a href='../S/841.html#L129'>msg</a>               129 cbench/openflow/lib/dhcp.c     if (msg) {
+<a href='../S/841.html#L130'>msg</a>               130 cbench/openflow/lib/dhcp.c         free(msg-&gt;data);
+<a href='../S/841.html#L147'>msg</a>               147 cbench/openflow/lib/dhcp.c prealloc_data(struct dhcp_msg *msg, size_t n)
+<a href='../S/841.html#L149'>msg</a>               149 cbench/openflow/lib/dhcp.c     size_t needed = msg-&gt;data_used + n;
+<a href='../S/841.html#L150'>msg</a>               150 cbench/openflow/lib/dhcp.c     if (needed &gt; msg-&gt;data_allocated) {
+<a href='../S/841.html#L151'>msg</a>               151 cbench/openflow/lib/dhcp.c         uint8_t *old_data = msg-&gt;data;
+<a href='../S/841.html#L152'>msg</a>               152 cbench/openflow/lib/dhcp.c         msg-&gt;data_allocated = MAX(needed * 2, 64);
+<a href='../S/841.html#L153'>msg</a>               153 cbench/openflow/lib/dhcp.c         msg-&gt;data = xmalloc(msg-&gt;data_allocated);
+<a href='../S/841.html#L155'>msg</a>               155 cbench/openflow/lib/dhcp.c             copy_data(msg);
+<a href='../S/841.html#L162'>msg</a>               162 cbench/openflow/lib/dhcp.c append_data(struct dhcp_msg *msg, const void *data, size_t n)
+<a href='../S/841.html#L164'>msg</a>               164 cbench/openflow/lib/dhcp.c     uint8_t *p = &amp;msg-&gt;data[msg-&gt;data_used];
+<a href='../S/841.html#L166'>msg</a>               166 cbench/openflow/lib/dhcp.c     msg-&gt;data_used += n;
+<a href='../S/841.html#L171'>msg</a>               171 cbench/openflow/lib/dhcp.c copy_data(struct dhcp_msg *msg)
+<a href='../S/841.html#L175'>msg</a>               175 cbench/openflow/lib/dhcp.c     msg-&gt;data_used = 0;
+<a href='../S/841.html#L177'>msg</a>               177 cbench/openflow/lib/dhcp.c         struct dhcp_option *opt = &amp;msg-&gt;options[code];
+<a href='../S/841.html#L179'>msg</a>               179 cbench/openflow/lib/dhcp.c             assert(msg-&gt;data_used + opt-&gt;n &lt;= msg-&gt;data_allocated);
+<a href='../S/841.html#L180'>msg</a>               180 cbench/openflow/lib/dhcp.c             opt-&gt;data = append_data(msg, opt-&gt;data, opt-&gt;n);
+<a href='../S/841.html#L188'>msg</a>               188 cbench/openflow/lib/dhcp.c dhcp_msg_put(struct dhcp_msg *msg, int code,
+<a href='../S/841.html#L196'>msg</a>               196 cbench/openflow/lib/dhcp.c     opt = &amp;msg-&gt;options[code];
+<a href='../S/841.html#L197'>msg</a>               197 cbench/openflow/lib/dhcp.c     prealloc_data(msg, n + opt-&gt;n);
+<a href='../S/841.html#L199'>msg</a>               199 cbench/openflow/lib/dhcp.c         if (&amp;msg-&gt;data[msg-&gt;data_used - opt-&gt;n] != opt-&gt;data) {
+<a href='../S/841.html#L200'>msg</a>               200 cbench/openflow/lib/dhcp.c             opt-&gt;data = append_data(msg, opt-&gt;data, opt-&gt;n);
+<a href='../S/841.html#L202'>msg</a>               202 cbench/openflow/lib/dhcp.c         append_data(msg, data, n);
+<a href='../S/841.html#L204'>msg</a>               204 cbench/openflow/lib/dhcp.c         opt-&gt;data = append_data(msg, data, n);
+<a href='../S/841.html#L213'>msg</a>               213 cbench/openflow/lib/dhcp.c dhcp_msg_put_bool(struct dhcp_msg *msg, int code, bool b_)
+<a href='../S/841.html#L216'>msg</a>               216 cbench/openflow/lib/dhcp.c     dhcp_msg_put(msg, code, &amp;b, 1);
+<a href='../S/841.html#L223'>msg</a>               223 cbench/openflow/lib/dhcp.c dhcp_msg_put_secs(struct dhcp_msg *msg, int code, uint32_t secs_)
+<a href='../S/841.html#L226'>msg</a>               226 cbench/openflow/lib/dhcp.c     dhcp_msg_put(msg, code, &amp;secs, sizeof secs);
+<a href='../S/841.html#L233'>msg</a>               233 cbench/openflow/lib/dhcp.c dhcp_msg_put_ip(struct dhcp_msg *msg, int code, uint32_t ip)
+<a href='../S/841.html#L235'>msg</a>               235 cbench/openflow/lib/dhcp.c     dhcp_msg_put(msg, code, &amp;ip, sizeof ip);
+<a href='../S/841.html#L241'>msg</a>               241 cbench/openflow/lib/dhcp.c dhcp_msg_put_string(struct dhcp_msg *msg, int code, const char *string)
+<a href='../S/841.html#L243'>msg</a>               243 cbench/openflow/lib/dhcp.c     dhcp_msg_put(msg, code, string, strlen(string));
+<a href='../S/841.html#L249'>msg</a>               249 cbench/openflow/lib/dhcp.c dhcp_msg_put_uint8(struct dhcp_msg *msg, int code, uint8_t x)
+<a href='../S/841.html#L251'>msg</a>               251 cbench/openflow/lib/dhcp.c     dhcp_msg_put(msg, code, &amp;x, sizeof x);
+<a href='../S/841.html#L256'>msg</a>               256 cbench/openflow/lib/dhcp.c void dhcp_msg_put_uint8_array(struct dhcp_msg *msg, int code,
+<a href='../S/841.html#L259'>msg</a>               259 cbench/openflow/lib/dhcp.c     dhcp_msg_put(msg, code, data, n);
+<a href='../S/841.html#L266'>msg</a>               266 cbench/openflow/lib/dhcp.c dhcp_msg_put_uint16(struct dhcp_msg *msg, int code, uint16_t x_)
+<a href='../S/841.html#L269'>msg</a>               269 cbench/openflow/lib/dhcp.c     dhcp_msg_put(msg, code, &amp;x, sizeof x);
+<a href='../S/841.html#L277'>msg</a>               277 cbench/openflow/lib/dhcp.c dhcp_msg_put_uint16_array(struct dhcp_msg *msg, int code,
+<a href='../S/841.html#L283'>msg</a>               283 cbench/openflow/lib/dhcp.c         dhcp_msg_put_uint16(msg, code, data[i]);
+<a href='../S/841.html#L292'>msg</a>               292 cbench/openflow/lib/dhcp.c dhcp_msg_get(const struct dhcp_msg *msg, int code,
+<a href='../S/841.html#L295'>msg</a>               295 cbench/openflow/lib/dhcp.c     const struct dhcp_option *opt = &amp;msg-&gt;options[code];
+<a href='../S/841.html#L304'>msg</a>               304 cbench/openflow/lib/dhcp.c dhcp_msg_get_bool(const struct dhcp_msg *msg, int code, size_t offset,
+<a href='../S/841.html#L307'>msg</a>               307 cbench/openflow/lib/dhcp.c     const uint8_t *uint8 = dhcp_msg_get(msg, code, offset, sizeof *uint8);
+<a href='../S/841.html#L322'>msg</a>               322 cbench/openflow/lib/dhcp.c dhcp_msg_get_secs(const struct dhcp_msg *msg, int code, size_t offset,
+<a href='../S/841.html#L325'>msg</a>               325 cbench/openflow/lib/dhcp.c     const uint32_t *uint32 = dhcp_msg_get(msg, code, offset * sizeof *uint32,
+<a href='../S/841.html#L341'>msg</a>               341 cbench/openflow/lib/dhcp.c dhcp_msg_get_ip(const struct dhcp_msg *msg, int code,
+<a href='../S/841.html#L344'>msg</a>               344 cbench/openflow/lib/dhcp.c     const uint32_t *uint32 = dhcp_msg_get(msg, code, offset * sizeof *uint32,
+<a href='../S/841.html#L362'>msg</a>               362 cbench/openflow/lib/dhcp.c dhcp_msg_get_string(const struct dhcp_msg *msg, int code)
+<a href='../S/841.html#L364'>msg</a>               364 cbench/openflow/lib/dhcp.c     const struct dhcp_option *opt = &amp;msg-&gt;options[code];
+<a href='../S/841.html#L373'>msg</a>               373 cbench/openflow/lib/dhcp.c dhcp_msg_get_uint8(const struct dhcp_msg *msg, int code,
+<a href='../S/841.html#L376'>msg</a>               376 cbench/openflow/lib/dhcp.c     const uint8_t *uint8 = dhcp_msg_get(msg, code, offset, sizeof *uint8);
+<a href='../S/841.html#L391'>msg</a>               391 cbench/openflow/lib/dhcp.c dhcp_msg_get_uint16(const struct dhcp_msg *msg, int code,
+<a href='../S/841.html#L394'>msg</a>               394 cbench/openflow/lib/dhcp.c     const uint16_t *uint16 = dhcp_msg_get(msg, code, offset * sizeof *uint16,
+<a href='../S/841.html#L524'>msg</a>               524 cbench/openflow/lib/dhcp.c dhcp_msg_to_string(const struct dhcp_msg *msg, bool multiline, struct ds *ds)
+<a href='../S/841.html#L531'>msg</a>               531 cbench/openflow/lib/dhcp.c                   (msg-&gt;op == DHCP_BOOTREQUEST ? "request"
+<a href='../S/841.html#L532'>msg</a>               532 cbench/openflow/lib/dhcp.c                    : msg-&gt;op == DHCP_BOOTREPLY ? "reply"
+<a href='../S/841.html#L534'>msg</a>               534 cbench/openflow/lib/dhcp.c     ds_put_format(ds, "%ctype=%s", separator, dhcp_type_name(msg-&gt;type));
+<a href='../S/841.html#L535'>msg</a>               535 cbench/openflow/lib/dhcp.c     ds_put_format(ds, "%cxid=0x%08"PRIx32, separator, msg-&gt;xid);
+<a href='../S/841.html#L537'>msg</a>               537 cbench/openflow/lib/dhcp.c     put_duration(ds, msg-&gt;secs);
+<a href='../S/841.html#L538'>msg</a>               538 cbench/openflow/lib/dhcp.c     if (msg-&gt;flags) {
+<a href='../S/841.html#L540'>msg</a>               540 cbench/openflow/lib/dhcp.c         if (msg-&gt;flags &amp; DHCP_FLAGS_BROADCAST) {
+<a href='../S/841.html#L543'>msg</a>               543 cbench/openflow/lib/dhcp.c         if (msg-&gt;flags &amp; DHCP_FLAGS_MBZ) {
+<a href='../S/841.html#L544'>msg</a>               544 cbench/openflow/lib/dhcp.c             ds_put_format(ds, "[0x%04"PRIx16"]", msg-&gt;flags &amp; DHCP_FLAGS_MBZ);
+<a href='../S/841.html#L547'>msg</a>               547 cbench/openflow/lib/dhcp.c     if (msg-&gt;ciaddr) {
+<a href='../S/841.html#L548'>msg</a>               548 cbench/openflow/lib/dhcp.c         ds_put_format(ds, "%cciaddr="IP_FMT, separator, IP_ARGS(&amp;msg-&gt;ciaddr));
+<a href='../S/841.html#L550'>msg</a>               550 cbench/openflow/lib/dhcp.c     if (msg-&gt;yiaddr) {
+<a href='../S/841.html#L551'>msg</a>               551 cbench/openflow/lib/dhcp.c         ds_put_format(ds, "%cyiaddr="IP_FMT, separator, IP_ARGS(&amp;msg-&gt;yiaddr));
+<a href='../S/841.html#L553'>msg</a>               553 cbench/openflow/lib/dhcp.c     if (msg-&gt;siaddr) {
+<a href='../S/841.html#L554'>msg</a>               554 cbench/openflow/lib/dhcp.c         ds_put_format(ds, "%csiaddr="IP_FMT, separator, IP_ARGS(&amp;msg-&gt;siaddr));
+<a href='../S/841.html#L556'>msg</a>               556 cbench/openflow/lib/dhcp.c     if (msg-&gt;giaddr) {
+<a href='../S/841.html#L557'>msg</a>               557 cbench/openflow/lib/dhcp.c         ds_put_format(ds, "%cgiaddr="IP_FMT, separator, IP_ARGS(&amp;msg-&gt;giaddr));
+<a href='../S/841.html#L560'>msg</a>               560 cbench/openflow/lib/dhcp.c                   separator, ETH_ADDR_ARGS(msg-&gt;chaddr));
+<a href='../S/841.html#L563'>msg</a>               563 cbench/openflow/lib/dhcp.c         const struct dhcp_option *opt = &amp;msg-&gt;options[code];
+<a href='../S/841.html#L576'>msg</a>               576 cbench/openflow/lib/dhcp.c parse_options(struct dhcp_msg *msg, const char *name, void *data, size_t size,
+<a href='../S/841.html#L607'>msg</a>               607 cbench/openflow/lib/dhcp.c         dhcp_msg_put(msg, *code + option_offset, payload, *len);
+<a href='../S/841.html#L612'>msg</a>               612 cbench/openflow/lib/dhcp.c validate_options(struct dhcp_msg *msg)
+<a href='../S/841.html#L617'>msg</a>               617 cbench/openflow/lib/dhcp.c         struct dhcp_option *opt = &amp;msg-&gt;options[code];
+<a href='../S/841.html#L655'>msg</a>               655 cbench/openflow/lib/dhcp.c dhcp_parse(struct dhcp_msg *msg, const struct ofpbuf *b_)
+<a href='../S/841.html#L683'>msg</a>               683 cbench/openflow/lib/dhcp.c     dhcp_msg_init(msg);
+<a href='../S/841.html#L684'>msg</a>               684 cbench/openflow/lib/dhcp.c     msg-&gt;op = dhcp-&gt;op;
+<a href='../S/841.html#L685'>msg</a>               685 cbench/openflow/lib/dhcp.c     msg-&gt;xid = ntohl(dhcp-&gt;xid);
+<a href='../S/841.html#L686'>msg</a>               686 cbench/openflow/lib/dhcp.c     msg-&gt;secs = ntohs(dhcp-&gt;secs);
+<a href='../S/841.html#L687'>msg</a>               687 cbench/openflow/lib/dhcp.c     msg-&gt;flags = ntohs(dhcp-&gt;flags);
+<a href='../S/841.html#L688'>msg</a>               688 cbench/openflow/lib/dhcp.c     msg-&gt;ciaddr = dhcp-&gt;ciaddr;
+<a href='../S/841.html#L689'>msg</a>               689 cbench/openflow/lib/dhcp.c     msg-&gt;yiaddr = dhcp-&gt;yiaddr;
+<a href='../S/841.html#L690'>msg</a>               690 cbench/openflow/lib/dhcp.c     msg-&gt;siaddr = dhcp-&gt;siaddr;
+<a href='../S/841.html#L691'>msg</a>               691 cbench/openflow/lib/dhcp.c     msg-&gt;giaddr = dhcp-&gt;giaddr;
+<a href='../S/841.html#L692'>msg</a>               692 cbench/openflow/lib/dhcp.c     memcpy(msg-&gt;chaddr, dhcp-&gt;chaddr, ETH_ADDR_LEN);
+<a href='../S/841.html#L699'>msg</a>               699 cbench/openflow/lib/dhcp.c             parse_options(msg, "options", b.data, b.size, 0);
+<a href='../S/841.html#L700'>msg</a>               700 cbench/openflow/lib/dhcp.c             if (dhcp_msg_get_uint8(msg, DHCP_CODE_OPTION_OVERLOAD,
+<a href='../S/841.html#L703'>msg</a>               703 cbench/openflow/lib/dhcp.c                     parse_options(msg, "file", dhcp-&gt;file, sizeof dhcp-&gt;file,
+<a href='../S/841.html#L707'>msg</a>               707 cbench/openflow/lib/dhcp.c                     parse_options(msg, "sname",
+<a href='../S/841.html#L719'>msg</a>               719 cbench/openflow/lib/dhcp.c     vendor_class = dhcp_msg_get_string(msg, DHCP_CODE_VENDOR_CLASS);
+<a href='../S/841.html#L721'>msg</a>               721 cbench/openflow/lib/dhcp.c         parse_options(msg, "vendor-specific",
+<a href='../S/841.html#L722'>msg</a>               722 cbench/openflow/lib/dhcp.c                       msg-&gt;options[DHCP_CODE_VENDOR_SPECIFIC].data,
+<a href='../S/841.html#L723'>msg</a>               723 cbench/openflow/lib/dhcp.c                       msg-&gt;options[DHCP_CODE_VENDOR_SPECIFIC].n,
+<a href='../S/841.html#L728'>msg</a>               728 cbench/openflow/lib/dhcp.c     validate_options(msg);
+<a href='../S/841.html#L729'>msg</a>               729 cbench/openflow/lib/dhcp.c     if (!dhcp_msg_get_uint8(msg, DHCP_CODE_DHCP_MSG_TYPE, 0, &amp;type)) {
+<a href='../S/841.html#L731'>msg</a>               731 cbench/openflow/lib/dhcp.c         dhcp_msg_uninit(msg);
+<a href='../S/841.html#L734'>msg</a>               734 cbench/openflow/lib/dhcp.c     msg-&gt;type = type;
+<a href='../S/841.html#L746'>msg</a>               746 cbench/openflow/lib/dhcp.c         dhcp_msg_to_string(msg, false, &amp;ds);
+<a href='../S/841.html#L791'>msg</a>               791 cbench/openflow/lib/dhcp.c dhcp_assemble(const struct dhcp_msg *msg, struct ofpbuf *b)
+<a href='../S/841.html#L800'>msg</a>               800 cbench/openflow/lib/dhcp.c     dhcp.op = msg-&gt;op;
+<a href='../S/841.html#L804'>msg</a>               804 cbench/openflow/lib/dhcp.c     dhcp.xid = htonl(msg-&gt;xid);
+<a href='../S/841.html#L805'>msg</a>               805 cbench/openflow/lib/dhcp.c     dhcp.secs = htons(msg-&gt;secs);
+<a href='../S/841.html#L806'>msg</a>               806 cbench/openflow/lib/dhcp.c     dhcp.flags = htons(msg-&gt;flags);
+<a href='../S/841.html#L807'>msg</a>               807 cbench/openflow/lib/dhcp.c     dhcp.ciaddr = msg-&gt;ciaddr;
+<a href='../S/841.html#L808'>msg</a>               808 cbench/openflow/lib/dhcp.c     dhcp.yiaddr = msg-&gt;yiaddr;
+<a href='../S/841.html#L809'>msg</a>               809 cbench/openflow/lib/dhcp.c     dhcp.siaddr = msg-&gt;siaddr;
+<a href='../S/841.html#L810'>msg</a>               810 cbench/openflow/lib/dhcp.c     dhcp.giaddr = msg-&gt;giaddr;
+<a href='../S/841.html#L811'>msg</a>               811 cbench/openflow/lib/dhcp.c     memcpy(dhcp.chaddr, msg-&gt;chaddr, ETH_ADDR_LEN);
+<a href='../S/841.html#L817'>msg</a>               817 cbench/openflow/lib/dhcp.c     if (msg-&gt;type) {
+<a href='../S/841.html#L818'>msg</a>               818 cbench/openflow/lib/dhcp.c         uint8_t type = msg-&gt;type;
+<a href='../S/841.html#L824'>msg</a>               824 cbench/openflow/lib/dhcp.c         const struct dhcp_option *option = &amp;msg-&gt;options[i];
+<a href='../S/841.html#L831'>msg</a>               831 cbench/openflow/lib/dhcp.c         const struct dhcp_option *option = &amp;msg-&gt;options[i];
+<a href='../S/884.html#L262'>msg</a>               262 cbench/openflow/lib/learning-switch.c                        const struct ofpbuf *msg)
+<a href='../S/884.html#L305'>msg</a>               305 cbench/openflow/lib/learning-switch.c     oh = msg-&gt;data;
+<a href='../S/884.html#L315'>msg</a>               315 cbench/openflow/lib/learning-switch.c             if (msg-&gt;size &lt; p-&gt;min_size) {
+<a href='../S/884.html#L318'>msg</a>               318 cbench/openflow/lib/learning-switch.c                              rconn_get_name(rconn), msg-&gt;size, oh-&gt;type,
+<a href='../S/884.html#L323'>msg</a>               323 cbench/openflow/lib/learning-switch.c                 (p-&gt;handler)(sw, rconn, msg-&gt;data);
+<a href='../S/884.html#L329'>msg</a>               329 cbench/openflow/lib/learning-switch.c         char *p = ofp_to_string(msg-&gt;data, msg-&gt;size, 2);
+<a href='../S/867.html#L91'>msg</a>                91 cbench/openflow/lib/netlink-protocol.h         struct nlmsghdr msg;
+<a href='../S/826.html#L221'>msg</a>               221 cbench/openflow/lib/netlink.c nl_sock_send(struct nl_sock *sock, const struct ofpbuf *msg, bool wait) 
+<a href='../S/826.html#L225'>msg</a>               225 cbench/openflow/lib/netlink.c     nl_msg_nlmsghdr(msg)-&gt;nlmsg_len = msg-&gt;size;
+<a href='../S/826.html#L228'>msg</a>               228 cbench/openflow/lib/netlink.c         retval = send(sock-&gt;fd, msg-&gt;data, msg-&gt;size, wait ? 0 : MSG_DONTWAIT);
+<a href='../S/826.html#L231'>msg</a>               231 cbench/openflow/lib/netlink.c     log_nlmsg(__func__, error, msg-&gt;data, msg-&gt;size);
+<a href='../S/826.html#L246'>msg</a>               246 cbench/openflow/lib/netlink.c     struct msghdr msg;
+<a href='../S/826.html#L249'>msg</a>               249 cbench/openflow/lib/netlink.c     memset(&amp;msg, 0, sizeof msg);
+<a href='../S/826.html#L250'>msg</a>               250 cbench/openflow/lib/netlink.c     msg.msg_iov = (struct iovec *) iov;
+<a href='../S/826.html#L251'>msg</a>               251 cbench/openflow/lib/netlink.c     msg.msg_iovlen = n_iov;
+<a href='../S/826.html#L254'>msg</a>               254 cbench/openflow/lib/netlink.c         retval = sendmsg(sock-&gt;fd, &amp;msg, wait ? 0 : MSG_DONTWAIT);
+<a href='../S/826.html#L280'>msg</a>               280 cbench/openflow/lib/netlink.c     struct msghdr msg = {
+<a href='../S/826.html#L302'>msg</a>               302 cbench/openflow/lib/netlink.c         nbytes = recvmsg(sock-&gt;fd, &amp;msg, (wait ? 0 : MSG_DONTWAIT) | MSG_PEEK); 
+<a href='../S/826.html#L308'>msg</a>               308 cbench/openflow/lib/netlink.c     if (msg.msg_flags &amp; MSG_TRUNC) {
+<a href='../S/826.html#L319'>msg</a>               319 cbench/openflow/lib/netlink.c         nbytes2 = recvmsg(sock-&gt;fd, &amp;msg, MSG_DONTWAIT);
+<a href='../S/826.html#L443'>msg</a>               443 cbench/openflow/lib/netlink.c nl_msg_nlmsghdr(const struct ofpbuf *msg) 
+<a href='../S/826.html#L445'>msg</a>               445 cbench/openflow/lib/netlink.c     return ofpbuf_at_assert(msg, 0, NLMSG_HDRLEN);
+<a href='../S/826.html#L453'>msg</a>               453 cbench/openflow/lib/netlink.c nl_msg_genlmsghdr(const struct ofpbuf *msg) 
+<a href='../S/826.html#L455'>msg</a>               455 cbench/openflow/lib/netlink.c     return ofpbuf_at(msg, NLMSG_HDRLEN, GENL_HDRLEN);
+<a href='../S/826.html#L464'>msg</a>               464 cbench/openflow/lib/netlink.c nl_msg_nlmsgerr(const struct ofpbuf *msg, int *errorp) 
+<a href='../S/826.html#L466'>msg</a>               466 cbench/openflow/lib/netlink.c     if (nl_msg_nlmsghdr(msg)-&gt;nlmsg_type == NLMSG_ERROR) {
+<a href='../S/826.html#L467'>msg</a>               467 cbench/openflow/lib/netlink.c         struct nlmsgerr *err = ofpbuf_at(msg, NLMSG_HDRLEN, sizeof *err);
+<a href='../S/826.html#L471'>msg</a>               471 cbench/openflow/lib/netlink.c                         msg-&gt;size, NLMSG_HDRLEN + sizeof *err);
+<a href='../S/826.html#L487'>msg</a>               487 cbench/openflow/lib/netlink.c nl_msg_reserve(struct ofpbuf *msg, size_t size) 
+<a href='../S/826.html#L489'>msg</a>               489 cbench/openflow/lib/netlink.c     ofpbuf_prealloc_tailroom(msg, NLMSG_ALIGN(size));
+<a href='../S/826.html#L509'>msg</a>               509 cbench/openflow/lib/netlink.c nl_msg_put_nlmsghdr(struct ofpbuf *msg, struct nl_sock *sock,
+<a href='../S/826.html#L514'>msg</a>               514 cbench/openflow/lib/netlink.c     assert(msg-&gt;size == 0);
+<a href='../S/826.html#L516'>msg</a>               516 cbench/openflow/lib/netlink.c     nl_msg_reserve(msg, NLMSG_HDRLEN + expected_payload);
+<a href='../S/826.html#L517'>msg</a>               517 cbench/openflow/lib/netlink.c     nlmsghdr = nl_msg_put_uninit(msg, NLMSG_HDRLEN);
+<a href='../S/826.html#L545'>msg</a>               545 cbench/openflow/lib/netlink.c nl_msg_put_genlmsghdr(struct ofpbuf *msg, struct nl_sock *sock,
+<a href='../S/826.html#L551'>msg</a>               551 cbench/openflow/lib/netlink.c     nl_msg_put_nlmsghdr(msg, sock, GENL_HDRLEN + expected_payload,
+<a href='../S/826.html#L553'>msg</a>               553 cbench/openflow/lib/netlink.c     assert(msg-&gt;size == NLMSG_HDRLEN);
+<a href='../S/826.html#L554'>msg</a>               554 cbench/openflow/lib/netlink.c     genlmsghdr = nl_msg_put_uninit(msg, GENL_HDRLEN);
+<a href='../S/826.html#L564'>msg</a>               564 cbench/openflow/lib/netlink.c nl_msg_put(struct ofpbuf *msg, const void *data, size_t size) 
+<a href='../S/826.html#L566'>msg</a>               566 cbench/openflow/lib/netlink.c     memcpy(nl_msg_put_uninit(msg, size), data, size);
+<a href='../S/826.html#L573'>msg</a>               573 cbench/openflow/lib/netlink.c nl_msg_put_uninit(struct ofpbuf *msg, size_t size) 
+<a href='../S/826.html#L576'>msg</a>               576 cbench/openflow/lib/netlink.c     char *p = ofpbuf_put_uninit(msg, size + pad);
+<a href='../S/826.html#L588'>msg</a>               588 cbench/openflow/lib/netlink.c nl_msg_put_unspec_uninit(struct ofpbuf *msg, uint16_t type, size_t size) 
+<a href='../S/826.html#L591'>msg</a>               591 cbench/openflow/lib/netlink.c     struct nlattr* nla = nl_msg_put_uninit(msg, total_size);
+<a href='../S/826.html#L603'>msg</a>               603 cbench/openflow/lib/netlink.c nl_msg_put_unspec(struct ofpbuf *msg, uint16_t type,
+<a href='../S/826.html#L606'>msg</a>               606 cbench/openflow/lib/netlink.c     memcpy(nl_msg_put_unspec_uninit(msg, type, size), data, size);
+<a href='../S/826.html#L613'>msg</a>               613 cbench/openflow/lib/netlink.c nl_msg_put_flag(struct ofpbuf *msg, uint16_t type) 
+<a href='../S/826.html#L615'>msg</a>               615 cbench/openflow/lib/netlink.c     nl_msg_put_unspec(msg, type, NULL, 0);
+<a href='../S/826.html#L621'>msg</a>               621 cbench/openflow/lib/netlink.c nl_msg_put_u8(struct ofpbuf *msg, uint16_t type, uint8_t value) 
+<a href='../S/826.html#L623'>msg</a>               623 cbench/openflow/lib/netlink.c     nl_msg_put_unspec(msg, type, &amp;value, sizeof value);
+<a href='../S/826.html#L629'>msg</a>               629 cbench/openflow/lib/netlink.c nl_msg_put_u16(struct ofpbuf *msg, uint16_t type, uint16_t value)
+<a href='../S/826.html#L631'>msg</a>               631 cbench/openflow/lib/netlink.c     nl_msg_put_unspec(msg, type, &amp;value, sizeof value);
+<a href='../S/826.html#L637'>msg</a>               637 cbench/openflow/lib/netlink.c nl_msg_put_u32(struct ofpbuf *msg, uint16_t type, uint32_t value)
+<a href='../S/826.html#L639'>msg</a>               639 cbench/openflow/lib/netlink.c     nl_msg_put_unspec(msg, type, &amp;value, sizeof value);
+<a href='../S/826.html#L645'>msg</a>               645 cbench/openflow/lib/netlink.c nl_msg_put_u64(struct ofpbuf *msg, uint16_t type, uint64_t value)
+<a href='../S/826.html#L647'>msg</a>               647 cbench/openflow/lib/netlink.c     nl_msg_put_unspec(msg, type, &amp;value, sizeof value);
+<a href='../S/826.html#L653'>msg</a>               653 cbench/openflow/lib/netlink.c nl_msg_put_string(struct ofpbuf *msg, uint16_t type, const char *value)
+<a href='../S/826.html#L655'>msg</a>               655 cbench/openflow/lib/netlink.c     nl_msg_put_unspec(msg, type, value, strlen(value) + 1);
+<a href='../S/826.html#L662'>msg</a>               662 cbench/openflow/lib/netlink.c nl_msg_put_nested(struct ofpbuf *msg,
+<a href='../S/826.html#L666'>msg</a>               666 cbench/openflow/lib/netlink.c     nl_msg_put_unspec(msg, type, nested_msg-&gt;data, nested_msg-&gt;size);
+<a href='../S/826.html#L772'>msg</a>               772 cbench/openflow/lib/netlink.c nl_policy_parse(const struct ofpbuf *msg, size_t nla_offset,
+<a href='../S/826.html#L792'>msg</a>               792 cbench/openflow/lib/netlink.c     p = ofpbuf_at(msg, nla_offset, 0);
+<a href='../S/826.html#L797'>msg</a>               797 cbench/openflow/lib/netlink.c     tail = ofpbuf_tail(msg);
+<a href='../S/826.html#L800'>msg</a>               800 cbench/openflow/lib/netlink.c         size_t offset = (char*)p - (char*)msg-&gt;data;
+<a href='../S/826.html#L1040'>msg</a>              1040 cbench/openflow/lib/netlink.c                 nlmsghdr_to_string(&amp;e-&gt;msg, &amp;ds);
+<a href='../S/895.html#L124'>msg</a>               124 cbench/openflow/lib/vconn-provider.h     int (*send)(struct vconn *vconn, struct ofpbuf *msg);
+<a href='../S/881.html#L335'>msg</a>               335 cbench/openflow/lib/vconn.c                 struct ds msg = DS_EMPTY_INITIALIZER;
+<a href='../S/881.html#L336'>msg</a>               336 cbench/openflow/lib/vconn.c                 ds_put_format(&amp;msg, "%s: extra-long hello:\n", vconn-&gt;name);
+<a href='../S/881.html#L337'>msg</a>               337 cbench/openflow/lib/vconn.c                 ds_put_hex_dump(&amp;msg, b-&gt;data, b-&gt;size, 0, true);
+<a href='../S/881.html#L338'>msg</a>               338 cbench/openflow/lib/vconn.c                 VLOG_WARN_RL(&amp;rl, "%s", ds_cstr(&amp;msg));
+<a href='../S/881.html#L339'>msg</a>               339 cbench/openflow/lib/vconn.c                 ds_destroy(&amp;msg);
+<a href='../S/881.html#L538'>msg</a>               538 cbench/openflow/lib/vconn.c vconn_send(struct vconn *vconn, struct ofpbuf *msg)
+<a href='../S/881.html#L542'>msg</a>               542 cbench/openflow/lib/vconn.c         retval = do_send(vconn, msg);
+<a href='../S/881.html#L548'>msg</a>               548 cbench/openflow/lib/vconn.c do_send(struct vconn *vconn, struct ofpbuf *msg)
+<a href='../S/881.html#L552'>msg</a>               552 cbench/openflow/lib/vconn.c     assert(msg-&gt;size &gt;= sizeof(struct ofp_header));
+<a href='../S/881.html#L553'>msg</a>               553 cbench/openflow/lib/vconn.c     assert(((struct ofp_header *) msg-&gt;data)-&gt;length == htons(msg-&gt;size));
+<a href='../S/881.html#L555'>msg</a>               555 cbench/openflow/lib/vconn.c         retval = (vconn-&gt;class-&gt;send)(vconn, msg);
+<a href='../S/881.html#L557'>msg</a>               557 cbench/openflow/lib/vconn.c         char *s = ofp_to_string(msg-&gt;data, msg-&gt;size, 1);
+<a href='../S/881.html#L558'>msg</a>               558 cbench/openflow/lib/vconn.c         retval = (vconn-&gt;class-&gt;send)(vconn, msg);
+<a href='../S/881.html#L570'>msg</a>               570 cbench/openflow/lib/vconn.c vconn_send_block(struct vconn *vconn, struct ofpbuf *msg)
+<a href='../S/881.html#L573'>msg</a>               573 cbench/openflow/lib/vconn.c     while ((retval = vconn_send(vconn, msg)) == EAGAIN) {
+<a href='../S/881.html#L1027'>msg</a>              1027 cbench/openflow/lib/vconn.c check_ofp_message(const struct ofp_header *msg, uint8_t type, size_t size)
+<a href='../S/881.html#L1031'>msg</a>              1031 cbench/openflow/lib/vconn.c     if (!check_message_type(msg-&gt;type, type)) {
+<a href='../S/881.html#L1035'>msg</a>              1035 cbench/openflow/lib/vconn.c     got_size = ntohs(msg-&gt;length);
+<a href='../S/881.html#L1055'>msg</a>              1055 cbench/openflow/lib/vconn.c check_ofp_message_array(const struct ofp_header *msg, uint8_t type,
+<a href='../S/881.html#L1063'>msg</a>              1063 cbench/openflow/lib/vconn.c     if (!check_message_type(msg-&gt;type, type)) {
+<a href='../S/881.html#L1067'>msg</a>              1067 cbench/openflow/lib/vconn.c     got_size = ntohs(msg-&gt;length);
+<a href='../S/890.html#L146'>msg</a>               146 cbench/openflow/lib/vlog-socket.c     struct msghdr msg;
+<a href='../S/890.html#L153'>msg</a>               153 cbench/openflow/lib/vlog-socket.c     memset(&amp;msg, 0, sizeof msg);
+<a href='../S/890.html#L154'>msg</a>               154 cbench/openflow/lib/vlog-socket.c     msg.msg_name = un;
+<a href='../S/890.html#L155'>msg</a>               155 cbench/openflow/lib/vlog-socket.c     msg.msg_namelen = sizeof *un;
+<a href='../S/890.html#L156'>msg</a>               156 cbench/openflow/lib/vlog-socket.c     msg.msg_iov = &amp;iov;
+<a href='../S/890.html#L157'>msg</a>               157 cbench/openflow/lib/vlog-socket.c     msg.msg_iovlen = 1;
+<a href='../S/890.html#L158'>msg</a>               158 cbench/openflow/lib/vlog-socket.c     msg.msg_control = cred_buf;
+<a href='../S/890.html#L159'>msg</a>               159 cbench/openflow/lib/vlog-socket.c     msg.msg_controllen = sizeof cred_buf;
+<a href='../S/890.html#L161'>msg</a>               161 cbench/openflow/lib/vlog-socket.c     n = recvmsg(server-&gt;fd, &amp;msg, 0);
+<a href='../S/890.html#L162'>msg</a>               162 cbench/openflow/lib/vlog-socket.c     *un_len = msg.msg_namelen;
+<a href='../S/890.html#L171'>msg</a>               171 cbench/openflow/lib/vlog-socket.c     for (cmsg = CMSG_FIRSTHDR(&amp;msg); cmsg != NULL;
+<a href='../S/890.html#L172'>msg</a>               172 cbench/openflow/lib/vlog-socket.c          cmsg = CMSG_NXTHDR(&amp;msg, cmsg)) {
+<a href='../S/890.html#L264'>msg</a>               264 cbench/openflow/lib/vlog-socket.c             char *msg = vlog_set_levels_from_string(cmd_buf + 4);
+<a href='../S/890.html#L265'>msg</a>               265 cbench/openflow/lib/vlog-socket.c             reply = msg ? msg : xstrdup("ack");
+<a href='../S/890.html#L383'>msg</a>               383 cbench/openflow/lib/vlog-socket.c     struct msghdr msg;
+<a href='../S/890.html#L394'>msg</a>               394 cbench/openflow/lib/vlog-socket.c     memset(&amp;msg, 0, sizeof msg);
+<a href='../S/890.html#L395'>msg</a>               395 cbench/openflow/lib/vlog-socket.c     msg.msg_iov = &amp;iov;
+<a href='../S/890.html#L396'>msg</a>               396 cbench/openflow/lib/vlog-socket.c     msg.msg_iovlen = 1;
+<a href='../S/890.html#L397'>msg</a>               397 cbench/openflow/lib/vlog-socket.c     msg.msg_control = buf;
+<a href='../S/890.html#L398'>msg</a>               398 cbench/openflow/lib/vlog-socket.c     msg.msg_controllen = sizeof buf;
+<a href='../S/890.html#L400'>msg</a>               400 cbench/openflow/lib/vlog-socket.c     cmsg = CMSG_FIRSTHDR(&amp;msg);
+<a href='../S/890.html#L405'>msg</a>               405 cbench/openflow/lib/vlog-socket.c     msg.msg_controllen = cmsg-&gt;cmsg_len;
+<a href='../S/890.html#L407'>msg</a>               407 cbench/openflow/lib/vlog-socket.c     nbytes = sendmsg(client-&gt;fd, &amp;msg, 0);
+<a href='../S/848.html#L349'>msg</a>               349 cbench/openflow/lib/vlog.c                 char *msg = xasprintf("unknown facility \"%s\"", facility);
+<a href='../S/848.html#L351'>msg</a>               351 cbench/openflow/lib/vlog.c                 return msg;
+<a href='../S/848.html#L367'>msg</a>               367 cbench/openflow/lib/vlog.c                     char *msg = xasprintf("unknown module \"%s\"", module);
+<a href='../S/848.html#L369'>msg</a>               369 cbench/openflow/lib/vlog.c                     return msg;
+<a href='../S/848.html#L376'>msg</a>               376 cbench/openflow/lib/vlog.c                 char *msg = xasprintf("unknown level \"%s\"", level);
+<a href='../S/848.html#L378'>msg</a>               378 cbench/openflow/lib/vlog.c                 return msg;
+<a href='../S/848.html#L394'>msg</a>               394 cbench/openflow/lib/vlog.c         char *msg = vlog_set_levels_from_string(arg);
+<a href='../S/848.html#L395'>msg</a>               395 cbench/openflow/lib/vlog.c         if (msg) {
+<a href='../S/848.html#L396'>msg</a>               396 cbench/openflow/lib/vlog.c             ofp_fatal(0, "processing \"%s\": %s", arg, msg);
+<a href='../S/811.html#L227'>msg</a>               227 cbench/openflow/secchan/discovery.c modify_dhcp_request(struct dhcp_msg *msg, void *aux UNUSED)
+<a href='../S/811.html#L229'>msg</a>               229 cbench/openflow/secchan/discovery.c     dhcp_msg_put_string(msg, DHCP_CODE_VENDOR_CLASS, "OpenFlow");
+<a href='../S/811.html#L233'>msg</a>               233 cbench/openflow/secchan/discovery.c validate_dhcp_offer(const struct dhcp_msg *msg, void *s_)
+<a href='../S/811.html#L239'>msg</a>               239 cbench/openflow/secchan/discovery.c     vconn_name = dhcp_msg_get_string(msg, DHCP_CODE_OFP_CONTROLLER_VCONN);
+<a href='../S/810.html#L233'>msg</a>               233 cbench/openflow/secchan/port-watcher.c     struct ofpbuf *msg = r-&gt;halves[HALF_LOCAL].rxbuf;
+<a href='../S/810.html#L234'>msg</a>               234 cbench/openflow/secchan/port-watcher.c     struct ofp_header *oh = msg-&gt;data;
+<a href='../S/810.html#L237'>msg</a>               237 cbench/openflow/secchan/port-watcher.c         &amp;&amp; msg-&gt;size &gt;= offsetof(struct ofp_switch_features, ports)) {
+<a href='../S/810.html#L238'>msg</a>               238 cbench/openflow/secchan/port-watcher.c         struct ofp_switch_features *osf = msg-&gt;data;
+<a href='../S/810.html#L253'>msg</a>               253 cbench/openflow/secchan/port-watcher.c         n_ports = ((msg-&gt;size - offsetof(struct ofp_switch_features, ports))
+<a href='../S/810.html#L273'>msg</a>               273 cbench/openflow/secchan/port-watcher.c                &amp;&amp; msg-&gt;size &gt;= sizeof(struct ofp_port_status)) {
+<a href='../S/810.html#L274'>msg</a>               274 cbench/openflow/secchan/port-watcher.c         struct ofp_port_status *ops = msg-&gt;data;
+<a href='../S/810.html#L315'>msg</a>               315 cbench/openflow/secchan/port-watcher.c     struct ofpbuf *msg = r-&gt;halves[HALF_REMOTE].rxbuf;
+<a href='../S/810.html#L316'>msg</a>               316 cbench/openflow/secchan/port-watcher.c     struct ofp_header *oh = msg-&gt;data;
+<a href='../S/810.html#L319'>msg</a>               319 cbench/openflow/secchan/port-watcher.c         &amp;&amp; msg-&gt;size &gt;= sizeof(struct ofp_port_mod)) {
+<a href='../S/810.html#L320'>msg</a>               320 cbench/openflow/secchan/port-watcher.c         struct ofp_port_mod *opm = msg-&gt;data;
+<a href='../S/804.html#L177'>msg</a>               177 cbench/openflow/secchan/ratelimit.c         struct ofpbuf *msg = r-&gt;halves[HALF_LOCAL].rxbuf;
+<a href='../S/804.html#L182'>msg</a>               182 cbench/openflow/secchan/ratelimit.c         queue_push_tail(&amp;rl-&gt;queues[port], ofpbuf_clone(msg));
+<a href='../S/801.html#L346'>msg</a>               346 cbench/openflow/secchan/secchan.c     struct ofpbuf *msg = r-&gt;halves[HALF_LOCAL].rxbuf;
+<a href='../S/801.html#L347'>msg</a>               347 cbench/openflow/secchan/secchan.c     struct ofp_header *oh = msg-&gt;data;
+<a href='../S/801.html#L349'>msg</a>               349 cbench/openflow/secchan/secchan.c         if (msg-&gt;size &gt;= offsetof (struct ofp_packet_in, data)) {
+<a href='../S/801.html#L350'>msg</a>               350 cbench/openflow/secchan/secchan.c             return msg-&gt;data;
+<a href='../S/801.html#L353'>msg</a>               353 cbench/openflow/secchan/secchan.c                       msg-&gt;size);
+<a href='../S/805.html#L75'>msg</a>                75 cbench/openflow/secchan/status.c     struct ofpbuf *msg = r-&gt;halves[HALF_REMOTE].rxbuf;
+<a href='../S/805.html#L83'>msg</a>                83 cbench/openflow/secchan/status.c     if (msg-&gt;size &lt; sizeof(struct nicira_header)) {
+<a href='../S/805.html#L86'>msg</a>                86 cbench/openflow/secchan/status.c     request = msg-&gt;data;
+<a href='../S/805.html#L94'>msg</a>                94 cbench/openflow/secchan/status.c     sr.request.length = msg-&gt;size - sizeof *request;
+<a href='../S/797.html#L66'>msg</a>                66 cbench/openflow/secchan/stp-secchan.c     struct ofpbuf *msg = r-&gt;halves[HALF_LOCAL].rxbuf;
+<a href='../S/797.html#L76'>msg</a>                76 cbench/openflow/secchan/stp-secchan.c     oh = msg-&gt;data;
+<a href='../S/797.html#L78'>msg</a>                78 cbench/openflow/secchan/stp-secchan.c         &amp;&amp; msg-&gt;size &gt;= offsetof(struct ofp_switch_features, ports)) {
+<a href='../S/797.html#L79'>msg</a>                79 cbench/openflow/secchan/stp-secchan.c         struct ofp_switch_features *osf = msg-&gt;data;
+<a href='../S/243.html#L115'>msg</a>               115 cbench/openflow/tests/test-dhcp-client.c modify_dhcp_request(struct dhcp_msg *msg, void *aux UNUSED)
+<a href='../S/243.html#L118'>msg</a>               118 cbench/openflow/tests/test-dhcp-client.c         dhcp_msg_put_string(msg, DHCP_CODE_VENDOR_CLASS, vendor_class);
+<a href='../S/204.html#L1245'>msg</a>              1245 cbench/openflow/udatapath/datapath.c                       const void *msg UNUSED)
+<a href='../S/204.html#L1253'>msg</a>              1253 cbench/openflow/udatapath/datapath.c                         const void *msg UNUSED)
+<a href='../S/204.html#L1269'>msg</a>              1269 cbench/openflow/udatapath/datapath.c                 const void *msg)
+<a href='../S/204.html#L1271'>msg</a>              1271 cbench/openflow/udatapath/datapath.c     const struct ofp_switch_config *osc = msg;
+<a href='../S/204.html#L1286'>msg</a>              1286 cbench/openflow/udatapath/datapath.c                 const void *msg)
+<a href='../S/204.html#L1288'>msg</a>              1288 cbench/openflow/udatapath/datapath.c     const struct ofp_packet_out *opo = msg;
+<a href='../S/204.html#L1316'>msg</a>              1316 cbench/openflow/udatapath/datapath.c                   msg, ntohs(opo-&gt;header.length));
+<a href='../S/204.html#L1331'>msg</a>              1331 cbench/openflow/udatapath/datapath.c               const void *msg)
+<a href='../S/204.html#L1333'>msg</a>              1333 cbench/openflow/udatapath/datapath.c     const struct ofp_port_mod *opm = msg;
+<a href='../S/204.html#L1506'>msg</a>              1506 cbench/openflow/udatapath/datapath.c           const void *msg)
+<a href='../S/204.html#L1508'>msg</a>              1508 cbench/openflow/udatapath/datapath.c     const struct ofp_flow_mod *ofm = msg;
+<a href='../S/204.html#L2234'>msg</a>              2234 cbench/openflow/udatapath/datapath.c                   const void *msg, size_t length)
+<a href='../S/204.html#L2241'>msg</a>              2241 cbench/openflow/udatapath/datapath.c     oh = (struct ofp_header *) msg;
+<a href='../S/204.html#L2299'>msg</a>              2299 cbench/openflow/udatapath/datapath.c                           msg, length);
+<a href='../S/204.html#L2306'>msg</a>              2306 cbench/openflow/udatapath/datapath.c     return handler(dp, sender, msg);
+<a href='../S/333.html#L1095'>msg</a>              1095 cbench/openflow/utilities/dpctl.c     struct ofpbuf * msg;
+<a href='../S/333.html#L1098'>msg</a>              1098 cbench/openflow/utilities/dpctl.c     msg = ofpbuf_new(sizeof(*desc));
+<a href='../S/333.html#L1099'>msg</a>              1099 cbench/openflow/utilities/dpctl.c     ofpbuf_put_uninit(msg, sizeof(*desc));
+<a href='../S/333.html#L1100'>msg</a>              1100 cbench/openflow/utilities/dpctl.c     desc = ofpbuf_at_assert(msg, 0, sizeof(*desc));
+<a href='../S/333.html#L1109'>msg</a>              1109 cbench/openflow/utilities/dpctl.c     send_openflow_buffer(vconn, msg);
+<a href='../S/615.html#L270'>msg</a>               270 cbench/openflow/utilities/ofp-discover.c modify_dhcp_request(struct dhcp_msg *msg, void *aux UNUSED)
+<a href='../S/615.html#L272'>msg</a>               272 cbench/openflow/utilities/ofp-discover.c     dhcp_msg_put_string(msg, DHCP_CODE_VENDOR_CLASS, "OpenFlow");
+<a href='../S/615.html#L276'>msg</a>               276 cbench/openflow/utilities/ofp-discover.c validate_dhcp_offer(const struct dhcp_msg *msg, void *aux UNUSED)
+<a href='../S/615.html#L282'>msg</a>               282 cbench/openflow/utilities/ofp-discover.c     vconn_name = dhcp_msg_get_string(msg, DHCP_CODE_OFP_CONTROLLER_VCONN);
+<a href='../S/585.html#L68'>msg</a>                68 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/capture_sync.h sync_interface_list_open(gchar **msg);
+<a href='../S/585.html#L72'>msg</a>                72 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/capture_sync.h sync_linktype_list_open(const gchar *ifname, gchar **msg);
+<a href='../S/585.html#L76'>msg</a>                76 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/capture_sync.h sync_interface_stats_open(int *read_fd, int *fork_child, gchar **msg);
+<a href='../S/585.html#L80'>msg</a>                80 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/capture_sync.h sync_interface_stats_close(int *read_fd, int *fork_child, gchar **msg);
+<a href='../S/431.html#L42'>msg</a>                42 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_debug.h void print_debug_line(CHAR *function, CHAR *msg, INT level);
+<a href='../S/431.html#L46'>msg</a>                46 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_debug.h #define	AIRPDCAP_DEBUG_PRINT_LINE(notdefined, msg, level) print_debug_line(__FUNCTION__, msg, level);
+<a href='../S/431.html#L48'>msg</a>                48 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_debug.h #define	AIRPDCAP_DEBUG_PRINT_LINE(function, msg, level) print_debug_line(function, msg, level);
+<a href='../S/431.html#L52'>msg</a>                52 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_debug.h #define	AIRPDCAP_DEBUG_PRINT_LINE(notdefined, msg, level)
+<a href='../S/431.html#L54'>msg</a>                54 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/airpdcap_debug.h #define	AIRPDCAP_DEBUG_PRINT_LINE(function, msg, level)
+<a href='../S/409.html#L177'>msg</a>               177 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h     struct _gcp_msg_t* msg;
+<a href='../S/362.html#L718'>msg</a>               718 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/xmlstub.h typedef void (*xmlValidityErrorFunc) (void *ctx, const char *msg, ...);
+<a href='../S/362.html#L719'>msg</a>               719 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/xmlstub.h typedef void (*xmlValidityWarningFunc) (void *ctx, const char *msg, ...);
+<a href='../S/362.html#L1022'>msg</a>              1022 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/xmlstub.h typedef void (*warningSAXFunc) (void *ctx, const char *msg, ...);
+<a href='../S/362.html#L1023'>msg</a>              1023 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/xmlstub.h typedef void (*errorSAXFunc) (void *ctx, const char *msg, ...);
+<a href='../S/362.html#L1024'>msg</a>              1024 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/xmlstub.h typedef void (*fatalErrorSAXFunc) (void *ctx, const char *msg, ...);
+<a href='../S/338.html#L169'>msg</a>               169 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h extern char *simple_dialog_format_message(const char *msg);
+<a href='../S/574.html#L35'>msg</a>                35 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/statusbar.h void statusbar_push_file_msg(const gchar *msg);
+<a href='../S/574.html#L45'>msg</a>                45 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/statusbar.h void statusbar_push_field_msg(const gchar *msg);
+<a href='../S/570.html#L73'>msg</a>                73 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/sync_pipe.h pipe_write_block(int pipe, char indicator, const char *msg);
+<a href='../S/1002.html#L200'>msg</a>               200 components/conn.c                     raw_msg_t msg = {0};
+<a href='../S/1002.html#L202'>msg</a>               202 components/conn.c                     msg.fd = sock;
+<a href='../S/1002.html#L203'>msg</a>               203 components/conn.c                     msg.length = ntohs(ofph-&gt;length);
+<a href='../S/1002.html#L205'>msg</a>               205 components/conn.c                     if (msg.length == 0)
+<a href='../S/1002.html#L208'>msg</a>               208 components/conn.c                     msg.data = rx_buf + buf_ptr;
+<a href='../S/1002.html#L210'>msg</a>               210 components/conn.c                     ev_ofp_msg_in(CONN_ID, &amp;msg);
+<a href='../S/1002.html#L228'>msg</a>               228 components/conn.c                 raw_msg_t msg = {0};
+<a href='../S/1002.html#L230'>msg</a>               230 components/conn.c                 msg.fd = sock;
+<a href='../S/1002.html#L231'>msg</a>               231 components/conn.c                 msg.length = ntohs(ofph-&gt;length);
+<a href='../S/1002.html#L233'>msg</a>               233 components/conn.c                 if (msg.length == 0)
+<a href='../S/1002.html#L237'>msg</a>               237 components/conn.c                 msg.data = temp;
+<a href='../S/1002.html#L239'>msg</a>               239 components/conn.c                 ev_ofp_msg_in(CONN_ID, &amp;msg);
+<a href='../S/1002.html#L676'>msg</a>               676 components/conn.c             const raw_msg_t *msg = ev-&gt;msg;
+<a href='../S/1002.html#L677'>msg</a>               677 components/conn.c             int fd = msg-&gt;fd;
+<a href='../S/1002.html#L679'>msg</a>               679 components/conn.c             int remain = msg-&gt;length;
+<a href='../S/1002.html#L684'>msg</a>               684 components/conn.c                 bytes = write(fd, msg-&gt;data + done, remain);
+<a href='../S/1009.html#L200'>msg</a>               200 components/conn_sb.c                     raw_msg_t msg = {0};
+<a href='../S/1009.html#L202'>msg</a>               202 components/conn_sb.c                     msg.fd = sock;
+<a href='../S/1009.html#L203'>msg</a>               203 components/conn_sb.c                     msg.length = ntohs(ofph-&gt;length);
+<a href='../S/1009.html#L205'>msg</a>               205 components/conn_sb.c                     msg.data = rx_buf + buf_ptr;
+<a href='../S/1009.html#L207'>msg</a>               207 components/conn_sb.c                     ev_ofp_msg_in(CONN_SB_ID, &amp;msg);
+<a href='../S/1009.html#L225'>msg</a>               225 components/conn_sb.c                 raw_msg_t msg = {0};
+<a href='../S/1009.html#L227'>msg</a>               227 components/conn_sb.c                 msg.fd = sock;
+<a href='../S/1009.html#L228'>msg</a>               228 components/conn_sb.c                 msg.length = ntohs(ofph-&gt;length);
+<a href='../S/1009.html#L231'>msg</a>               231 components/conn_sb.c                 msg.data = temp;
+<a href='../S/1009.html#L233'>msg</a>               233 components/conn_sb.c                 ev_ofp_msg_in(CONN_SB_ID, &amp;msg);
+<a href='../S/1009.html#L681'>msg</a>               681 components/conn_sb.c             const raw_msg_t *msg = ev-&gt;msg;
+<a href='../S/1009.html#L682'>msg</a>               682 components/conn_sb.c             int fd = msg-&gt;fd;
+<a href='../S/1009.html#L684'>msg</a>               684 components/conn_sb.c             int remain = msg-&gt;length;
+<a href='../S/1009.html#L689'>msg</a>               689 components/conn_sb.c                 bytes = write(fd, msg-&gt;data + done, remain);
+<a href='../S/996.html#L74'>msg</a>                74 components/dit.c     checksum = hash_func((uint32_t *)ev-&gt;msg, ev-&gt;length / sizeof(uint32_t));
+<a href='../S/985.html#L18'>msg</a>                18 components/include/ofp10.h int ofp10_engine(const raw_msg_t *msg);
+<a href='../S/1007.html#L48'>msg</a>                48 components/log.c static int push_msg_into_queue(char *msg)
+<a href='../S/1007.html#L71'>msg</a>                71 components/log.c     snprintf(msgs[write_msg++], __CONF_STR_LEN-1, "%s", msg);
+<a href='../S/1007.html#L82'>msg</a>                82 components/log.c static int push_msgs_into_file(char *msg)
+<a href='../S/1007.html#L94'>msg</a>                94 components/log.c         fputs(msg, fp);
+<a href='../S/997.html#L77'>msg</a>                77 components/ofp.c             const raw_msg_t *msg = ev-&gt;msg;
+<a href='../S/997.html#L78'>msg</a>                78 components/ofp.c             struct ofp_header *ofph = (struct ofp_header *)msg-&gt;data;
+<a href='../S/997.html#L81'>msg</a>                81 components/ofp.c                 return ofp10_engine(msg);
+<a href='../S/997.html#L83'>msg</a>                83 components/ofp.c                 return ofp10_engine(msg);
+<a href='../S/998.html#L34'>msg</a>                34 components/ofp10.c static int ofp10_hello(const raw_msg_t *msg)
+<a href='../S/998.html#L38'>msg</a>                38 components/ofp10.c     out.fd = msg-&gt;fd;
+<a href='../S/998.html#L41'>msg</a>                41 components/ofp10.c     struct ofp_header *of_input = (struct ofp_header *)msg-&gt;data;
+<a href='../S/998.html#L60'>msg</a>                60 components/ofp10.c static int ofp10_error(const raw_msg_t *msg)
+<a href='../S/998.html#L62'>msg</a>                62 components/ofp10.c     struct ofp_error_msg *err = (struct ofp_error_msg *)msg-&gt;data;
+<a href='../S/998.html#L191'>msg</a>               191 components/ofp10.c static int ofp10_echo_reply(const raw_msg_t *msg)
+<a href='../S/998.html#L195'>msg</a>               195 components/ofp10.c     out.fd = msg-&gt;fd;
+<a href='../S/998.html#L198'>msg</a>               198 components/ofp10.c     struct ofp_header *of_input = (struct ofp_header *)msg-&gt;data;
+<a href='../S/998.html#L217'>msg</a>               217 components/ofp10.c static int ofp10_features_request(const raw_msg_t *msg)
+<a href='../S/998.html#L221'>msg</a>               221 components/ofp10.c     out.fd = msg-&gt;fd;
+<a href='../S/998.html#L224'>msg</a>               224 components/ofp10.c     struct ofp_header *of_input = (struct ofp_header *)msg-&gt;data;
+<a href='../S/998.html#L243'>msg</a>               243 components/ofp10.c static int ofp10_features_reply(const raw_msg_t *msg)
+<a href='../S/998.html#L245'>msg</a>               245 components/ofp10.c     struct ofp_switch_features *reply = (struct ofp_switch_features *)msg-&gt;data;
+<a href='../S/998.html#L251'>msg</a>               251 components/ofp10.c     sw.fd = msg-&gt;fd;
+<a href='../S/998.html#L325'>msg</a>               325 components/ofp10.c static int ofp10_get_config_reply(const raw_msg_t *msg)
+<a href='../S/998.html#L327'>msg</a>               327 components/ofp10.c     struct ofp_switch_config *config = (struct ofp_switch_config *)msg-&gt;data;
+<a href='../S/998.html#L331'>msg</a>               331 components/ofp10.c               msg-&gt;fd, ntohs(config-&gt;flags), ntohs(config-&gt;miss_send_len));
+<a href='../S/998.html#L449'>msg</a>               449 components/ofp10.c static int ofp10_packet_in(const raw_msg_t *msg)
+<a href='../S/998.html#L451'>msg</a>               451 components/ofp10.c     struct ofp_packet_in *in = (struct ofp_packet_in *)msg-&gt;data;
+<a href='../S/998.html#L458'>msg</a>               458 components/ofp10.c     sw.fd = msg-&gt;fd;
+<a href='../S/998.html#L476'>msg</a>               476 components/ofp10.c     uint8_t *data = (uint8_t *)msg-&gt;data + sizeof(struct ofp_packet_in) - 2;
+<a href='../S/998.html#L579'>msg</a>               579 components/ofp10.c static int ofp10_flow_removed(const raw_msg_t *msg)
+<a href='../S/998.html#L581'>msg</a>               581 components/ofp10.c     struct ofp_flow_removed *removed = (struct ofp_flow_removed *)msg-&gt;data;
+<a href='../S/998.html#L586'>msg</a>               586 components/ofp10.c     sw.fd = msg-&gt;fd;
+<a href='../S/998.html#L700'>msg</a>               700 components/ofp10.c static int ofp10_port_status(const raw_msg_t *msg)
+<a href='../S/998.html#L702'>msg</a>               702 components/ofp10.c     struct ofp_port_status *status = (struct ofp_port_status *)msg-&gt;data;
+<a href='../S/998.html#L711'>msg</a>               711 components/ofp10.c     sw.fd = msg-&gt;fd;
+<a href='../S/998.html#L818'>msg</a>               818 components/ofp10.c static int ofp10_stats_reply(const raw_msg_t *msg)
+<a href='../S/998.html#L820'>msg</a>               820 components/ofp10.c     struct ofp_stats_reply *reply = (struct ofp_stats_reply *)msg-&gt;data;
+<a href='../S/998.html#L828'>msg</a>               828 components/ofp10.c             sw.fd = msg-&gt;fd;
+<a href='../S/998.html#L847'>msg</a>               847 components/ofp10.c             sw.fd = msg-&gt;fd;
+<a href='../S/998.html#L952'>msg</a>               952 components/ofp10.c             sw.fd = msg-&gt;fd;
+<a href='../S/998.html#L980'>msg</a>               980 components/ofp10.c             sw.fd = msg-&gt;fd;
+<a href='../S/998.html#L1200'>msg</a>              1200 components/ofp10.c     raw_msg_t msg = {0};
+<a href='../S/998.html#L1206'>msg</a>              1206 components/ofp10.c     msg.fd = sw.fd;
+<a href='../S/998.html#L1207'>msg</a>              1207 components/ofp10.c     msg.length = size;
+<a href='../S/998.html#L1209'>msg</a>              1209 components/ofp10.c     msg.data = pkt;
+<a href='../S/998.html#L1211'>msg</a>              1211 components/ofp10.c     ev_ofp_msg_out(OFP_ID, &amp;msg);
+<a href='../S/998.html#L1551'>msg</a>              1551 components/ofp10.c     raw_msg_t msg;
+<a href='../S/998.html#L1557'>msg</a>              1557 components/ofp10.c     msg.fd = sw.fd;
+<a href='../S/998.html#L1558'>msg</a>              1558 components/ofp10.c     msg.length = size;
+<a href='../S/998.html#L1560'>msg</a>              1560 components/ofp10.c     msg.data = pkt;
+<a href='../S/998.html#L1562'>msg</a>              1562 components/ofp10.c     ev_ofp_msg_out(OFP_ID, &amp;msg);
+<a href='../S/998.html#L1564'>msg</a>              1564 components/ofp10.c     ofp10_barrier_request(msg.fd);
+<a href='../S/998.html#L1766'>msg</a>              1766 components/ofp10.c     raw_msg_t msg;
+<a href='../S/998.html#L1768'>msg</a>              1768 components/ofp10.c     msg.fd = sw.fd;
+<a href='../S/998.html#L1769'>msg</a>              1769 components/ofp10.c     msg.length = size;
+<a href='../S/998.html#L1771'>msg</a>              1771 components/ofp10.c     msg.data = pkt;
+<a href='../S/998.html#L1773'>msg</a>              1773 components/ofp10.c     ev_ofp_msg_out(OFP_ID, &amp;msg);
+<a href='../S/998.html#L1811'>msg</a>              1811 components/ofp10.c     raw_msg_t msg = {0};
+<a href='../S/998.html#L1813'>msg</a>              1813 components/ofp10.c     msg.fd = sw.fd;
+<a href='../S/998.html#L1814'>msg</a>              1814 components/ofp10.c     msg.length = size;
+<a href='../S/998.html#L1816'>msg</a>              1816 components/ofp10.c     msg.data = pkt;
+<a href='../S/998.html#L1818'>msg</a>              1818 components/ofp10.c     ev_ofp_msg_out(OFP_ID, &amp;msg);
+<a href='../S/998.html#L1853'>msg</a>              1853 components/ofp10.c     raw_msg_t msg = {0};
+<a href='../S/998.html#L1855'>msg</a>              1855 components/ofp10.c     msg.fd = sw.fd;
+<a href='../S/998.html#L1856'>msg</a>              1856 components/ofp10.c     msg.length = size;
+<a href='../S/998.html#L1858'>msg</a>              1858 components/ofp10.c     msg.data = pkt;
+<a href='../S/998.html#L1860'>msg</a>              1860 components/ofp10.c     ev_ofp_msg_out(OFP_ID, &amp;msg);
+<a href='../S/998.html#L1871'>msg</a>              1871 components/ofp10.c int ofp10_engine(const raw_msg_t *msg)
+<a href='../S/998.html#L1873'>msg</a>              1873 components/ofp10.c     struct ofp_header *ofph = (struct ofp_header *)msg-&gt;data;
+<a href='../S/998.html#L1878'>msg</a>              1878 components/ofp10.c         ofp10_hello(msg);
+<a href='../S/998.html#L1879'>msg</a>              1879 components/ofp10.c         ofp10_features_request(msg);
+<a href='../S/998.html#L1883'>msg</a>              1883 components/ofp10.c         ofp10_error(msg);
+<a href='../S/998.html#L1887'>msg</a>              1887 components/ofp10.c         ofp10_echo_reply(msg);
+<a href='../S/998.html#L1903'>msg</a>              1903 components/ofp10.c         ofp10_features_reply(msg);
+<a href='../S/998.html#L1905'>msg</a>              1905 components/ofp10.c         ofp10_set_config(msg-&gt;fd);
+<a href='../S/998.html#L1906'>msg</a>              1906 components/ofp10.c         ofp10_barrier_request(msg-&gt;fd);
+<a href='../S/998.html#L1908'>msg</a>              1908 components/ofp10.c         ofp10_get_config_request(msg-&gt;fd);
+<a href='../S/998.html#L1909'>msg</a>              1909 components/ofp10.c         ofp10_stats_desc_request(msg-&gt;fd);
+<a href='../S/998.html#L1917'>msg</a>              1917 components/ofp10.c         ofp10_get_config_reply(msg);
+<a href='../S/998.html#L1925'>msg</a>              1925 components/ofp10.c         ofp10_packet_in(msg);
+<a href='../S/998.html#L1929'>msg</a>              1929 components/ofp10.c         ofp10_flow_removed(msg);
+<a href='../S/998.html#L1933'>msg</a>              1933 components/ofp10.c         ofp10_port_status(msg);
+<a href='../S/998.html#L1953'>msg</a>              1953 components/ofp10.c         ofp10_stats_reply(msg);
+<a href='../S/994.html#L34'>msg</a>                34 components/ofp_veri.c static int ofp_msg_verification(uint32_t id, const raw_msg_t *msg)
+<a href='../S/994.html#L36'>msg</a>                36 components/ofp_veri.c     struct ofp_header *ofph = (struct ofp_header *)msg-&gt;data;
+<a href='../S/994.html#L60'>msg</a>                60 components/ofp_veri.c             struct ofp_error_msg *data = (struct ofp_error_msg *)msg-&gt;data;
+<a href='../S/994.html#L149'>msg</a>               149 components/ofp_veri.c             struct ofp_switch_features *data = (struct ofp_switch_features *)msg-&gt;data;
+<a href='../S/994.html#L169'>msg</a>               169 components/ofp_veri.c             struct ofp_switch_config *data = (struct ofp_switch_config *)msg-&gt;data;
+<a href='../S/994.html#L178'>msg</a>               178 components/ofp_veri.c             struct ofp_switch_config *data = (struct ofp_switch_config *)msg-&gt;data;
+<a href='../S/994.html#L187'>msg</a>               187 components/ofp_veri.c             struct ofp_packet_in *data = (struct ofp_packet_in *)msg-&gt;data;
+<a href='../S/994.html#L196'>msg</a>               196 components/ofp_veri.c             struct ofp_flow_removed *data = (struct ofp_flow_removed *)msg-&gt;data;
+<a href='../S/994.html#L205'>msg</a>               205 components/ofp_veri.c             struct ofp_port_status *data = (struct ofp_port_status *)msg-&gt;data;
+<a href='../S/994.html#L214'>msg</a>               214 components/ofp_veri.c             struct ofp_packet_out *data = (struct ofp_packet_out *)msg-&gt;data;
+<a href='../S/994.html#L226'>msg</a>               226 components/ofp_veri.c             struct ofp_flow_mod *data = (struct ofp_flow_mod *)msg-&gt;data;
+<a href='../S/994.html#L243'>msg</a>               243 components/ofp_veri.c             struct ofp_port_mod *data = (struct ofp_port_mod *)msg-&gt;data;
+<a href='../S/994.html#L252'>msg</a>               252 components/ofp_veri.c             struct ofp_stats_request *data = (struct ofp_stats_request *)msg-&gt;data;
+<a href='../S/994.html#L261'>msg</a>               261 components/ofp_veri.c             struct ofp_stats_reply *data = (struct ofp_stats_reply *)msg-&gt;data;
+<a href='../S/994.html#L282'>msg</a>               282 components/ofp_veri.c             struct ofp_queue_get_config_request *data = (struct ofp_queue_get_config_request *)msg-&gt;data;
+<a href='../S/994.html#L351'>msg</a>               351 components/ofp_veri.c             const raw_msg_t *msg = ev-&gt;msg;
+<a href='../S/994.html#L352'>msg</a>               352 components/ofp_veri.c             if (ofp_msg_verification(ev-&gt;id, msg)) {
+<a href='../S/994.html#L360'>msg</a>               360 components/ofp_veri.c             const raw_msg_t *msg = ev-&gt;msg;
+<a href='../S/994.html#L361'>msg</a>               361 components/ofp_veri.c             if (ofp_msg_verification(ev-&gt;id, msg)) {
+<a href='../S/1003.html#L207'>msg</a>               207 components/traffic_mgmt.c             traffic.in_byte_cnt += ev-&gt;msg-&gt;length;
+<a href='../S/1003.html#L218'>msg</a>               218 components/traffic_mgmt.c             traffic.out_byte_cnt += ev-&gt;msg-&gt;length;
+<a href='../S/1024.html#L428'>msg</a>               428 events/event.c #define FUNC_DATA msg
+<a href='../S/1032.html#L29'>msg</a>                29 events/include/event.h         const raw_msg_t  *msg; /**&lt; The pointer of a message */
+<a href='../S/1072.html#L69'>msg</a>                69 ext_applications/l2_learning/shim/app_event.c     msg_t msg = {0}; \
+<a href='../S/1072.html#L70'>msg</a>                70 ext_applications/l2_learning/shim/app_event.c     msg.id = i; \
+<a href='../S/1072.html#L71'>msg</a>                71 ext_applications/l2_learning/shim/app_event.c     msg.type = t; \
+<a href='../S/1072.html#L72'>msg</a>                72 ext_applications/l2_learning/shim/app_event.c     memmove(msg.data, d, s); \
+<a href='../S/1072.html#L73'>msg</a>                73 ext_applications/l2_learning/shim/app_event.c     zmq_send(av_push_sock, &amp;msg, sizeof(msg_t), 0); \
+<a href='../S/1072.html#L77'>msg</a>                77 ext_applications/l2_learning/shim/app_event.c     msg_t msg = {0}; \
+<a href='../S/1072.html#L78'>msg</a>                78 ext_applications/l2_learning/shim/app_event.c     msg.id = i; \
+<a href='../S/1072.html#L79'>msg</a>                79 ext_applications/l2_learning/shim/app_event.c     msg.type = t; \
+<a href='../S/1072.html#L80'>msg</a>                80 ext_applications/l2_learning/shim/app_event.c     memmove(msg.data, d, s); \
+<a href='../S/1072.html#L81'>msg</a>                81 ext_applications/l2_learning/shim/app_event.c     zmq_send(av_req_sock, &amp;msg, sizeof(msg_t), 0); \
+<a href='../S/1072.html#L82'>msg</a>                82 ext_applications/l2_learning/shim/app_event.c     zmq_recv(av_req_sock, &amp;msg, sizeof(msg_t), 0); \
+<a href='../S/1072.html#L83'>msg</a>                83 ext_applications/l2_learning/shim/app_event.c     memmove(d, msg.data, s); \
+<a href='../S/1072.html#L183'>msg</a>               183 ext_applications/l2_learning/shim/app_event.c         msg_t msg = {0};
+<a href='../S/1072.html#L185'>msg</a>               185 ext_applications/l2_learning/shim/app_event.c         zmq_recv(av_rep_sock, &amp;msg, sizeof(msg), 0);
+<a href='../S/1072.html#L189'>msg</a>               189 ext_applications/l2_learning/shim/app_event.c         out.id = msg.id;
+<a href='../S/1072.html#L190'>msg</a>               190 ext_applications/l2_learning/shim/app_event.c         out.type = msg.type;
+<a href='../S/1072.html#L191'>msg</a>               191 ext_applications/l2_learning/shim/app_event.c         out.data = (char *)msg.data;
+<a href='../S/1072.html#L197'>msg</a>               197 ext_applications/l2_learning/shim/app_event.c         switch (msg.type) {
+<a href='../S/1072.html#L281'>msg</a>               281 ext_applications/l2_learning/shim/app_event.c         msg.ret = ret;
+<a href='../S/1072.html#L283'>msg</a>               283 ext_applications/l2_learning/shim/app_event.c         zmq_send(av_rep_sock, &amp;msg, sizeof(msg), 0);
+<a href='../S/1072.html#L296'>msg</a>               296 ext_applications/l2_learning/shim/app_event.c         msg_t msg = {0};
+<a href='../S/1072.html#L298'>msg</a>               298 ext_applications/l2_learning/shim/app_event.c         zmq_recv(av_pull_sock, &amp;msg, sizeof(msg), 0);
+<a href='../S/1072.html#L302'>msg</a>               302 ext_applications/l2_learning/shim/app_event.c         out.id = msg.id;
+<a href='../S/1072.html#L303'>msg</a>               303 ext_applications/l2_learning/shim/app_event.c         out.type = msg.type;
+<a href='../S/1072.html#L304'>msg</a>               304 ext_applications/l2_learning/shim/app_event.c         out.data = (char *)msg.data;
+<a href='../S/1072.html#L308'>msg</a>               308 ext_applications/l2_learning/shim/app_event.c         switch (msg.type) {
+<a href='../S/1064.html#L176'>msg</a>               176 ext_applications/l2_learning/shim/include/common.h #define PERROR(msg) fprintf(stdout, "\x1b[31m[%s:%d] %s: %s\x1b[0m\n", __FUNCTION__, __LINE__, (msg), strerror(errno))
+<a href='../S/1054.html#L69'>msg</a>                69 ext_applications/l2_shortest/shim/app_event.c     msg_t msg = {0}; \
+<a href='../S/1054.html#L70'>msg</a>                70 ext_applications/l2_shortest/shim/app_event.c     msg.id = i; \
+<a href='../S/1054.html#L71'>msg</a>                71 ext_applications/l2_shortest/shim/app_event.c     msg.type = t; \
+<a href='../S/1054.html#L72'>msg</a>                72 ext_applications/l2_shortest/shim/app_event.c     memmove(msg.data, d, s); \
+<a href='../S/1054.html#L73'>msg</a>                73 ext_applications/l2_shortest/shim/app_event.c     zmq_send(av_push_sock, &amp;msg, sizeof(msg_t), 0); \
+<a href='../S/1054.html#L77'>msg</a>                77 ext_applications/l2_shortest/shim/app_event.c     msg_t msg = {0}; \
+<a href='../S/1054.html#L78'>msg</a>                78 ext_applications/l2_shortest/shim/app_event.c     msg.id = i; \
+<a href='../S/1054.html#L79'>msg</a>                79 ext_applications/l2_shortest/shim/app_event.c     msg.type = t; \
+<a href='../S/1054.html#L80'>msg</a>                80 ext_applications/l2_shortest/shim/app_event.c     memmove(msg.data, d, s); \
+<a href='../S/1054.html#L81'>msg</a>                81 ext_applications/l2_shortest/shim/app_event.c     zmq_send(av_req_sock, &amp;msg, sizeof(msg_t), 0); \
+<a href='../S/1054.html#L82'>msg</a>                82 ext_applications/l2_shortest/shim/app_event.c     zmq_recv(av_req_sock, &amp;msg, sizeof(msg_t), 0); \
+<a href='../S/1054.html#L83'>msg</a>                83 ext_applications/l2_shortest/shim/app_event.c     memmove(d, msg.data, s); \
+<a href='../S/1054.html#L183'>msg</a>               183 ext_applications/l2_shortest/shim/app_event.c         msg_t msg = {0};
+<a href='../S/1054.html#L185'>msg</a>               185 ext_applications/l2_shortest/shim/app_event.c         zmq_recv(av_rep_sock, &amp;msg, sizeof(msg), 0);
+<a href='../S/1054.html#L189'>msg</a>               189 ext_applications/l2_shortest/shim/app_event.c         out.id = msg.id;
+<a href='../S/1054.html#L190'>msg</a>               190 ext_applications/l2_shortest/shim/app_event.c         out.type = msg.type;
+<a href='../S/1054.html#L191'>msg</a>               191 ext_applications/l2_shortest/shim/app_event.c         out.data = (char *)msg.data;
+<a href='../S/1054.html#L197'>msg</a>               197 ext_applications/l2_shortest/shim/app_event.c         switch (msg.type) {
+<a href='../S/1054.html#L281'>msg</a>               281 ext_applications/l2_shortest/shim/app_event.c         msg.ret = ret;
+<a href='../S/1054.html#L283'>msg</a>               283 ext_applications/l2_shortest/shim/app_event.c         zmq_send(av_rep_sock, &amp;msg, sizeof(msg), 0);
+<a href='../S/1054.html#L296'>msg</a>               296 ext_applications/l2_shortest/shim/app_event.c         msg_t msg = {0};
+<a href='../S/1054.html#L298'>msg</a>               298 ext_applications/l2_shortest/shim/app_event.c         zmq_recv(av_pull_sock, &amp;msg, sizeof(msg), 0);
+<a href='../S/1054.html#L302'>msg</a>               302 ext_applications/l2_shortest/shim/app_event.c         out.id = msg.id;
+<a href='../S/1054.html#L303'>msg</a>               303 ext_applications/l2_shortest/shim/app_event.c         out.type = msg.type;
+<a href='../S/1054.html#L304'>msg</a>               304 ext_applications/l2_shortest/shim/app_event.c         out.data = (char *)msg.data;
+<a href='../S/1054.html#L308'>msg</a>               308 ext_applications/l2_shortest/shim/app_event.c         switch (msg.type) {
+<a href='../S/1046.html#L176'>msg</a>               176 ext_applications/l2_shortest/shim/include/common.h #define PERROR(msg) fprintf(stdout, "\x1b[31m[%s:%d] %s: %s\x1b[0m\n", __FUNCTION__, __LINE__, (msg), strerror(errno))
+<a href='../S/1043.html#L69'>msg</a>                69 ext_applications/shim/app_event.c     msg_t msg = {0}; \
+<a href='../S/1043.html#L70'>msg</a>                70 ext_applications/shim/app_event.c     msg.id = i; \
+<a href='../S/1043.html#L71'>msg</a>                71 ext_applications/shim/app_event.c     msg.type = t; \
+<a href='../S/1043.html#L72'>msg</a>                72 ext_applications/shim/app_event.c     memmove(msg.data, d, s); \
+<a href='../S/1043.html#L73'>msg</a>                73 ext_applications/shim/app_event.c     zmq_send(av_push_sock, &amp;msg, sizeof(msg_t), 0); \
+<a href='../S/1043.html#L77'>msg</a>                77 ext_applications/shim/app_event.c     msg_t msg = {0}; \
+<a href='../S/1043.html#L78'>msg</a>                78 ext_applications/shim/app_event.c     msg.id = i; \
+<a href='../S/1043.html#L79'>msg</a>                79 ext_applications/shim/app_event.c     msg.type = t; \
+<a href='../S/1043.html#L80'>msg</a>                80 ext_applications/shim/app_event.c     memmove(msg.data, d, s); \
+<a href='../S/1043.html#L81'>msg</a>                81 ext_applications/shim/app_event.c     zmq_send(av_req_sock, &amp;msg, sizeof(msg_t), 0); \
+<a href='../S/1043.html#L82'>msg</a>                82 ext_applications/shim/app_event.c     zmq_recv(av_req_sock, &amp;msg, sizeof(msg_t), 0); \
+<a href='../S/1043.html#L83'>msg</a>                83 ext_applications/shim/app_event.c     memmove(d, msg.data, s); \
+<a href='../S/1043.html#L183'>msg</a>               183 ext_applications/shim/app_event.c         msg_t msg = {0};
+<a href='../S/1043.html#L185'>msg</a>               185 ext_applications/shim/app_event.c         zmq_recv(av_rep_sock, &amp;msg, sizeof(msg), 0);
+<a href='../S/1043.html#L189'>msg</a>               189 ext_applications/shim/app_event.c         out.id = msg.id;
+<a href='../S/1043.html#L190'>msg</a>               190 ext_applications/shim/app_event.c         out.type = msg.type;
+<a href='../S/1043.html#L191'>msg</a>               191 ext_applications/shim/app_event.c         out.data = (char *)msg.data;
+<a href='../S/1043.html#L197'>msg</a>               197 ext_applications/shim/app_event.c         switch (msg.type) {
+<a href='../S/1043.html#L281'>msg</a>               281 ext_applications/shim/app_event.c         msg.ret = ret;
+<a href='../S/1043.html#L283'>msg</a>               283 ext_applications/shim/app_event.c         zmq_send(av_rep_sock, &amp;msg, sizeof(msg), 0);
+<a href='../S/1043.html#L296'>msg</a>               296 ext_applications/shim/app_event.c         msg_t msg = {0};
+<a href='../S/1043.html#L298'>msg</a>               298 ext_applications/shim/app_event.c         zmq_recv(av_pull_sock, &amp;msg, sizeof(msg), 0);
+<a href='../S/1043.html#L302'>msg</a>               302 ext_applications/shim/app_event.c         out.id = msg.id;
+<a href='../S/1043.html#L303'>msg</a>               303 ext_applications/shim/app_event.c         out.type = msg.type;
+<a href='../S/1043.html#L304'>msg</a>               304 ext_applications/shim/app_event.c         out.data = (char *)msg.data;
+<a href='../S/1043.html#L308'>msg</a>               308 ext_applications/shim/app_event.c         switch (msg.type) {
+<a href='../S/1035.html#L176'>msg</a>               176 ext_applications/shim/include/common.h #define PERROR(msg) fprintf(stdout, "\x1b[31m[%s:%d] %s: %s\x1b[0m\n", __FUNCTION__, __LINE__, (msg), strerror(errno))
+<a href='../S/1011.html#L176'>msg</a>               176 resource/src/include/common.h #define PERROR(msg) fprintf(stdout, "\x1b[31m[%s:%d] %s: %s\x1b[0m\n", __FUNCTION__, __LINE__, (msg), strerror(errno))
+<a href='../S/949.html#L176'>msg</a>               176 southbound/src/include/common.h #define PERROR(msg) fprintf(stdout, "\x1b[31m[%s:%d] %s: %s\x1b[0m\n", __FUNCTION__, __LINE__, (msg), strerror(errno))
+<a href='../S/924.html#L176'>msg</a>               176 src/include/common.h #define PERROR(msg) fprintf(stdout, "\x1b[31m[%s:%d] %s: %s\x1b[0m\n", __FUNCTION__, __LINE__, (msg), strerror(errno))
+</pre>
+</body>
+</html>

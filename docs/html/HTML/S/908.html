@@ -1,0 +1,98 @@
+<html>
+<head>
+<title>cbench/openflow/lib/dynamic-string.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/dynamic-string.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/199.html' title='Multiple included from 14 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> * </font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> * </font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> * </font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> * </font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#ifndef</font> <a href='../S/908.html#L35' title='Defined at 35 in cbench/openflow/lib/dynamic-string.h.'>DYNAMIC_STRING_H</a>
+<a name='L35'>  35 <font color='darkred'>#define</font> <a href='../S/908.html#L34' title='Refered from 34 in cbench/openflow/lib/dynamic-string.h.'>DYNAMIC_STRING_H</a> 1
+<a name='L36'>  36 
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;stdarg.h&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;stdbool.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> &lt;stddef.h&gt;
+<a name='L40'>  40 <font color='darkred'>#include</font> &lt;stdint.h&gt;
+<a name='L41'>  41 <font color='darkred'>#include</font> &lt;stdio.h&gt;
+<a name='L42'>  42 <font color='darkred'>#include</font> "<a href='872.html'>compiler.h</a>"
+<a name='L43'>  43 
+<a name='L44'>  44 <b>struct</b> <a href='../Y/7394.html' title='Multiple used in 21 places.'>tm</a>;
+<a name='L45'>  45 
+<a name='L46'>  46 <b>struct</b> <a href='../R/2832.html' title='Multiple refered from 204 places.'>ds</a> <font color='red'>{</font>
+<a name='L47'>  47     <b>char</b> *<a href='../Y/7093.html' title='Multiple used in 347 places.'>string</a>;       <i><font color='green'>/* Null-terminated string. */</font></i>
+<a name='L48'>  48     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>;      <i><font color='green'>/* Bytes used, not including null terminator. */</font></i>
+<a name='L49'>  49     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/1381.html' title='Multiple used in 21 places.'>allocated</a>;   <i><font color='green'>/* Bytes allocated, not including null terminator. */</font></i>
+<a name='L50'>  50 <font color='red'>}</font>;
+<a name='L51'>  51 
+<a name='L52'>  52 <font color='darkred'>#define</font> <a href='../R/393.html' title='Multiple refered from 14 places.'>DS_EMPTY_INITIALIZER</a> <font color='red'>{</font> <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, 0, 0 <font color='red'>}</font>
+<a name='L53'>  53 
+<a name='L54'>  54 <b>void</b> <a href='../S/907.html#L44' title='Defined at 44 in cbench/openflow/lib/dynamic-string.c.'>ds_init</a>(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *);
+<a name='L55'>  55 <b>void</b> <a href='../S/907.html#L52' title='Defined at 52 in cbench/openflow/lib/dynamic-string.c.'>ds_clear</a>(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *);
+<a name='L56'>  56 <b>void</b> <a href='../S/907.html#L58' title='Defined at 58 in cbench/openflow/lib/dynamic-string.c.'>ds_truncate</a>(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4762.html' title='Multiple used in 8 places.'>new_length</a>);
+<a name='L57'>  57 <b>void</b> <a href='../S/907.html#L67' title='Defined at 67 in cbench/openflow/lib/dynamic-string.c.'>ds_reserve</a>(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4457.html' title='Multiple used in 4 places.'>min_length</a>);
+<a name='L58'>  58 <b>char</b> *<a href='../S/907.html#L77' title='Defined at 77 in cbench/openflow/lib/dynamic-string.c.'>ds_put_uninit</a>(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>);
+<a name='L59'>  59 <b>void</b> <a href='../S/907.html#L86' title='Defined at 86 in cbench/openflow/lib/dynamic-string.c.'>ds_put_char</a>(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *, <b>char</b>);
+<a name='L60'>  60 <b>void</b> <a href='../S/907.html#L92' title='Defined at 92 in cbench/openflow/lib/dynamic-string.c.'>ds_put_char_multiple</a>(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *, <b>char</b>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>);
+<a name='L61'>  61 <b>void</b> <a href='../S/907.html#L98' title='Defined at 98 in cbench/openflow/lib/dynamic-string.c.'>ds_put_buffer</a>(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *, <b>const</b> <b>char</b> *, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>);
+<a name='L62'>  62 <b>void</b> <a href='../S/907.html#L104' title='Defined at 104 in cbench/openflow/lib/dynamic-string.c.'>ds_put_cstr</a>(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *, <b>const</b> <b>char</b> *);
+<a name='L63'>  63 <b>void</b> <a href='../S/907.html#L111' title='Defined at 111 in cbench/openflow/lib/dynamic-string.c.'>ds_put_format</a>(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *, <b>const</b> <b>char</b> *, ...) <a href='../D/4937.html' title='Multiple defined in 3 places.'>PRINTF_FORMAT</a>(2, 3);
+<a name='L64'>  64 <b>void</b> ds_put_format_valist(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *, <b>const</b> <b>char</b> *, <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a>)
+<a name='L65'>  65     <a href='../D/4937.html' title='Multiple defined in 3 places.'>PRINTF_FORMAT</a>(2, 0);
+<a name='L66'>  66 <b>void</b> ds_put_printable(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *, <b>const</b> <b>char</b> *, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a>);
+<a name='L67'>  67 <b>void</b> ds_put_strftime(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *, <b>const</b> <b>char</b> *, <b>const</b> <b>struct</b> <a href='../Y/7394.html' title='Multiple used in 21 places.'>tm</a> *)
+<a name='L68'>  68     <a href='../S/872.html#L41' title='Defined at 41 in cbench/openflow/lib/compiler.h.'>STRFTIME_FORMAT</a>(2);
+<a name='L69'>  69 <b>void</b> ds_put_hex_dump(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *<a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a>, <b>const</b> <b>void</b> *<a href='../Y/1694.html' title='Multiple used in 5 places.'>buf_</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>,
+<a name='L70'>  70                      <a href='../Y/7628.html' title='Multiple used in 17 places.'>uintptr_t</a> <a href='../Y/5415.html' title='Multiple used in 73 places.'>ofs</a>, <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/1498.html' title='Multiple used in 6 places.'>ascii</a>);
+<a name='L71'>  71 <b>int</b> ds_get_line(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *, <a href='../Y/328.html' title='Multiple used in 113 places.'>FILE</a> *);
+<a name='L72'>  72 
+<a name='L73'>  73 <b>char</b> *ds_cstr(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *);
+<a name='L74'>  74 <b>void</b> ds_destroy(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *);
+<a name='L75'>  75 
+<a name='L76'>  76 <b>int</b> ds_last(<b>const</b> <b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *);
+<a name='L77'>  77 <b>void</b> ds_chomp(<b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *, <b>int</b> <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>);
+<a name='L78'>  78 
+<a name='L79'>  79 <font color='darkred'>#endif</font> <i><font color='green'>/* dynamic-string.h */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

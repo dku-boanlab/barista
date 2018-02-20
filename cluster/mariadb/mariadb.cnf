@@ -1,0 +1,36 @@
+# MariaDB-specific config file.
+# Read by /etc/mysql/my.cnf
+
+[client]
+# Default is Latin1, if you need UTF-8 set this (also in server section)
+default-character-set = utf8
+
+[mysqld]
+#
+# * Character sets
+#
+# Default is Latin1, if you need UTF-8 set all this (also in client section)
+#
+character-set-server  = utf8
+collation-server      = utf8_general_ci
+character_set_server   = utf8
+collation_server       = utf8_general_ci
+
+query_cache_size=0
+binlog_format=ROW
+default-storage-engine = innodb
+innodb_autoinc_lock_mode = 2
+query_cache_type=0
+bind-address=0.0.0.0
+
+wsrep_provider = /usr/lib/galera/libgalera_smm.so
+
+wsrep_cluster_name='barista-cluster'
+wsrep_cluster_address = 'gcomm://OTHER_IP_ADDRESSES' # other IP addresses
+
+wsrep_sst_method = rsync
+
+wsrep_node_address = 'MY_IP_ADDRESS' # my IP address
+wsrep_node_name = 'MY_IP_ADDRESS' # use IP address instead of specific name
+
+# 3306 for mysql, 4567 for replication(TCP/UDP), 4568 for IST, 4569 for STT

@@ -1,0 +1,339 @@
+<html>
+<head>
+<title>cbench/openflow/lib/ofpbuf.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/ofpbuf.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L49'>[^]</a><a href='#L289'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L49' title='Defined at 49.'>ofpbuf_use</a>
+<li><a href='#L62' title='Defined at 62.'>ofpbuf_init</a>
+<li><a href='#L69' title='Defined at 69.'>ofpbuf_uninit</a>
+<li><a href='#L78' title='Defined at 78.'>ofpbuf_reinit</a>
+<li><a href='#L87' title='Defined at 87.'>ofpbuf_new</a>
+<li><a href='#L95' title='Defined at 95.'>ofpbuf_clone</a>
+<li><a href='#L101' title='Defined at 101.'>ofpbuf_clone_data</a>
+<li><a href='#L110' title='Defined at 110.'>ofpbuf_delete</a>
+<li><a href='#L123' title='Defined at 123.'>ofpbuf_headroom</a>
+<li><a href='#L131' title='Defined at 131.'>ofpbuf_tailroom</a>
+<li><a href='#L139' title='Defined at 139.'>ofpbuf_prealloc_tailroom</a>
+<li><a href='#L166' title='Defined at 166.'>ofpbuf_prealloc_headroom</a>
+<li><a href='#L175' title='Defined at 175.'>ofpbuf_put_uninit</a>
+<li><a href='#L188' title='Defined at 188.'>ofpbuf_put_zeros</a>
+<li><a href='#L199' title='Defined at 199.'>ofpbuf_put</a>
+<li><a href='#L209' title='Defined at 209.'>ofpbuf_reserve</a>
+<li><a href='#L217' title='Defined at 217.'>ofpbuf_push_uninit</a>
+<li><a href='#L226' title='Defined at 226.'>ofpbuf_push</a>
+<li><a href='#L236' title='Defined at 236.'>ofpbuf_at</a>
+<li><a href='#L244' title='Defined at 244.'>ofpbuf_at_assert</a>
+<li><a href='#L252' title='Defined at 252.'>ofpbuf_tail</a>
+<li><a href='#L260' title='Defined at 260.'>ofpbuf_end</a>
+<li><a href='#L267' title='Defined at 267.'>ofpbuf_clear</a>
+<li><a href='#L276' title='Defined at 276.'>ofpbuf_pull</a>
+<li><a href='#L289' title='Defined at 289.'>ofpbuf_try_pull</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> * </font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> * </font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> * </font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> * </font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> "<a href='865.html'>ofpbuf.h</a>"
+<a name='L36'>  36 <font color='darkred'>#include</font> &lt;assert.h&gt;
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;stdlib.h&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;string.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> "<a href='../I/69.html'>util.h</a>"
+<a name='L40'>  40 
+<a name='L41'>  41 <i><font color='green'>/* Initializes 'b' as an empty ofpbuf that contains the 'allocated' bytes of</font></i>
+<a name='L42'>  42 <i><font color='green'> * memory starting at 'base'.</font></i>
+<a name='L43'>  43 <i><font color='green'> *</font></i>
+<a name='L44'>  44 <i><font color='green'> * 'base' should ordinarily be the first byte of a region obtained from</font></i>
+<a name='L45'>  45 <i><font color='green'> * malloc(), but in circumstances where it can be guaranteed that 'b' will</font></i>
+<a name='L46'>  46 <i><font color='green'> * never need to be expanded or freed, it can be a pointer into arbitrary</font></i>
+<a name='L47'>  47 <i><font color='green'> * memory. */</font></i>
+<a name='L48'>  48 <b>void</b>
+<a name='L49'>  49 <a href='../R/3968.html' title='Multiple refered from 3 places.'>ofpbuf_use</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <b>void</b> *<a href='../Y/1598.html' title='Multiple used in 50 places.'>base</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/1381.html' title='Multiple used in 21 places.'>allocated</a>)
+<a name='L50'>  50 <font color='red'>{</font>
+<a name='L51'>  51     <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/1598.html' title='Multiple used in 50 places.'>base</a> = <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = <a href='../Y/1598.html' title='Multiple used in 50 places.'>base</a>;
+<a name='L52'>  52     <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/1381.html' title='Multiple used in 21 places.'>allocated</a> = <a href='../Y/1381.html' title='Multiple used in 21 places.'>allocated</a>;
+<a name='L53'>  53     <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> = 0;
+<a name='L54'>  54     <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a> = <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4048.html' title='Multiple used in 22 places.'>l3</a> = <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4052.html' title='Multiple used in 10 places.'>l4</a> = <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4053.html' title='Multiple used in 10 places.'>l7</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L55'>  55     <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L56'>  56     <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/5911.html' title='Multiple used in 123 places.'>private</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L57'>  57 <font color='red'>}</font>
+<a name='L58'>  58 
+<a name='L59'>  59 <i><font color='green'>/* Initializes 'b' as an empty ofpbuf with an initial capacity of 'size'</font></i>
+<a name='L60'>  60 <i><font color='green'> * bytes. */</font></i>
+<a name='L61'>  61 <b>void</b>
+<a name='L62'>  62 <a href='../R/3952.html' title='Multiple refered from 9 places.'>ofpbuf_init</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>)
+<a name='L63'>  63 <font color='red'>{</font>
+<a name='L64'>  64     <a href='../S/887.html#L49' title='Defined at 49 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_use</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> ? <a href='../D/10153.html' title='Multiple defined in 2 places.'>xmalloc</a>(<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) : <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L65'>  65 <font color='red'>}</font>
+<a name='L66'>  66 
+<a name='L67'>  67 <i><font color='green'>/* Frees memory that 'b' points to. */</font></i>
+<a name='L68'>  68 <b>void</b>
+<a name='L69'>  69 <a href='../R/3967.html' title='Multiple refered from 10 places.'>ofpbuf_uninit</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>) 
+<a name='L70'>  70 <font color='red'>{</font>
+<a name='L71'>  71     <b>if</b> (<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>) <font color='red'>{</font>
+<a name='L72'>  72         <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/1598.html' title='Multiple used in 50 places.'>base</a>);
+<a name='L73'>  73     <font color='red'>}</font>
+<a name='L74'>  74 <font color='red'>}</font>
+<a name='L75'>  75 
+<a name='L76'>  76 <i><font color='green'>/* Frees memory that 'b' points to and allocates a new ofpbuf */</font></i>
+<a name='L77'>  77 <b>void</b>
+<a name='L78'>  78 <a href='../R/3962.html' title='Multiple refered from 2 places.'>ofpbuf_reinit</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>)
+<a name='L79'>  79 <font color='red'>{</font>
+<a name='L80'>  80     <a href='../S/887.html#L69' title='Defined at 69 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_uninit</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>);
+<a name='L81'>  81     <a href='../S/887.html#L62' title='Defined at 62 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_init</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L82'>  82 <font color='red'>}</font>
+<a name='L83'>  83 
+<a name='L84'>  84 <i><font color='green'>/* Creates and returns a new ofpbuf with an initial capacity of 'size'</font></i>
+<a name='L85'>  85 <i><font color='green'> * bytes. */</font></i>
+<a name='L86'>  86 <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> *
+<a name='L87'>  87 <a href='../R/3953.html' title='Multiple refered from 19 places.'>ofpbuf_new</a>(<a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>)
+<a name='L88'>  88 <font color='red'>{</font>
+<a name='L89'>  89     <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> = <a href='../D/10153.html' title='Multiple defined in 2 places.'>xmalloc</a>(<b>sizeof</b> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>);
+<a name='L90'>  90     <a href='../S/887.html#L62' title='Defined at 62 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_init</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L91'>  91     <b>return</b> <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>;
+<a name='L92'>  92 <font color='red'>}</font>
+<a name='L93'>  93 
+<a name='L94'>  94 <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> *
+<a name='L95'>  95 <a href='../R/3947.html' title='Multiple refered from 8 places.'>ofpbuf_clone</a>(<b>const</b> <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>)
+<a name='L96'>  96 <font color='red'>{</font>
+<a name='L97'>  97     <b>return</b> <a href='../S/887.html#L101' title='Defined at 101 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_clone_data</a>(<a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L98'>  98 <font color='red'>}</font>
+<a name='L99'>  99 
+<a name='L100'> 100 <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> *
+<a name='L101'> 101 <a href='../R/3948.html' title='Multiple refered from 2 places.'>ofpbuf_clone_data</a>(<b>const</b> <b>void</b> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>)
+<a name='L102'> 102 <font color='red'>{</font>
+<a name='L103'> 103     <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> = <a href='../S/887.html#L87' title='Defined at 87 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_new</a>(<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L104'> 104     <a href='../S/887.html#L199' title='Defined at 199 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_put</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L105'> 105     <b>return</b> <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>;
+<a name='L106'> 106 <font color='red'>}</font>
+<a name='L107'> 107 
+<a name='L108'> 108 <i><font color='green'>/* Frees memory that 'b' points to, as well as 'b' itself. */</font></i>
+<a name='L109'> 109 <b>void</b>
+<a name='L110'> 110 <a href='../R/3949.html' title='Multiple refered from 65 places.'>ofpbuf_delete</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>) 
+<a name='L111'> 111 <font color='red'>{</font>
+<a name='L112'> 112     <b>if</b> (<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>) <font color='red'>{</font>
+<a name='L113'> 113         <a href='../S/887.html#L69' title='Defined at 69 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_uninit</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>);
+<a name='L114'> 114         <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>);
+<a name='L115'> 115     <font color='red'>}</font>
+<a name='L116'> 116 <font color='red'>}</font>
+<a name='L117'> 117 
+<a name='L118'> 118 <i><font color='green'>/* Returns the number of bytes of headroom in 'b', that is, the number of bytes</font></i>
+<a name='L119'> 119 <i><font color='green'> * of unused space in ofpbuf 'b' before the data that is in use.  (Most</font></i>
+<a name='L120'> 120 <i><font color='green'> * commonly, the data in a ofpbuf is at its beginning, and thus the ofpbuf's</font></i>
+<a name='L121'> 121 <i><font color='green'> * headroom is 0.) */</font></i>
+<a name='L122'> 122 <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a>
+<a name='L123'> 123 <a href='../R/3951.html' title='Multiple refered from 2 places.'>ofpbuf_headroom</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>) 
+<a name='L124'> 124 <font color='red'>{</font>
+<a name='L125'> 125     <b>return</b> (<b>char</b>*)<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> - (<b>char</b>*)<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/1598.html' title='Multiple used in 50 places.'>base</a>;
+<a name='L126'> 126 <font color='red'>}</font>
+<a name='L127'> 127 
+<a name='L128'> 128 <i><font color='green'>/* Returns the number of bytes that may be appended to the tail end of ofpbuf</font></i>
+<a name='L129'> 129 <i><font color='green'> * 'b' before the ofpbuf must be reallocated. */</font></i>
+<a name='L130'> 130 <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a>
+<a name='L131'> 131 <a href='../R/3965.html' title='Multiple refered from 5 places.'>ofpbuf_tailroom</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>) 
+<a name='L132'> 132 <font color='red'>{</font>
+<a name='L133'> 133     <b>return</b> (<b>char</b>*)<a href='../S/887.html#L260' title='Defined at 260 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_end</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>) - (<b>char</b>*)<a href='../S/887.html#L252' title='Defined at 252 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_tail</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>);
+<a name='L134'> 134 <font color='red'>}</font>
+<a name='L135'> 135 
+<a name='L136'> 136 <i><font color='green'>/* Ensures that 'b' has room for at least 'size' bytes at its tail end,</font></i>
+<a name='L137'> 137 <i><font color='green'> * reallocating and copying its data if necessary. */</font></i>
+<a name='L138'> 138 <b>void</b>
+<a name='L139'> 139 <a href='../R/3955.html' title='Multiple refered from 6 places.'>ofpbuf_prealloc_tailroom</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L140'> 140 <font color='red'>{</font>
+<a name='L141'> 141     <b>if</b> (<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> &gt; <a href='../S/887.html#L131' title='Defined at 131 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_tailroom</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>)) <font color='red'>{</font>
+<a name='L142'> 142         <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4748.html' title='Multiple used in 3 places.'>new_allocated</a> = <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/1381.html' title='Multiple used in 21 places.'>allocated</a> + <a href='../D/2530.html' title='Multiple defined in 9 places.'>MAX</a>(<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>, 64);
+<a name='L143'> 143         <b>void</b> *<a href='../Y/4749.html' title='Multiple used in 4 places.'>new_base</a> = <a href='../D/10153.html' title='Multiple defined in 2 places.'>xmalloc</a>(<a href='../Y/4748.html' title='Multiple used in 3 places.'>new_allocated</a>);
+<a name='L144'> 144         <a href='../Y/7628.html' title='Multiple used in 17 places.'>uintptr_t</a> <a href='../Y/1599.html' title='Multiple used in 6 places.'>base_delta</a> = (<b>char</b>*)<a href='../Y/4749.html' title='Multiple used in 4 places.'>new_base</a> - (<b>char</b>*)<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/1598.html' title='Multiple used in 50 places.'>base</a>;
+<a name='L145'> 145         <a href='../Y/4417.html' title='Multiple used in 205 places.'>memcpy</a>(<a href='../Y/4749.html' title='Multiple used in 4 places.'>new_base</a>, <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/1598.html' title='Multiple used in 50 places.'>base</a>, <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/1381.html' title='Multiple used in 21 places.'>allocated</a>);
+<a name='L146'> 146         <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/1598.html' title='Multiple used in 50 places.'>base</a>);
+<a name='L147'> 147         <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/1598.html' title='Multiple used in 50 places.'>base</a> = <a href='../Y/4749.html' title='Multiple used in 4 places.'>new_base</a>;
+<a name='L148'> 148         <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/1381.html' title='Multiple used in 21 places.'>allocated</a> = <a href='../Y/4748.html' title='Multiple used in 3 places.'>new_allocated</a>;
+<a name='L149'> 149         <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>char</b>*)<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> + <a href='../Y/1599.html' title='Multiple used in 6 places.'>base_delta</a>;
+<a name='L150'> 150         <b>if</b> (<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a>) <font color='red'>{</font>
+<a name='L151'> 151             <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a> = (<b>char</b>*)<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a> + <a href='../Y/1599.html' title='Multiple used in 6 places.'>base_delta</a>;
+<a name='L152'> 152         <font color='red'>}</font>
+<a name='L153'> 153         <b>if</b> (<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4048.html' title='Multiple used in 22 places.'>l3</a>) <font color='red'>{</font>
+<a name='L154'> 154             <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4048.html' title='Multiple used in 22 places.'>l3</a> = (<b>char</b>*)<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4048.html' title='Multiple used in 22 places.'>l3</a> + <a href='../Y/1599.html' title='Multiple used in 6 places.'>base_delta</a>;
+<a name='L155'> 155         <font color='red'>}</font>
+<a name='L156'> 156         <b>if</b> (<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4052.html' title='Multiple used in 10 places.'>l4</a>) <font color='red'>{</font>
+<a name='L157'> 157             <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4052.html' title='Multiple used in 10 places.'>l4</a> = (<b>char</b>*)<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4052.html' title='Multiple used in 10 places.'>l4</a> + <a href='../Y/1599.html' title='Multiple used in 6 places.'>base_delta</a>;
+<a name='L158'> 158         <font color='red'>}</font>
+<a name='L159'> 159         <b>if</b> (<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4053.html' title='Multiple used in 10 places.'>l7</a>) <font color='red'>{</font>
+<a name='L160'> 160             <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4053.html' title='Multiple used in 10 places.'>l7</a> = (<b>char</b>*)<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/4053.html' title='Multiple used in 10 places.'>l7</a> + <a href='../Y/1599.html' title='Multiple used in 6 places.'>base_delta</a>;
+<a name='L161'> 161         <font color='red'>}</font>
+<a name='L162'> 162     <font color='red'>}</font>
+<a name='L163'> 163 <font color='red'>}</font>
+<a name='L164'> 164 
+<a name='L165'> 165 <b>void</b>
+<a name='L166'> 166 <a href='../R/3954.html' title='Multiple refered from 2 places.'>ofpbuf_prealloc_headroom</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L167'> 167 <font color='red'>{</font>
+<a name='L168'> 168     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> &lt;= <a href='../S/887.html#L123' title='Defined at 123 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_headroom</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>));
+<a name='L169'> 169 <font color='red'>}</font>
+<a name='L170'> 170 
+<a name='L171'> 171 <i><font color='green'>/* Appends 'size' bytes of data to the tail end of 'b', reallocating and</font></i>
+<a name='L172'> 172 <i><font color='green'> * copying its data if necessary.  Returns a pointer to the first byte of the</font></i>
+<a name='L173'> 173 <i><font color='green'> * new data, which is left uninitialized. */</font></i>
+<a name='L174'> 174 <b>void</b> *
+<a name='L175'> 175 <a href='../R/3960.html' title='Multiple refered from 17 places.'>ofpbuf_put_uninit</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L176'> 176 <font color='red'>{</font>
+<a name='L177'> 177     <b>void</b> *<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>;
+<a name='L178'> 178     <a href='../S/887.html#L139' title='Defined at 139 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_prealloc_tailroom</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L179'> 179     <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> = <a href='../S/887.html#L252' title='Defined at 252 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_tail</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>);
+<a name='L180'> 180     <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> += <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>;
+<a name='L181'> 181     <b>return</b> <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>;
+<a name='L182'> 182 <font color='red'>}</font>
+<a name='L183'> 183 
+<a name='L184'> 184 <i><font color='green'>/* Appends 'size' zeroed bytes to the tail end of 'b'.  Data in 'b' is</font></i>
+<a name='L185'> 185 <i><font color='green'> * reallocated and copied if necessary.  Returns a pointer to the first byte of</font></i>
+<a name='L186'> 186 <i><font color='green'> * the data's location in the ofpbuf. */</font></i>
+<a name='L187'> 187 <b>void</b> *
+<a name='L188'> 188 <a href='../R/3961.html' title='Multiple refered from 11 places.'>ofpbuf_put_zeros</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>)
+<a name='L189'> 189 <font color='red'>{</font>
+<a name='L190'> 190     <b>void</b> *<a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a> = <a href='../S/887.html#L175' title='Defined at 175 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_put_uninit</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L191'> 191     <a href='../Y/4419.html' title='Multiple used in 245 places.'>memset</a>(<a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a>, 0, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L192'> 192     <b>return</b> <a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a>;
+<a name='L193'> 193 <font color='red'>}</font>
+<a name='L194'> 194 
+<a name='L195'> 195 <i><font color='green'>/* Appends the 'size' bytes of data in 'p' to the tail end of 'b'.  Data in 'b'</font></i>
+<a name='L196'> 196 <i><font color='green'> * is reallocated and copied if necessary.  Returns a pointer to the first</font></i>
+<a name='L197'> 197 <i><font color='green'> * byte of the data's location in the ofpbuf. */</font></i>
+<a name='L198'> 198 <b>void</b> *
+<a name='L199'> 199 <a href='../R/3959.html' title='Multiple refered from 14 places.'>ofpbuf_put</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <b>const</b> <b>void</b> *<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L200'> 200 <font color='red'>{</font>
+<a name='L201'> 201     <b>void</b> *<a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a> = <a href='../S/887.html#L175' title='Defined at 175 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_put_uninit</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L202'> 202     <a href='../Y/4417.html' title='Multiple used in 205 places.'>memcpy</a>(<a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a>, <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L203'> 203     <b>return</b> <a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a>;
+<a name='L204'> 204 <font color='red'>}</font>
+<a name='L205'> 205 
+<a name='L206'> 206 <i><font color='green'>/* Reserves 'size' bytes of headroom so that they can be later allocated with</font></i>
+<a name='L207'> 207 <i><font color='green'> * ofpbuf_push_uninit() without reallocating the ofpbuf. */</font></i>
+<a name='L208'> 208 <b>void</b>
+<a name='L209'> 209 <a href='../R/3963.html' title='Multiple refered from 2 places.'>ofpbuf_reserve</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L210'> 210 <font color='red'>{</font>
+<a name='L211'> 211     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(!<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L212'> 212     <a href='../S/887.html#L139' title='Defined at 139 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_prealloc_tailroom</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L213'> 213     <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>char</b>*)<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> + <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>;
+<a name='L214'> 214 <font color='red'>}</font>
+<a name='L215'> 215 
+<a name='L216'> 216 <b>void</b> *
+<a name='L217'> 217 <a href='../R/3958.html' title='Multiple refered from 4 places.'>ofpbuf_push_uninit</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L218'> 218 <font color='red'>{</font>
+<a name='L219'> 219     <a href='../S/887.html#L166' title='Defined at 166 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_prealloc_headroom</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L220'> 220     <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>char</b>*)<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> - <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>;
+<a name='L221'> 221     <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> += <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>;
+<a name='L222'> 222     <b>return</b> <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L223'> 223 <font color='red'>}</font>
+<a name='L224'> 224 
+<a name='L225'> 225 <b>void</b> *
+<a name='L226'> 226 <a href='../R/3957.html' title='Multiple refered from 4 places.'>ofpbuf_push</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <b>const</b> <b>void</b> *<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L227'> 227 <font color='red'>{</font>
+<a name='L228'> 228     <b>void</b> *<a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a> = <a href='../S/887.html#L217' title='Defined at 217 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_push_uninit</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L229'> 229     <a href='../Y/4417.html' title='Multiple used in 205 places.'>memcpy</a>(<a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a>, <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L230'> 230     <b>return</b> <a href='../Y/2581.html' title='Multiple used in 68 places.'>dst</a>;
+<a name='L231'> 231 <font color='red'>}</font>
+<a name='L232'> 232 
+<a name='L233'> 233 <i><font color='green'>/* If 'b' contains at least 'offset + size' bytes of data, returns a pointer to</font></i>
+<a name='L234'> 234 <i><font color='green'> * byte 'offset'.  Otherwise, returns a null pointer. */</font></i>
+<a name='L235'> 235 <b>void</b> *
+<a name='L236'> 236 <a href='../R/3944.html' title='Multiple refered from 10 places.'>ofpbuf_at</a>(<b>const</b> <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L237'> 237 <font color='red'>{</font>
+<a name='L238'> 238     <b>return</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a> + <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> &lt;= <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> ? (<b>char</b> *) <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> + <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a> : <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L239'> 239 <font color='red'>}</font>
+<a name='L240'> 240 
+<a name='L241'> 241 <i><font color='green'>/* Returns a pointer to byte 'offset' in 'b', which must contain at least</font></i>
+<a name='L242'> 242 <i><font color='green'> * 'offset + size' bytes of data. */</font></i>
+<a name='L243'> 243 <b>void</b> *
+<a name='L244'> 244 <a href='../R/3945.html' title='Multiple refered from 8 places.'>ofpbuf_at_assert</a>(<b>const</b> <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L245'> 245 <font color='red'>{</font>
+<a name='L246'> 246     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a> + <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> &lt;= <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L247'> 247     <b>return</b> ((<b>char</b> *) <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) + <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>;
+<a name='L248'> 248 <font color='red'>}</font>
+<a name='L249'> 249 
+<a name='L250'> 250 <i><font color='green'>/* Returns the byte following the last byte of data in use in 'b'. */</font></i>
+<a name='L251'> 251 <b>void</b> *
+<a name='L252'> 252 <a href='../R/3964.html' title='Multiple refered from 9 places.'>ofpbuf_tail</a>(<b>const</b> <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>) 
+<a name='L253'> 253 <font color='red'>{</font>
+<a name='L254'> 254     <b>return</b> (<b>char</b> *) <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> + <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>;
+<a name='L255'> 255 <font color='red'>}</font>
+<a name='L256'> 256 
+<a name='L257'> 257 <i><font color='green'>/* Returns the byte following the last byte allocated for use (but not</font></i>
+<a name='L258'> 258 <i><font color='green'> * necessarily in use) by 'b'. */</font></i>
+<a name='L259'> 259 <b>void</b> *
+<a name='L260'> 260 <a href='../R/3950.html' title='Multiple refered from 2 places.'>ofpbuf_end</a>(<b>const</b> <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>) 
+<a name='L261'> 261 <font color='red'>{</font>
+<a name='L262'> 262     <b>return</b> (<b>char</b> *) <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/1598.html' title='Multiple used in 50 places.'>base</a> + <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/1381.html' title='Multiple used in 21 places.'>allocated</a>;
+<a name='L263'> 263 <font color='red'>}</font>
+<a name='L264'> 264 
+<a name='L265'> 265 <i><font color='green'>/* Clears any data from 'b'. */</font></i>
+<a name='L266'> 266 <b>void</b>
+<a name='L267'> 267 <a href='../R/3946.html' title='Multiple refered from 2 places.'>ofpbuf_clear</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>) 
+<a name='L268'> 268 <font color='red'>{</font>
+<a name='L269'> 269     <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/1598.html' title='Multiple used in 50 places.'>base</a>;
+<a name='L270'> 270     <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> = 0;
+<a name='L271'> 271 <font color='red'>}</font>
+<a name='L272'> 272 
+<a name='L273'> 273 <i><font color='green'>/* Removes 'size' bytes from the head end of 'b', which must contain at least</font></i>
+<a name='L274'> 274 <i><font color='green'> * 'size' bytes of data.  Returns the first byte of data removed. */</font></i>
+<a name='L275'> 275 <b>void</b> *
+<a name='L276'> 276 <a href='../R/3956.html' title='Multiple refered from 11 places.'>ofpbuf_pull</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L277'> 277 <font color='red'>{</font>
+<a name='L278'> 278     <b>void</b> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L279'> 279     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> &gt;= <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L280'> 280     <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>char</b>*)<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> + <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>;
+<a name='L281'> 281     <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> -= <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>;
+<a name='L282'> 282     <b>return</b> <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L283'> 283 <font color='red'>}</font>
+<a name='L284'> 284 
+<a name='L285'> 285 <i><font color='green'>/* If 'b' has at least 'size' bytes of data, removes that many bytes from the</font></i>
+<a name='L286'> 286 <i><font color='green'> * head end of 'b' and returns the first byte removed.  Otherwise, returns a</font></i>
+<a name='L287'> 287 <i><font color='green'> * null pointer without modifying 'b'. */</font></i>
+<a name='L288'> 288 <b>void</b> *
+<a name='L289'> 289 <a href='../R/3966.html' title='Multiple refered from 11 places.'>ofpbuf_try_pull</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L290'> 290 <font color='red'>{</font>
+<a name='L291'> 291     <b>return</b> <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> &gt;= <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> ? <a href='../S/887.html#L276' title='Defined at 276 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_pull</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) : <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L292'> 292 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L49'>[^]</a><a href='#L289'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/drange.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/<a href='../files/1150.html'>dfilter</a>/drange.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/398.html' title='Multiple included from 3 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* drange.h</font></i>
+<a name='L2'>   2 <i><font color='green'> * Routines for providing general range support to the dfilter library</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * $Id: drange.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L5'>   5 <i><font color='green'> *</font></i>
+<a name='L6'>   6 <i><font color='green'> * Copyright (c) 2000 by Ed Warnicke &lt;hagbard@physics.rutgers.edu&gt;</font></i>
+<a name='L7'>   7 <i><font color='green'> *</font></i>
+<a name='L8'>   8 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L9'>   9 <i><font color='green'> * By Gerald Combs</font></i>
+<a name='L10'>  10 <i><font color='green'> * Copyright 1999 Gerald Combs</font></i>
+<a name='L11'>  11 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L12'>  12 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L13'>  13 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L14'>  14 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L15'>  15 <i><font color='green'> *</font></i>
+<a name='L16'>  16 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L17'>  17 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L18'>  18 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L19'>  19 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L20'>  20 <i><font color='green'> *</font></i>
+<a name='L21'>  21 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L22'>  22 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L23'>  23 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L24'>  24 <i><font color='green'> */</font></i>
+<a name='L25'>  25 
+<a name='L26'>  26 <font color='darkred'>#ifndef</font> <a href='../S/459.html#L27' title='Defined at 27 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/drange.h.'>__DRANGE_H__</a>
+<a name='L27'>  27 <font color='darkred'>#define</font> <a href='../S/459.html#L26' title='Refered from 26 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/drange.h.'>__DRANGE_H__</a>
+<a name='L28'>  28 
+<a name='L29'>  29 <font color='darkred'>#include</font> &lt;glib.h&gt;
+<a name='L30'>  30 
+<a name='L31'>  31 <i><font color='green'>/* Please don't directly manipulate these structs.  Please use</font></i>
+<a name='L32'>  32 <i><font color='green'> * the methods provided.  If you REALLY can't do what you need to</font></i>
+<a name='L33'>  33 <i><font color='green'> * do with the methods provided please write new methods that do</font></i>
+<a name='L34'>  34 <i><font color='green'> * what you need, put them into the drange object here, and limit</font></i>
+<a name='L35'>  35 <i><font color='green'> * your direct manipulation of the drange and drange_node structs to</font></i>
+<a name='L36'>  36 <i><font color='green'> * here.</font></i>
+<a name='L37'>  37 <i><font color='green'> */</font></i>
+<a name='L38'>  38 
+<a name='L39'>  39 <b>typedef</b> <b>enum</b> <font color='red'>{</font>
+<a name='L40'>  40         UNINITIALIZED,
+<a name='L41'>  41         <a href='../R/762.html' title='Multiple refered from 3 places.'>LENGTH</a>,
+<a name='L42'>  42         OFFSET,
+<a name='L43'>  43         TO_THE_END
+<a name='L44'>  44 <font color='red'>}</font> <a href='../R/2830.html' title='Multiple refered from 2 places.'>drange_node_end_t</a>;
+<a name='L45'>  45 
+<a name='L46'>  46 <b>typedef</b> <b>struct</b> _drange_node <font color='red'>{</font>
+<a name='L47'>  47   <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a>                  <a href='../Y/6989.html' title='Multiple used in 2 places.'>start_offset</a>;
+<a name='L48'>  48   <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a>                  <a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>;
+<a name='L49'>  49   <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a>                  <a href='../Y/2683.html' title='Multiple used in 3 places.'>end_offset</a>;
+<a name='L50'>  50   <a href='../S/459.html#L44' title='Defined at 44 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/drange.h.'>drange_node_end_t</a>     <a href='../Y/2689.html' title='Multiple used in 2 places.'>ending</a>;
+<a name='L51'>  51 <font color='red'>}</font> <a href='../S/459.html#L62' title='Refered from 62 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/drange.h.'>drange_node</a>;
+<a name='L52'>  52 
+<a name='L53'>  53 <b>typedef</b> <b>struct</b> _drange <font color='red'>{</font>
+<a name='L54'>  54   <a href='../Y/391.html' title='Multiple used in 20 places.'>GSList</a>* range_list;
+<a name='L55'>  55   <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> has_total_length;
+<a name='L56'>  56   <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> total_length;
+<a name='L57'>  57   <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> min_start_offset;
+<a name='L58'>  58   <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> max_start_offset;
+<a name='L59'>  59 <font color='red'>}</font> <a href='../R/2828.html' title='Multiple refered from 3 places.'>drange</a>;
+<a name='L60'>  60 
+<a name='L61'>  61 <i><font color='green'>/* drange_node constructor */</font></i>
+<a name='L62'>  62 <a href='../S/459.html#L51' title='Defined at 51 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/drange.h.'>drange_node</a>* drange_node_new(<b>void</b>);
+<a name='L63'>  63 
+<a name='L64'>  64 <i><font color='green'>/* drange_node destructor */</font></i>
+<a name='L65'>  65 <b>void</b> drange_node_free(<a href='../Y/2545.html' title='Multiple used in 12 places.'>drange_node</a>* <a href='../Y/2552.html' title='Multiple used in 11 places.'>drnode</a>);
+<a name='L66'>  66 
+<a name='L67'>  67 <i><font color='green'>/* Call drange_node destructor on all list items */</font></i>
+<a name='L68'>  68 <b>void</b> drange_node_free_list(<a href='../Y/391.html' title='Multiple used in 20 places.'>GSList</a>* <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a>);
+<a name='L69'>  69 
+<a name='L70'>  70 <i><font color='green'>/* drange_node accessors */</font></i>
+<a name='L71'>  71 <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> drange_node_get_start_offset(<a href='../Y/2545.html' title='Multiple used in 12 places.'>drange_node</a>* <a href='../Y/2552.html' title='Multiple used in 11 places.'>drnode</a>);
+<a name='L72'>  72 <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> drange_node_get_length(<a href='../Y/2545.html' title='Multiple used in 12 places.'>drange_node</a>* <a href='../Y/2552.html' title='Multiple used in 11 places.'>drnode</a>);
+<a name='L73'>  73 <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> drange_node_get_end_offset(<a href='../Y/2545.html' title='Multiple used in 12 places.'>drange_node</a>* <a href='../Y/2552.html' title='Multiple used in 11 places.'>drnode</a>);
+<a name='L74'>  74 <a href='../S/459.html#L44' title='Defined at 44 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/drange.h.'>drange_node_end_t</a> drange_node_get_ending(<a href='../Y/2545.html' title='Multiple used in 12 places.'>drange_node</a>* <a href='../Y/2552.html' title='Multiple used in 11 places.'>drnode</a>);
+<a name='L75'>  75 
+<a name='L76'>  76 <i><font color='green'>/* drange_node mutators */</font></i>
+<a name='L77'>  77 <b>void</b> drange_node_set_start_offset(<a href='../Y/2545.html' title='Multiple used in 12 places.'>drange_node</a>* <a href='../Y/2552.html' title='Multiple used in 11 places.'>drnode</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>);
+<a name='L78'>  78 <b>void</b> drange_node_set_length(<a href='../Y/2545.html' title='Multiple used in 12 places.'>drange_node</a>* <a href='../Y/2552.html' title='Multiple used in 11 places.'>drnode</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>);
+<a name='L79'>  79 <b>void</b> drange_node_set_end_offset(<a href='../Y/2545.html' title='Multiple used in 12 places.'>drange_node</a>* <a href='../Y/2552.html' title='Multiple used in 11 places.'>drnode</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>);
+<a name='L80'>  80 <b>void</b> drange_node_set_to_the_end(<a href='../Y/2545.html' title='Multiple used in 12 places.'>drange_node</a>* <a href='../Y/2552.html' title='Multiple used in 11 places.'>drnode</a>);
+<a name='L81'>  81 
+<a name='L82'>  82 <i><font color='green'>/* drange constructor */</font></i>
+<a name='L83'>  83 <a href='../S/459.html#L59' title='Defined at 59 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/drange.h.'>drange</a>* drange_new(<b>void</b>);
+<a name='L84'>  84 <a href='../S/459.html#L59' title='Defined at 59 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/drange.h.'>drange</a>* drange_new_from_list(<a href='../Y/391.html' title='Multiple used in 20 places.'>GSList</a> *<a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a>);
+<a name='L85'>  85 
+<a name='L86'>  86 <i><font color='green'>/* drange destructor, only use this if you used drange_new() to creat</font></i>
+<a name='L87'>  87 <i><font color='green'> * the drange</font></i>
+<a name='L88'>  88 <i><font color='green'> */</font></i>
+<a name='L89'>  89 <b>void</b> drange_free(<a href='../Y/2543.html' title='Multiple used in 10 places.'>drange</a>* <a href='../Y/2541.html' title='Multiple used in 9 places.'>dr</a>);
+<a name='L90'>  90 
+<a name='L91'>  91 <i><font color='green'>/* drange accessors */</font></i>
+<a name='L92'>  92 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> drange_has_total_length(<a href='../Y/2543.html' title='Multiple used in 10 places.'>drange</a>* <a href='../Y/2541.html' title='Multiple used in 9 places.'>dr</a>);
+<a name='L93'>  93 <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> drange_get_total_length(<a href='../Y/2543.html' title='Multiple used in 10 places.'>drange</a>* <a href='../Y/2541.html' title='Multiple used in 9 places.'>dr</a>);
+<a name='L94'>  94 <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> drange_get_min_start_offset(<a href='../Y/2543.html' title='Multiple used in 10 places.'>drange</a>* <a href='../Y/2541.html' title='Multiple used in 9 places.'>dr</a>);
+<a name='L95'>  95 <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> drange_get_max_start_offset(<a href='../Y/2543.html' title='Multiple used in 10 places.'>drange</a>* <a href='../Y/2541.html' title='Multiple used in 9 places.'>dr</a>);
+<a name='L96'>  96 
+<a name='L97'>  97 <i><font color='green'>/* drange mutators */</font></i>
+<a name='L98'>  98 <b>void</b> drange_append_drange_node(<a href='../Y/2543.html' title='Multiple used in 10 places.'>drange</a>* <a href='../Y/2541.html' title='Multiple used in 9 places.'>dr</a>, <a href='../Y/2545.html' title='Multiple used in 12 places.'>drange_node</a>* <a href='../Y/2552.html' title='Multiple used in 11 places.'>drnode</a>);
+<a name='L99'>  99 <b>void</b> drange_prepend_drange_node(<a href='../Y/2543.html' title='Multiple used in 10 places.'>drange</a>* <a href='../Y/2541.html' title='Multiple used in 9 places.'>dr</a>, <a href='../Y/2545.html' title='Multiple used in 12 places.'>drange_node</a>* <a href='../Y/2552.html' title='Multiple used in 11 places.'>drnode</a>);
+<a name='L100'> 100 <b>void</b> drange_foreach_drange_node(<a href='../Y/2543.html' title='Multiple used in 10 places.'>drange</a>* <a href='../Y/2541.html' title='Multiple used in 9 places.'>dr</a>, GFunc <a href='../Y/3272.html' title='Multiple used in 22 places.'>func</a>, <a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a> funcdata);
+<a name='L101'> 101 
+<a name='L102'> 102 <font color='darkred'>#endif</font> <i><font color='green'>/* ! __DRANGE_H__ */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<html>
+<head>
+<title>cbench/oflops/oflops.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1101.html'>oflops</a>/oflops.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/57.html' title='Multiple included from 8 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <font color='darkred'>#ifndef</font> <a href='../S/69.html#L2' title='Defined at 2 in cbench/oflops/oflops.h.'>OFLOPS_H</a>
+<a name='L2'>   2 <font color='darkred'>#define</font> <a href='../S/69.html#L1' title='Refered from 1 in cbench/oflops/oflops.h.'>OFLOPS_H</a>
+<a name='L3'>   3 
+<a name='L4'>   4 <i><font color='green'>/** \mainpage oflops </font></i>
+<a name='L5'>   5 <i><font color='green'> *</font></i>
+<a name='L6'>   6 <i><font color='green'> * oflops (OpenFlow operations per second) is created to </font></i>
+<a name='L7'>   7 <i><font color='green'> * benchmark an OpenFlow switch.</font></i>
+<a name='L8'>   8 <i><font color='green'> *</font></i>
+<a name='L9'>   9 <i><font color='green'> * @author Rob Sherwood</font></i>
+<a name='L10'>  10 <i><font color='green'> * @date September 2009</font></i>
+<a name='L11'>  11 <i><font color='green'> *</font></i>
+<a name='L12'>  12 <i><font color='green'> *</font></i>
+<a name='L13'>  13 <i><font color='green'> * Read the README file for instructions on building, setting up, and running oflops.</font></i>
+<a name='L14'>  14 <i><font color='green'> *</font></i>
+<a name='L15'>  15 <i><font color='green'> * \section test_module Writing New Modules</font></i>
+<a name='L16'>  16 <i><font color='green'> * Test modules are event driven.  To write a new test module, you need to create a shared library that defines the appropriate callbacks.</font></i>
+<a name='L17'>  17 <i><font color='green'> * Most callbacks have reasonable defaults, so new test modules do not have to define all callbacks.</font></i>
+<a name='L18'>  18 <i><font color='green'> *</font></i>
+<a name='L19'>  19 <i><font color='green'> * The list of callbacks are documented in &lt;a href="structtest__module.html"&gt;struct test_module&lt;/a&gt; and </font></i>
+<a name='L20'>  20 <i><font color='green'> * the API exposed to the test module is available in test_module.h .</font></i>
+<a name='L21'>  21 <i><font color='green'> *</font></i>
+<a name='L22'>  22 <i><font color='green'> * &lt;i&gt;Channels&lt;/i&gt; are a critical concept in oflops.  Channels a roughly equivalent to interfaces, and there are</font></i>
+<a name='L23'>  23 <i><font color='green'> * both control and data channels.  </font></i>
+<a name='L24'>  24 <i><font color='green'> *</font></i>
+<a name='L25'>  25 <i><font color='green'> * \subsection control_channel Control Channel</font></i>
+<a name='L26'>  26 <i><font color='green'> *  The control channel is a reference to the openflow tcp control connection.  Each oflops run should only have one control channel defined.</font></i>
+<a name='L27'>  27 <i><font color='green'> *  Openflow message from the switch are sent to oflops via one of the of_event_* callbacks and control messages are sent to the switch</font></i>
+<a name='L28'>  28 <i><font color='green'> *  via the &lt;a href="test__module_8h.html#84e360ed0ef80457bfa72b64e6b3dbea"&gt;oflops_send_mesg()&lt;/a&gt; function.</font></i>
+<a name='L29'>  29 <i><font color='green'> * \subsection data_channel Data Channel(s)</font></i>
+<a name='L30'>  30 <i><font color='green'> *  A data channel is a reference to a raw interface connected (directly or logically) to the switch.  </font></i>
+<a name='L31'>  31 <i><font color='green'> *  Each oflops run can define zero or more data channels.  Data channels are used for sourcing and syncing </font></i>
+<a name='L32'>  32 <i><font color='green'> *  emulated user traffic. Oflops is notified of new packets on the data channel via the &lt;a href="test__module_8h.html#84e360ed0ef80457bfa72b64e6b3dbea"&gt;handle_pcap_event()&lt;/a&gt; callback, and typically send outgoing data messages &lt;a href="test__module_8h.html#84e360ed0ef80457bfa72b64e6b3dbea"&gt;oflops_send_raw_mesg()&lt;/a&gt; function.</font></i>
+<a name='L33'>  33 <i><font color='green'> *</font></i>
+<a name='L34'>  34 <i><font color='green'> * \section example_modules Example modules</font></i>
+<a name='L35'>  35 <i><font color='green'> * &lt;UL&gt;</font></i>
+<a name='L36'>  36 <i><font color='green'> * &lt;LI&gt; debug.c is used for debugging oflops &lt;/LI&gt;</font></i>
+<a name='L37'>  37 <i><font color='green'> * &lt;LI&gt; pktin.c is test the number of packet in that can be</font></i>
+<a name='L38'>  38 <i><font color='green'> *      provided by a switch and the associated delay. &lt;/LI&gt;</font></i>
+<a name='L39'>  39 <i><font color='green'> * &lt;/UL&gt;</font></i>
+<a name='L40'>  40 <i><font color='green'> */</font></i>
+<a name='L41'>  41 
+<a name='L42'>  42 
+<a name='L43'>  43 <font color='darkred'>#include</font> "<a href='../I/25.html'>context.h</a>"
+<a name='L44'>  44 <font color='darkred'>#include</font> "<a href='55.html'>test_module.h</a>"
+<a name='L45'>  45 
+<a name='L46'>  46 <b>struct</b> <a href='../R/4389.html' title='Multiple refered from 4 places.'>run_module_param</a> <font color='red'>{</font>
+<a name='L47'>  47   <b>struct</b> <a href='../D/8697.html' title='Multiple defined in 2 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>;
+<a name='L48'>  48   <b>int</b> <a href='../Y/3967.html' title='Multiple used in 12 places.'>ix_mod</a>;  
+<a name='L49'>  49 <font color='red'>}</font>;
+<a name='L50'>  50 
+<a name='L51'>  51 <font color='darkred'>#endif</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

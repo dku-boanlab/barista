@@ -1,0 +1,116 @@
+<html>
+<head>
+<title>cbench/openflow/hw-lib/skeleton/hw_drv.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1135.html'>hw-lib</a>/<a href='../files/1137.html'>skeleton</a>/hw_drv.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/162.html' title='Multiple included from 4 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <font color='darkred'>#ifndef</font> <a href='../S/222.html#L2' title='Defined at 2 in cbench/openflow/hw-lib/skeleton/hw_drv.h.'>OF_HW_DRV_H</a>
+<a name='L2'>   2 <font color='darkred'>#define</font> <a href='../S/222.html#L1' title='Refered from 1 in cbench/openflow/hw-lib/skeleton/hw_drv.h.'>OF_HW_DRV_H</a> 1
+<a name='L3'>   3 
+<a name='L4'>   4 <font color='darkred'>#include</font> &lt;<a href='183.html'>of_hw_api.h</a>&gt;
+<a name='L5'>   5 <font color='darkred'>#include</font> "<a href='220.html'>of_hw_platform.h</a>"
+<a name='L6'>   6 <font color='darkred'>#include</font> "<a href='916.html'>list.h</a>"
+<a name='L7'>   7 
+<a name='L8'>   8 <i><font color='green'>/****************************************************************</font></i>
+<a name='L9'>   9 <i><font color='green'> *</font></i>
+<a name='L10'>  10 <i><font color='green'> * High Level Design Notes</font></i>
+<a name='L11'>  11 <i><font color='green'> *</font></i>
+<a name='L12'>  12 <i><font color='green'> * Hardware tables are managed field_control_t and entry_control_t</font></i>
+<a name='L13'>  13 <i><font color='green'> * structures in hw_flow.h; these roughly mirror the HW structure</font></i>
+<a name='L14'>  14 <i><font color='green'> * and are preallocated.</font></i>
+<a name='L15'>  15 <i><font color='green'> *</font></i>
+<a name='L16'>  16 <i><font color='green'> * The glue between these and SW flows are provided by the HW flow</font></i>
+<a name='L17'>  17 <i><font color='green'> * objects (also in hw_flow.h) which are dynamically allocated and</font></i>
+<a name='L18'>  18 <i><font color='green'> * logically extend the SW flow object.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * A linear table of HW flow objects is maintained, mostly drawn</font></i>
+<a name='L21'>  21 <i><font color='green'> * from the existing table-linear.c implementation in udatapath.</font></i>
+<a name='L22'>  22 <i><font color='green'> *</font></i>
+<a name='L23'>  23 <i><font color='green'> */</font></i>
+<a name='L24'>  24 
+<a name='L25'>  25 <i><font color='green'>/****************************************************************</font></i>
+<a name='L26'>  26 <i><font color='green'> * Hardware independent port mapping macros</font></i>
+<a name='L27'>  27 <i><font color='green'> ****************************************************************/</font></i>
+<a name='L28'>  28 
+<a name='L29'>  29 <i><font color='green'>/* Map ports using software data structures and DP check; independent of HW */</font></i>
+<a name='L30'>  30 <font color='darkred'>#define</font> <a href='../R/1314.html' title='Multiple refered from 5 places.'>OF_PORT_IN_DP</a>(<a href='../Y/1212.html' title='Multiple used in 4 places.'>_hwdrv</a>, <a href='../Y/1213.html' title='Multiple used in 4 places.'>_i</a>)  (((<a href='../Y/1213.html' title='Multiple used in 4 places.'>_i</a>) &lt; <a href='../S/220.html#L16' title='Defined at 16 in cbench/openflow/hw-lib/skeleton/of_hw_platform.h.'>OF_HW_MAX_PORT</a>) &amp;&amp; \
+<a name='L31'>  31     (<a href='../Y/5051.html' title='Multiple used in 18 places.'>of_hw_ports</a>[<a href='../Y/1213.html' title='Multiple used in 4 places.'>_i</a>].<a href='../Y/5563.html' title='Multiple used in 21 places.'>owner</a> == (<a href='../S/183.html#L69' title='Defined at 69 in cbench/openflow/include/openflow/of_hw_api.h.'>of_hw_driver_t</a> *)(<a href='../Y/1212.html' title='Multiple used in 4 places.'>_hwdrv</a>)))
+<a name='L32'>  32 
+<a name='L33'>  33 <font color='darkred'>#define</font> OF_PORT_TO_HW_PORT(<a href='../Y/1212.html' title='Multiple used in 4 places.'>_hwdrv</a>, <a href='../Y/1213.html' title='Multiple used in 4 places.'>_i</a>) \
+<a name='L34'>  34     (<a href='../S/222.html#L30' title='Defined at 30 in cbench/openflow/hw-lib/skeleton/hw_drv.h.'>OF_PORT_IN_DP</a>(<a href='../Y/1212.html' title='Multiple used in 4 places.'>_hwdrv</a>, <a href='../Y/1213.html' title='Multiple used in 4 places.'>_i</a>) ? <a href='../Y/5051.html' title='Multiple used in 18 places.'>of_hw_ports</a>[<a href='../Y/1213.html' title='Multiple used in 4 places.'>_i</a>].<a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a> : -1)
+<a name='L35'>  35 
+<a name='L36'>  36 <i><font color='green'>/* TBD: Define flow tracking objects */</font></i>
+<a name='L37'>  37 
+<a name='L38'>  38 <i><font color='green'>/****************************************************************</font></i>
+<a name='L39'>  39 <i><font color='green'> *</font></i>
+<a name='L40'>  40 <i><font color='green'> * Hardware datapath internal control structure</font></i>
+<a name='L41'>  41 <i><font color='green'> * Extends generic hardware datapath structure</font></i>
+<a name='L42'>  42 <i><font color='green'> * (which currently extends software table structure)</font></i>
+<a name='L43'>  43 <i><font color='green'> *</font></i>
+<a name='L44'>  44 <i><font color='green'> ****************************************************************/</font></i>
+<a name='L45'>  45 
+<a name='L46'>  46 <i><font color='green'>/* Counts the number of instances */</font></i>
+<a name='L47'>  47 <b>extern</b> <b>int</b> <a href='../Y/5049.html' title='Multiple used in 5 places.'>of_hw_drv_instances</a>;
+<a name='L48'>  48 
+<a name='L49'>  49 <b>typedef</b> <b>struct</b> of_hw_driver_int <font color='red'>{</font>
+<a name='L50'>  50     <a href='../S/183.html#L69' title='Defined at 69 in cbench/openflow/include/openflow/of_hw_api.h.'>of_hw_driver_t</a> <a href='../Y/3684.html' title='Multiple used in 6 places.'>hw_driver</a>;
+<a name='L51'>  51     <b>struct</b> <a href='../D/7268.html' title='Multiple defined in 2 places.'>datapath</a> *<a href='../Y/2499.html' title='Multiple used in 612 places.'>dp</a>; <i><font color='green'>/* Owning datapath */</font></i>
+<a name='L52'>  52 
+<a name='L53'>  53     <i><font color='green'>/* Maintain a linked list of flows for tracking  */</font></i>
+<a name='L54'>  54     <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> <a href='../Y/3174.html' title='Multiple used in 129 places.'>flows</a>;       <i><font color='green'>/* The main list */</font></i>
+<a name='L55'>  55     <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> <a href='../Y/3959.html' title='Multiple used in 23 places.'>iter_flows</a>;  <i><font color='green'>/* For iteration operation */</font></i>
+<a name='L56'>  56     <b>unsigned</b> <b>long</b> <b>int</b> <a href='../Y/4817.html' title='Multiple used in 15 places.'>next_serial</a>;
+<a name='L57'>  57 
+<a name='L58'>  58     <i><font color='green'>/* Callback function for received packets. */</font></i>
+<a name='L59'>  59     <a href='../Y/5054.html' title='Multiple used in 5 places.'>of_packet_in_f</a> <a href='../Y/6523.html' title='Multiple used in 4 places.'>rx_handler</a>;
+<a name='L60'>  60     <b>void</b> *<a href='../Y/6516.html' title='Multiple used in 3 places.'>rx_cookie</a>;
+<a name='L61'>  61 
+<a name='L62'>  62     <i><font color='green'>/* Callback function for port change notification */</font></i>
+<a name='L63'>  63     <a href='../Y/5058.html' title='Multiple used in 5 places.'>of_port_change_f</a> <a href='../Y/5801.html' title='Multiple used in 4 places.'>port_change</a>;
+<a name='L64'>  64     <b>void</b> *<a href='../Y/5802.html' title='Multiple used in 3 places.'>port_change_cookie</a>;
+<a name='L65'>  65 
+<a name='L66'>  66     <i><font color='green'>/* Lock object? */</font></i>
+<a name='L67'>  67 
+<a name='L68'>  68     <i><font color='green'>//    struct list sw_flows;</font></i>
+<a name='L69'>  69     <i><font color='green'>//    struct list iter_sw_flows;</font></i>
+<a name='L70'>  70     <i><font color='green'>//    struct sw_flow *iter_state; /* Place tracker for interrupted iterations */</font></i>
+<a name='L71'>  71 
+<a name='L72'>  72     <i><font color='green'>/* Stats */</font></i>
+<a name='L73'>  73     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/4588.html' title='Multiple used in 45 places.'>n_flows</a>;     <i><font color='green'>/* Current number of flows in table */</font></i>
+<a name='L74'>  74     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/4592.html' title='Multiple used in 2 places.'>n_inserts</a>;   <i><font color='green'>/* Total inserts */</font></i>
+<a name='L75'>  75     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/6527.html' title='Multiple used in 2 places.'>rx_pkt_alloc_failures</a>;
+<a name='L76'>  76     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3844.html' title='Multiple used in 2 places.'>insert_errors</a>;
+<a name='L77'>  77 
+<a name='L78'>  78     <i><font color='green'>/* Configuration */</font></i>
+<a name='L79'>  79     <i><font color='green'>/* Port bitmap of ports in DP by device */</font></i>
+<a name='L80'>  80     <a href='../Y/331.html' title='Multiple used in 9 places.'>FIXME</a> port_bitmap;
+<a name='L81'>  81     <a href='../Y/331.html' title='Multiple used in 9 places.'>FIXME</a> flood_bitmap;
+<a name='L82'>  82     <b>int</b> <a href='../Y/7008.html' title='Multiple used in 3 places.'>stat_sel</a>;       <i><font color='green'>/* Packets or bytes */</font></i>
+<a name='L83'>  83     <b>int</b> <a href='../Y/2521.html' title='Multiple used in 86 places.'>dp_idx</a>;         <i><font color='green'>/* In HW dp, but not SW dp */</font></i>
+<a name='L84'>  84 
+<a name='L85'>  85     <b>int</b> <a href='../Y/7226.html' title='Multiple used in 2 places.'>table_debug_level</a>;
+<a name='L86'>  86     <b>int</b> <a href='../Y/5809.html' title='Multiple used in 2 places.'>port_debug_level</a>;
+<a name='L87'>  87 <font color='red'>}</font> <a href='../R/3774.html' title='Multiple refered from 46 places.'>of_hw_driver_int_t</a>;
+<a name='L88'>  88 
+<a name='L89'>  89 <i><font color='green'>/* HW_DRV_MUTEX object ? */</font></i>
+<a name='L90'>  90 
+<a name='L91'>  91 <font color='darkred'>#define</font> <a href='../S/211.html#L38' title='Refered from 38 in cbench/openflow/hw-lib/skeleton/hw_drv.c.'>HW_DRV_MUTEX_INIT</a> <i><font color='green'>/* TBD */</font></i>
+<a name='L92'>  92 <font color='darkred'>#define</font> <a href='../R/686.html' title='Multiple refered from 2 places.'>HW_DRV_LOCK</a> <i><font color='green'>/* TBD */</font></i>
+<a name='L93'>  93 <font color='darkred'>#define</font> <a href='../R/688.html' title='Multiple refered from 2 places.'>HW_DRV_UNLOCK</a> <i><font color='green'>/* TBD */</font></i>
+<a name='L94'>  94 
+<a name='L95'>  95 <font color='darkred'>#define</font> HW_INT(<a href='../Y/3685.html' title='Multiple used in 131 places.'>hw_drv</a>) ((<a href='../S/222.html#L87' title='Defined at 87 in cbench/openflow/hw-lib/skeleton/hw_drv.h.'>of_hw_driver_int_t</a> *)<a href='../Y/3685.html' title='Multiple used in 131 places.'>hw_drv</a>)
+<a name='L96'>  96 
+<a name='L97'>  97 <font color='darkred'>#endif</font> <i><font color='green'>/* OF_HW_DRV_H */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

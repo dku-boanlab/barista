@@ -1,0 +1,226 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/asn1.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='409.html#L39' title='Included from 39 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* asn1.h</font></i>
+<a name='L2'>   2 <i><font color='green'> * Common data for ASN.1</font></i>
+<a name='L3'>   3 <i><font color='green'> * 2007  Anders Broman</font></i>
+<a name='L4'>   4 <i><font color='green'> *</font></i>
+<a name='L5'>   5 <i><font color='green'> * $Id: asn1.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L6'>   6 <i><font color='green'> *</font></i>
+<a name='L7'>   7 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L8'>   8 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L9'>   9 <i><font color='green'> * Copyright 1998 Gerald Combs</font></i>
+<a name='L10'>  10 <i><font color='green'> *</font></i>
+<a name='L11'>  11 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L12'>  12 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L13'>  13 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L14'>  14 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L15'>  15 <i><font color='green'> *</font></i>
+<a name='L16'>  16 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L17'>  17 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L18'>  18 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L19'>  19 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L20'>  20 <i><font color='green'> *</font></i>
+<a name='L21'>  21 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L22'>  22 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L23'>  23 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L24'>  24 <i><font color='green'> */</font></i>
+<a name='L25'>  25 
+<a name='L26'>  26 <font color='darkred'>#ifndef</font> <a href='../S/354.html#L27' title='Defined at 27 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>__ASN1_H__</a>
+<a name='L27'>  27 <font color='darkred'>#define</font> <a href='../S/354.html#L26' title='Refered from 26 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>__ASN1_H__</a>
+<a name='L28'>  28 
+<a name='L29'>  29 <b>typedef</b> <b>enum</b> <font color='red'>{</font>
+<a name='L30'>  30   ASN1_ENC_BER,  <i><font color='green'>/* X.690 - BER, CER, DER */</font></i>
+<a name='L31'>  31   ASN1_ENC_PER,  <i><font color='green'>/* X.691 - PER */</font></i>
+<a name='L32'>  32   ASN1_ENC_ECN,  <i><font color='green'>/* X.692 - ECN */</font></i>
+<a name='L33'>  33   ASN1_ENC_XER   <i><font color='green'>/* X.693 - XER */</font></i>
+<a name='L34'>  34 <font color='red'>}</font> <a href='../S/354.html#L78' title='Refered from 78 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_enc_e</a>;
+<a name='L35'>  35 
+<a name='L36'>  36 <b>typedef</b> <b>enum</b> <font color='red'>{</font>
+<a name='L37'>  37   CB_ASN1_ENC,
+<a name='L38'>  38   CB_DISSECTOR,
+<a name='L39'>  39   CB_NEW_DISSECTOR,
+<a name='L40'>  40   CB_DISSECTOR_HANDLE
+<a name='L41'>  41 <font color='red'>}</font> asn1_cb_variant;
+<a name='L42'>  42 
+<a name='L43'>  43 <b>typedef</b> <b>enum</b> <font color='red'>{</font>
+<a name='L44'>  44   ASN1_PAR_IRR, <i><font color='green'>/* irrelevant parameter */</font></i>
+<a name='L45'>  45   <i><font color='green'>/* value */</font></i>
+<a name='L46'>  46   ASN1_PAR_BOOLEAN,
+<a name='L47'>  47   ASN1_PAR_INTEGER,
+<a name='L48'>  48   <i><font color='green'>/* type */</font></i>
+<a name='L49'>  49   ASN1_PAR_TYPE
+<a name='L50'>  50 <font color='red'>}</font> <a href='../R/2237.html' title='Multiple refered from 2 places.'>asn1_par_type</a>;
+<a name='L51'>  51 
+<a name='L52'>  52 <b>typedef</b> <b>struct</b> _asn1_par_def_t <font color='red'>{</font>
+<a name='L53'>  53   <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;
+<a name='L54'>  54   <a href='../S/354.html#L50' title='Defined at 50 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_par_type</a> <a href='../Y/6161.html' title='Multiple used in 7 places.'>ptype</a>;
+<a name='L55'>  55 <font color='red'>}</font> <a href='../S/354.html#L182' title='Refered from 182 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_par_def_t</a>;
+<a name='L56'>  56 
+<a name='L57'>  57 <b>typedef</b> <b>struct</b> <a href='../R/2055.html' title='Multiple refered from 2 places.'>_asn1_par_t</a> <font color='red'>{</font>
+<a name='L58'>  58   <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;
+<a name='L59'>  59   <a href='../S/354.html#L50' title='Defined at 50 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_par_type</a> <a href='../Y/6161.html' title='Multiple used in 7 places.'>ptype</a>;
+<a name='L60'>  60   <b>union</b> <font color='red'>{</font>
+<a name='L61'>  61     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> v_boolean;
+<a name='L62'>  62     <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a> v_integer;
+<a name='L63'>  63     <b>void</b> *v_type;
+<a name='L64'>  64   <font color='red'>}</font> <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>;
+<a name='L65'>  65   <b>struct</b> <a href='../S/354.html#L57' title='Defined at 57 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>_asn1_par_t</a> *<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L66'>  66 <font color='red'>}</font> asn1_par_t;
+<a name='L67'>  67 
+<a name='L68'>  68 <b>typedef</b> <b>struct</b> <a href='../R/2056.html' title='Multiple refered from 2 places.'>_asn1_stack_frame_t</a> <font color='red'>{</font>
+<a name='L69'>  69   <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;
+<a name='L70'>  70   <b>struct</b> <a href='../S/354.html#L57' title='Defined at 57 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>_asn1_par_t</a> *par;
+<a name='L71'>  71   <b>struct</b> <a href='../S/354.html#L68' title='Defined at 68 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>_asn1_stack_frame_t</a> *<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L72'>  72 <font color='red'>}</font> asn1_stack_frame_t;
+<a name='L73'>  73 
+<a name='L74'>  74 <font color='darkred'>#define</font> ASN1_CTX_SIGNATURE 0x41435458  <i><font color='green'>/* "ACTX" */</font></i>
+<a name='L75'>  75 
+<a name='L76'>  76 <b>typedef</b> <b>struct</b> <a href='../R/2054.html' title='Multiple refered from 4 places.'>_asn1_ctx_t</a> <font color='red'>{</font>
+<a name='L77'>  77   <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/6774.html' title='Multiple used in 2 places.'>signature</a>;
+<a name='L78'>  78   <a href='../S/354.html#L34' title='Defined at 34 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_enc_e</a> <a href='../Y/2676.html' title='Multiple used in 7 places.'>encoding</a>;
+<a name='L79'>  79   <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/1372.html' title='Multiple used in 2 places.'>aligned</a>;
+<a name='L80'>  80   <a href='../S/441.html#L182' title='Defined at 182 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/packet_info.h.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>;
+<a name='L81'>  81   <a href='../S/488.html#L266' title='Defined at 266 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>proto_item</a> *created_item;
+<a name='L82'>  82   <b>struct</b> <a href='../S/354.html#L68' title='Defined at 68 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>_asn1_stack_frame_t</a> *<a href='../Y/6977.html' title='Multiple used in 4 places.'>stack</a>;
+<a name='L83'>  83   <b>void</b> *<a href='../Y/7731.html' title='Multiple used in 17 places.'>value_ptr</a>;
+<a name='L84'>  84   <b>void</b> *<a href='../Y/5913.html' title='Multiple used in 17 places.'>private_data</a>;
+<a name='L85'>  85   <b>struct</b> <font color='red'>{</font>
+<a name='L86'>  86     <b>int</b> <a href='../Y/3621.html' title='Multiple used in 6 places.'>hf_index</a>;
+<a name='L87'>  87     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/2276.html' title='Multiple used in 2 places.'>data_value_descr_present</a>;
+<a name='L88'>  88     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> direct_ref_present;
+<a name='L89'>  89     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> indirect_ref_present;
+<a name='L90'>  90     <a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/2277.html' title='Multiple used in 2 places.'>data_value_descriptor</a>;
+<a name='L91'>  91     <b>const</b> <b>char</b> *direct_reference;
+<a name='L92'>  92     <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a> indirect_reference;
+<a name='L93'>  93     <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/2676.html' title='Multiple used in 7 places.'>encoding</a>;  
+<a name='L94'>  94       <i><font color='green'>/* </font></i>
+<a name='L95'>  95 <i><font color='green'>         0 : single-ASN1-type, </font></i>
+<a name='L96'>  96 <i><font color='green'>         1 : octet-aligned, </font></i>
+<a name='L97'>  97 <i><font color='green'>         2 : arbitrary </font></i>
+<a name='L98'>  98 <i><font color='green'>      */</font></i>
+<a name='L99'>  99     <a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *single_asn1_type;
+<a name='L100'> 100     <a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *octet_aligned;
+<a name='L101'> 101     <a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *arbitrary;
+<a name='L102'> 102     <b>union</b> <font color='red'>{</font>
+<a name='L103'> 103       <b>struct</b> <font color='red'>{</font>
+<a name='L104'> 104                 <b>int</b> (*<a href='../Y/1615.html' title='Multiple used in 2 places.'>ber_callback</a>)(<a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/3758.html' title='Multiple used in 2 places.'>imp_tag</a>, <a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/7512.html' title='Multiple used in 508 places.'>tvb</a>, <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <b>struct</b> <a href='../S/354.html#L76' title='Defined at 76 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>_asn1_ctx_t</a>* ,<a href='../S/488.html#L264' title='Defined at 264 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>proto_tree</a> *<a href='../S/252.html#L280' title='Defined at 280 in cbench/openflow/tests/test-stp.c.'>tree</a>, <b>int</b> <a href='../Y/3621.html' title='Multiple used in 6 places.'>hf_index</a> );
+<a name='L105'> 105       <font color='red'>}</font> <a href='../Y/1614.html' title='Multiple used in 2 places.'>ber</a>;
+<a name='L106'> 106       <b>struct</b> <font color='red'>{</font>
+<a name='L107'> 107         <b>int</b> (*<a href='../Y/7554.html' title='Multiple used in 2 places.'>type_cb</a>)(<a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a>*, <b>int</b>, <b>struct</b> <a href='../S/354.html#L76' title='Defined at 76 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>_asn1_ctx_t</a>*, <a href='../S/488.html#L264' title='Defined at 264 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>proto_tree</a>*, <b>int</b>);
+<a name='L108'> 108       <font color='red'>}</font> <a href='../Y/5708.html' title='Multiple used in 2 places.'>per</a>;
+<a name='L109'> 109     <font color='red'>}</font> <a href='../Y/7563.html' title='Multiple used in 46 places.'>u</a>;
+<a name='L110'> 110   <font color='red'>}</font> <a href='../Y/2968.html' title='Multiple used in 2 places.'>external</a>;
+<a name='L111'> 111   <b>struct</b> <font color='red'>{</font>
+<a name='L112'> 112     <b>int</b> <a href='../Y/3621.html' title='Multiple used in 6 places.'>hf_index</a>;
+<a name='L113'> 113     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/2276.html' title='Multiple used in 2 places.'>data_value_descr_present</a>;
+<a name='L114'> 114     <a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/2277.html' title='Multiple used in 2 places.'>data_value_descriptor</a>;
+<a name='L115'> 115     <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> identification;
+<a name='L116'> 116       <i><font color='green'>/* </font></i>
+<a name='L117'> 117 <i><font color='green'>         0 : syntaxes, </font></i>
+<a name='L118'> 118 <i><font color='green'>         1 : syntax, </font></i>
+<a name='L119'> 119 <i><font color='green'>         2 : presentation-context-id,</font></i>
+<a name='L120'> 120 <i><font color='green'>         3 : context-negotiation,</font></i>
+<a name='L121'> 121 <i><font color='green'>         4 : transfer-syntax,</font></i>
+<a name='L122'> 122 <i><font color='green'>         5 : fixed</font></i>
+<a name='L123'> 123 <i><font color='green'>      */</font></i>
+<a name='L124'> 124     <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a> presentation_context_id;
+<a name='L125'> 125     <b>const</b> <b>char</b> *abstract_syntax;
+<a name='L126'> 126     <b>const</b> <b>char</b> *transfer_syntax;
+<a name='L127'> 127     <a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *data_value;
+<a name='L128'> 128     <b>union</b> <font color='red'>{</font>
+<a name='L129'> 129       <b>struct</b> <font color='red'>{</font>
+<a name='L130'> 130                 <b>int</b> (*<a href='../Y/1615.html' title='Multiple used in 2 places.'>ber_callback</a>)(<a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/3758.html' title='Multiple used in 2 places.'>imp_tag</a>, <a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/7512.html' title='Multiple used in 508 places.'>tvb</a>, <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <b>struct</b> <a href='../S/354.html#L76' title='Defined at 76 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>_asn1_ctx_t</a>* ,<a href='../S/488.html#L264' title='Defined at 264 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>proto_tree</a> *<a href='../S/252.html#L280' title='Defined at 280 in cbench/openflow/tests/test-stp.c.'>tree</a>, <b>int</b> <a href='../Y/3621.html' title='Multiple used in 6 places.'>hf_index</a> );
+<a name='L131'> 131       <font color='red'>}</font> <a href='../Y/1614.html' title='Multiple used in 2 places.'>ber</a>;
+<a name='L132'> 132       <b>struct</b> <font color='red'>{</font>
+<a name='L133'> 133         <b>int</b> (*<a href='../Y/7554.html' title='Multiple used in 2 places.'>type_cb</a>)(<a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a>*, <b>int</b>, <b>struct</b> <a href='../S/354.html#L76' title='Defined at 76 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>_asn1_ctx_t</a>*, <a href='../S/488.html#L264' title='Defined at 264 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>proto_tree</a>*, <b>int</b>);
+<a name='L134'> 134       <font color='red'>}</font> <a href='../Y/5708.html' title='Multiple used in 2 places.'>per</a>;
+<a name='L135'> 135     <font color='red'>}</font> <a href='../Y/7563.html' title='Multiple used in 46 places.'>u</a>;
+<a name='L136'> 136   <font color='red'>}</font> embedded_pdv;
+<a name='L137'> 137   <b>struct</b> <a href='../S/354.html#L142' title='Defined at 142 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>_rose_ctx_t</a> *rose_ctx;
+<a name='L138'> 138 <font color='red'>}</font> <a href='../R/2234.html' title='Multiple refered from 12 places.'>asn1_ctx_t</a>;
+<a name='L139'> 139 
+<a name='L140'> 140 <font color='darkred'>#define</font> ROSE_CTX_SIGNATURE 0x524F5345  <i><font color='green'>/* "ROSE" */</font></i>
+<a name='L141'> 141 
+<a name='L142'> 142 <b>typedef</b> <b>struct</b> <a href='../S/354.html#L137' title='Refered from 137 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>_rose_ctx_t</a> <font color='red'>{</font>
+<a name='L143'> 143   <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/6774.html' title='Multiple used in 2 places.'>signature</a>;
+<a name='L144'> 144   <a href='../S/446.html#L103' title='Defined at 103 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/packet.h.'>dissector_table_t</a> arg_global_dissector_table;
+<a name='L145'> 145   <a href='../S/446.html#L103' title='Defined at 103 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/packet.h.'>dissector_table_t</a> arg_local_dissector_table; 
+<a name='L146'> 146   <a href='../S/446.html#L103' title='Defined at 103 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/packet.h.'>dissector_table_t</a> res_global_dissector_table;
+<a name='L147'> 147   <a href='../S/446.html#L103' title='Defined at 103 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/packet.h.'>dissector_table_t</a> res_local_dissector_table; 
+<a name='L148'> 148   <a href='../S/446.html#L103' title='Defined at 103 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/packet.h.'>dissector_table_t</a> err_global_dissector_table;
+<a name='L149'> 149   <a href='../S/446.html#L103' title='Defined at 103 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/packet.h.'>dissector_table_t</a> err_local_dissector_table; 
+<a name='L150'> 150   <i><font color='green'>/* filling in description into tree, info column, any buffer */</font></i>
+<a name='L151'> 151   <b>int</b> apdu_depth;
+<a name='L152'> 152   <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> fillin_info;
+<a name='L153'> 153   <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *fillin_ptr;
+<a name='L154'> 154   <a href='../Y/3462.html' title='Multiple used in 7 places.'>gsize</a> fillin_buf_size;
+<a name='L155'> 155   <b>struct</b> <font color='red'>{</font>  <i><font color='green'>/* "dynamic" data */</font></i>
+<a name='L156'> 156     <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/5697.html' title='Multiple used in 33 places.'>pdu</a>;
+<a name='L157'> 157       <i><font color='green'>/* </font></i>
+<a name='L158'> 158 <i><font color='green'>         1 : invoke, </font></i>
+<a name='L159'> 159 <i><font color='green'>         2 : returnResult, </font></i>
+<a name='L160'> 160 <i><font color='green'>         3 : returnError,</font></i>
+<a name='L161'> 161 <i><font color='green'>         4 : reject</font></i>
+<a name='L162'> 162 <i><font color='green'>      */</font></i>
+<a name='L163'> 163     <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a>;  
+<a name='L164'> 164       <i><font color='green'>/* </font></i>
+<a name='L165'> 165 <i><font color='green'>         0 : local, </font></i>
+<a name='L166'> 166 <i><font color='green'>         1 : global </font></i>
+<a name='L167'> 167 <i><font color='green'>      */</font></i>
+<a name='L168'> 168     <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a> code_local;
+<a name='L169'> 169     <b>const</b> <b>char</b> *code_global;
+<a name='L170'> 170     <a href='../S/488.html#L266' title='Defined at 266 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>proto_item</a> *code_item;
+<a name='L171'> 171   <font color='red'>}</font> <a href='../Y/2240.html' title='Multiple used in 89 places.'>d</a>;
+<a name='L172'> 172   <b>void</b> *<a href='../Y/5913.html' title='Multiple used in 17 places.'>private_data</a>;
+<a name='L173'> 173 <font color='red'>}</font> <a href='../R/4383.html' title='Multiple refered from 4 places.'>rose_ctx_t</a>;
+<a name='L174'> 174 
+<a name='L175'> 175 <b>extern</b> <b>void</b> asn1_ctx_init(<a href='../S/354.html#L138' title='Defined at 138 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_ctx_t</a> *<a href='../Y/1306.html' title='Multiple used in 11 places.'>actx</a>, asn1_enc_e <a href='../Y/2676.html' title='Multiple used in 7 places.'>encoding</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/1372.html' title='Multiple used in 2 places.'>aligned</a>, <a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>);
+<a name='L176'> 176 <b>extern</b> <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> asn1_ctx_check_signature(<a href='../S/354.html#L138' title='Defined at 138 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_ctx_t</a> *<a href='../Y/1306.html' title='Multiple used in 11 places.'>actx</a>);
+<a name='L177'> 177 <b>extern</b> <b>void</b> asn1_ctx_clean_external(<a href='../S/354.html#L138' title='Defined at 138 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_ctx_t</a> *<a href='../Y/1306.html' title='Multiple used in 11 places.'>actx</a>);
+<a name='L178'> 178 <b>extern</b> <b>void</b> asn1_ctx_clean_epdv(<a href='../S/354.html#L138' title='Defined at 138 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_ctx_t</a> *<a href='../Y/1306.html' title='Multiple used in 11 places.'>actx</a>);
+<a name='L179'> 179 
+<a name='L180'> 180 <b>extern</b> <b>void</b> asn1_stack_frame_push(<a href='../S/354.html#L138' title='Defined at 138 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_ctx_t</a> *<a href='../Y/1306.html' title='Multiple used in 11 places.'>actx</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>);
+<a name='L181'> 181 <b>extern</b> <b>void</b> asn1_stack_frame_pop(<a href='../S/354.html#L138' title='Defined at 138 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_ctx_t</a> *<a href='../Y/1306.html' title='Multiple used in 11 places.'>actx</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>);
+<a name='L182'> 182 <b>extern</b> <b>void</b> asn1_stack_frame_check(<a href='../S/354.html#L138' title='Defined at 138 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_ctx_t</a> *<a href='../Y/1306.html' title='Multiple used in 11 places.'>actx</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>, <b>const</b> <a href='../S/354.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_par_def_t</a> *par_def);
+<a name='L183'> 183 
+<a name='L184'> 184 <b>extern</b> <b>void</b> asn1_param_push_boolean(<a href='../S/354.html#L138' title='Defined at 138 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_ctx_t</a> *<a href='../Y/1306.html' title='Multiple used in 11 places.'>actx</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>);
+<a name='L185'> 185 <b>extern</b> <b>void</b> asn1_param_push_integer(<a href='../S/354.html#L138' title='Defined at 138 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_ctx_t</a> *<a href='../Y/1306.html' title='Multiple used in 11 places.'>actx</a>, <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a> <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>);
+<a name='L186'> 186 <b>extern</b> <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> asn1_param_get_boolean(<a href='../S/354.html#L138' title='Defined at 138 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_ctx_t</a> *<a href='../Y/1306.html' title='Multiple used in 11 places.'>actx</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>);
+<a name='L187'> 187 <b>extern</b> <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a> asn1_param_get_integer(<a href='../S/354.html#L138' title='Defined at 138 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_ctx_t</a> *<a href='../Y/1306.html' title='Multiple used in 11 places.'>actx</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>);
+<a name='L188'> 188 
+<a name='L189'> 189 <b>extern</b> <b>void</b> rose_ctx_init(<a href='../S/354.html#L173' title='Defined at 173 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>rose_ctx_t</a> *<a href='../Y/6263.html' title='Multiple used in 3 places.'>rctx</a>);
+<a name='L190'> 190 <b>extern</b> <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> rose_ctx_check_signature(<a href='../S/354.html#L173' title='Defined at 173 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>rose_ctx_t</a> *<a href='../Y/6263.html' title='Multiple used in 3 places.'>rctx</a>);
+<a name='L191'> 191 <b>extern</b> <b>void</b> rose_ctx_clean_data(<a href='../S/354.html#L173' title='Defined at 173 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>rose_ctx_t</a> *<a href='../Y/6263.html' title='Multiple used in 3 places.'>rctx</a>);
+<a name='L192'> 192 
+<a name='L193'> 193 <b>extern</b> <a href='../S/354.html#L138' title='Defined at 138 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>asn1_ctx_t</a> *get_asn1_ctx(<b>void</b> *<a href='../Y/6155.html' title='Multiple used in 45 places.'>ptr</a>);
+<a name='L194'> 194 <b>extern</b> <a href='../S/354.html#L173' title='Defined at 173 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>rose_ctx_t</a> *get_rose_ctx(<b>void</b> *<a href='../Y/6155.html' title='Multiple used in 45 places.'>ptr</a>);
+<a name='L195'> 195 
+<a name='L196'> 196 <b>extern</b> <b>double</b> asn1_get_real(<b>const</b> <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> *real_ptr, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> real_len);
+<a name='L197'> 197 
+<a name='L198'> 198 <i><font color='green'>/* flags */</font></i>
+<a name='L199'> 199 <font color='darkred'>#define</font> <a href='../S/354.html#L204' title='Refered from 204 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>ASN1_EXT_ROOT</a> 0x01
+<a name='L200'> 200 <font color='darkred'>#define</font> <a href='../S/354.html#L204' title='Refered from 204 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>ASN1_EXT_EXT</a>  0x02
+<a name='L201'> 201 <font color='darkred'>#define</font> ASN1_OPT      0x04
+<a name='L202'> 202 <font color='darkred'>#define</font> ASN1_DFLT     0x08
+<a name='L203'> 203 
+<a name='L204'> 204 <font color='darkred'>#define</font> ASN1_HAS_EXT(<a href='../Y/2979.html' title='Multiple used in 135 places.'>f</a>) ((<a href='../Y/2979.html' title='Multiple used in 135 places.'>f</a>)&amp;(<a href='../S/354.html#L199' title='Defined at 199 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>ASN1_EXT_ROOT</a>|<a href='../S/354.html#L200' title='Defined at 200 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/asn1.h.'>ASN1_EXT_EXT</a>))
+<a name='L205'> 205 
+<a name='L206'> 206 
+<a name='L207'> 207 <font color='darkred'>#endif</font>  <i><font color='green'>/* __ASN1_H__ */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

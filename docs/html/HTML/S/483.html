@@ -1,0 +1,219 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/stats_tree_priv.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* stats_tree_priv.h</font></i>
+<a name='L2'>   2 <i><font color='green'> * implementor's API for stats_tree</font></i>
+<a name='L3'>   3 <i><font color='green'> * 2005, Luis E. G. Ontanon</font></i>
+<a name='L4'>   4 <i><font color='green'> *</font></i>
+<a name='L5'>   5 <i><font color='green'> * $Id: stats_tree_priv.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L6'>   6 <i><font color='green'> *</font></i>
+<a name='L7'>   7 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L8'>   8 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L9'>   9 <i><font color='green'> * Copyright 1998 Gerald Combs</font></i>
+<a name='L10'>  10 <i><font color='green'> * </font></i>
+<a name='L11'>  11 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L12'>  12 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L13'>  13 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L14'>  14 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L15'>  15 <i><font color='green'> * </font></i>
+<a name='L16'>  16 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L17'>  17 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L18'>  18 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L19'>  19 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L20'>  20 <i><font color='green'> * </font></i>
+<a name='L21'>  21 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L22'>  22 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L23'>  23 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L24'>  24 <i><font color='green'> */</font></i>
+<a name='L25'>  25 
+<a name='L26'>  26 <font color='darkred'>#ifndef</font> <a href='../S/483.html#L27' title='Defined at 27 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>__STATS_TREE_PRIV_H</a>
+<a name='L27'>  27 <font color='darkred'>#define</font>  <a href='../S/483.html#L26' title='Refered from 26 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>__STATS_TREE_PRIV_H</a>
+<a name='L28'>  28 
+<a name='L29'>  29 <font color='darkred'>#include</font> "<a href='484.html'>stats_tree.h</a>"
+<a name='L30'>  30 
+<a name='L31'>  31 <font color='darkred'>#define</font> INDENT_MAX 32
+<a name='L32'>  32 <font color='darkred'>#define</font> NUM_BUF_SIZE 32
+<a name='L33'>  33 
+<a name='L34'>  34 <i><font color='green'>/* implementations should define this to contain its own node related data</font></i>
+<a name='L35'>  35 <i><font color='green'> * as well as some operations on it */</font></i>
+<a name='L36'>  36 <b>typedef</b> <b>struct</b> _st_node_pres <a href='../S/483.html#L77' title='Refered from 77 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>st_node_pres</a>;
+<a name='L37'>  37 
+<a name='L38'>  38 <i><font color='green'>/* implementations should define this to contain its own dynamic tree related data</font></i>
+<a name='L39'>  39 <i><font color='green'>* as well as some operations on it */</font></i>
+<a name='L40'>  40 <b>typedef</b> <b>struct</b> _tree_pres <a href='../R/4846.html' title='Multiple refered from 2 places.'>tree_pres</a>;
+<a name='L41'>  41 
+<a name='L42'>  42 <i><font color='green'>/* implementations should define this to contain its own static tree related data</font></i>
+<a name='L43'>  43 <i><font color='green'>* as well as some operations on it */</font></i>
+<a name='L44'>  44 <b>typedef</b> <b>struct</b> _tree_cfg_pres <a href='../S/483.html#L138' title='Refered from 138 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>tree_cfg_pres</a>;
+<a name='L45'>  45 
+<a name='L46'>  46 
+<a name='L47'>  47 <b>typedef</b> <b>struct</b> <a href='../S/483.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>_stat_node</a> <a href='../R/4522.html' title='Multiple refered from 8 places.'>stat_node</a>;
+<a name='L48'>  48 <b>typedef</b> <b>struct</b> <a href='../S/483.html#L109' title='Defined at 109 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>_stats_tree_cfg</a> <a href='../R/4531.html' title='Multiple refered from 2 places.'>stats_tree_cfg</a>;
+<a name='L49'>  49 
+<a name='L50'>  50 <b>typedef</b> <b>struct</b> _range_pair <font color='red'>{</font>
+<a name='L51'>  51         <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/3130.html' title='Multiple used in 8 places.'>floor</a>;
+<a name='L52'>  52         <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1830.html' title='Multiple used in 8 places.'>ceil</a>;
+<a name='L53'>  53 <font color='red'>}</font> <a href='../S/483.html#L74' title='Refered from 74 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>range_pair_t</a>;
+<a name='L54'>  54 
+<a name='L55'>  55 <b>struct</b> <a href='../S/483.html#L47' title='Refered from 47 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>_stat_node</a> <font color='red'>{</font>
+<a name='L56'>  56         <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>*                  <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;
+<a name='L57'>  57         <b>int</b>                             <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>;
+<a name='L58'>  58         
+<a name='L59'>  59         <i><font color='green'>/* the counter it keeps */</font></i>
+<a name='L60'>  60         <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a>                    <a href='../Y/2144.html' title='Multiple used in 4 places.'>counter</a>;
+<a name='L61'>  61 
+<a name='L62'>  62         <i><font color='green'>/* children nodes by name */</font></i>
+<a name='L63'>  63         <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a>*             <a href='../Y/3569.html' title='Multiple used in 52 places.'>hash</a>;
+<a name='L64'>  64         
+<a name='L65'>  65         <i><font color='green'>/* the owner of this node */</font></i>
+<a name='L66'>  66         <a href='../S/484.html#L38' title='Defined at 38 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree.h.'>stats_tree</a>*     <a href='../Y/6963.html' title='Multiple used in 29 places.'>st</a>;
+<a name='L67'>  67         
+<a name='L68'>  68         <i><font color='green'>/* relatives */</font></i>
+<a name='L69'>  69         <a href='../S/483.html#L47' title='Defined at 47 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>stat_node</a>*      <a href='../Y/5641.html' title='Multiple used in 32 places.'>parent</a>;
+<a name='L70'>  70         <a href='../S/483.html#L47' title='Defined at 47 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>stat_node</a>*      <a href='../Y/1872.html' title='Multiple used in 26 places.'>children</a>;
+<a name='L71'>  71         <a href='../S/483.html#L47' title='Defined at 47 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>stat_node</a>*      <a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L72'>  72 
+<a name='L73'>  73         <i><font color='green'>/* used to check if value is within range */</font></i>
+<a name='L74'>  74         <a href='../S/483.html#L53' title='Defined at 53 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>range_pair_t</a>* <a href='../Y/6456.html' title='Multiple used in 3 places.'>rng</a>;
+<a name='L75'>  75         
+<a name='L76'>  76         <i><font color='green'>/* node presentation data */</font></i>
+<a name='L77'>  77         <a href='../S/483.html#L36' title='Defined at 36 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>st_node_pres</a>* <a href='../Y/5851.html' title='Multiple used in 5 places.'>pr</a>;
+<a name='L78'>  78 <font color='red'>}</font>;
+<a name='L79'>  79 
+<a name='L80'>  80 <b>struct</b> <a href='../S/484.html#L38' title='Refered from 38 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree.h.'>_stats_tree</a> <font color='red'>{</font>
+<a name='L81'>  81         <i><font color='green'>/* the "class" from which it's derived */</font></i>
+<a name='L82'>  82         <a href='../S/483.html#L48' title='Defined at 48 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>stats_tree_cfg</a>* <a href='../Y/1839.html' title='Multiple used in 5 places.'>cfg</a>;
+<a name='L83'>  83         
+<a name='L84'>  84         <b>char</b>*                   <a href='../Y/3075.html' title='Multiple used in 66 places.'>filter</a>;
+<a name='L85'>  85         
+<a name='L86'>  86         <i><font color='green'>/* times */</font></i>
+<a name='L87'>  87         <b>double</b>                  <a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a>;
+<a name='L88'>  88         <b>double</b>                  <a href='../Y/2636.html' title='Multiple used in 18 places.'>elapsed</a>;
+<a name='L89'>  89 
+<a name='L90'>  90    <i><font color='green'>/* used to lookup named parents:</font></i>
+<a name='L91'>  91 <i><font color='green'>        *    key: parent node name</font></i>
+<a name='L92'>  92 <i><font color='green'>        *  value: parent node</font></i>
+<a name='L93'>  93 <i><font color='green'>        */</font></i>
+<a name='L94'>  94         <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a>*                     <a href='../Y/4644.html' title='Multiple used in 45 places.'>names</a>;
+<a name='L95'>  95         
+<a name='L96'>  96    <i><font color='green'>/* used for quicker lookups of parent nodes */</font></i>
+<a name='L97'>  97         <a href='../Y/390.html' title='Multiple used in 15 places.'>GPtrArray</a>*                      parents;
+<a name='L98'>  98                 
+<a name='L99'>  99         <i><font color='green'>/*</font></i>
+<a name='L100'> 100 <i><font color='green'>         *  tree representation</font></i>
+<a name='L101'> 101 <i><font color='green'>         *      to be defined (if needed) by the implementations</font></i>
+<a name='L102'> 102 <i><font color='green'>         */</font></i>
+<a name='L103'> 103         <a href='../S/483.html#L40' title='Defined at 40 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>tree_pres</a>* <a href='../Y/5851.html' title='Multiple used in 5 places.'>pr</a>;
+<a name='L104'> 104         
+<a name='L105'> 105         <i><font color='green'>/* every tree in nature has one */</font></i>
+<a name='L106'> 106         <a href='../S/483.html#L47' title='Defined at 47 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>stat_node</a>       <a href='../Y/6460.html' title='Multiple used in 31 places.'>root</a>;
+<a name='L107'> 107 <font color='red'>}</font>;
+<a name='L108'> 108 
+<a name='L109'> 109 <b>struct</b> <a href='../S/483.html#L48' title='Refered from 48 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>_stats_tree_cfg</a> <font color='red'>{</font>
+<a name='L110'> 110         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>*                 <a href='../Y/1259.html' title='Multiple used in 4 places.'>abbr</a>;
+<a name='L111'> 111         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>*                 <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;
+<a name='L112'> 112         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>*                 <a href='../Y/7257.html' title='Multiple used in 3 places.'>tapname</a>;
+<a name='L113'> 113         
+<a name='L114'> 114         <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/3787.html' title='Multiple used in 15 places.'>in_use</a>;
+<a name='L115'> 115 
+<a name='L116'> 116         <i><font color='green'>/* dissector defined callbacks */</font></i>
+<a name='L117'> 117         <a href='../Y/7011.html' title='Multiple used in 3 places.'>stat_tree_packet_cb</a> <a href='../Y/5592.html' title='Multiple used in 61 places.'>packet</a>;
+<a name='L118'> 118         <a href='../Y/7010.html' title='Multiple used in 3 places.'>stat_tree_init_cb</a> <a href='../D/8107.html' title='Multiple defined in 14 places.'>init</a>;
+<a name='L119'> 119         <a href='../Y/7009.html' title='Multiple used in 3 places.'>stat_tree_cleanup_cb</a> <a href='../Y/1895.html' title='Multiple used in 27 places.'>cleanup</a>;
+<a name='L120'> 120         
+<a name='L121'> 121         <i><font color='green'>/*</font></i>
+<a name='L122'> 122 <i><font color='green'>         * node presentation callbacks</font></i>
+<a name='L123'> 123 <i><font color='green'>         */</font></i>
+<a name='L124'> 124 
+<a name='L125'> 125         <i><font color='green'>/* last to be called at node creation */</font></i>
+<a name='L126'> 126         <b>void</b> (*<a href='../Y/6719.html' title='Multiple used in 2 places.'>setup_node_pr</a>)(<a href='../S/483.html#L47' title='Defined at 47 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>stat_node</a>*);
+<a name='L127'> 127         
+<a name='L128'> 128         <i><font color='green'>/* last to be called at node destruction */</font></i>
+<a name='L129'> 129         <b>void</b> (*<a href='../Y/3241.html' title='Multiple used in 2 places.'>free_node_pr</a>)(<a href='../S/483.html#L47' title='Defined at 47 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>stat_node</a>*);
+<a name='L130'> 130         
+<a name='L131'> 131         <i><font color='green'>/* to be called for every node in the tree */</font></i>
+<a name='L132'> 132         <b>void</b> (*<a href='../Y/2547.html' title='Multiple used in 2 places.'>draw_node</a>)(<a href='../S/483.html#L47' title='Defined at 47 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>stat_node</a>*);
+<a name='L133'> 133         <b>void</b> (*<a href='../Y/6413.html' title='Multiple used in 2 places.'>reset_node</a>)(<a href='../S/483.html#L47' title='Defined at 47 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>stat_node</a>*);
+<a name='L134'> 134         
+<a name='L135'> 135         <i><font color='green'>/*</font></i>
+<a name='L136'> 136 <i><font color='green'>         * tree presentation callbacks</font></i>
+<a name='L137'> 137 <i><font color='green'>         */</font></i>
+<a name='L138'> 138         <a href='../S/483.html#L44' title='Defined at 44 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>tree_cfg_pres</a>* <a href='../Y/5851.html' title='Multiple used in 5 places.'>pr</a>;
+<a name='L139'> 139         
+<a name='L140'> 140         
+<a name='L141'> 141         <a href='../S/483.html#L40' title='Defined at 40 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>tree_pres</a>* (*<a href='../Y/4785.html' title='Multiple used in 2 places.'>new_tree_pr</a>)(<a href='../S/484.html#L38' title='Defined at 38 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree.h.'>stats_tree</a>*);
+<a name='L142'> 142         <b>void</b> (*<a href='../Y/3245.html' title='Multiple used in 2 places.'>free_tree_pr</a>)(<a href='../S/484.html#L38' title='Defined at 38 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree.h.'>stats_tree</a>*);
+<a name='L143'> 143         <b>void</b> (*<a href='../Y/2549.html' title='Multiple used in 2 places.'>draw_tree</a>)(<a href='../S/484.html#L38' title='Defined at 38 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree.h.'>stats_tree</a>*);
+<a name='L144'> 144         <b>void</b> (*<a href='../Y/6414.html' title='Multiple used in 2 places.'>reset_tree</a>)(<a href='../S/484.html#L38' title='Defined at 38 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree.h.'>stats_tree</a>*);
+<a name='L145'> 145 <font color='red'>}</font>;
+<a name='L146'> 146 
+<a name='L147'> 147 <i><font color='green'>/* guess what, this is it! */</font></i>
+<a name='L148'> 148 <b>extern</b> <b>void</b> stats_tree_presentation(<b>void</b> (*registry_iterator)(<a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a>,<a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a>,<a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a>),
+<a name='L149'> 149                                                                         <b>void</b> (*<a href='../Y/6719.html' title='Multiple used in 2 places.'>setup_node_pr</a>)(<a href='../Y/7007.html' title='Multiple used in 8 places.'>stat_node</a>*),
+<a name='L150'> 150                                                                         <b>void</b> (*<a href='../Y/3241.html' title='Multiple used in 2 places.'>free_node_pr</a>)(<a href='../Y/7007.html' title='Multiple used in 8 places.'>stat_node</a>*),
+<a name='L151'> 151                                                                         <b>void</b> (*<a href='../Y/2547.html' title='Multiple used in 2 places.'>draw_node</a>)(<a href='../Y/7007.html' title='Multiple used in 8 places.'>stat_node</a>*),
+<a name='L152'> 152                                                                         <b>void</b> (*<a href='../Y/6413.html' title='Multiple used in 2 places.'>reset_node</a>)(<a href='../Y/7007.html' title='Multiple used in 8 places.'>stat_node</a>*),
+<a name='L153'> 153                                                                         <a href='../Y/7476.html' title='Multiple used in 2 places.'>tree_pres</a>* (*<a href='../Y/4785.html' title='Multiple used in 2 places.'>new_tree_pr</a>)(<a href='../Y/7032.html' title='Multiple used in 18 places.'>stats_tree</a>*),
+<a name='L154'> 154                                                                         <b>void</b> (*<a href='../Y/3245.html' title='Multiple used in 2 places.'>free_tree_pr</a>)(<a href='../Y/7032.html' title='Multiple used in 18 places.'>stats_tree</a>*),
+<a name='L155'> 155                                                                         <b>void</b> (*<a href='../Y/2549.html' title='Multiple used in 2 places.'>draw_tree</a>)(<a href='../Y/7032.html' title='Multiple used in 18 places.'>stats_tree</a>*),
+<a name='L156'> 156                                                                         <b>void</b> (*<a href='../Y/6414.html' title='Multiple used in 2 places.'>reset_tree</a>)(<a href='../Y/7032.html' title='Multiple used in 18 places.'>stats_tree</a>*),
+<a name='L157'> 157                                                                         <b>void</b>* <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L158'> 158 
+<a name='L159'> 159 <b>extern</b> <a href='../S/484.html#L38' title='Defined at 38 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree.h.'>stats_tree</a>* stats_tree_new(stats_tree_cfg* <a href='../Y/1839.html' title='Multiple used in 5 places.'>cfg</a>, <a href='../Y/7476.html' title='Multiple used in 2 places.'>tree_pres</a>* <a href='../Y/5851.html' title='Multiple used in 5 places.'>pr</a>, <b>char</b>* <a href='../Y/3075.html' title='Multiple used in 66 places.'>filter</a>);
+<a name='L160'> 160 
+<a name='L161'> 161 <i><font color='green'>/* callback for taps */</font></i>
+<a name='L162'> 162 <b>extern</b> <b>int</b>  stats_tree_packet(<b>void</b>*, <a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a>*, <a href='../S/501.html#L32' title='Defined at 32 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h.'>epan_dissect_t</a>*, <b>const</b> <b>void</b> *);
+<a name='L163'> 163 
+<a name='L164'> 164 <i><font color='green'>/* callback for reset */</font></i>
+<a name='L165'> 165 <b>extern</b> <b>void</b> stats_tree_reset(<b>void</b>* <a href='../Y/5584.html' title='Multiple used in 2 places.'>p_st</a>);
+<a name='L166'> 166 
+<a name='L167'> 167 <i><font color='green'>/* callback for clear */</font></i>
+<a name='L168'> 168 <b>extern</b> <b>void</b> stats_tree_reinit(<b>void</b>* <a href='../Y/5584.html' title='Multiple used in 2 places.'>p_st</a>);
+<a name='L169'> 169 
+<a name='L170'> 170 <i><font color='green'>/* callback for destoy */</font></i>
+<a name='L171'> 171 <b>extern</b> <b>void</b> stats_tree_free(<a href='../Y/7032.html' title='Multiple used in 18 places.'>stats_tree</a>* <a href='../Y/6963.html' title='Multiple used in 29 places.'>st</a>);
+<a name='L172'> 172 
+<a name='L173'> 173 <i><font color='green'>/* given an optarg splits the abbr part</font></i>
+<a name='L174'> 174 <i><font color='green'>   and returns a newly allocated buffer containing it */</font></i>
+<a name='L175'> 175 <b>extern</b> <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>* stats_tree_get_abbr(<b>const</b> <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>* <a href='../Y/5497.html' title='Multiple used in 99 places.'>optarg</a>);
+<a name='L176'> 176 
+<a name='L177'> 177 <i><font color='green'>/* obtains a stats tree from the registry given its abbr */</font></i>
+<a name='L178'> 178 <b>extern</b> <a href='../S/483.html#L48' title='Defined at 48 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stats_tree_priv.h.'>stats_tree_cfg</a>* stats_tree_get_cfg_by_abbr(<a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>* <a href='../Y/1259.html' title='Multiple used in 4 places.'>abbr</a>);
+<a name='L179'> 179 
+<a name='L180'> 180 <i><font color='green'>/* extracts node data as strings from a stat_node into</font></i>
+<a name='L181'> 181 <i><font color='green'>   the buffers given by value, rate and precent</font></i>
+<a name='L182'> 182 <i><font color='green'>   if NULL they are ignored */</font></i>
+<a name='L183'> 183 <b>extern</b> <b>void</b> stats_tree_get_strs_from_node(<b>const</b> <a href='../Y/7007.html' title='Multiple used in 8 places.'>stat_node</a>* <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>,
+<a name='L184'> 184                                                                   <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>* <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>,
+<a name='L185'> 185                                                                   <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>* <a href='../Y/6242.html' title='Multiple used in 26 places.'>rate</a>,
+<a name='L186'> 186                                                                   <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>* percent);
+<a name='L187'> 187 
+<a name='L188'> 188 <i><font color='green'>/* populates the given GString with a tree representation of a branch given by node,</font></i>
+<a name='L189'> 189 <i><font color='green'>   using indent spaces as indentation */</font></i>
+<a name='L190'> 190 <b>extern</b> <b>void</b> stats_tree_branch_to_str(<b>const</b> <a href='../Y/7007.html' title='Multiple used in 8 places.'>stat_node</a>* <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>,
+<a name='L191'> 191                                                            <a href='../Y/392.html' title='Multiple used in 20 places.'>GString</a>* <a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>,
+<a name='L192'> 192                                                            <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/3794.html' title='Multiple used in 3 places.'>indent</a>);
+<a name='L193'> 193 
+<a name='L194'> 194 <i><font color='green'>/* used to calcuate the size of the indentation and the longest string */</font></i>
+<a name='L195'> 195 <b>extern</b> <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> stats_tree_branch_max_namelen(<b>const</b> <a href='../Y/7007.html' title='Multiple used in 8 places.'>stat_node</a>* <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>, <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/3794.html' title='Multiple used in 3 places.'>indent</a>);
+<a name='L196'> 196 
+<a name='L197'> 197 <i><font color='green'>/* a text representation of a node,</font></i>
+<a name='L198'> 198 <i><font color='green'>   if buffer is NULL returns a newly allocated string */</font></i>
+<a name='L199'> 199 <b>extern</b> <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>* stats_tree_node_to_str(<b>const</b> <a href='../Y/7007.html' title='Multiple used in 8 places.'>stat_node</a>* <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>,
+<a name='L200'> 200                                                                 <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>* <a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>, <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>);
+<a name='L201'> 201 
+<a name='L202'> 202 <font color='darkred'>#endif</font> <i><font color='green'>/* __STATS_TREE_PRIV_H */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

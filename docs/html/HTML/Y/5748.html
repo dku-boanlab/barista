@@ -1,0 +1,54 @@
+<html>
+<head>
+<title>pkt_in</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/28.html#L113'>pkt_in</a>            113 cbench/oflops/cbench/fakeswitch.c     struct ofp_packet_in *pkt_in;
+<a href='../S/28.html#L118'>pkt_in</a>            118 cbench/oflops/cbench/fakeswitch.c     pkt_in = ( struct ofp_packet_in *) buf;
+<a href='../S/28.html#L120'>pkt_in</a>            120 cbench/oflops/cbench/fakeswitch.c     pkt_in-&gt;header.version = OFP_VERSION;
+<a href='../S/28.html#L121'>pkt_in</a>            121 cbench/oflops/cbench/fakeswitch.c     pkt_in-&gt;header.type = OFPT_PACKET_IN;
+<a href='../S/28.html#L122'>pkt_in</a>            122 cbench/oflops/cbench/fakeswitch.c     pkt_in-&gt;header.length = htons(len);
+<a href='../S/28.html#L123'>pkt_in</a>            123 cbench/oflops/cbench/fakeswitch.c     pkt_in-&gt;header.xid = htonl(fs-&gt;xid++);
+<a href='../S/28.html#L125'>pkt_in</a>            125 cbench/oflops/cbench/fakeswitch.c     pkt_in-&gt;buffer_id = -1;
+<a href='../S/28.html#L126'>pkt_in</a>            126 cbench/oflops/cbench/fakeswitch.c     pkt_in-&gt;total_len = htons(sizeof(gratuitous_arp_reply));
+<a href='../S/28.html#L127'>pkt_in</a>            127 cbench/oflops/cbench/fakeswitch.c     pkt_in-&gt;in_port = htons(2);
+<a href='../S/28.html#L128'>pkt_in</a>            128 cbench/oflops/cbench/fakeswitch.c     pkt_in-&gt;reason = OFPR_NO_MATCH;
+<a href='../S/28.html#L130'>pkt_in</a>            130 cbench/oflops/cbench/fakeswitch.c     memcpy(pkt_in-&gt;data, gratuitous_arp_reply, sizeof(gratuitous_arp_reply));
+<a href='../S/28.html#L135'>pkt_in</a>            135 cbench/oflops/cbench/fakeswitch.c     eth = (struct ether_header * ) pkt_in-&gt;data;
+<a href='../S/28.html#L144'>pkt_in</a>            144 cbench/oflops/cbench/fakeswitch.c     msgbuf_push(fs-&gt;outbuf,(char * ) pkt_in, len);
+<a href='../S/28.html#L145'>pkt_in</a>            145 cbench/oflops/cbench/fakeswitch.c     debug_msg(fs, " sent gratuitous ARP reply to learn about mac address: version %d length %d type %d eth: %x arp: %x ", pkt_in-&gt;header.version, len, buf[1], eth, arp_reply);
+<a href='../S/92.html#L88'>pkt_in</a>             88 cbench/oflops/example_modules/oflops_debug/debug.c int of_event_packet_in(struct oflops_context *ctx, struct ofp_packet_in * pkt_in)
+<a href='../S/92.html#L91'>pkt_in</a>             91 cbench/oflops/example_modules/oflops_debug/debug.c 	if( oflops_get_timestamp(ctx,pkt_in, ntohs(pkt_in-&gt;header.length), &amp;hdr, OFLOPS_CONTROL))
+<a href='../S/92.html#L93'>pkt_in</a>             93 cbench/oflops/example_modules/oflops_debug/debug.c 				ntohs(pkt_in-&gt;in_port), hdr.ts.tv_sec, hdr.ts.tv_usec);
+<a href='../S/75.html#L400'>pkt_in</a>            400 cbench/oflops/example_modules/openflow_action_install/action.c of_event_packet_in(struct oflops_context *ctx, const struct ofp_packet_in * pkt_in) {  
+<a href='../S/75.html#L401'>pkt_in</a>            401 cbench/oflops/example_modules/openflow_action_install/action.c   switch(pkt_in-&gt;reason) {
+<a href='../S/75.html#L406'>pkt_in</a>            406 cbench/oflops/example_modules/openflow_action_install/action.c     printf("OFPR_ACTION: %d bytes\n", ntohs(pkt_in-&gt;total_len));
+<a href='../S/75.html#L409'>pkt_in</a>            409 cbench/oflops/example_modules/openflow_action_install/action.c     printf("Unknown reason: %d bytes\n", ntohs(pkt_in-&gt;total_len));
+<a href='../S/73.html#L466'>pkt_in</a>            466 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c of_event_packet_in(struct oflops_context *ctx, const struct ofp_packet_in * pkt_in) {  
+<a href='../S/73.html#L467'>pkt_in</a>            467 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c   switch(pkt_in-&gt;reason) {
+<a href='../S/73.html#L472'>pkt_in</a>            472 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c     printf("OFPR_ACTION: %d bytes\n", ntohs(pkt_in-&gt;total_len));
+<a href='../S/73.html#L475'>pkt_in</a>            475 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c     printf("Unknown reason: %d bytes\n", ntohs(pkt_in-&gt;total_len));
+<a href='../S/100.html#L501'>pkt_in</a>            501 cbench/oflops/example_modules/openflow_add_flow/add_flow.c of_event_packet_in(struct oflops_context *ctx, const struct ofp_packet_in * pkt_in) {  
+<a href='../S/100.html#L502'>pkt_in</a>            502 cbench/oflops/example_modules/openflow_add_flow/add_flow.c   switch(pkt_in-&gt;reason) {
+<a href='../S/100.html#L507'>pkt_in</a>            507 cbench/oflops/example_modules/openflow_add_flow/add_flow.c     printf("OFPR_ACTION: %d bytes\n", ntohs(pkt_in-&gt;total_len));
+<a href='../S/100.html#L510'>pkt_in</a>            510 cbench/oflops/example_modules/openflow_add_flow/add_flow.c     printf("Unknown reason: %d bytes\n", ntohs(pkt_in-&gt;total_len));
+<a href='../S/81.html#L512'>pkt_in</a>            512 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c of_event_packet_in(struct oflops_context *ctx, const struct ofp_packet_in * pkt_in) {  
+<a href='../S/81.html#L513'>pkt_in</a>            513 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c   switch(pkt_in-&gt;reason) {
+<a href='../S/81.html#L518'>pkt_in</a>            518 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c     printf("OFPR_ACTION: %d bytes\n", ntohs(pkt_in-&gt;total_len));
+<a href='../S/81.html#L521'>pkt_in</a>            521 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c     printf("Unknown reason: %d bytes\n", ntohs(pkt_in-&gt;total_len));
+<a href='../S/88.html#L215'>pkt_in</a>            215 cbench/oflops/example_modules/openflow_packet_in/pktin.c   struct ofp_packet_in *pkt_in = NULL;
+<a href='../S/88.html#L225'>pkt_in</a>            225 cbench/oflops/example_modules/openflow_packet_in/pktin.c 	pkt_in = (struct ofp_error_msg *)ofp;
+<a href='../S/88.html#L226'>pkt_in</a>            226 cbench/oflops/example_modules/openflow_packet_in/pktin.c 	pktgen = extract_pktgen_pkt(pkt_in-&gt;data, pe-&gt;pcaphdr.caplen - sizeof(struct ofp_packet_in), &amp;fl);
+<a href='../S/88.html#L243'>pkt_in</a>            243 cbench/oflops/example_modules/openflow_packet_in/pktin.c 		 ntohl(pkt_in-&gt;buffer_id),
+<a href='../S/79.html#L220'>pkt_in</a>            220 cbench/oflops/example_modules/openflow_port_status/portstat.c int of_event_packet_in(struct oflops_context *ctx, struct ofp_packet_in * pkt_in)
+<a href='../S/84.html#L395'>pkt_in</a>            395 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c of_event_packet_in(struct oflops_context *ctx, const struct ofp_packet_in * pkt_in) {  
+<a href='../S/84.html#L396'>pkt_in</a>            396 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c   switch(pkt_in-&gt;reason) {
+<a href='../S/84.html#L398'>pkt_in</a>            398 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c     printf("OFPR_NO_MATCH: %d bytes\n", ntohs(pkt_in-&gt;total_len));
+<a href='../S/84.html#L401'>pkt_in</a>            401 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c     printf("OFPR_ACTION: %d bytes\n", ntohs(pkt_in-&gt;total_len));
+<a href='../S/84.html#L404'>pkt_in</a>            404 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c     printf("Unknown reason: %d bytes\n", ntohs(pkt_in-&gt;total_len));
+</pre>
+</body>
+</html>

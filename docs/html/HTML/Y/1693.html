@@ -1,0 +1,480 @@
+<html>
+<head>
+<title>buf</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/28.html#L27'>buf</a>                27 cbench/oflops/cbench/fakeswitch.c static int make_features_reply(int switch_id, int xid, char * buf, int buflen);
+<a href='../S/28.html#L28'>buf</a>                28 cbench/oflops/cbench/fakeswitch.c static int make_stats_desc_reply(struct ofp_stats_request * req, char * buf, int buflen);
+<a href='../S/28.html#L30'>buf</a>                30 cbench/oflops/cbench/fakeswitch.c static int make_config_reply( int xid, char * buf, int buflen);
+<a href='../S/28.html#L31'>buf</a>                31 cbench/oflops/cbench/fakeswitch.c static int make_vendor_reply(int xid, char * buf, int buflen);
+<a href='../S/28.html#L32'>buf</a>                32 cbench/oflops/cbench/fakeswitch.c static int make_packet_in(int switch_id, int xid, int buffer_id, char * buf, int buflen, int mac_address);
+<a href='../S/28.html#L60'>buf</a>                60 cbench/oflops/cbench/fakeswitch.c     char buf[BUFLEN];
+<a href='../S/28.html#L74'>buf</a>                74 cbench/oflops/cbench/fakeswitch.c     fs-&gt;probe_size = make_packet_in(fs-&gt;id, 0, 0, buf, BUFLEN, fs-&gt;current_mac_address++);
+<a href='../S/28.html#L111'>buf</a>               111 cbench/oflops/cbench/fakeswitch.c     char buf [512];
+<a href='../S/28.html#L117'>buf</a>               117 cbench/oflops/cbench/fakeswitch.c     memset(buf, 0, sizeof(buf));
+<a href='../S/28.html#L118'>buf</a>               118 cbench/oflops/cbench/fakeswitch.c     pkt_in = ( struct ofp_packet_in *) buf;
+<a href='../S/28.html#L145'>buf</a>               145 cbench/oflops/cbench/fakeswitch.c     debug_msg(fs, " sent gratuitous ARP reply to learn about mac address: version %d length %d type %d eth: %x arp: %x ", pkt_in-&gt;header.version, len, buf[1], eth, arp_reply);
+<a href='../S/28.html#L194'>buf</a>               194 cbench/oflops/cbench/fakeswitch.c static int make_config_reply( int xid, char * buf, int buflen) {
+<a href='../S/28.html#L199'>buf</a>               199 cbench/oflops/cbench/fakeswitch.c 	memcpy(buf, &amp;Switch_config, len);
+<a href='../S/28.html#L205'>buf</a>               205 cbench/oflops/cbench/fakeswitch.c static int              make_features_reply(int id, int xid, char * buf, int buflen)
+<a href='../S/28.html#L229'>buf</a>               229 cbench/oflops/cbench/fakeswitch.c     memcpy(buf, fake, sizeof(fake));
+<a href='../S/28.html#L230'>buf</a>               230 cbench/oflops/cbench/fakeswitch.c     features = (struct ofp_switch_features *) buf;
+<a href='../S/28.html#L238'>buf</a>               238 cbench/oflops/cbench/fakeswitch.c         char * buf, int buflen) {
+<a href='../S/28.html#L252'>buf</a>               252 cbench/oflops/cbench/fakeswitch.c     memcpy( buf, req, sizeof(*req));
+<a href='../S/28.html#L253'>buf</a>               253 cbench/oflops/cbench/fakeswitch.c     reply = (struct ofp_stats_reply *) buf;
+<a href='../S/28.html#L262'>buf</a>               262 cbench/oflops/cbench/fakeswitch.c static int make_vendor_reply(int xid, char * buf, int buflen)
+<a href='../S/28.html#L266'>buf</a>               266 cbench/oflops/cbench/fakeswitch.c     e = (struct ofp_error_msg *) buf;
+<a href='../S/28.html#L298'>buf</a>               298 cbench/oflops/cbench/fakeswitch.c static int make_packet_in(int switch_id, int xid, int buffer_id, char * buf, int buflen, int mac_address)
+<a href='../S/28.html#L312'>buf</a>               312 cbench/oflops/cbench/fakeswitch.c     memcpy(buf, fake, sizeof(fake));
+<a href='../S/28.html#L313'>buf</a>               313 cbench/oflops/cbench/fakeswitch.c     pi = (struct ofp_packet_in *) buf;
+<a href='../S/28.html#L359'>buf</a>               359 cbench/oflops/cbench/fakeswitch.c     char buf[BUFLEN];
+<a href='../S/28.html#L403'>buf</a>               403 cbench/oflops/cbench/fakeswitch.c                 count = make_features_reply(fs-&gt;id, ofph-&gt;xid, buf, BUFLEN);
+<a href='../S/28.html#L404'>buf</a>               404 cbench/oflops/cbench/fakeswitch.c                 msgbuf_push(fs-&gt;outbuf, buf, count);
+<a href='../S/28.html#L416'>buf</a>               416 cbench/oflops/cbench/fakeswitch.c                 count = make_config_reply(ofph-&gt;xid, buf, BUFLEN);
+<a href='../S/28.html#L417'>buf</a>               417 cbench/oflops/cbench/fakeswitch.c                 msgbuf_push(fs-&gt;outbuf, buf, count);
+<a href='../S/28.html#L428'>buf</a>               428 cbench/oflops/cbench/fakeswitch.c                 count = make_vendor_reply(ofph-&gt;xid, buf, BUFLEN);
+<a href='../S/28.html#L429'>buf</a>               429 cbench/oflops/cbench/fakeswitch.c                 msgbuf_push(fs-&gt;outbuf, buf, count);
+<a href='../S/28.html#L457'>buf</a>               457 cbench/oflops/cbench/fakeswitch.c                     count = make_stats_desc_reply(stats_req, buf, BUFLEN);
+<a href='../S/28.html#L458'>buf</a>               458 cbench/oflops/cbench/fakeswitch.c                     msgbuf_push(fs-&gt;outbuf, buf, count);
+<a href='../S/28.html#L484'>buf</a>               484 cbench/oflops/cbench/fakeswitch.c     char buf[BUFLEN];
+<a href='../S/28.html#L502'>buf</a>               502 cbench/oflops/cbench/fakeswitch.c             count = make_packet_in(fs-&gt;id, fs-&gt;xid++, fs-&gt;current_buffer_id, buf, BUFLEN, fs-&gt;current_mac_address);
+<a href='../S/28.html#L505'>buf</a>               505 cbench/oflops/cbench/fakeswitch.c             msgbuf_push(fs-&gt;outbuf, buf, count);
+<a href='../S/60.html#L67'>buf</a>                67 cbench/oflops/channel_info.c 	char buf[BUFLEN];
+<a href='../S/60.html#L90'>buf</a>                90 cbench/oflops/channel_info.c 	if( mod-&gt;get_pcap_filter(ctx,ch,buf,BUFLEN) &lt;=0)
+<a href='../S/60.html#L99'>buf</a>                99 cbench/oflops/channel_info.c 			mod-&gt;name(), buf, ch_info-&gt;dev, ch);
+<a href='../S/60.html#L134'>buf</a>               134 cbench/oflops/channel_info.c 	if(pcap_compile(ch_info-&gt;pcap_handle, &amp;filter, buf, 1, net))
+<a href='../S/12.html#L31'>buf</a>                31 cbench/oflops/control.c 	char buf[BUFLEN];
+<a href='../S/12.html#L78'>buf</a>                78 cbench/oflops/control.c 	inet_ntop(AF_INET,&amp;sin.sin_addr,buf,BUFLEN);
+<a href='../S/12.html#L80'>buf</a>                80 cbench/oflops/control.c 			buf, htons(sin.sin_port));
+<a href='../S/92.html#L55'>buf</a>                55 cbench/oflops/example_modules/oflops_debug/debug.c 		char buf[BUFLEN];
+<a href='../S/92.html#L56'>buf</a>                56 cbench/oflops/example_modules/oflops_debug/debug.c 		struct  ether_header  * eth = (struct ether_header * ) buf;
+<a href='../S/92.html#L60'>buf</a>                60 cbench/oflops/example_modules/oflops_debug/debug.c 		bzero(buf,BUFLEN);
+<a href='../S/92.html#L64'>buf</a>                64 cbench/oflops/example_modules/oflops_debug/debug.c 		memcpy(&amp;buf[sizeof(struct ether_header)], HISTR, strlen(HISTR));
+<a href='../S/92.html#L65'>buf</a>                65 cbench/oflops/example_modules/oflops_debug/debug.c 		err = oflops_send_raw_mesg(ctx,OFLOPS_DATA1,buf,len);
+<a href='../S/92.html#L68'>buf</a>                68 cbench/oflops/example_modules/oflops_debug/debug.c 		err = oflops_send_raw_mesg(ctx,OFLOPS_DATA2,buf,len);
+<a href='../S/79.html#L47'>buf</a>                47 cbench/oflops/example_modules/openflow_port_status/portstat.c struct ofp_stats_request buf;
+<a href='../S/79.html#L148'>buf</a>               148 cbench/oflops/example_modules/openflow_port_status/portstat.c 	buf.header.length = htons(sizeof(struct ofp_stats_request));
+<a href='../S/79.html#L149'>buf</a>               149 cbench/oflops/example_modules/openflow_port_status/portstat.c 	buf.header.xid = 0;
+<a href='../S/79.html#L150'>buf</a>               150 cbench/oflops/example_modules/openflow_port_status/portstat.c 	buf.header.type = OFPT_STATS_REQUEST;
+<a href='../S/79.html#L151'>buf</a>               151 cbench/oflops/example_modules/openflow_port_status/portstat.c 	buf.header.version = OFP_VERSION;
+<a href='../S/79.html#L152'>buf</a>               152 cbench/oflops/example_modules/openflow_port_status/portstat.c 	buf.type = htons(OFPST_PORT);
+<a href='../S/79.html#L153'>buf</a>               153 cbench/oflops/example_modules/openflow_port_status/portstat.c 	buf.flags = 0;
+<a href='../S/79.html#L181'>buf</a>               181 cbench/oflops/example_modules/openflow_port_status/portstat.c 		buf.header.xid = next_index;
+<a href='../S/79.html#L190'>buf</a>               190 cbench/oflops/example_modules/openflow_port_status/portstat.c 		oflops_send_of_mesg(ctx,(struct ofp_header *) &amp;buf);
+<a href='../S/84.html#L109'>buf</a>               109 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c char *buf = NULL;
+<a href='../S/84.html#L207'>buf</a>               207 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c   buf = generate_packet(*fl, pkt_size);
+<a href='../S/84.html#L280'>buf</a>               280 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c     *((uint32_t *)(buf + MEASUREMENT_PACKET_HEADER)) = sendno;
+<a href='../S/84.html#L290'>buf</a>               290 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c     oflops_send_raw_mesg(ctx, probe_send/*OFLOPS_DATA1*/, buf, pkt_size);
+<a href='../S/71.html#L93'>buf</a>                93 cbench/oflops/example_modules/snmp_cpu/snmpcpu.c   char buf[1024];
+<a href='../S/71.html#L94'>buf</a>                94 cbench/oflops/example_modules/snmp_cpu/snmpcpu.c   snprint_variable(buf, sizeof(buf), se-&gt;reply-&gt;name, se-&gt;reply-&gt;name_length, se-&gt;reply);
+<a href='../S/71.html#L95'>buf</a>                95 cbench/oflops/example_modules/snmp_cpu/snmpcpu.c   fprintf(stderr,"SNMP response: %s\n",buf);
+<a href='../S/38.html#L201'>buf</a>               201 cbench/oflops/module_run.c   static char * buf; 
+<a href='../S/38.html#L212'>buf</a>               212 cbench/oflops/module_run.c       buf = malloc_and_check(BUFLEN);
+<a href='../S/38.html#L217'>buf</a>               217 cbench/oflops/module_run.c       buf = realloc_and_check(buf, buflen);
+<a href='../S/38.html#L228'>buf</a>               228 cbench/oflops/module_run.c   count = read(pfd-&gt;fd,&amp;buf[bufend], buflen - bufend);
+<a href='../S/38.html#L247'>buf</a>               247 cbench/oflops/module_run.c       ofph = (struct ofp_header * ) &amp;buf[bufstart];
+<a href='../S/10.html#L492'>buf</a>               492 cbench/oflops/msg.c   char *buf = (char *)xmalloc(len); 
+<a href='../S/10.html#L494'>buf</a>               494 cbench/oflops/msg.c   bzero((void *)buf, len);
+<a href='../S/10.html#L501'>buf</a>               501 cbench/oflops/msg.c   struct ether_vlan_header * eth = (struct ether_vlan_header * ) buf;
+<a href='../S/10.html#L508'>buf</a>               508 cbench/oflops/msg.c   struct iphdr * ip = (struct iphdr *) (buf + sizeof(struct ether_vlan_header));
+<a href='../S/10.html#L524'>buf</a>               524 cbench/oflops/msg.c       (buf + sizeof(struct ether_vlan_header) + sizeof(struct iphdr));
+<a href='../S/10.html#L534'>buf</a>               534 cbench/oflops/msg.c   return buf;
+<a href='../S/13.html#L23'>buf</a>                23 cbench/oflops/msgbuf.c     mbuf-&gt;buf = malloc(mbuf-&gt;len);
+<a href='../S/13.html#L33'>buf</a>                33 cbench/oflops/msgbuf.c     int count = read(sock, &amp;mbuf-&gt;buf[mbuf-&gt;end], mbuf-&gt;len - mbuf-&gt;end);
+<a href='../S/13.html#L70'>buf</a>                70 cbench/oflops/msgbuf.c     int count = write(sock, &amp;mbuf-&gt;buf[mbuf-&gt;start], send_len);
+<a href='../S/13.html#L104'>buf</a>               104 cbench/oflops/msgbuf.c     mbuf-&gt;buf = realloc(mbuf-&gt;buf, mbuf-&gt;len);
+<a href='../S/13.html#L105'>buf</a>               105 cbench/oflops/msgbuf.c     if(mbuf-&gt;buf == NULL) {
+<a href='../S/13.html#L109'>buf</a>               109 cbench/oflops/msgbuf.c     assert(mbuf-&gt;buf);
+<a href='../S/13.html#L116'>buf</a>               116 cbench/oflops/msgbuf.c   return (void *) &amp;mbuf-&gt;buf[mbuf-&gt;start]; 
+<a href='../S/13.html#L119'>buf</a>               119 cbench/oflops/msgbuf.c int msgbuf_pull(struct msgbuf *mbuf, char * buf, int count)
+<a href='../S/13.html#L124'>buf</a>               124 cbench/oflops/msgbuf.c     if(buf)     // don't write if NULL
+<a href='../S/13.html#L125'>buf</a>               125 cbench/oflops/msgbuf.c         memcpy(buf, &amp;mbuf-&gt;buf[mbuf-&gt;start], min);
+<a href='../S/13.html#L132'>buf</a>               132 cbench/oflops/msgbuf.c void msgbuf_push(struct msgbuf *mbuf, char * buf, int count)
+<a href='../S/13.html#L136'>buf</a>               136 cbench/oflops/msgbuf.c     memcpy(&amp;mbuf-&gt;buf[mbuf-&gt;end], buf, count);
+<a href='../S/54.html#L6'>buf</a>                 6 cbench/oflops/msgbuf.h         char * buf;
+<a href='../S/54.html#L19'>buf</a>                19 cbench/oflops/msgbuf.h int              msgbuf_pull(struct msgbuf *mbuf, char * buf, int count);
+<a href='../S/54.html#L20'>buf</a>                20 cbench/oflops/msgbuf.h void             msgbuf_push(struct msgbuf *mbuf, char * buf, int count);
+<a href='../S/44.html#L216'>buf</a>               216 cbench/oflops/pkt_gen/common/nf2util.c 	struct stat buf;
+<a href='../S/44.html#L231'>buf</a>               231 cbench/oflops/pkt_gen/common/nf2util.c 	if (stat(filename, &amp;buf) == 0)
+<a href='../S/44.html#L241'>buf</a>               241 cbench/oflops/pkt_gen/common/nf2util.c 	if (stat(filename, &amp;buf) == 0)
+<a href='../S/49.html#L42'>buf</a>                42 cbench/oflops/pkt_gen/common/util.c uint16_t cksm(int length, uint32_t buf[]) {
+<a href='../S/49.html#L46'>buf</a>                46 cbench/oflops/pkt_gen/common/util.c 	int max = ind + (buf[4] &gt;&gt; 16);
+<a href='../S/49.html#L51'>buf</a>                51 cbench/oflops/pkt_gen/common/util.c 		uint32_t val = buf[i];
+<a href='../S/45.html#L19'>buf</a>                19 cbench/oflops/pkt_gen/common/util.h uint16_t cksm(uint16_t length, uint32_t buf[]);
+<a href='../S/121.html#L107'>buf</a>               107 cbench/oflops/test_module.c size_t oflops_send_of_mesgs(struct oflops_context *ctx, char * buf, size_t buflen)
+<a href='../S/121.html#L109'>buf</a>               109 cbench/oflops/test_module.c 	msgbuf_push(ctx-&gt;control_outgoing, buf, buflen);
+<a href='../S/55.html#L164'>buf</a>               164 cbench/oflops/test_module.h size_t oflops_send_of_mesgs(struct oflops_context *ctx, char * buf, size_t buflen);
+<a href='../S/16.html#L275'>buf</a>               275 cbench/oflops/traffic_generator.c   char buf[5000];
+<a href='../S/16.html#L284'>buf</a>               284 cbench/oflops/traffic_generator.c     printf_and_check(file, buf);
+<a href='../S/16.html#L293'>buf</a>               293 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "add_device %s", ctx-&gt;channels[ix].dev);
+<a href='../S/16.html#L294'>buf</a>               294 cbench/oflops/traffic_generator.c       printf_and_check(file, buf);
+<a href='../S/16.html#L307'>buf</a>               307 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "delay %d", ctx-&gt;channels[ix].det-&gt;delay);
+<a href='../S/16.html#L308'>buf</a>               308 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);
+<a href='../S/16.html#L310'>buf</a>               310 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "pkt_size %d", ctx-&gt;channels[ix].det-&gt;pkt_size);
+<a href='../S/16.html#L311'>buf</a>               311 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);
+<a href='../S/16.html#L313'>buf</a>               313 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "dst_min %s", ctx-&gt;channels[ix].det-&gt;dst_ip_min); 
+<a href='../S/16.html#L314'>buf</a>               314 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);      
+<a href='../S/16.html#L315'>buf</a>               315 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "dst_max %s", ctx-&gt;channels[ix].det-&gt;dst_ip_max); 
+<a href='../S/16.html#L316'>buf</a>               316 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);    
+<a href='../S/16.html#L317'>buf</a>               317 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "flag IPDST_RND"); 
+<a href='../S/16.html#L318'>buf</a>               318 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);
+<a href='../S/16.html#L320'>buf</a>               320 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "vlan_id %d", ctx-&gt;channels[ix].det-&gt;vlan); 
+<a href='../S/16.html#L321'>buf</a>               321 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);
+<a href='../S/16.html#L322'>buf</a>               322 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "vlan_p %d", ctx-&gt;channels[ix].det-&gt;vlan_p); 
+<a href='../S/16.html#L323'>buf</a>               323 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);
+<a href='../S/16.html#L324'>buf</a>               324 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "vlan_cfi %d", ctx-&gt;channels[ix].det-&gt;vlan_cfi); 
+<a href='../S/16.html#L325'>buf</a>               325 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);
+<a href='../S/16.html#L327'>buf</a>               327 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "dst_mac %s", ctx-&gt;channels[ix].det-&gt;mac_dst);
+<a href='../S/16.html#L328'>buf</a>               328 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);
+<a href='../S/16.html#L329'>buf</a>               329 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "src_mac %s", ctx-&gt;channels[ix].det-&gt;mac_src);
+<a href='../S/16.html#L330'>buf</a>               330 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);
+<a href='../S/16.html#L331'>buf</a>               331 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "src_min %s", ctx-&gt;channels[ix].det-&gt;src_ip);
+<a href='../S/16.html#L332'>buf</a>               332 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);
+<a href='../S/16.html#L333'>buf</a>               333 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "src_max %s", ctx-&gt;channels[ix].det-&gt;src_ip);
+<a href='../S/16.html#L334'>buf</a>               334 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);
+<a href='../S/16.html#L336'>buf</a>               336 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "tos 4");
+<a href='../S/16.html#L337'>buf</a>               337 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);
+<a href='../S/16.html#L340'>buf</a>               340 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "udp_src_max %d", ctx-&gt;channels[ix].det-&gt;udp_src_port);
+<a href='../S/16.html#L341'>buf</a>               341 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);
+<a href='../S/16.html#L342'>buf</a>               342 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "udp_src_min %d", ctx-&gt;channels[ix].det-&gt;udp_src_port);
+<a href='../S/16.html#L343'>buf</a>               343 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);
+<a href='../S/16.html#L344'>buf</a>               344 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "udp_dst_max %d", ctx-&gt;channels[ix].det-&gt;udp_dst_port);
+<a href='../S/16.html#L345'>buf</a>               345 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);
+<a href='../S/16.html#L346'>buf</a>               346 cbench/oflops/traffic_generator.c       snprintf(buf, 5000, "udp_dst_min %d", ctx-&gt;channels[ix].det-&gt;udp_dst_port);
+<a href='../S/16.html#L347'>buf</a>               347 cbench/oflops/traffic_generator.c       printf_and_check(intf_file, buf);
+<a href='../S/56.html#L137'>buf</a>               137 cbench/oflops/usage.c   static char buf[BUFLEN];
+<a href='../S/56.html#L141'>buf</a>               141 cbench/oflops/usage.c   bzero(buf,BUFLEN);
+<a href='../S/56.html#L144'>buf</a>               144 cbench/oflops/usage.c       buf[buf_index++] = oflops_options[opt_index].val;
+<a href='../S/56.html#L146'>buf</a>               146 cbench/oflops/usage.c 	buf[buf_index++] = ':';
+<a href='../S/56.html#L149'>buf</a>               149 cbench/oflops/usage.c   return buf;
+<a href='../S/56.html#L190'>buf</a>               190 cbench/oflops/usage.c   char buf[BUFLEN];
+<a href='../S/56.html#L198'>buf</a>               198 cbench/oflops/usage.c     count += snprintf((buf+count),BUFLEN-count-1, " %s", argv[i]);
+<a href='../S/56.html#L199'>buf</a>               199 cbench/oflops/usage.c   if(load_test_module(ctx,argv[0],buf))
+<a href='../S/301.html#L75'>buf</a>                75 cbench/openflow/datapath/linux-2.6/compat-2.6/veth.c static void veth_get_strings(struct net_device *dev, u32 stringset, u8 *buf)
+<a href='../S/301.html#L79'>buf</a>                79 cbench/openflow/datapath/linux-2.6/compat-2.6/veth.c 		memcpy(buf, &amp;ethtool_stats_keys, sizeof(ethtool_stats_keys));
+<a href='../S/223.html#L198'>buf</a>               198 cbench/openflow/hw-lib/nf2/nf2util.c 	struct stat buf;
+<a href='../S/223.html#L213'>buf</a>               213 cbench/openflow/hw-lib/nf2/nf2util.c 	if (stat(filename, &amp;buf) == 0)
+<a href='../S/223.html#L222'>buf</a>               222 cbench/openflow/hw-lib/nf2/nf2util.c 	if (stat(filename, &amp;buf) == 0)
+<a href='../S/907.html#L221'>buf</a>               221 cbench/openflow/lib/dynamic-string.c   const uint8_t *buf = buf_;
+<a href='../S/907.html#L242'>buf</a>               242 cbench/openflow/lib/dynamic-string.c                 buf[i - start], i == per_line / 2 - 1? '-' : ' ');
+<a href='../S/907.html#L251'>buf</a>               251 cbench/openflow/lib/dynamic-string.c               int c = buf[i - start];
+<a href='../S/907.html#L261'>buf</a>               261 cbench/openflow/lib/dynamic-string.c       buf += n;
+<a href='../S/851.html#L1432'>buf</a>              1432 cbench/openflow/lib/netdev.c         struct ofpbuf *buf;
+<a href='../S/851.html#L1435'>buf</a>              1435 cbench/openflow/lib/netdev.c         retval = nl_sock_recv(mon-&gt;sock, &amp;buf, false);
+<a href='../S/851.html#L1449'>buf</a>              1449 cbench/openflow/lib/netdev.c             if (!nl_policy_parse(buf, NLMSG_HDRLEN + sizeof(struct ifinfomsg),
+<a href='../S/851.html#L1456'>buf</a>              1456 cbench/openflow/lib/netdev.c             ofpbuf_delete(buf);
+<a href='../S/826.html#L277'>buf</a>               277 cbench/openflow/lib/netlink.c     struct ofpbuf *buf;
+<a href='../S/826.html#L290'>buf</a>               290 cbench/openflow/lib/netlink.c     buf = ofpbuf_new(bufsize);
+<a href='../S/826.html#L298'>buf</a>               298 cbench/openflow/lib/netlink.c     nlmsghdr = ofpbuf_put_uninit(buf, bufsize);
+<a href='../S/826.html#L305'>buf</a>               305 cbench/openflow/lib/netlink.c         ofpbuf_delete(buf);
+<a href='../S/826.html#L310'>buf</a>               310 cbench/openflow/lib/netlink.c         ofpbuf_reinit(buf, bufsize);
+<a href='../S/826.html#L313'>buf</a>               313 cbench/openflow/lib/netlink.c     buf-&gt;size = nbytes;
+<a href='../S/826.html#L327'>buf</a>               327 cbench/openflow/lib/netlink.c             ofpbuf_delete(buf);
+<a href='../S/826.html#L339'>buf</a>               339 cbench/openflow/lib/netlink.c         ofpbuf_delete(buf);
+<a href='../S/826.html#L342'>buf</a>               342 cbench/openflow/lib/netlink.c     *bufp = buf;
+<a href='../S/826.html#L343'>buf</a>               343 cbench/openflow/lib/netlink.c     log_nlmsg(__func__, 0, buf-&gt;data, buf-&gt;size);
+<a href='../S/825.html#L72'>buf</a>                72 cbench/openflow/lib/ofp-print.c     struct ofpbuf buf;
+<a href='../S/825.html#L80'>buf</a>                80 cbench/openflow/lib/ofp-print.c     buf.data = (void *) data;
+<a href='../S/825.html#L81'>buf</a>                81 cbench/openflow/lib/ofp-print.c     buf.size = len;
+<a href='../S/825.html#L89'>buf</a>                89 cbench/openflow/lib/ofp-print.c     pcap_write(pcap, &amp;buf);
+<a href='../S/903.html#L126'>buf</a>               126 cbench/openflow/lib/pcap.c     struct ofpbuf *buf;
+<a href='../S/903.html#L157'>buf</a>               157 cbench/openflow/lib/pcap.c     buf = ofpbuf_new(len);
+<a href='../S/903.html#L158'>buf</a>               158 cbench/openflow/lib/pcap.c     data = ofpbuf_put_uninit(buf, len);
+<a href='../S/903.html#L163'>buf</a>               163 cbench/openflow/lib/pcap.c         ofpbuf_delete(buf);
+<a href='../S/903.html#L166'>buf</a>               166 cbench/openflow/lib/pcap.c     *bufp = buf;
+<a href='../S/903.html#L171'>buf</a>               171 cbench/openflow/lib/pcap.c pcap_write(FILE *file, struct ofpbuf *buf)
+<a href='../S/903.html#L176'>buf</a>               176 cbench/openflow/lib/pcap.c     prh.incl_len = buf-&gt;size;
+<a href='../S/903.html#L177'>buf</a>               177 cbench/openflow/lib/pcap.c     prh.orig_len = buf-&gt;size;
+<a href='../S/903.html#L179'>buf</a>               179 cbench/openflow/lib/pcap.c     fwrite(buf-&gt;data, buf-&gt;size, 1, file);
+<a href='../S/918.html#L265'>buf</a>               265 cbench/openflow/lib/process.c         char buf[_POSIX_PIPE_BUF];
+<a href='../S/918.html#L266'>buf</a>               266 cbench/openflow/lib/process.c         read(fds[0], buf, sizeof buf);
+<a href='../S/871.html#L117'>buf</a>               117 cbench/openflow/lib/signals.c     char buf[_POSIX_PIPE_BUF];
+<a href='../S/871.html#L118'>buf</a>               118 cbench/openflow/lib/signals.c     read(fds[0], buf, sizeof buf);
+<a href='../S/878.html#L201'>buf</a>               201 cbench/openflow/lib/util.c   const uint8_t *buf = buf_;
+<a href='../S/878.html#L222'>buf</a>               222 cbench/openflow/lib/util.c                 buf[i - start], i == per_line / 2 - 1? '-' : ' ');
+<a href='../S/878.html#L231'>buf</a>               231 cbench/openflow/lib/util.c               int c = buf[i - start];
+<a href='../S/878.html#L241'>buf</a>               241 cbench/openflow/lib/util.c       buf += n;
+<a href='../S/890.html#L382'>buf</a>               382 cbench/openflow/lib/vlog-socket.c     char buf[CMSG_SPACE(sizeof cred)];
+<a href='../S/890.html#L397'>buf</a>               397 cbench/openflow/lib/vlog-socket.c     msg.msg_control = buf;
+<a href='../S/890.html#L398'>buf</a>               398 cbench/openflow/lib/vlog-socket.c     msg.msg_controllen = sizeof buf;
+<a href='../S/798.html#L85'>buf</a>                85 cbench/openflow/secchan/emerg-flow.c 	struct ofpbuf *buf = NULL;
+<a href='../S/798.html#L107'>buf</a>               107 cbench/openflow/secchan/emerg-flow.c 		(sizeof(*vxhdr) + sizeof(*vxopt), OFPT_VENDOR, &amp;buf);
+<a href='../S/798.html#L113'>buf</a>               113 cbench/openflow/secchan/emerg-flow.c 	error = rconn_send(context-&gt;local_rconn, buf, NULL);
+<a href='../S/204.html#L1229'>buf</a>              1229 cbench/openflow/udatapath/datapath.c     struct ofpbuf *buf = ofpbuf_new(size);
+<a href='../S/204.html#L1230'>buf</a>              1230 cbench/openflow/udatapath/datapath.c     struct ofp_header *reply = ofpbuf_put(buf, req, size);
+<a href='../S/204.html#L1233'>buf</a>              1233 cbench/openflow/udatapath/datapath.c     return buf;
+<a href='../S/333.html#L687'>buf</a>               687 cbench/openflow/utilities/dpctl.c     struct ofpbuf *buf;
+<a href='../S/333.html#L693'>buf</a>               693 cbench/openflow/utilities/dpctl.c     vxhdr = make_openflow(sizeof(*vxhdr) + sizeof(*vxopt), OFPT_VENDOR, &amp;buf);
+<a href='../S/333.html#L700'>buf</a>               700 cbench/openflow/utilities/dpctl.c     run(vconn_transact(vconn, buf, &amp;buf), "talking to %s", argv[1]);
+<a href='../S/333.html#L702'>buf</a>               702 cbench/openflow/utilities/dpctl.c     if (buf-&gt;size &lt; sizeof(*vxhdr)) {
+<a href='../S/333.html#L703'>buf</a>               703 cbench/openflow/utilities/dpctl.c         ofp_fatal(0, "short reply (%zu bytes)", buf-&gt;size);
+<a href='../S/333.html#L706'>buf</a>               706 cbench/openflow/utilities/dpctl.c     vxhdr = buf-&gt;data;
+<a href='../S/333.html#L709'>buf</a>               709 cbench/openflow/utilities/dpctl.c         ofp_print(stderr, buf-&gt;data, buf-&gt;size, 2);
+<a href='../S/333.html#L715'>buf</a>               715 cbench/openflow/utilities/dpctl.c         ofp_print(stderr, buf-&gt;data, buf-&gt;size, 2);
+<a href='../S/333.html#L1347'>buf</a>              1347 cbench/openflow/utilities/dpctl.c     struct ofpbuf *buf;
+<a href='../S/333.html#L1349'>buf</a>              1349 cbench/openflow/utilities/dpctl.c     psr = alloc_stats_request(sizeof(*psr), OFPST_PORT, &amp;buf);
+<a href='../S/333.html#L1353'>buf</a>              1353 cbench/openflow/utilities/dpctl.c     dump_stats_transaction(argv[1], buf);
+<a href='../S/333.html#L1676'>buf</a>              1676 cbench/openflow/utilities/dpctl.c     struct ofpbuf *buf;
+<a href='../S/333.html#L1679'>buf</a>              1679 cbench/openflow/utilities/dpctl.c                             &amp;buf);
+<a href='../S/333.html#L1681'>buf</a>              1681 cbench/openflow/utilities/dpctl.c     dump_transaction(vconn_name, buf);
+<a href='../S/357.html#L116'>buf</a>               116 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/addr_resolv.h void get_addr_name_buf(address *addr, gchar *buf, guint size);
+<a href='../S/364.html#L33'>buf</a>                33 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/adler32.h unsigned long update_adler32(unsigned long adler, const unsigned char *buf, int len);
+<a href='../S/364.html#L34'>buf</a>                34 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/adler32.h unsigned long adler32_bytes(const unsigned char *buf, int len);
+<a href='../S/364.html#L35'>buf</a>                35 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/adler32.h unsigned long adler32_str(const char *buf);
+<a href='../S/390.html#L57'>buf</a>                57 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/atalk-utils.h 				  gchar *buf, int buf_len);
+<a href='../S/416.html#L32'>buf</a>                32 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/charsets.h void ASCII_to_EBCDIC(guint8 *buf, guint bytes);
+<a href='../S/416.html#L35'>buf</a>                35 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/charsets.h void EBCDIC_to_ASCII(guint8 *buf, guint bytes);
+<a href='../S/401.html#L49'>buf</a>                49 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crc16.h extern guint16 crc16_ccitt(const guint8 *buf, guint len);
+<a href='../S/401.html#L55'>buf</a>                55 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crc16.h extern guint16 crc16_x25_ccitt(const guint8 *buf, guint len);
+<a href='../S/401.html#L64'>buf</a>                64 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crc16.h extern guint16 crc16_ccitt_seed(const guint8 *buf, guint len, guint16 seed);
+<a href='../S/392.html#L40'>buf</a>                40 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crc32.h extern guint32 crc32_ccitt(const guint8 *buf, guint len);
+<a href='../S/392.html#L49'>buf</a>                49 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crc32.h extern guint32 crc32_ccitt_seed(const guint8 *buf, guint len, guint32 seed);
+<a href='../S/436.html#L40'>buf</a>                40 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/crypt-md5.h 	guint32 buf[4];
+<a href='../S/437.html#L42'>buf</a>                42 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/crypt-sha1.h void sha1_hmac( const guint8 *key, guint32 keylen, const guint8 *buf, guint32 buflen,
+<a href='../S/493.html#L296'>buf</a>               296 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/ftypes/ftypes.h fvalue_to_string_repr(fvalue_t *fv, ftrepr_t rtype, char *buf);
+<a href='../S/380.html#L54'>buf</a>                54 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/ipv4.h void ipv4_addr_str_buf(const ipv4_addr *ipv4, gchar *buf);
+<a href='../S/418.html#L39'>buf</a>                39 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/sna-utils.h extern void sna_fid_to_str_buf(const address *addr, gchar *buf, int buf_len);
+<a href='../S/475.html#L57'>buf</a>                57 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/to_str.h extern void     address_to_str_buf(const address *addr, gchar *buf, int buf_len);
+<a href='../S/475.html#L61'>buf</a>                61 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/to_str.h extern void	ip_to_str_buf(const guint8 *ad, gchar *buf, int buf_len);
+<a href='../S/475.html#L70'>buf</a>                70 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/to_str.h extern void	vines_addr_to_str_buf(const guint8 *addrp, gchar *buf, int buf_len);
+<a href='../S/475.html#L83'>buf</a>                83 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/to_str.h void tipc_addr_to_str_buf( const guint8 *data, gchar *buf, int buf_len);
+<a href='../S/475.html#L85'>buf</a>                85 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/to_str.h extern char	*other_decode_bitfield_value(char *buf, guint32 val, guint32 mask,
+<a href='../S/475.html#L87'>buf</a>                87 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/to_str.h extern char	*decode_bitfield_value(char *buf, guint32 val, guint32 mask,
+<a href='../S/373.html#L295'>buf</a>               295 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h char* uat_esc(const char* buf, guint len);
+<a href='../S/373.html#L324'>buf</a>               324 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h static void basename ## _ ## field_name ## _set_cb(void* rec, const char* buf, unsigned len, void* u1 _U_, void* u2 _U_) {\
+<a href='../S/373.html#L326'>buf</a>               326 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h 	(((rec_t*)rec)-&gt;field_name) = g_strndup(buf,len); } \
+<a href='../S/373.html#L346'>buf</a>               346 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h static void basename ## _ ## field_name ## _set_cb(void* rec, const char* buf, unsigned len, void* u1 _U_, void* u2 _U_) {\
+<a href='../S/373.html#L348'>buf</a>               348 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h 	(((rec_t*)rec)-&gt;ptr_element) = uat_unesc(buf,len,&amp;(((rec_t*)rec)-&gt;len_element)); }\
+<a href='../S/373.html#L367'>buf</a>               367 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h static void basename ## _ ## field_name ## _set_cb(void* rec, const char* buf, unsigned len, void* u1 _U_, void* u2 _U_) {\
+<a href='../S/373.html#L369'>buf</a>               369 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h 			(((rec_t*)rec)-&gt;ptr_element) = len ? g_memdup(buf,len) : NULL; \
+<a href='../S/373.html#L384'>buf</a>               384 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h static void basename ## _ ## field_name ## _set_cb(void* rec, const char* buf, unsigned len, void* u1 _U_, void* u2 _U_) {\
+<a href='../S/373.html#L385'>buf</a>               385 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h 	((rec_t*)rec)-&gt;field_name = strtol(ep_strndup(buf,len),NULL,10); } \
+<a href='../S/373.html#L399'>buf</a>               399 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h static void basename ## _ ## field_name ## _set_cb(void* rec, const char* buf, unsigned len, void* u1 _U_, void* u2 _U_) {\
+<a href='../S/373.html#L400'>buf</a>               400 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h 	((rec_t*)rec)-&gt;field_name = strtol(ep_strndup(buf,len),NULL,16); } \
+<a href='../S/373.html#L417'>buf</a>               417 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h static void basename ## _ ## field_name ## _set_cb(void* rec, const char* buf, unsigned len, void* vs, void* u2 _U_) {\
+<a href='../S/373.html#L419'>buf</a>               419 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h 	char* str = ep_strndup(buf,len); \
+<a href='../S/373.html#L442'>buf</a>               442 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h static void basename ## _ ## field_name ## _set_cb(void* rec, const char* buf, unsigned len, void* u1 _U_, void* u2 _U_) {\
+<a href='../S/373.html#L444'>buf</a>               444 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h 		((rec_t*)rec)-&gt;name_field = ep_strndup(buf,len); g_strdown(((rec_t*)rec)-&gt;name_field ); g_strchug(((rec_t*)rec)-&gt;name_field); \
+<a href='../S/373.html#L466'>buf</a>               466 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h static void basename ## _ ## field_name ## _set_cb(void* rec, const char* buf, unsigned len, void* u1 _U_, void* u2) {\
+<a href='../S/373.html#L467'>buf</a>               467 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/uat.h 	char* rng = ep_strndup(buf,len);\
+<a href='../S/362.html#L666'>buf</a>               666 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/xmlstub.h     xmlParserInputBufferPtr buf;      /* UTF-8 encoded buffer */
+<a href='../S/520.html#L53'>buf</a>                53 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/file_util.h extern int eth_stdio_stat (const gchar *filename, struct stat *buf);
+<a href='../S/529.html#L36'>buf</a>                36 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/file_wrappers.h #define file_read(buf, bsize, count, file) gzread((file),(buf),((count)*(bsize)))
+<a href='../S/529.html#L37'>buf</a>                37 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/file_wrappers.h #define file_write(buf, bsize, count, file) gzwrite((file),(buf),((count)*(bsize)))
+<a href='../S/529.html#L40'>buf</a>                40 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/file_wrappers.h #define file_gets(buf, len, file) gzgets((file), (buf), (len))
+<a href='../S/529.html#L48'>buf</a>                48 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/file_wrappers.h #define file_read(buf, bsize, count, file) ((bsize) * fread((buf), (bsize), (count), (file)))
+<a href='../S/529.html#L49'>buf</a>                49 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/file_wrappers.h #define file_write(buf, bsize, count, file) ((bsize) * fwrite((buf), (bsize), (count), (file)))
+<a href='../S/543.html#L48'>buf</a>                48 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap-int.h 	unsigned char *buf;	/* buffer into which we uncompress data */
+<a href='../S/543.html#L278'>buf</a>               278 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap-int.h extern size_t wtap_dump_file_write(wtap_dumper *wdh, const void *buf, unsigned bufsize);
+<a href='../S/999.html#L71'>buf</a>                71 components/resource_mgmt.c         char buf[__CONF_STR_LEN] = {0};
+<a href='../S/999.html#L91'>buf</a>                91 components/resource_mgmt.c         snprintf(buf, __CONF_STR_LEN-1, "%s %s - CPU %6.2lf MEM %6.2lf", day, sec, rs.cpu, rs.mem);
+<a href='../S/999.html#L97'>buf</a>                97 components/resource_mgmt.c             fprintf(fp, "%s\n", buf);
+<a href='../S/1003.html#L74'>buf</a>                74 components/traffic_mgmt.c         char now[__CONF_WORD_LEN] = {0}, buf[__CONF_STR_LEN] = {0};
+<a href='../S/1003.html#L91'>buf</a>                91 components/traffic_mgmt.c         snprintf(buf, __CONF_STR_LEN-1, 
+<a href='../S/1003.html#L97'>buf</a>                97 components/traffic_mgmt.c             fprintf(fp, "%s\n", buf);
+<a href='../S/1064.html#L156'>buf</a>               156 ext_applications/l2_learning/shim/include/common.h #define cli_bufcls(buf) memset(buf, 0, sizeof(buf))
+<a href='../S/1064.html#L157'>buf</a>               157 ext_applications/l2_learning/shim/include/common.h #define cli_buffer(buf, format, args...) sprintf(&amp;buf[strlen(buf)], format, ##args)
+<a href='../S/1064.html#L158'>buf</a>               158 ext_applications/l2_learning/shim/include/common.h #define cli_bufprt(cli, buf) cli_print(cli, "%s", buf)
+<a href='../S/1046.html#L156'>buf</a>               156 ext_applications/l2_shortest/shim/include/common.h #define cli_bufcls(buf) memset(buf, 0, sizeof(buf))
+<a href='../S/1046.html#L157'>buf</a>               157 ext_applications/l2_shortest/shim/include/common.h #define cli_buffer(buf, format, args...) sprintf(&amp;buf[strlen(buf)], format, ##args)
+<a href='../S/1046.html#L158'>buf</a>               158 ext_applications/l2_shortest/shim/include/common.h #define cli_bufprt(cli, buf) cli_print(cli, "%s", buf)
+<a href='../S/1035.html#L156'>buf</a>               156 ext_applications/shim/include/common.h #define cli_bufcls(buf) memset(buf, 0, sizeof(buf))
+<a href='../S/1035.html#L157'>buf</a>               157 ext_applications/shim/include/common.h #define cli_buffer(buf, format, args...) sprintf(&amp;buf[strlen(buf)], format, ##args)
+<a href='../S/1035.html#L158'>buf</a>               158 ext_applications/shim/include/common.h #define cli_bufprt(cli, buf) cli_print(cli, "%s", buf)
+<a href='../S/1090.html#L70'>buf</a>                70 libraries/libcli/libcli.c static ssize_t _write(int fd, const void *buf, size_t count)
+<a href='../S/1090.html#L76'>buf</a>                76 libraries/libcli/libcli.c         thisTime = write(fd, (char*)buf + written, count - written);
+<a href='../S/1090.html#L1824'>buf</a>              1824 libraries/libcli/libcli.c     char buf[CLI_MAX_LINE_LENGTH];
+<a href='../S/1090.html#L1832'>buf</a>              1832 libraries/libcli/libcli.c         if (fgets(buf, CLI_MAX_LINE_LENGTH - 1, fh) == NULL)
+<a href='../S/1090.html#L1835'>buf</a>              1835 libraries/libcli/libcli.c         if ((p = strpbrk(buf, "#\r\n")))
+<a href='../S/1090.html#L1838'>buf</a>              1838 libraries/libcli/libcli.c         cmd = buf;
+<a href='../S/1011.html#L156'>buf</a>               156 resource/src/include/common.h #define cli_bufcls(buf) memset(buf, 0, sizeof(buf))
+<a href='../S/1011.html#L157'>buf</a>               157 resource/src/include/common.h #define cli_buffer(buf, format, args...) sprintf(&amp;buf[strlen(buf)], format, ##args)
+<a href='../S/1011.html#L158'>buf</a>               158 resource/src/include/common.h #define cli_bufprt(cli, buf) cli_print(cli, "%s", buf)
+<a href='../S/1014.html#L39'>buf</a>                39 resource/src/rsm.c         char buf[__CONF_WORD_LEN] = {0};
+<a href='../S/1014.html#L63'>buf</a>                63 resource/src/rsm.c         sprintf(buf, "%s %lf %lf", now, cpu, mem);
+<a href='../S/1014.html#L67'>buf</a>                67 resource/src/rsm.c             fprintf(fp, "%s", buf);
+<a href='../S/949.html#L156'>buf</a>               156 southbound/src/include/common.h #define cli_bufcls(buf) memset(buf, 0, sizeof(buf))
+<a href='../S/949.html#L157'>buf</a>               157 southbound/src/include/common.h #define cli_buffer(buf, format, args...) sprintf(&amp;buf[strlen(buf)], format, ##args)
+<a href='../S/949.html#L158'>buf</a>               158 southbound/src/include/common.h #define cli_bufprt(cli, buf) cli_print(cli, "%s", buf)
+<a href='../S/933.html#L69'>buf</a>                69 src/application.c     char buf[__CONF_STR_LEN];
+<a href='../S/933.html#L71'>buf</a>                71 src/application.c     cli_bufcls(buf);
+<a href='../S/933.html#L72'>buf</a>                72 src/application.c     cli_buffer(buf, "  ");
+<a href='../S/933.html#L77'>buf</a>                77 src/application.c             cli_buffer(buf, "%s ", app_ctx-&gt;av_list[id][i]-&gt;name);
+<a href='../S/933.html#L79'>buf</a>                79 src/application.c             cli_buffer(buf, "(%s) ", app_ctx-&gt;av_list[id][i]-&gt;name);
+<a href='../S/933.html#L83'>buf</a>                83 src/application.c     cli_bufprt(cli, buf);
+<a href='../S/933.html#L169'>buf</a>               169 src/application.c             char buf[__CONF_STR_LEN];
+<a href='../S/933.html#L171'>buf</a>               171 src/application.c             cli_bufcls(buf);
+<a href='../S/933.html#L172'>buf</a>               172 src/application.c             cli_buffer(buf, "  %s: ", app_event_string[i]);
+<a href='../S/933.html#L178'>buf</a>               178 src/application.c                     cli_buffer(buf, "%s ", c-&gt;name);
+<a href='../S/933.html#L180'>buf</a>               180 src/application.c                     cli_buffer(buf, "(%s) ", c-&gt;name);
+<a href='../S/933.html#L184'>buf</a>               184 src/application.c             cli_bufprt(cli, buf);
+<a href='../S/933.html#L199'>buf</a>               199 src/application.c     char buf[__CONF_STR_LEN];
+<a href='../S/933.html#L201'>buf</a>               201 src/application.c     cli_bufcls(buf);
+<a href='../S/933.html#L202'>buf</a>               202 src/application.c     cli_buffer(buf, "%2d: %s", c-&gt;id+1, c-&gt;name);
+<a href='../S/933.html#L205'>buf</a>               205 src/application.c         cli_buffer(buf, " (");
+<a href='../S/933.html#L207'>buf</a>               207 src/application.c             cli_buffer(buf, "disabled");
+<a href='../S/933.html#L209'>buf</a>               209 src/application.c             cli_buffer(buf, ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
+<a href='../S/933.html#L211'>buf</a>               211 src/application.c             cli_buffer(buf, ANSI_COLOR_BLUE "enabled" ANSI_COLOR_RESET);
+<a href='../S/933.html#L212'>buf</a>               212 src/application.c         cli_buffer(buf, ")");
+<a href='../S/933.html#L214'>buf</a>               214 src/application.c         cli_bufprt(cli, buf);
+<a href='../S/933.html#L218'>buf</a>               218 src/application.c         cli_bufprt(cli, buf);
+<a href='../S/933.html#L221'>buf</a>               221 src/application.c     cli_bufcls(buf);
+<a href='../S/933.html#L222'>buf</a>               222 src/application.c     cli_buffer(buf, "    Arguments: ");
+<a href='../S/933.html#L226'>buf</a>               226 src/application.c         cli_buffer(buf, "%s ", c-&gt;argv[i]);
+<a href='../S/933.html#L228'>buf</a>               228 src/application.c     cli_bufprt(cli, buf);
+<a href='../S/933.html#L249'>buf</a>               249 src/application.c     cli_bufcls(buf);
+<a href='../S/933.html#L250'>buf</a>               250 src/application.c     cli_buffer(buf, "    Permission: ");
+<a href='../S/933.html#L252'>buf</a>               252 src/application.c     if (c-&gt;perm &amp; APP_READ) cli_buffer(buf, "r");
+<a href='../S/933.html#L253'>buf</a>               253 src/application.c     if (c-&gt;perm &amp; APP_WRITE) cli_buffer(buf, "w");
+<a href='../S/933.html#L254'>buf</a>               254 src/application.c     if (c-&gt;perm &amp; APP_EXECUTE) cli_buffer(buf, "x");
+<a href='../S/933.html#L256'>buf</a>               256 src/application.c     cli_bufprt(cli, buf);
+<a href='../S/933.html#L265'>buf</a>               265 src/application.c     cli_bufcls(buf);
+<a href='../S/933.html#L266'>buf</a>               266 src/application.c     cli_buffer(buf, "    Inbounds: ");
+<a href='../S/933.html#L269'>buf</a>               269 src/application.c         cli_buffer(buf, "%s(%d) ", app_event_string[c-&gt;in_list[i]], c-&gt;in_list[i]);
+<a href='../S/933.html#L272'>buf</a>               272 src/application.c     cli_bufprt(cli, buf);
+<a href='../S/933.html#L274'>buf</a>               274 src/application.c     cli_bufcls(buf);
+<a href='../S/933.html#L275'>buf</a>               275 src/application.c     cli_buffer(buf, "    Outbounds: ");
+<a href='../S/933.html#L278'>buf</a>               278 src/application.c         cli_buffer(buf, "%s(%d) ", app_event_string[c-&gt;out_list[i]], c-&gt;out_list[i]);
+<a href='../S/933.html#L281'>buf</a>               281 src/application.c     cli_bufprt(cli, buf);
+<a href='../S/933.html#L1152'>buf</a>              1152 src/application.c             char buf[__CONF_STR_LEN];
+<a href='../S/933.html#L1154'>buf</a>              1154 src/application.c             cli_bufcls(buf);
+<a href='../S/933.html#L1155'>buf</a>              1155 src/application.c             cli_buffer(buf, "    Datapath ID: ");
+<a href='../S/933.html#L1161'>buf</a>              1161 src/application.c                 cli_buffer(buf, "%lu ", c-&gt;odp[i].dpid[j]);
+<a href='../S/933.html#L1164'>buf</a>              1164 src/application.c             cli_bufprt(cli, buf);
+<a href='../S/933.html#L1168'>buf</a>              1168 src/application.c             char buf[__CONF_STR_LEN];
+<a href='../S/933.html#L1170'>buf</a>              1170 src/application.c             cli_bufcls(buf);
+<a href='../S/933.html#L1171'>buf</a>              1171 src/application.c             cli_buffer(buf, "    Port: ");
+<a href='../S/933.html#L1177'>buf</a>              1177 src/application.c                 cli_buffer(buf, "%u ", c-&gt;odp[i].port[j]);
+<a href='../S/933.html#L1180'>buf</a>              1180 src/application.c             cli_bufprt(cli, buf);
+<a href='../S/933.html#L1184'>buf</a>              1184 src/application.c             char buf[__CONF_STR_LEN];
+<a href='../S/933.html#L1186'>buf</a>              1186 src/application.c             cli_bufcls(buf);
+<a href='../S/933.html#L1187'>buf</a>              1187 src/application.c             cli_buffer(buf, "    Protocol: ");
+<a href='../S/933.html#L1190'>buf</a>              1190 src/application.c                 cli_buffer(buf, "IPv4 ");
+<a href='../S/933.html#L1192'>buf</a>              1192 src/application.c                 cli_buffer(buf, "TCP ");
+<a href='../S/933.html#L1194'>buf</a>              1194 src/application.c                 cli_buffer(buf, "UDP ");
+<a href='../S/933.html#L1196'>buf</a>              1196 src/application.c                 cli_buffer(buf, "ICMP ");
+<a href='../S/933.html#L1198'>buf</a>              1198 src/application.c                 cli_buffer(buf, "ARP ");
+<a href='../S/933.html#L1200'>buf</a>              1200 src/application.c                 cli_buffer(buf, "LLDP ");
+<a href='../S/933.html#L1202'>buf</a>              1202 src/application.c             cli_bufprt(cli, buf);
+<a href='../S/933.html#L1206'>buf</a>              1206 src/application.c             char buf[__CONF_STR_LEN];
+<a href='../S/933.html#L1208'>buf</a>              1208 src/application.c             cli_bufcls(buf);
+<a href='../S/933.html#L1209'>buf</a>              1209 src/application.c             cli_buffer(buf, "    Source IP: ");
+<a href='../S/933.html#L1217'>buf</a>              1217 src/application.c                 cli_buffer(buf, "%s ", inet_ntoa(ip));
+<a href='../S/933.html#L1220'>buf</a>              1220 src/application.c             cli_bufprt(cli, buf);
+<a href='../S/933.html#L1224'>buf</a>              1224 src/application.c             char buf[__CONF_STR_LEN];
+<a href='../S/933.html#L1226'>buf</a>              1226 src/application.c             cli_bufcls(buf);
+<a href='../S/933.html#L1227'>buf</a>              1227 src/application.c             cli_buffer(buf, "    Destination IP: ");
+<a href='../S/933.html#L1235'>buf</a>              1235 src/application.c                 cli_buffer(buf, "%s ", inet_ntoa(ip));
+<a href='../S/933.html#L1238'>buf</a>              1238 src/application.c             cli_bufprt(cli, buf);
+<a href='../S/933.html#L1242'>buf</a>              1242 src/application.c             char buf[__CONF_STR_LEN];
+<a href='../S/933.html#L1244'>buf</a>              1244 src/application.c             cli_bufcls(buf);
+<a href='../S/933.html#L1245'>buf</a>              1245 src/application.c             cli_buffer(buf, "    Source port: ");
+<a href='../S/933.html#L1251'>buf</a>              1251 src/application.c                 cli_buffer(buf, "%u ", c-&gt;odp[i].sport[j]);
+<a href='../S/933.html#L1254'>buf</a>              1254 src/application.c             cli_bufprt(cli, buf);
+<a href='../S/933.html#L1258'>buf</a>              1258 src/application.c             char buf[__CONF_STR_LEN];
+<a href='../S/933.html#L1260'>buf</a>              1260 src/application.c             cli_bufcls(buf);
+<a href='../S/933.html#L1261'>buf</a>              1261 src/application.c             cli_buffer(buf, "    Destination port: ");
+<a href='../S/933.html#L1267'>buf</a>              1267 src/application.c                 cli_buffer(buf, "%u ", c-&gt;odp[i].dport[j]);
+<a href='../S/933.html#L1270'>buf</a>              1270 src/application.c             cli_bufprt(cli, buf);
+<a href='../S/935.html#L171'>buf</a>               171 src/cli.c              char buf[__CONF_STR_LEN] = {0};
+<a href='../S/935.html#L175'>buf</a>               175 src/cli.c              while (fgets(buf, __CONF_STR_LEN-1, fp) != NULL) {
+<a href='../S/935.html#L176'>buf</a>               176 src/cli.c                  if (buf[0] == '#') continue;
+<a href='../S/935.html#L181'>buf</a>               181 src/cli.c                  str2args(buf, &amp;cnt, args, __CONF_ARGC);
+<a href='../S/935.html#L930'>buf</a>               930 src/cli.c                  char buf[__CONF_STR_LEN] = {0};
+<a href='../S/935.html#L934'>buf</a>               934 src/cli.c                  while (fgets(buf, __CONF_STR_LEN-1, fp) != NULL) {
+<a href='../S/935.html#L935'>buf</a>               935 src/cli.c                      if (buf[0] == '#') continue;
+<a href='../S/935.html#L940'>buf</a>               940 src/cli.c                      str2args(buf, &amp;cnt, args, __CONF_ARGC);
+<a href='../S/934.html#L57'>buf</a>                57 src/component.c     char buf[__CONF_STR_LEN];
+<a href='../S/934.html#L59'>buf</a>                59 src/component.c     cli_bufcls(buf);
+<a href='../S/934.html#L60'>buf</a>                60 src/component.c     cli_buffer(buf, "  ");
+<a href='../S/934.html#L65'>buf</a>                65 src/component.c             cli_buffer(buf, "%s ", compnt_ctx-&gt;ev_list[id][i]-&gt;name);
+<a href='../S/934.html#L67'>buf</a>                67 src/component.c             cli_buffer(buf, "(%s) ", compnt_ctx-&gt;ev_list[id][i]-&gt;name);
+<a href='../S/934.html#L71'>buf</a>                71 src/component.c     cli_bufprt(cli, buf);
+<a href='../S/934.html#L157'>buf</a>               157 src/component.c             char buf[__CONF_STR_LEN];
+<a href='../S/934.html#L159'>buf</a>               159 src/component.c             cli_bufcls(buf);
+<a href='../S/934.html#L160'>buf</a>               160 src/component.c             cli_buffer(buf, "  %s: ", event_string[i]);
+<a href='../S/934.html#L166'>buf</a>               166 src/component.c                     cli_buffer(buf, "%s ", c-&gt;name);
+<a href='../S/934.html#L168'>buf</a>               168 src/component.c                     cli_buffer(buf, "(%s) ", c-&gt;name);
+<a href='../S/934.html#L172'>buf</a>               172 src/component.c             cli_bufprt(cli, buf);
+<a href='../S/934.html#L187'>buf</a>               187 src/component.c     char buf[__CONF_STR_LEN];
+<a href='../S/934.html#L189'>buf</a>               189 src/component.c     cli_bufcls(buf);
+<a href='../S/934.html#L190'>buf</a>               190 src/component.c     cli_buffer(buf, "%2d: %s", c-&gt;id+1, c-&gt;name);
+<a href='../S/934.html#L193'>buf</a>               193 src/component.c         cli_buffer(buf, " (");
+<a href='../S/934.html#L195'>buf</a>               195 src/component.c             cli_buffer(buf, "disabled");
+<a href='../S/934.html#L197'>buf</a>               197 src/component.c             cli_buffer(buf, ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
+<a href='../S/934.html#L199'>buf</a>               199 src/component.c             cli_buffer(buf, ANSI_COLOR_BLUE "enabled" ANSI_COLOR_RESET);
+<a href='../S/934.html#L200'>buf</a>               200 src/component.c         cli_buffer(buf, ")");
+<a href='../S/934.html#L202'>buf</a>               202 src/component.c         cli_bufprt(cli, buf);
+<a href='../S/934.html#L206'>buf</a>               206 src/component.c         cli_bufprt(cli, buf);
+<a href='../S/934.html#L209'>buf</a>               209 src/component.c     cli_bufcls(buf);
+<a href='../S/934.html#L210'>buf</a>               210 src/component.c     cli_buffer(buf, "    Arguments: ");
+<a href='../S/934.html#L214'>buf</a>               214 src/component.c         cli_buffer(buf, "%s ", c-&gt;argv[i]);
+<a href='../S/934.html#L216'>buf</a>               216 src/component.c     cli_bufprt(cli, buf);
+<a href='../S/934.html#L241'>buf</a>               241 src/component.c     cli_bufcls(buf);
+<a href='../S/934.html#L242'>buf</a>               242 src/component.c     cli_buffer(buf, "    Permission: ");
+<a href='../S/934.html#L244'>buf</a>               244 src/component.c     if (c-&gt;perm &amp; COMPNT_READ) cli_buffer(buf, "r");
+<a href='../S/934.html#L245'>buf</a>               245 src/component.c     if (c-&gt;perm &amp; COMPNT_WRITE) cli_buffer(buf, "w");
+<a href='../S/934.html#L246'>buf</a>               246 src/component.c     if (c-&gt;perm &amp; COMPNT_EXECUTE) cli_buffer(buf, "x");
+<a href='../S/934.html#L248'>buf</a>               248 src/component.c     cli_bufprt(cli, buf);
+<a href='../S/934.html#L257'>buf</a>               257 src/component.c     cli_bufcls(buf);
+<a href='../S/934.html#L258'>buf</a>               258 src/component.c     cli_buffer(buf, "    Inbounds: ");
+<a href='../S/934.html#L261'>buf</a>               261 src/component.c         cli_buffer(buf, "%s(%d) ", event_string[c-&gt;in_list[i]], c-&gt;in_list[i]);
+<a href='../S/934.html#L264'>buf</a>               264 src/component.c     cli_bufprt(cli, buf);
+<a href='../S/934.html#L266'>buf</a>               266 src/component.c     cli_bufcls(buf);
+<a href='../S/934.html#L267'>buf</a>               267 src/component.c     cli_buffer(buf, "    Outbounds: ");
+<a href='../S/934.html#L270'>buf</a>               270 src/component.c         cli_buffer(buf, "%s(%d) ", event_string[c-&gt;out_list[i]], c-&gt;out_list[i]);
+<a href='../S/934.html#L273'>buf</a>               273 src/component.c     cli_bufprt(cli, buf);
+<a href='../S/934.html#L1020'>buf</a>              1020 src/component.c             char buf[__CONF_STR_LEN];
+<a href='../S/934.html#L1022'>buf</a>              1022 src/component.c             cli_bufcls(buf);
+<a href='../S/934.html#L1023'>buf</a>              1023 src/component.c             cli_buffer(buf, "    Datapath ID: ");
+<a href='../S/934.html#L1029'>buf</a>              1029 src/component.c                 cli_buffer(buf, "%lu ", c-&gt;odp[i].dpid[j]);
+<a href='../S/934.html#L1032'>buf</a>              1032 src/component.c             cli_bufprt(cli, buf);
+<a href='../S/934.html#L1036'>buf</a>              1036 src/component.c             char buf[__CONF_STR_LEN];
+<a href='../S/934.html#L1038'>buf</a>              1038 src/component.c             cli_bufcls(buf);
+<a href='../S/934.html#L1039'>buf</a>              1039 src/component.c             cli_buffer(buf, "    Port: ");
+<a href='../S/934.html#L1045'>buf</a>              1045 src/component.c                 cli_buffer(buf, "%u ", c-&gt;odp[i].port[j]);
+<a href='../S/934.html#L1048'>buf</a>              1048 src/component.c             cli_bufprt(cli, buf);
+<a href='../S/934.html#L1052'>buf</a>              1052 src/component.c             char buf[__CONF_STR_LEN];
+<a href='../S/934.html#L1054'>buf</a>              1054 src/component.c             cli_bufcls(buf);
+<a href='../S/934.html#L1055'>buf</a>              1055 src/component.c             cli_buffer(buf, "    Protocol: ");
+<a href='../S/934.html#L1058'>buf</a>              1058 src/component.c                 cli_buffer(buf, "IPv4 ");
+<a href='../S/934.html#L1060'>buf</a>              1060 src/component.c                 cli_buffer(buf, "TCP ");
+<a href='../S/934.html#L1062'>buf</a>              1062 src/component.c                 cli_buffer(buf, "UDP ");
+<a href='../S/934.html#L1064'>buf</a>              1064 src/component.c                 cli_buffer(buf, "ICMP ");
+<a href='../S/934.html#L1066'>buf</a>              1066 src/component.c                 cli_buffer(buf, "ARP ");
+<a href='../S/934.html#L1068'>buf</a>              1068 src/component.c                 cli_buffer(buf, "LLDP ");
+<a href='../S/934.html#L1070'>buf</a>              1070 src/component.c             cli_bufprt(cli, buf);
+<a href='../S/934.html#L1074'>buf</a>              1074 src/component.c             char buf[__CONF_STR_LEN];
+<a href='../S/934.html#L1076'>buf</a>              1076 src/component.c             cli_bufcls(buf);
+<a href='../S/934.html#L1077'>buf</a>              1077 src/component.c             cli_buffer(buf, "    Source IP: ");
+<a href='../S/934.html#L1085'>buf</a>              1085 src/component.c                 cli_buffer(buf, "%s ", inet_ntoa(ip));
+<a href='../S/934.html#L1088'>buf</a>              1088 src/component.c             cli_bufprt(cli, buf);
+<a href='../S/934.html#L1092'>buf</a>              1092 src/component.c             char buf[__CONF_STR_LEN];
+<a href='../S/934.html#L1094'>buf</a>              1094 src/component.c             cli_bufcls(buf);
+<a href='../S/934.html#L1095'>buf</a>              1095 src/component.c             cli_buffer(buf, "    Destination IP: ");
+<a href='../S/934.html#L1103'>buf</a>              1103 src/component.c                 cli_buffer(buf, "%s ", inet_ntoa(ip));
+<a href='../S/934.html#L1106'>buf</a>              1106 src/component.c             cli_bufprt(cli, buf);
+<a href='../S/934.html#L1110'>buf</a>              1110 src/component.c             char buf[__CONF_STR_LEN];
+<a href='../S/934.html#L1112'>buf</a>              1112 src/component.c             cli_bufcls(buf);
+<a href='../S/934.html#L1113'>buf</a>              1113 src/component.c             cli_buffer(buf, "    Source port: ");
+<a href='../S/934.html#L1119'>buf</a>              1119 src/component.c                 cli_buffer(buf, "%u ", c-&gt;odp[i].sport[j]);
+<a href='../S/934.html#L1122'>buf</a>              1122 src/component.c             cli_bufprt(cli, buf);
+<a href='../S/934.html#L1126'>buf</a>              1126 src/component.c             char buf[__CONF_STR_LEN];
+<a href='../S/934.html#L1128'>buf</a>              1128 src/component.c             cli_bufcls(buf);
+<a href='../S/934.html#L1129'>buf</a>              1129 src/component.c             cli_buffer(buf, "    Destination port: ");
+<a href='../S/934.html#L1135'>buf</a>              1135 src/component.c                 cli_buffer(buf, "%u ", c-&gt;odp[i].dport[j]);
+<a href='../S/934.html#L1138'>buf</a>              1138 src/component.c             cli_bufprt(cli, buf);
+<a href='../S/924.html#L156'>buf</a>               156 src/include/common.h #define cli_bufcls(buf) memset(buf, 0, sizeof(buf))
+<a href='../S/924.html#L157'>buf</a>               157 src/include/common.h #define cli_buffer(buf, format, args...) sprintf(&amp;buf[strlen(buf)], format, ##args)
+<a href='../S/924.html#L158'>buf</a>               158 src/include/common.h #define cli_bufprt(cli, buf) cli_print(cli, "%s", buf)
+<a href='../S/946.html#L23'>buf</a>                23 util/str.c     #define LINE_FOREACH(line, llen, buf, blen) \
+<a href='../S/946.html#L24'>buf</a>                24 util/str.c         for(line = buf, \
+<a href='../S/946.html#L25'>buf</a>                25 util/str.c                 llen = ((strchr(line, '\n') == NULL) ? (buf + blen - line) \
+<a href='../S/946.html#L27'>buf</a>                27 util/str.c                 line + llen &lt; buf + blen; \
+<a href='../S/946.html#L29'>buf</a>                29 util/str.c                 llen = ((strchr(line, '\n') == NULL) ? (buf + blen - line) \
+</pre>
+</body>
+</html>

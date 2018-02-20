@@ -1,0 +1,214 @@
+<html>
+<head>
+<title>cbench/openflow/include/openflow/nicira-ext.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1138.html'>include</a>/<a href='../files/1139.html'>openflow</a>/nicira-ext.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/173.html' title='Multiple included from 14 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * Distributed under the terms of the GNU GPL version 2.</font></i>
+<a name='L3'>   3 <i><font color='green'> * Copyright (c) 2008 Nicira Networks</font></i>
+<a name='L4'>   4 <i><font color='green'> */</font></i>
+<a name='L5'>   5 
+<a name='L6'>   6 <font color='darkred'>#ifndef</font> <a href='../S/186.html#L7' title='Defined at 7 in cbench/openflow/include/openflow/nicira-ext.h.'>OPENFLOW_NICIRA_EXT_H</a>
+<a name='L7'>   7 <font color='darkred'>#define</font> <a href='../S/186.html#L6' title='Refered from 6 in cbench/openflow/include/openflow/nicira-ext.h.'>OPENFLOW_NICIRA_EXT_H</a> 1
+<a name='L8'>   8 
+<a name='L9'>   9 <font color='darkred'>#include</font> "<a href='181.html'>openflow/openflow.h</a>"
+<a name='L10'>  10 
+<a name='L11'>  11 <font color='darkred'>#define</font> <a href='../S/293.html#L2064' title='Refered from 2064 in cbench/openflow/datapath/datapath.c.'>NICIRA_OUI_STR</a> "002320"
+<a name='L12'>  12 
+<a name='L13'>  13 <i><font color='green'>/* The following vendor extensions, proposed by Nicira Networks, are not yet</font></i>
+<a name='L14'>  14 <i><font color='green'> * ready for standardization (and may never be), so they are not included in</font></i>
+<a name='L15'>  15 <i><font color='green'> * openflow.h. */</font></i>
+<a name='L16'>  16 
+<a name='L17'>  17 <font color='darkred'>#define</font> <a href='../R/1023.html' title='Multiple refered from 4 places.'>NX_VENDOR_ID</a> 0x00002320
+<a name='L18'>  18 
+<a name='L19'>  19 <b>enum</b> nicira_type <font color='red'>{</font>
+<a name='L20'>  20     <i><font color='green'>/* Switch status request.  The request body is an ASCII string that</font></i>
+<a name='L21'>  21 <i><font color='green'>     * specifies a prefix of the key names to include in the output; if it is</font></i>
+<a name='L22'>  22 <i><font color='green'>     * the null string, then all key-value pairs are included. */</font></i>
+<a name='L23'>  23     <a href='../R/1022.html' title='Multiple refered from 2 places.'>NXT_STATUS_REQUEST</a>,
+<a name='L24'>  24 
+<a name='L25'>  25     <i><font color='green'>/* Switch status reply.  The reply body is an ASCII string of key-value</font></i>
+<a name='L26'>  26 <i><font color='green'>     * pairs in the form "key=value\n". */</font></i>
+<a name='L27'>  27     <a href='../R/1021.html' title='Multiple refered from 2 places.'>NXT_STATUS_REPLY</a>,
+<a name='L28'>  28 
+<a name='L29'>  29     <i><font color='green'>/* Configure an action.  Most actions do not require configuration</font></i>
+<a name='L30'>  30 <i><font color='green'>     * beyond that supplied in the actual action call. */</font></i>
+<a name='L31'>  31     NXT_ACT_SET_CONFIG,
+<a name='L32'>  32 
+<a name='L33'>  33     <i><font color='green'>/* Get configuration of action. */</font></i>
+<a name='L34'>  34     NXT_ACT_GET_CONFIG,
+<a name='L35'>  35 
+<a name='L36'>  36     <i><font color='green'>/* Remote command execution.  The request body is a sequence of strings</font></i>
+<a name='L37'>  37 <i><font color='green'>     * delimited by null bytes.  The first string is a command name.</font></i>
+<a name='L38'>  38 <i><font color='green'>     * Subsequent strings are command arguments. */</font></i>
+<a name='L39'>  39     NXT_COMMAND_REQUEST,
+<a name='L40'>  40 
+<a name='L41'>  41     <i><font color='green'>/* Remote command execution reply, sent when the command's execution</font></i>
+<a name='L42'>  42 <i><font color='green'>     * completes.  The reply body is struct nx_command_reply. */</font></i>
+<a name='L43'>  43     NXT_COMMAND_REPLY,
+<a name='L44'>  44 
+<a name='L45'>  45     <i><font color='green'>/* Configure whether Flow End messages should be sent. */</font></i>
+<a name='L46'>  46     NXT_FLOW_END_CONFIG,
+<a name='L47'>  47 
+<a name='L48'>  48     <i><font color='green'>/* Sent by switch when a flow ends.  These messages are turned into</font></i>
+<a name='L49'>  49 <i><font color='green'>     * ofp_flow_removed and NetFlow messages in user-space. */</font></i>
+<a name='L50'>  50     NXT_FLOW_END
+<a name='L51'>  51 <font color='red'>}</font>;
+<a name='L52'>  52 
+<a name='L53'>  53 <b>struct</b> <a href='../R/3708.html' title='Multiple refered from 8 places.'>nicira_header</a> <font color='red'>{</font>
+<a name='L54'>  54     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L55'>  55     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7757.html' title='Multiple used in 43 places.'>vendor</a>;            <i><font color='green'>/* NX_VENDOR_ID. */</font></i>
+<a name='L56'>  56     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7146.html' title='Multiple used in 20 places.'>subtype</a>;           <i><font color='green'>/* One of NXT_* above. */</font></i>
+<a name='L57'>  57 <font color='red'>}</font>;
+<a name='L58'>  58 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> nicira_header) == <b>sizeof</b>(<b>struct</b> <a href='../Y/5367.html' title='Multiple used in 3 places.'>ofp_vendor_header</a>) + 4);
+<a name='L59'>  59 
+<a name='L60'>  60 
+<a name='L61'>  61 <b>enum</b> nx_snat_command <font color='red'>{</font>
+<a name='L62'>  62     NXSC_ADD,
+<a name='L63'>  63     NXSC_DELETE
+<a name='L64'>  64 <font color='red'>}</font>;
+<a name='L65'>  65 
+<a name='L66'>  66 <i><font color='green'>/* Configuration for source-NATing */</font></i>
+<a name='L67'>  67 <b>struct</b> <a href='../S/186.html#L102' title='Refered from 102 in cbench/openflow/include/openflow/nicira-ext.h.'>nx_snat_config</a> <font color='red'>{</font>
+<a name='L68'>  68     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../S/333.html#L92' title='Defined at 92 in cbench/openflow/utilities/dpctl.c.'>command</a>;        <i><font color='green'>/* One of NXSC_*. */</font></i>
+<a name='L69'>  69     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[3];
+<a name='L70'>  70     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a>;          <i><font color='green'>/* Physical switch port. */</font></i>
+<a name='L71'>  71     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> mac_timeout;   <i><font color='green'>/* Time to cache MAC addresses of SNAT'd hosts</font></i>
+<a name='L72'>  72 <i><font color='green'>                               in seconds.  0 uses the default value. */</font></i>
+<a name='L73'>  73 
+<a name='L74'>  74     <i><font color='green'>/* Range of IP addresses to impersonate.  Set both values to the</font></i>
+<a name='L75'>  75 <i><font color='green'>     * same to support a single address.  */</font></i>
+<a name='L76'>  76     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> ip_addr_start; 
+<a name='L77'>  77     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> ip_addr_end;
+<a name='L78'>  78 
+<a name='L79'>  79     <i><font color='green'>/* Range of transport ports that should be used as new source port.  A</font></i>
+<a name='L80'>  80 <i><font color='green'>     * value of zero, let's the switch choose.*/</font></i>
+<a name='L81'>  81     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> tcp_start;
+<a name='L82'>  82     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> tcp_end;
+<a name='L83'>  83     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> udp_start;
+<a name='L84'>  84     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> udp_end;
+<a name='L85'>  85 
+<a name='L86'>  86     <i><font color='green'>/* MAC address to use for ARP requests for a SNAT IP address that </font></i>
+<a name='L87'>  87 <i><font color='green'>     * comes in on a different interface than 'port'.  A value of all </font></i>
+<a name='L88'>  88 <i><font color='green'>     * zeros silently drops those ARP requests.  Requests that arrive </font></i>
+<a name='L89'>  89 <i><font color='green'>     * on 'port' get a response with the mac address of the datapath </font></i>
+<a name='L90'>  90 <i><font color='green'>     * device. */</font></i>
+<a name='L91'>  91     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/4298.html' title='Multiple used in 13 places.'>mac_addr</a>[<a href='../Y/614.html' title='Multiple used in 21 places.'>OFP_ETH_ALEN</a>];
+<a name='L92'>  92     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5629.html' title='Multiple used in 15 places.'>pad2</a>[2];
+<a name='L93'>  93 <font color='red'>}</font>;
+<a name='L94'>  94 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> nx_snat_config) == 32);
+<a name='L95'>  95 
+<a name='L96'>  96 <i><font color='green'>/* Action configuration.  Not all actions require separate configuration. */</font></i>
+<a name='L97'>  97 <b>struct</b> nx_act_config <font color='red'>{</font>
+<a name='L98'>  98     <b>struct</b> <a href='../S/186.html#L53' title='Defined at 53 in cbench/openflow/include/openflow/nicira-ext.h.'>nicira_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L99'>  99     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;          <i><font color='green'>/* One of OFPAT_* */</font></i>
+<a name='L100'> 100     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[2];
+<a name='L101'> 101     <b>union</b> <font color='red'>{</font>
+<a name='L102'> 102         <b>struct</b> <a href='../S/186.html#L67' title='Defined at 67 in cbench/openflow/include/openflow/nicira-ext.h.'>nx_snat_config</a> snat[0];
+<a name='L103'> 103     <font color='red'>}</font>;                      <i><font color='green'>/* Array of action configurations.  The number </font></i>
+<a name='L104'> 104 <i><font color='green'>                               is inferred from the length field in the </font></i>
+<a name='L105'> 105 <i><font color='green'>                               header. */</font></i>
+<a name='L106'> 106 <font color='red'>}</font>;
+<a name='L107'> 107 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> nx_act_config) == 20);
+<a name='L108'> 108 
+<a name='L109'> 109 
+<a name='L110'> 110 <b>enum</b> nx_action_subtype <font color='red'>{</font>
+<a name='L111'> 111     NXAST_SNAT                      <i><font color='green'>/* Source-NAT */</font></i>
+<a name='L112'> 112 <font color='red'>}</font>;
+<a name='L113'> 113 
+<a name='L114'> 114 <i><font color='green'>/* Action structure for NXAST_SNAT. */</font></i>
+<a name='L115'> 115 <b>struct</b> nx_action_snat <font color='red'>{</font>
+<a name='L116'> 116     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;                  <i><font color='green'>/* OFPAT_VENDOR. */</font></i>
+<a name='L117'> 117     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;                   <i><font color='green'>/* Length is 8. */</font></i>
+<a name='L118'> 118     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7757.html' title='Multiple used in 43 places.'>vendor</a>;                <i><font color='green'>/* NX_VENDOR_ID. */</font></i>
+<a name='L119'> 119     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7146.html' title='Multiple used in 20 places.'>subtype</a>;               <i><font color='green'>/* NXAST_SNAT. */</font></i>
+<a name='L120'> 120     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a>;                  <i><font color='green'>/* Output port--it must be previously </font></i>
+<a name='L121'> 121 <i><font color='green'>                                       configured. */</font></i>
+<a name='L122'> 122     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[4];
+<a name='L123'> 123 <font color='red'>}</font>;
+<a name='L124'> 124 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> nx_action_snat) == 16);
+<a name='L125'> 125 
+<a name='L126'> 126 <i><font color='green'>/* Header for Nicira-defined actions. */</font></i>
+<a name='L127'> 127 <b>struct</b> nx_action_header <font color='red'>{</font>
+<a name='L128'> 128     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;                  <i><font color='green'>/* OFPAT_VENDOR. */</font></i>
+<a name='L129'> 129     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;                   <i><font color='green'>/* Length is 8. */</font></i>
+<a name='L130'> 130     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7757.html' title='Multiple used in 43 places.'>vendor</a>;                <i><font color='green'>/* NX_VENDOR_ID. */</font></i>
+<a name='L131'> 131     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7146.html' title='Multiple used in 20 places.'>subtype</a>;               <i><font color='green'>/* NXAST_*. */</font></i>
+<a name='L132'> 132     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[6];
+<a name='L133'> 133 <font color='red'>}</font>;
+<a name='L134'> 134 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> nx_action_header) == 16);
+<a name='L135'> 135 
+<a name='L136'> 136 <i><font color='green'>/* Status bits for NXT_COMMAND_REPLY. */</font></i>
+<a name='L137'> 137 <b>enum</b> <font color='red'>{</font>
+<a name='L138'> 138     NXT_STATUS_EXITED = 1 &lt;&lt; 31,   <i><font color='green'>/* Exited normally. */</font></i>
+<a name='L139'> 139     NXT_STATUS_SIGNALED = 1 &lt;&lt; 30, <i><font color='green'>/* Exited due to signal. */</font></i>
+<a name='L140'> 140     NXT_STATUS_UNKNOWN = 1 &lt;&lt; 29,  <i><font color='green'>/* Exited for unknown reason. */</font></i>
+<a name='L141'> 141     NXT_STATUS_COREDUMP = 1 &lt;&lt; 28, <i><font color='green'>/* Exited with core dump. */</font></i>
+<a name='L142'> 142     NXT_STATUS_ERROR = 1 &lt;&lt; 27,    <i><font color='green'>/* Command could not be executed. */</font></i>
+<a name='L143'> 143     NXT_STATUS_STARTED = 1 &lt;&lt; 26,  <i><font color='green'>/* Command was started. */</font></i>
+<a name='L144'> 144     NXT_STATUS_EXITSTATUS = 0xff,  <i><font color='green'>/* Exit code mask if NXT_STATUS_EXITED. */</font></i>
+<a name='L145'> 145     NXT_STATUS_TERMSIG = 0xff,     <i><font color='green'>/* Signal number if NXT_STATUS_SIGNALED. */</font></i>
+<a name='L146'> 146 <font color='red'>}</font>;
+<a name='L147'> 147 
+<a name='L148'> 148 <i><font color='green'>/* NXT_COMMAND_REPLY. */</font></i>
+<a name='L149'> 149 <b>struct</b> nx_command_reply <font color='red'>{</font>
+<a name='L150'> 150     <b>struct</b> <a href='../S/186.html#L53' title='Defined at 53 in cbench/openflow/include/openflow/nicira-ext.h.'>nicira_header</a> nxh;
+<a name='L151'> 151     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7040.html' title='Multiple used in 97 places.'>status</a>;            <i><font color='green'>/* Status bits defined above. */</font></i>
+<a name='L152'> 152     <i><font color='green'>/* Followed by any number of bytes of process output. */</font></i>
+<a name='L153'> 153 <font color='red'>}</font>;
+<a name='L154'> 154 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> nx_command_reply) == 20);
+<a name='L155'> 155 
+<a name='L156'> 156 <b>enum</b> nx_flow_end_reason <font color='red'>{</font>
+<a name='L157'> 157     NXFER_IDLE_TIMEOUT,         <i><font color='green'>/* Flow idle time exceeded idle_timeout. */</font></i>
+<a name='L158'> 158     NXFER_HARD_TIMEOUT,         <i><font color='green'>/* Time exceeded hard_timeout. */</font></i>
+<a name='L159'> 159     NXFER_DELETE,               <i><font color='green'>/* Flow was removed by delete command. */</font></i>
+<a name='L160'> 160     NXFER_EJECT                 <i><font color='green'>/* Flow was ejected. */</font></i>
+<a name='L161'> 161 <font color='red'>}</font>;
+<a name='L162'> 162 
+<a name='L163'> 163 <b>struct</b> nx_flow_end_config <font color='red'>{</font>
+<a name='L164'> 164     <b>struct</b> <a href='../S/186.html#L53' title='Defined at 53 in cbench/openflow/include/openflow/nicira-ext.h.'>nicira_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L165'> 165     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/2662.html' title='Multiple used in 11 places.'>enable</a>;           <i><font color='green'>/* Set to 1 to enable Flow End message</font></i>
+<a name='L166'> 166 <i><font color='green'>                                 generation.  0 to disable.  */</font></i>
+<a name='L167'> 167     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[3];
+<a name='L168'> 168 <font color='red'>}</font>;
+<a name='L169'> 169 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> nx_flow_end_config) == 20);
+<a name='L170'> 170 
+<a name='L171'> 171 <b>struct</b> nx_flow_end <font color='red'>{</font>
+<a name='L172'> 172     <b>struct</b> <a href='../S/186.html#L53' title='Defined at 53 in cbench/openflow/include/openflow/nicira-ext.h.'>nicira_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L173'> 173     <b>struct</b> <a href='../D/8818.html' title='Multiple defined in 3 places.'>ofp_match</a> <a href='../S/252.html#L421' title='Defined at 421 in cbench/openflow/tests/test-stp.c.'>match</a>;   <i><font color='green'>/* Description of fields. */</font></i>
+<a name='L174'> 174     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/2133.html' title='Multiple used in 81 places.'>cookie</a>;          <i><font color='green'>/* Opaque controller-issued identifier. */</font></i>
+<a name='L175'> 175 
+<a name='L176'> 176     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>;        <i><font color='green'>/* Priority level of flow entry. */</font></i>
+<a name='L177'> 177     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/6294.html' title='Multiple used in 94 places.'>reason</a>;           <i><font color='green'>/* One of NXFER_*. */</font></i>
+<a name='L178'> 178 
+<a name='L179'> 179     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> tcp_flags;        <i><font color='green'>/* Union of seen TCP flags. */</font></i>
+<a name='L180'> 180     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/3896.html' title='Multiple used in 36 places.'>ip_tos</a>;           <i><font color='green'>/* IP TOS value. */</font></i>
+<a name='L181'> 181 
+<a name='L182'> 182     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> send_flow_exp;    <i><font color='green'>/* Send flow expiry to controller. */</font></i>
+<a name='L183'> 183 
+<a name='L184'> 184     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../S/935.html#L773' title='Defined at 773 in src/cli.c.'>idle_timeout</a>;    <i><font color='green'>/* Idle time before discarding (seconds). */</font></i>
+<a name='L185'> 185 
+<a name='L186'> 186     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> init_time;       <i><font color='green'>/* Time flow started in milliseconds. */</font></i>
+<a name='L187'> 187     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> used_time;       <i><font color='green'>/* Time entry was last used in milliseconds. */</font></i>
+<a name='L188'> 188     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/2686.html' title='Multiple used in 6 places.'>end_time</a>;        <i><font color='green'>/* Time flow ended in milliseconds. */</font></i>
+<a name='L189'> 189 
+<a name='L190'> 190     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/5595.html' title='Multiple used in 48 places.'>packet_count</a>;
+<a name='L191'> 191     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/1732.html' title='Multiple used in 68 places.'>byte_count</a>;
+<a name='L192'> 192 <font color='red'>}</font>;
+<a name='L193'> 193 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> nx_flow_end) == 112);
+<a name='L194'> 194 
+<a name='L195'> 195 <font color='darkred'>#endif</font> <i><font color='green'>/* openflow/nicira-ext.h */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

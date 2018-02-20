@@ -1,0 +1,129 @@
+<html>
+<head>
+<title>q</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/818.html#L238'>q</a>                 238 cbench/openflow/lib/leak-checker.c     void *q;
+<a href='../S/818.html#L241'>q</a>                 241 cbench/openflow/lib/leak-checker.c     q = realloc(p, size);
+<a href='../S/818.html#L244'>q</a>                 244 cbench/openflow/lib/leak-checker.c     if (p != q) {
+<a href='../S/818.html#L245'>q</a>                 245 cbench/openflow/lib/leak-checker.c         log_callers("realloc(%p, %zu) -&gt; %p", p, size, q);
+<a href='../S/818.html#L250'>q</a>                 250 cbench/openflow/lib/leak-checker.c     return q;
+<a href='../S/905.html#L41'>q</a>                  41 cbench/openflow/lib/queue.c static void check_queue(struct ofp_queue *q);
+<a href='../S/905.html#L45'>q</a>                  45 cbench/openflow/lib/queue.c queue_init(struct ofp_queue *q)
+<a href='../S/905.html#L47'>q</a>                  47 cbench/openflow/lib/queue.c     q-&gt;n = 0;
+<a href='../S/905.html#L48'>q</a>                  48 cbench/openflow/lib/queue.c     q-&gt;head = NULL;
+<a href='../S/905.html#L49'>q</a>                  49 cbench/openflow/lib/queue.c     q-&gt;tail = NULL;
+<a href='../S/905.html#L54'>q</a>                  54 cbench/openflow/lib/queue.c queue_destroy(struct ofp_queue *q)
+<a href='../S/905.html#L57'>q</a>                  57 cbench/openflow/lib/queue.c     for (cur = q-&gt;head; cur != NULL; cur = next) {
+<a href='../S/905.html#L65'>q</a>                  65 cbench/openflow/lib/queue.c queue_clear(struct ofp_queue *q)
+<a href='../S/905.html#L67'>q</a>                  67 cbench/openflow/lib/queue.c     queue_destroy(q);
+<a href='../S/905.html#L68'>q</a>                  68 cbench/openflow/lib/queue.c     queue_init(q);
+<a href='../S/905.html#L78'>q</a>                  78 cbench/openflow/lib/queue.c queue_advance_head(struct ofp_queue *q, struct ofpbuf *next)
+<a href='../S/905.html#L80'>q</a>                  80 cbench/openflow/lib/queue.c     assert(q-&gt;n);
+<a href='../S/905.html#L81'>q</a>                  81 cbench/openflow/lib/queue.c     assert(q-&gt;head);
+<a href='../S/905.html#L82'>q</a>                  82 cbench/openflow/lib/queue.c     q-&gt;head = next;
+<a href='../S/905.html#L83'>q</a>                  83 cbench/openflow/lib/queue.c     if (q-&gt;head == NULL) {
+<a href='../S/905.html#L84'>q</a>                  84 cbench/openflow/lib/queue.c         q-&gt;tail = NULL;
+<a href='../S/905.html#L86'>q</a>                  86 cbench/openflow/lib/queue.c     q-&gt;n--;
+<a href='../S/905.html#L91'>q</a>                  91 cbench/openflow/lib/queue.c queue_push_tail(struct ofp_queue *q, struct ofpbuf *b)
+<a href='../S/905.html#L93'>q</a>                  93 cbench/openflow/lib/queue.c     check_queue(q);
+<a href='../S/905.html#L97'>q</a>                  97 cbench/openflow/lib/queue.c     if (q-&gt;n++) {
+<a href='../S/905.html#L98'>q</a>                  98 cbench/openflow/lib/queue.c         q-&gt;tail-&gt;next = b;
+<a href='../S/905.html#L100'>q</a>                 100 cbench/openflow/lib/queue.c         q-&gt;head = b;
+<a href='../S/905.html#L102'>q</a>                 102 cbench/openflow/lib/queue.c     q-&gt;tail = b;
+<a href='../S/905.html#L104'>q</a>                 104 cbench/openflow/lib/queue.c     check_queue(q);
+<a href='../S/905.html#L111'>q</a>                 111 cbench/openflow/lib/queue.c queue_pop_head(struct ofp_queue *q)
+<a href='../S/905.html#L113'>q</a>                 113 cbench/openflow/lib/queue.c     struct ofpbuf *head = q-&gt;head;
+<a href='../S/905.html#L114'>q</a>                 114 cbench/openflow/lib/queue.c     queue_advance_head(q, head-&gt;next);
+<a href='../S/905.html#L120'>q</a>                 120 cbench/openflow/lib/queue.c check_queue(struct ofp_queue *q UNUSED)
+<a href='../S/905.html#L126'>q</a>                 126 cbench/openflow/lib/queue.c     assert(q-&gt;n == 0
+<a href='../S/905.html#L127'>q</a>                 127 cbench/openflow/lib/queue.c            ? q-&gt;head == NULL &amp;&amp; q-&gt;tail == NULL
+<a href='../S/905.html#L128'>q</a>                 128 cbench/openflow/lib/queue.c            : q-&gt;head != NULL &amp;&amp; q-&gt;tail != NULL);
+<a href='../S/905.html#L131'>q</a>                 131 cbench/openflow/lib/queue.c     for (iter = q-&gt;head; iter != NULL; iter = iter-&gt;next) {
+<a href='../S/905.html#L133'>q</a>                 133 cbench/openflow/lib/queue.c         assert((iter-&gt;next != NULL) == (iter != q-&gt;tail));
+<a href='../S/905.html#L135'>q</a>                 135 cbench/openflow/lib/queue.c     assert(n == q-&gt;n);
+<a href='../S/911.html#L278'>q</a>                 278 cbench/openflow/lib/svec.c     const char *p, *q;
+<a href='../S/911.html#L280'>q</a>                 280 cbench/openflow/lib/svec.c     for (p = words; *p != '\0'; p = q) {
+<a href='../S/911.html#L291'>q</a>                 291 cbench/openflow/lib/svec.c         for (q = p; *q != '\0'; q++) {
+<a href='../S/911.html#L292'>q</a>                 292 cbench/openflow/lib/svec.c             if (*q == quote) {
+<a href='../S/911.html#L294'>q</a>                 294 cbench/openflow/lib/svec.c             } else if (*q == '\'' || *q == '"') {
+<a href='../S/911.html#L295'>q</a>                 295 cbench/openflow/lib/svec.c                 quote = *q;
+<a href='../S/911.html#L296'>q</a>                 296 cbench/openflow/lib/svec.c             } else if (*q == '\\' &amp;&amp; (!quote || quote == '"')) {
+<a href='../S/911.html#L297'>q</a>                 297 cbench/openflow/lib/svec.c                 q++;
+<a href='../S/911.html#L298'>q</a>                 298 cbench/openflow/lib/svec.c                 if (*q == '\0') {
+<a href='../S/911.html#L302'>q</a>                 302 cbench/openflow/lib/svec.c                 ds_put_char(&amp;word, *q);
+<a href='../S/911.html#L303'>q</a>                 303 cbench/openflow/lib/svec.c             } else if (isspace((unsigned char) *q) &amp;&amp; !quote) {
+<a href='../S/911.html#L304'>q</a>                 304 cbench/openflow/lib/svec.c                 q++;
+<a href='../S/911.html#L307'>q</a>                 307 cbench/openflow/lib/svec.c                 ds_put_char(&amp;word, *q);
+<a href='../S/804.html#L82'>q</a>                  82 cbench/openflow/secchan/ratelimit.c     struct ofp_queue *q;
+<a href='../S/804.html#L86'>q</a>                  86 cbench/openflow/secchan/ratelimit.c     for (q = &amp;rl-&gt;queues[0]; q &lt; &amp;rl-&gt;queues[OFPP_MAX]; q++) {
+<a href='../S/804.html#L87'>q</a>                  87 cbench/openflow/secchan/ratelimit.c         if (longest-&gt;n &lt; q-&gt;n) {
+<a href='../S/804.html#L88'>q</a>                  88 cbench/openflow/secchan/ratelimit.c             longest = q;
+<a href='../S/804.html#L90'>q</a>                  90 cbench/openflow/secchan/ratelimit.c         } else if (longest-&gt;n == q-&gt;n) {
+<a href='../S/804.html#L96'>q</a>                  96 cbench/openflow/secchan/ratelimit.c                 longest = q;
+<a href='../S/804.html#L114'>q</a>                 114 cbench/openflow/secchan/ratelimit.c         struct ofp_queue *q = &amp;rl-&gt;queues[port];
+<a href='../S/804.html#L115'>q</a>                 115 cbench/openflow/secchan/ratelimit.c         if (q-&gt;n) {
+<a href='../S/804.html#L118'>q</a>                 118 cbench/openflow/secchan/ratelimit.c             return queue_pop_head(q);
+<a href='../S/258.html#L96'>q</a>                  96 cbench/openflow/tests/test-hmap.c         int *q = &amp;p[rand() % n];
+<a href='../S/258.html#L98'>q</a>                  98 cbench/openflow/tests/test-hmap.c         *p = *q;
+<a href='../S/258.html#L99'>q</a>                  99 cbench/openflow/tests/test-hmap.c         *q = tmp;
+<a href='../S/204.html#L223'>q</a>                 223 cbench/openflow/udatapath/datapath.c     struct sw_queue *q;
+<a href='../S/204.html#L225'>q</a>                 225 cbench/openflow/udatapath/datapath.c     LIST_FOR_EACH(q, struct sw_queue, node, &amp;p-&gt;queue_list) {
+<a href='../S/204.html#L226'>q</a>                 226 cbench/openflow/udatapath/datapath.c         if ((q != NULL) &amp;&amp; (q-&gt;queue_id == queue_id)) {
+<a href='../S/204.html#L227'>q</a>                 227 cbench/openflow/udatapath/datapath.c             return q;
+<a href='../S/204.html#L780'>q</a>                 780 cbench/openflow/udatapath/datapath.c     struct sw_queue * q;
+<a href='../S/204.html#L783'>q</a>                 783 cbench/openflow/udatapath/datapath.c     q = NULL;
+<a href='../S/204.html#L819'>q</a>                 819 cbench/openflow/udatapath/datapath.c                 q = dp_lookup_queue(p, queue_id);
+<a href='../S/204.html#L820'>q</a>                 820 cbench/openflow/udatapath/datapath.c                 if (q) {
+<a href='../S/204.html#L821'>q</a>                 821 cbench/openflow/udatapath/datapath.c                     class_id = q-&gt;class_id;
+<a href='../S/204.html#L831'>q</a>                 831 cbench/openflow/udatapath/datapath.c                 if (q) {
+<a href='../S/204.html#L832'>q</a>                 832 cbench/openflow/udatapath/datapath.c                     q-&gt;tx_packets++;
+<a href='../S/204.html#L833'>q</a>                 833 cbench/openflow/udatapath/datapath.c                     q-&gt;tx_bytes += buffer-&gt;size;
+<a href='../S/204.html#L973'>q</a>                 973 cbench/openflow/udatapath/datapath.c fill_queue_desc(struct ofpbuf *buffer, struct sw_queue *q,
+<a href='../S/204.html#L981'>q</a>                 981 cbench/openflow/udatapath/datapath.c     desc-&gt;queue_id = htonl(q-&gt;queue_id);
+<a href='../S/204.html#L989'>q</a>                 989 cbench/openflow/udatapath/datapath.c     mr-&gt;rate = htons(q-&gt;min_rate);
+<a href='../S/204.html#L1833'>q</a>                1833 cbench/openflow/udatapath/datapath.c dump_queue_stats(struct sw_queue *q, struct ofpbuf *buffer)
+<a href='../S/204.html#L1836'>q</a>                1836 cbench/openflow/udatapath/datapath.c     oqs-&gt;port_no = htons(q-&gt;port-&gt;port_no);
+<a href='../S/204.html#L1837'>q</a>                1837 cbench/openflow/udatapath/datapath.c     oqs-&gt;queue_id = htonl(q-&gt;queue_id);
+<a href='../S/204.html#L1838'>q</a>                1838 cbench/openflow/udatapath/datapath.c     oqs-&gt;tx_bytes = htonll(q-&gt;tx_bytes);
+<a href='../S/204.html#L1839'>q</a>                1839 cbench/openflow/udatapath/datapath.c     oqs-&gt;tx_packets = htonll(q-&gt;tx_packets);
+<a href='../S/204.html#L1840'>q</a>                1840 cbench/openflow/udatapath/datapath.c     oqs-&gt;tx_errors = htonll(q-&gt;tx_errors);
+<a href='../S/204.html#L1848'>q</a>                1848 cbench/openflow/udatapath/datapath.c     struct sw_queue *q;
+<a href='../S/204.html#L1856'>q</a>                1856 cbench/openflow/udatapath/datapath.c                     LIST_FOR_EACH(q, struct sw_queue, node, &amp;p-&gt;queue_list) {
+<a href='../S/204.html#L1857'>q</a>                1857 cbench/openflow/udatapath/datapath.c                         dump_queue_stats(q,buffer);
+<a href='../S/204.html#L1861'>q</a>                1861 cbench/openflow/udatapath/datapath.c                     q = dp_lookup_queue(p, s-&gt;queue_id);
+<a href='../S/204.html#L1862'>q</a>                1862 cbench/openflow/udatapath/datapath.c                     if (q) {
+<a href='../S/204.html#L1863'>q</a>                1863 cbench/openflow/udatapath/datapath.c                         dump_queue_stats(q, buffer);
+<a href='../S/204.html#L1873'>q</a>                1873 cbench/openflow/udatapath/datapath.c                 LIST_FOR_EACH(q, struct sw_queue, node, &amp;p-&gt;queue_list) {
+<a href='../S/204.html#L1874'>q</a>                1874 cbench/openflow/udatapath/datapath.c                     dump_queue_stats(q,buffer);
+<a href='../S/204.html#L1878'>q</a>                1878 cbench/openflow/udatapath/datapath.c                 q = dp_lookup_queue(p, s-&gt;queue_id);
+<a href='../S/204.html#L1879'>q</a>                1879 cbench/openflow/udatapath/datapath.c                 if (q) {
+<a href='../S/204.html#L1880'>q</a>                1880 cbench/openflow/udatapath/datapath.c                     dump_queue_stats(q, buffer);
+<a href='../S/204.html#L2175'>q</a>                2175 cbench/openflow/udatapath/datapath.c     struct sw_queue *q;
+<a href='../S/204.html#L2194'>q</a>                2194 cbench/openflow/udatapath/datapath.c         LIST_FOR_EACH(q, struct sw_queue, node, &amp;p-&gt;queue_list) {
+<a href='../S/204.html#L2196'>q</a>                2196 cbench/openflow/udatapath/datapath.c             fill_queue_desc(buffer, q, opq);
+<a href='../S/203.html#L72'>q</a>                  72 cbench/openflow/udatapath/of_ext_msg.c         struct sw_queue *q = &amp;p-&gt;queues[queue_no];
+<a href='../S/203.html#L73'>q</a>                  73 cbench/openflow/udatapath/of_ext_msg.c         if (!q-&gt;port) {
+<a href='../S/203.html#L74'>q</a>                  74 cbench/openflow/udatapath/of_ext_msg.c             return new_queue(p,q,queue_id,queue_no,mr);
+<a href='../S/203.html#L81'>q</a>                  81 cbench/openflow/udatapath/of_ext_msg.c port_delete_queue(struct sw_port *p UNUSED, struct sw_queue *q)
+<a href='../S/203.html#L83'>q</a>                  83 cbench/openflow/udatapath/of_ext_msg.c     list_remove(&amp;q-&gt;node);
+<a href='../S/203.html#L84'>q</a>                  84 cbench/openflow/udatapath/of_ext_msg.c     memset(q,'\0', sizeof *q);
+<a href='../S/203.html#L94'>q</a>                  94 cbench/openflow/udatapath/of_ext_msg.c     struct sw_queue *q;
+<a href='../S/203.html#L108'>q</a>                 108 cbench/openflow/udatapath/of_ext_msg.c         q = dp_lookup_queue(p,queue_id);
+<a href='../S/203.html#L109'>q</a>                 109 cbench/openflow/udatapath/of_ext_msg.c         if (q) {
+<a href='../S/203.html#L110'>q</a>                 110 cbench/openflow/udatapath/of_ext_msg.c             netdev_delete_class(p-&gt;netdev,q-&gt;class_id);
+<a href='../S/203.html#L111'>q</a>                 111 cbench/openflow/udatapath/of_ext_msg.c             port_delete_queue(p,q);
+<a href='../S/203.html#L140'>q</a>                 140 cbench/openflow/udatapath/of_ext_msg.c     struct sw_queue *q;
+<a href='../S/203.html#L171'>q</a>                 171 cbench/openflow/udatapath/of_ext_msg.c         q = dp_lookup_queue(p, queue_id);
+<a href='../S/203.html#L172'>q</a>                 172 cbench/openflow/udatapath/of_ext_msg.c         if (q) {
+<a href='../S/203.html#L174'>q</a>                 174 cbench/openflow/udatapath/of_ext_msg.c             error = netdev_change_class(p-&gt;netdev,q-&gt;class_id, ntohs(mr-&gt;rate));
+<a href='../S/203.html#L182'>q</a>                 182 cbench/openflow/udatapath/of_ext_msg.c                 q-&gt;property = ntohs(mr-&gt;prop_header.property);
+<a href='../S/203.html#L183'>q</a>                 183 cbench/openflow/udatapath/of_ext_msg.c                 q-&gt;min_rate = ntohs(mr-&gt;rate);
+<a href='../S/203.html#L195'>q</a>                 195 cbench/openflow/udatapath/of_ext_msg.c             q = dp_lookup_queue(p, queue_id);
+<a href='../S/203.html#L196'>q</a>                 196 cbench/openflow/udatapath/of_ext_msg.c             error = netdev_setup_class(p-&gt;netdev,q-&gt;class_id, ntohs(mr-&gt;rate));
+</pre>
+</body>
+</html>

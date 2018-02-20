@@ -1,0 +1,62 @@
+<html>
+<head>
+<title>cbench/openflow/datapath/chain.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1126.html'>datapath</a>/chain.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/86.html' title='Multiple included from 11 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <font color='darkred'>#ifndef</font> <a href='../D/574.html' title='Multiple defined in 2 places.'>CHAIN_H</a>
+<a name='L2'>   2 <font color='darkred'>#define</font> <a href='../R/168.html' title='Multiple refered from 2 places.'>CHAIN_H</a> 1
+<a name='L3'>   3 
+<a name='L4'>   4 <font color='darkred'>#include</font> &lt;<a href='315.html'>linux/types.h</a>&gt;
+<a name='L5'>   5 
+<a name='L6'>   6 <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a>;
+<a name='L7'>   7 <b>struct</b> <a href='../D/9770.html' title='Multiple defined in 2 places.'>sw_flow_key</a>;
+<a name='L8'>   8 <b>struct</b> <a href='../D/8736.html' title='Multiple defined in 3 places.'>ofp_action_header</a>;
+<a name='L9'>   9 <b>struct</b> <a href='../D/7268.html' title='Multiple defined in 2 places.'>datapath</a>;
+<a name='L10'>  10 
+<a name='L11'>  11 
+<a name='L12'>  12 <font color='darkred'>#define</font> <a href='../R/1627.html' title='Multiple refered from 4 places.'>TABLE_LINEAR_MAX_FLOWS</a>  100
+<a name='L13'>  13 <font color='darkred'>#define</font> <a href='../R/1626.html' title='Multiple refered from 4 places.'>TABLE_HASH_MAX_FLOWS</a>    65536
+<a name='L14'>  14 
+<a name='L15'>  15 <i><font color='green'>/* Set of tables chained together in sequence from cheap to expensive. */</font></i>
+<a name='L16'>  16 <font color='darkred'>#define</font> <a href='../R/169.html' title='Multiple refered from 4 places.'>CHAIN_MAX_TABLES</a> 4
+<a name='L17'>  17 <b>struct</b> <a href='../R/4678.html' title='Multiple refered from 11 places.'>sw_chain</a> <font color='red'>{</font>
+<a name='L18'>  18         <b>int</b> <a href='../Y/4620.html' title='Multiple used in 45 places.'>n_tables</a>;
+<a name='L19'>  19         <b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *<a href='../Y/7234.html' title='Multiple used in 24 places.'>tables</a>[<a href='../D/575.html' title='Multiple defined in 2 places.'>CHAIN_MAX_TABLES</a>];
+<a name='L20'>  20         <b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *<a href='../Y/2659.html' title='Multiple used in 20 places.'>emerg_table</a>;
+<a name='L21'>  21 
+<a name='L22'>  22         <b>struct</b> <a href='../D/7268.html' title='Multiple defined in 2 places.'>datapath</a> *<a href='../Y/2499.html' title='Multiple used in 612 places.'>dp</a>;
+<a name='L23'>  23         <b>struct</b> <a href='../Y/4492.html' title='Multiple used in 69 places.'>module</a> *<a href='../Y/5563.html' title='Multiple used in 21 places.'>owner</a>;
+<a name='L24'>  24 <font color='red'>}</font>;
+<a name='L25'>  25 
+<a name='L26'>  26 <b>struct</b> <a href='../D/9765.html' title='Multiple defined in 2 places.'>sw_chain</a> *<a href='../D/7042.html' title='Multiple defined in 2 places.'>chain_create</a>(<b>struct</b> <a href='../Y/2280.html' title='Multiple used in 184 places.'>datapath</a> *);
+<a name='L27'>  27 <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a> *<a href='../D/7047.html' title='Multiple defined in 2 places.'>chain_lookup</a>(<b>struct</b> <a href='../Y/7174.html' title='Multiple used in 57 places.'>sw_chain</a> *, <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *,
+<a name='L28'>  28                              <b>int</b>);
+<a name='L29'>  29 <b>int</b> <a href='../D/7046.html' title='Multiple defined in 2 places.'>chain_insert</a>(<b>struct</b> <a href='../Y/7174.html' title='Multiple used in 57 places.'>sw_chain</a> *, <b>struct</b> <a href='../Y/7178.html' title='Multiple used in 120 places.'>sw_flow</a> *, <b>int</b>);
+<a name='L30'>  30 <b>int</b> <a href='../D/7048.html' title='Multiple defined in 2 places.'>chain_modify</a>(<b>struct</b> <a href='../Y/7174.html' title='Multiple used in 57 places.'>sw_chain</a> *, <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *,
+<a name='L31'>  31                  <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a>, <b>int</b>, <b>const</b> <b>struct</b> <a href='../Y/5088.html' title='Multiple used in 65 places.'>ofp_action_header</a> *, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a>, <b>int</b>);
+<a name='L32'>  32 <b>int</b> <a href='../D/7045.html' title='Multiple defined in 2 places.'>chain_has_conflict</a>(<b>struct</b> <a href='../Y/7174.html' title='Multiple used in 57 places.'>sw_chain</a> *, <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *,
+<a name='L33'>  33                        <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a>, <b>int</b>);
+<a name='L34'>  34 <b>int</b> <a href='../D/7043.html' title='Multiple defined in 2 places.'>chain_delete</a>(<b>struct</b> <a href='../Y/7174.html' title='Multiple used in 57 places.'>sw_chain</a> *, <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a>,
+<a name='L35'>  35                  <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a>, <b>int</b>, <b>int</b>);
+<a name='L36'>  36 <b>int</b> <a href='../D/7050.html' title='Multiple defined in 2 places.'>chain_timeout</a>(<b>struct</b> <a href='../Y/7174.html' title='Multiple used in 57 places.'>sw_chain</a> *);
+<a name='L37'>  37 <b>void</b> <a href='../D/7044.html' title='Multiple defined in 2 places.'>chain_destroy</a>(<b>struct</b> <a href='../Y/7174.html' title='Multiple used in 57 places.'>sw_chain</a> *);
+<a name='L38'>  38 
+<a name='L39'>  39 <b>int</b> <a href='../S/331.html#L248' title='Defined at 248 in cbench/openflow/datapath/chain.c.'>chain_set_hw_hook</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *(*<a href='../Y/2186.html' title='Multiple used in 3 places.'>create_hw_table</a>)(<b>void</b>),
+<a name='L40'>  40                       <b>struct</b> <a href='../Y/4492.html' title='Multiple used in 69 places.'>module</a> *<a href='../Y/5563.html' title='Multiple used in 21 places.'>owner</a>);
+<a name='L41'>  41 <b>void</b> <a href='../S/331.html#L265' title='Defined at 265 in cbench/openflow/datapath/chain.c.'>chain_clear_hw_hook</a>(<b>void</b>);
+<a name='L42'>  42 
+<a name='L43'>  43 <font color='darkred'>#endif</font> <i><font color='green'>/* chain.h */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

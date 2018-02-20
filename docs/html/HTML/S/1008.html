@@ -1,0 +1,331 @@
+<html>
+<head>
+<title>components/cac.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1155.html'>components</a>/cac.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L60'>[^]</a><a href='#L278'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L60' title='Defined at 60.'>ev_type</a>
+<li><a href='#L76' title='Defined at 76.'>config_load</a>
+<li><a href='#L205' title='Defined at 205.'>verify_component</a>
+<li><a href='#L228' title='Defined at 228.'>cac_main</a>
+<li><a href='#L252' title='Defined at 252.'>cac_cleanup</a>
+<li><a href='#L268' title='Defined at 268.'>cac_cli</a>
+<li><a href='#L278' title='Defined at 278.'>cac_handler</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright 2015-2018 NSSLab, KAIST</font></i>
+<a name='L3'>   3 <i><font color='green'> */</font></i>
+<a name='L4'>   4 
+<a name='L5'>   5 <i><font color='green'>/**</font></i>
+<a name='L6'>   6 <i><font color='green'> * \ingroup compnt</font></i>
+<a name='L7'>   7 <i><font color='green'> * @{</font></i>
+<a name='L8'>   8 <i><font color='green'> * \defgroup cac Component Access Control</font></i>
+<a name='L9'>   9 <i><font color='green'> * \brief (Security) component access control</font></i>
+<a name='L10'>  10 <i><font color='green'> * @{</font></i>
+<a name='L11'>  11 <i><font color='green'> */</font></i>
+<a name='L12'>  12 
+<a name='L13'>  13 <i><font color='green'>/**</font></i>
+<a name='L14'>  14 <i><font color='green'> * \file</font></i>
+<a name='L15'>  15 <i><font color='green'> * \author Jaehyun Nam &lt;namjh@kaist.ac.kr&gt;</font></i>
+<a name='L16'>  16 <i><font color='green'> */</font></i>
+<a name='L17'>  17 
+<a name='L18'>  18 <font color='darkred'>#include</font> "<a href='973.html'>cac.h</a>"
+<a name='L19'>  19 
+<a name='L20'>  20 <i><font color='green'>/** \brief Component access control ID */</font></i>
+<a name='L21'>  21 <font color='darkred'>#define</font> <a href='../R/162.html' title='Multiple refered from 6 places.'>CAC_ID</a> 1316219185
+<a name='L22'>  22 
+<a name='L23'>  23 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L24'>  24 
+<a name='L25'>  25 <i><font color='green'>/** \brief The default component configuration file */</font></i>
+<a name='L26'>  26 <b>char</b> <a href='../Y/2035.html' title='Multiple used in 2 places.'>compnt_file</a>[<a href='../D/6476.html' title='Multiple defined in 6 places.'>__CONF_WORD_LEN</a>] = <a href='../D/808.html' title='Multiple defined in 6 places.'>COMPNT_DEFAULT_CONFIG_FILE</a>;
+<a name='L27'>  27 
+<a name='L28'>  28 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L29'>  29 
+<a name='L30'>  30 <i><font color='green'>/** \brief The number of components */</font></i>
+<a name='L31'>  31 <b>int</b> <a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>;
+<a name='L32'>  32 
+<a name='L33'>  33 <i><font color='green'>/** \brief The structure of a component configuration */</font></i>
+<a name='L34'>  34 <b>typedef</b> <b>struct</b> _component_t <font color='red'>{</font>
+<a name='L35'>  35     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>; <i><font color='green'>/**&lt; Component ID */</font></i>
+<a name='L36'>  36     <b>char</b> <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>[<a href='../D/6476.html' title='Multiple defined in 6 places.'>__CONF_WORD_LEN</a>]; <i><font color='green'>/**&lt; Component name for logging */</font></i>
+<a name='L37'>  37 
+<a name='L38'>  38     <b>int</b> <a href='../Y/3783.html' title='Multiple used in 48 places.'>in_num</a>; <i><font color='green'>/**&lt; The number of inbound events */</font></i>
+<a name='L39'>  39     <b>int</b> <a href='../Y/3782.html' title='Multiple used in 25 places.'>in_list</a>[<a href='../Y/1141.html' title='Multiple used in 17 places.'>__MAX_EVENTS</a>]; <i><font color='green'>/**&lt; The list of inbound events */</font></i>
+<a name='L40'>  40 
+<a name='L41'>  41     <b>int</b> <a href='../Y/5544.html' title='Multiple used in 33 places.'>out_num</a>; <i><font color='green'>/**&lt; The number of outbound events */</font></i>
+<a name='L42'>  42     <b>int</b> <a href='../Y/5543.html' title='Multiple used in 18 places.'>out_list</a>[<a href='../Y/1141.html' title='Multiple used in 17 places.'>__MAX_EVENTS</a>]; <i><font color='green'>/**&lt; The list of outbound events */</font></i>
+<a name='L43'>  43 <font color='red'>}</font> <a href='../R/2493.html' title='Multiple refered from 2 places.'>component_t</a>;
+<a name='L44'>  44 
+<a name='L45'>  45 <i><font color='green'>/** \brief Component list */</font></i>
+<a name='L46'>  46 <a href='../S/1008.html#L43' title='Defined at 43 in components/cac.c.'>component_t</a> *<a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>;
+<a name='L47'>  47 
+<a name='L48'>  48 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L49'>  49 
+<a name='L50'>  50 <i><font color='green'>/** \brief The event list to convert an event string to an event ID */</font></i>
+<a name='L51'>  51 <b>const</b> <b>char</b> <a href='../Y/2898.html' title='Multiple used in 4 places.'>ev_str</a>[<a href='../S/1026.html#L71' title='Defined at 71 in events/include/event_id.h.'>EV_NUM_EVENTS</a>+1][<a href='../D/6476.html' title='Multiple defined in 6 places.'>__CONF_WORD_LEN</a>] = <font color='red'>{</font>
+<a name='L52'>  52 <font color='darkred'>#include</font> "<a href='1028.html'>event_string.h</a>"
+<a name='L53'>  53 <font color='red'>}</font>;
+<a name='L54'>  54 
+<a name='L55'>  55 <i><font color='green'>/**</font></i>
+<a name='L56'>  56 <i><font color='green'> * \brief Function to convert an event string to an event ID</font></i>
+<a name='L57'>  57 <i><font color='green'> * \param event Event string</font></i>
+<a name='L58'>  58 <i><font color='green'> * \return Event ID</font></i>
+<a name='L59'>  59 <i><font color='green'> */</font></i>
+<a name='L60'>  60 <b>static</b> <b>int</b> <a href='../R/2962.html' title='Multiple refered from 9 places.'>ev_type</a>(<b>const</b> <b>char</b> *<a href='../Y/2899.html' title='Multiple used in 92 places.'>event</a>)
+<a name='L61'>  61 <font color='red'>{</font>
+<a name='L62'>  62     <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L63'>  63     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>=0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>&lt;<a href='../S/1026.html#L71' title='Defined at 71 in events/include/event_id.h.'>EV_NUM_EVENTS</a>+1; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L64'>  64         <b>if</b> (<a href='../Y/7082.html' title='Multiple used in 371 places.'>strcmp</a>(<a href='../Y/2899.html' title='Multiple used in 92 places.'>event</a>, <a href='../Y/2898.html' title='Multiple used in 4 places.'>ev_str</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>]) == 0)
+<a name='L65'>  65             <b>return</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L66'>  66     <font color='red'>}</font>
+<a name='L67'>  67     <b>return</b> <a href='../S/1026.html#L71' title='Defined at 71 in events/include/event_id.h.'>EV_NUM_EVENTS</a>;
+<a name='L68'>  68 <font color='red'>}</font>
+<a name='L69'>  69 
+<a name='L70'>  70 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L71'>  71 
+<a name='L72'>  72 <i><font color='green'>/**</font></i>
+<a name='L73'>  73 <i><font color='green'> * \brief Function to load component configurations</font></i>
+<a name='L74'>  74 <i><font color='green'> * \param conf_file Component configuration file</font></i>
+<a name='L75'>  75 <i><font color='green'> */</font></i>
+<a name='L76'>  76 <b>static</b> <b>int</b> <a href='../S/1008.html#L240' title='Refered from 240 in components/cac.c.'>config_load</a>(<b>char</b> *<a href='../Y/2051.html' title='Multiple used in 24 places.'>conf_file</a>)
+<a name='L77'>  77 <font color='red'>{</font>
+<a name='L78'>  78     <a href='../Y/3989.html' title='Multiple used in 80 places.'>json_t</a> *<a href='../Y/3979.html' title='Multiple used in 70 places.'>json</a>;
+<a name='L79'>  79     <a href='../Y/3983.html' title='Multiple used in 8 places.'>json_error_t</a> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L80'>  80 
+<a name='L81'>  81     <a href='../D/2419.html' title='Multiple defined in 6 places.'>LOG_INFO</a>(<a href='../S/1008.html#L21' title='Defined at 21 in components/cac.c.'>CAC_ID</a>, "Component configuration file: %s", <a href='../Y/2051.html' title='Multiple used in 24 places.'>conf_file</a>);
+<a name='L82'>  82 
+<a name='L83'>  83     <b>if</b> (<a href='../Y/1272.html' title='Multiple used in 15 places.'>access</a>(<a href='../Y/2051.html' title='Multiple used in 24 places.'>conf_file</a>, <a href='../Y/343.html' title='Multiple used in 15 places.'>F_OK</a>)) <font color='red'>{</font>
+<a name='L84'>  84         <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/1008.html#L21' title='Defined at 21 in components/cac.c.'>CAC_ID</a>, "No configuration file whose name is '%s'", <a href='../Y/2051.html' title='Multiple used in 24 places.'>conf_file</a>);
+<a name='L85'>  85         <b>return</b> -1;
+<a name='L86'>  86     <font color='red'>}</font>
+<a name='L87'>  87 
+<a name='L88'>  88     <b>char</b> *<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a> = <a href='../S/946.html#L100' title='Defined at 100 in util/str.c.'>str_read</a>(<a href='../Y/2051.html' title='Multiple used in 24 places.'>conf_file</a>);
+<a name='L89'>  89     <b>char</b> *<a href='../Y/2050.html' title='Multiple used in 34 places.'>conf</a> = <a href='../S/946.html#L130' title='Defined at 130 in util/str.c.'>str_preproc</a>(<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>);
+<a name='L90'>  90 
+<a name='L91'>  91     <a href='../Y/3979.html' title='Multiple used in 70 places.'>json</a> = <a href='../Y/3986.html' title='Multiple used in 10 places.'>json_loads</a>(<a href='../Y/2050.html' title='Multiple used in 34 places.'>conf</a>, 0, &amp;<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>);
+<a name='L92'>  92     <b>if</b> (!<a href='../Y/3979.html' title='Multiple used in 70 places.'>json</a>) <font color='red'>{</font>
+<a name='L93'>  93         <a href='../D/4593.html' title='Multiple defined in 6 places.'>PERROR</a>("json_loads");
+<a name='L94'>  94         <b>return</b> -1;
+<a name='L95'>  95     <font color='red'>}</font> <b>else</b> <b>if</b> (!<a href='../Y/3984.html' title='Multiple used in 19 places.'>json_is_array</a>(<a href='../Y/3979.html' title='Multiple used in 70 places.'>json</a>)) <font color='red'>{</font>
+<a name='L96'>  96         <a href='../D/4593.html' title='Multiple defined in 6 places.'>PERROR</a>("json_is_array");
+<a name='L97'>  97         <a href='../Y/3982.html' title='Multiple used in 16 places.'>json_decref</a>(<a href='../Y/3979.html' title='Multiple used in 70 places.'>json</a>);
+<a name='L98'>  98         <b>return</b> -1;
+<a name='L99'>  99     <font color='red'>}</font>
+<a name='L100'> 100 
+<a name='L101'> 101     <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L102'> 102     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>=0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>&lt;<a href='../Y/3981.html' title='Multiple used in 24 places.'>json_array_size</a>(<a href='../Y/3979.html' title='Multiple used in 70 places.'>json</a>); <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L103'> 103         <a href='../Y/3989.html' title='Multiple used in 80 places.'>json_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = <a href='../Y/3980.html' title='Multiple used in 28 places.'>json_array_get</a>(<a href='../Y/3979.html' title='Multiple used in 70 places.'>json</a>, <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>);
+<a name='L104'> 104 
+<a name='L105'> 105         <b>char</b> <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>[<a href='../D/6476.html' title='Multiple defined in 6 places.'>__CONF_WORD_LEN</a>] = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L106'> 106         <a href='../Y/3989.html' title='Multiple used in 80 places.'>json_t</a> *<a href='../Y/3971.html' title='Multiple used in 30 places.'>j_name</a> = <a href='../Y/3987.html' title='Multiple used in 44 places.'>json_object_get</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, "name");
+<a name='L107'> 107         <b>if</b> (<a href='../Y/3985.html' title='Multiple used in 35 places.'>json_is_string</a>(<a href='../Y/3971.html' title='Multiple used in 30 places.'>j_name</a>)) <font color='red'>{</font>
+<a name='L108'> 108             <a href='../Y/7083.html' title='Multiple used in 242 places.'>strcpy</a>(<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>, <a href='../Y/3988.html' title='Multiple used in 94 places.'>json_string_value</a>(<a href='../Y/3971.html' title='Multiple used in 30 places.'>j_name</a>));
+<a name='L109'> 109         <font color='red'>}</font>
+<a name='L110'> 110 
+<a name='L111'> 111         <i><font color='green'>// set the component name</font></i>
+<a name='L112'> 112         <b>if</b> (<a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>) == 0) <font color='red'>{</font>
+<a name='L113'> 113             <a href='../D/4936.html' title='Multiple defined in 12 places.'>PRINTF</a>("no component name\n");
+<a name='L114'> 114             <b>return</b> -1;
+<a name='L115'> 115         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L116'> 116             <a href='../Y/7083.html' title='Multiple used in 242 places.'>strcpy</a>(<a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>, <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>);
+<a name='L117'> 117             <a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a> = <a href='../D/8005.html' title='Multiple defined in 2 places.'>hash_func</a>((<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> *)&amp;<a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>, <a href='../D/6510.html' title='Multiple defined in 6 places.'>__HASHING_NAME_LENGTH</a>);
+<a name='L118'> 118         <font color='red'>}</font>
+<a name='L119'> 119 
+<a name='L120'> 120         <i><font color='green'>// set inbound events</font></i>
+<a name='L121'> 121         <a href='../Y/3989.html' title='Multiple used in 80 places.'>json_t</a> *<a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a> = <a href='../Y/3987.html' title='Multiple used in 44 places.'>json_object_get</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, "inbounds");
+<a name='L122'> 122         <b>if</b> (<a href='../Y/3984.html' title='Multiple used in 19 places.'>json_is_array</a>(<a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a>)) <font color='red'>{</font>
+<a name='L123'> 123             <b>int</b> <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>;
+<a name='L124'> 124             <b>for</b> (<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>=0; <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>&lt;<a href='../Y/3981.html' title='Multiple used in 24 places.'>json_array_size</a>(<a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a>); <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>++) <font color='red'>{</font>
+<a name='L125'> 125                 <a href='../Y/3989.html' title='Multiple used in 80 places.'>json_t</a> *<a href='../Y/2899.html' title='Multiple used in 92 places.'>event</a> = <a href='../Y/3980.html' title='Multiple used in 28 places.'>json_array_get</a>(<a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a>, <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>);
+<a name='L126'> 126 
+<a name='L127'> 127                 <b>if</b> (<a href='../S/1008.html#L60' title='Defined at 60 in components/cac.c.'>ev_type</a>(<a href='../Y/3988.html' title='Multiple used in 94 places.'>json_string_value</a>(<a href='../Y/2899.html' title='Multiple used in 92 places.'>event</a>)) == <a href='../S/1026.html#L71' title='Defined at 71 in events/include/event_id.h.'>EV_NUM_EVENTS</a>) <font color='red'>{</font>
+<a name='L128'> 128                     <a href='../D/4936.html' title='Multiple defined in 12 places.'>PRINTF</a>("wrong event name\n");
+<a name='L129'> 129                     <b>return</b> -1;
+<a name='L130'> 130                 <font color='red'>}</font>
+<a name='L131'> 131             <font color='red'>}</font>
+<a name='L132'> 132 
+<a name='L133'> 133             <b>for</b> (<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>=0; <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>&lt;<a href='../Y/3981.html' title='Multiple used in 24 places.'>json_array_size</a>(<a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a>); <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>++) <font color='red'>{</font>
+<a name='L134'> 134                 <a href='../Y/3989.html' title='Multiple used in 80 places.'>json_t</a> *<a href='../Y/2899.html' title='Multiple used in 92 places.'>event</a> = <a href='../Y/3980.html' title='Multiple used in 28 places.'>json_array_get</a>(<a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a>, <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>);
+<a name='L135'> 135 
+<a name='L136'> 136                 <b>if</b> (<a href='../S/1008.html#L60' title='Defined at 60 in components/cac.c.'>ev_type</a>(<a href='../Y/3988.html' title='Multiple used in 94 places.'>json_string_value</a>(<a href='../Y/2899.html' title='Multiple used in 92 places.'>event</a>)) == <a href='../S/1026.html#L11' title='Defined at 11 in events/include/event_id.h.'>EV_NONE</a>) <font color='red'>{</font>
+<a name='L137'> 137                     <b>break</b>;
+<a name='L138'> 138                 <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../S/1008.html#L60' title='Defined at 60 in components/cac.c.'>ev_type</a>(<a href='../Y/3988.html' title='Multiple used in 94 places.'>json_string_value</a>(<a href='../Y/2899.html' title='Multiple used in 92 places.'>event</a>)) == <a href='../S/1026.html#L23' title='Defined at 23 in events/include/event_id.h.'>EV_ALL_UPSTREAM</a>) <font color='red'>{</font>
+<a name='L139'> 139                     <b>int</b> <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>;
+<a name='L140'> 140                     <b>for</b> (<a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>=<a href='../S/1026.html#L11' title='Defined at 11 in events/include/event_id.h.'>EV_NONE</a>+1; <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>&lt;<a href='../S/1026.html#L23' title='Defined at 23 in events/include/event_id.h.'>EV_ALL_UPSTREAM</a>; <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>++) <font color='red'>{</font>
+<a name='L141'> 141                         <a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/3782.html' title='Multiple used in 25 places.'>in_list</a>[<a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/3783.html' title='Multiple used in 48 places.'>in_num</a>] = <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>;
+<a name='L142'> 142                         <a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/3783.html' title='Multiple used in 48 places.'>in_num</a>++;
+<a name='L143'> 143                     <font color='red'>}</font>
+<a name='L144'> 144                 <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../S/1008.html#L60' title='Defined at 60 in components/cac.c.'>ev_type</a>(<a href='../Y/3988.html' title='Multiple used in 94 places.'>json_string_value</a>(<a href='../Y/2899.html' title='Multiple used in 92 places.'>event</a>)) == <a href='../S/1026.html#L33' title='Defined at 33 in events/include/event_id.h.'>EV_ALL_DOWNSTREAM</a>) <font color='red'>{</font>
+<a name='L145'> 145                     <b>int</b> <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>;
+<a name='L146'> 146                     <b>for</b> (<a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>=<a href='../S/1026.html#L23' title='Defined at 23 in events/include/event_id.h.'>EV_ALL_UPSTREAM</a>+1; <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>&lt;<a href='../S/1026.html#L33' title='Defined at 33 in events/include/event_id.h.'>EV_ALL_DOWNSTREAM</a>; <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>++) <font color='red'>{</font>
+<a name='L147'> 147                         <a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/3782.html' title='Multiple used in 25 places.'>in_list</a>[<a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/3783.html' title='Multiple used in 48 places.'>in_num</a>] = <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>;
+<a name='L148'> 148                         <a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/3783.html' title='Multiple used in 48 places.'>in_num</a>++;
+<a name='L149'> 149                     <font color='red'>}</font>
+<a name='L150'> 150                 <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../S/1008.html#L60' title='Defined at 60 in components/cac.c.'>ev_type</a>(<a href='../Y/3988.html' title='Multiple used in 94 places.'>json_string_value</a>(<a href='../Y/2899.html' title='Multiple used in 92 places.'>event</a>)) == <a href='../S/1026.html#L47' title='Defined at 47 in events/include/event_id.h.'>EV_WRT_INTSTREAM</a>) <font color='red'>{</font>
+<a name='L151'> 151                     <b>int</b> <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>;
+<a name='L152'> 152                     <b>for</b> (<a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>=<a href='../S/1026.html#L33' title='Defined at 33 in events/include/event_id.h.'>EV_ALL_DOWNSTREAM</a>+1; <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>&lt;<a href='../S/1026.html#L47' title='Defined at 47 in events/include/event_id.h.'>EV_WRT_INTSTREAM</a>; <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>++) <font color='red'>{</font>
+<a name='L153'> 153                         <a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/3782.html' title='Multiple used in 25 places.'>in_list</a>[<a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/3783.html' title='Multiple used in 48 places.'>in_num</a>] = <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>;
+<a name='L154'> 154                         <a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/3783.html' title='Multiple used in 48 places.'>in_num</a>++;
+<a name='L155'> 155                     <font color='red'>}</font>
+<a name='L156'> 156                 <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../S/1008.html#L60' title='Defined at 60 in components/cac.c.'>ev_type</a>(<a href='../Y/3988.html' title='Multiple used in 94 places.'>json_string_value</a>(<a href='../Y/2899.html' title='Multiple used in 92 places.'>event</a>)) == <a href='../S/1026.html#L64' title='Defined at 64 in events/include/event_id.h.'>EV_ALL_INTSTREAM</a>) <font color='red'>{</font>
+<a name='L157'> 157                     <b>int</b> <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>;
+<a name='L158'> 158                     <b>for</b> (<a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>=<a href='../S/1026.html#L47' title='Defined at 47 in events/include/event_id.h.'>EV_WRT_INTSTREAM</a>+1; <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>&lt;<a href='../S/1026.html#L64' title='Defined at 64 in events/include/event_id.h.'>EV_ALL_INTSTREAM</a>; <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>++) <font color='red'>{</font>
+<a name='L159'> 159                         <a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/3782.html' title='Multiple used in 25 places.'>in_list</a>[<a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/3783.html' title='Multiple used in 48 places.'>in_num</a>] = <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>;
+<a name='L160'> 160                         <a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/3783.html' title='Multiple used in 48 places.'>in_num</a>++;
+<a name='L161'> 161                     <font color='red'>}</font>
+<a name='L162'> 162                 <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L163'> 163                     <a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/3782.html' title='Multiple used in 25 places.'>in_list</a>[<a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/3783.html' title='Multiple used in 48 places.'>in_num</a>] = <a href='../S/1008.html#L60' title='Defined at 60 in components/cac.c.'>ev_type</a>(<a href='../Y/3988.html' title='Multiple used in 94 places.'>json_string_value</a>(<a href='../Y/2899.html' title='Multiple used in 92 places.'>event</a>));
+<a name='L164'> 164                     <a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/3783.html' title='Multiple used in 48 places.'>in_num</a>++;
+<a name='L165'> 165                 <font color='red'>}</font>
+<a name='L166'> 166             <font color='red'>}</font>
+<a name='L167'> 167         <font color='red'>}</font>
+<a name='L168'> 168 
+<a name='L169'> 169         <i><font color='green'>// set outbound events</font></i>
+<a name='L170'> 170         <a href='../Y/3989.html' title='Multiple used in 80 places.'>json_t</a> *<a href='../Y/5537.html' title='Multiple used in 24 places.'>out_events</a> = <a href='../Y/3987.html' title='Multiple used in 44 places.'>json_object_get</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, "outbounds");
+<a name='L171'> 171         <b>if</b> (<a href='../Y/3984.html' title='Multiple used in 19 places.'>json_is_array</a>(<a href='../Y/5537.html' title='Multiple used in 24 places.'>out_events</a>)) <font color='red'>{</font>
+<a name='L172'> 172             <b>int</b> <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>;
+<a name='L173'> 173             <b>for</b> (<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>=0; <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>&lt;<a href='../Y/3981.html' title='Multiple used in 24 places.'>json_array_size</a>(<a href='../Y/5537.html' title='Multiple used in 24 places.'>out_events</a>); <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>++) <font color='red'>{</font>
+<a name='L174'> 174                 <a href='../Y/3989.html' title='Multiple used in 80 places.'>json_t</a> *<a href='../Y/5536.html' title='Multiple used in 31 places.'>out_event</a> = <a href='../Y/3980.html' title='Multiple used in 28 places.'>json_array_get</a>(<a href='../Y/5537.html' title='Multiple used in 24 places.'>out_events</a>, <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>);
+<a name='L175'> 175 
+<a name='L176'> 176                 <b>if</b> (<a href='../S/1008.html#L60' title='Defined at 60 in components/cac.c.'>ev_type</a>(<a href='../Y/3988.html' title='Multiple used in 94 places.'>json_string_value</a>(<a href='../Y/5536.html' title='Multiple used in 31 places.'>out_event</a>)) == <a href='../S/1026.html#L71' title='Defined at 71 in events/include/event_id.h.'>EV_NUM_EVENTS</a>) <font color='red'>{</font>
+<a name='L177'> 177                     <a href='../D/4936.html' title='Multiple defined in 12 places.'>PRINTF</a>("wrong event name\n");
+<a name='L178'> 178                     <b>return</b> -1;
+<a name='L179'> 179                 <font color='red'>}</font>
+<a name='L180'> 180             <font color='red'>}</font>
+<a name='L181'> 181 
+<a name='L182'> 182             <b>for</b> (<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>=0; <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>&lt;<a href='../Y/3981.html' title='Multiple used in 24 places.'>json_array_size</a>(<a href='../Y/5537.html' title='Multiple used in 24 places.'>out_events</a>); <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>++) <font color='red'>{</font>
+<a name='L183'> 183                 <a href='../Y/3989.html' title='Multiple used in 80 places.'>json_t</a> *<a href='../Y/5536.html' title='Multiple used in 31 places.'>out_event</a> = <a href='../Y/3980.html' title='Multiple used in 28 places.'>json_array_get</a>(<a href='../Y/5537.html' title='Multiple used in 24 places.'>out_events</a>, <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>);
+<a name='L184'> 184 
+<a name='L185'> 185                 <a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/5543.html' title='Multiple used in 18 places.'>out_list</a>[<a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/5544.html' title='Multiple used in 33 places.'>out_num</a>] = <a href='../S/1008.html#L60' title='Defined at 60 in components/cac.c.'>ev_type</a>(<a href='../Y/3988.html' title='Multiple used in 94 places.'>json_string_value</a>(<a href='../Y/5536.html' title='Multiple used in 31 places.'>out_event</a>));
+<a name='L186'> 186                 <a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>].<a href='../Y/5544.html' title='Multiple used in 33 places.'>out_num</a>++;
+<a name='L187'> 187             <font color='red'>}</font>
+<a name='L188'> 188         <font color='red'>}</font>
+<a name='L189'> 189 
+<a name='L190'> 190         <a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>++;
+<a name='L191'> 191     <font color='red'>}</font>
+<a name='L192'> 192 
+<a name='L193'> 193     <a href='../Y/3982.html' title='Multiple used in 16 places.'>json_decref</a>(<a href='../Y/3979.html' title='Multiple used in 70 places.'>json</a>);
+<a name='L194'> 194 
+<a name='L195'> 195     <b>return</b> 0;
+<a name='L196'> 196 <font color='red'>}</font>
+<a name='L197'> 197 
+<a name='L198'> 198 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L199'> 199 
+<a name='L200'> 200 <i><font color='green'>/**</font></i>
+<a name='L201'> 201 <i><font color='green'> * \brief Function to verity the permission of a component</font></i>
+<a name='L202'> 202 <i><font color='green'> * \param id Component ID</font></i>
+<a name='L203'> 203 <i><font color='green'> * \param type Event type</font></i>
+<a name='L204'> 204 <i><font color='green'> */</font></i>
+<a name='L205'> 205 <b>static</b> <b>int</b> <a href='../S/1008.html#L280' title='Refered from 280 in components/cac.c.'>verify_component</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>int</b> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>)
+<a name='L206'> 206 <font color='red'>{</font>
+<a name='L207'> 207     <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L208'> 208     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>=0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>&lt;<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L209'> 209         <b>if</b> (<a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>].<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a> == <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>) <font color='red'>{</font>
+<a name='L210'> 210             <b>int</b> <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>;
+<a name='L211'> 211             <b>for</b> (<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>=0; <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>&lt;<a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>].<a href='../Y/5544.html' title='Multiple used in 33 places.'>out_num</a>; <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>++)
+<a name='L212'> 212                 <b>if</b> (<a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>].<a href='../Y/5543.html' title='Multiple used in 18 places.'>out_list</a>[<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>] == <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>)
+<a name='L213'> 213                     <b>return</b> 0;
+<a name='L214'> 214             <b>return</b> 1;
+<a name='L215'> 215         <font color='red'>}</font>
+<a name='L216'> 216     <font color='red'>}</font>
+<a name='L217'> 217     <b>return</b> -1;
+<a name='L218'> 218 <font color='red'>}</font>
+<a name='L219'> 219 
+<a name='L220'> 220 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L221'> 221 
+<a name='L222'> 222 <i><font color='green'>/**</font></i>
+<a name='L223'> 223 <i><font color='green'> * \brief The main function</font></i>
+<a name='L224'> 224 <i><font color='green'> * \param activated The activation flag of this component</font></i>
+<a name='L225'> 225 <i><font color='green'> * \param argc The number of arguments</font></i>
+<a name='L226'> 226 <i><font color='green'> * \param argv Arguments</font></i>
+<a name='L227'> 227 <i><font color='green'> */</font></i>
+<a name='L228'> 228 <b>int</b> <a href='../S/979.html#L142' title='Refered from 142 in components/include/component_list.h.'>cac_main</a>(<b>int</b> *<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>, <b>int</b> <a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a>, <b>char</b> **<a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>)
+<a name='L229'> 229 <font color='red'>{</font>
+<a name='L230'> 230     <a href='../D/2419.html' title='Multiple defined in 6 places.'>LOG_INFO</a>(<a href='../S/1008.html#L21' title='Defined at 21 in components/cac.c.'>CAC_ID</a>, "Init - Component access control");
+<a name='L231'> 231 
+<a name='L232'> 232     <a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a> = 0;
+<a name='L233'> 233 
+<a name='L234'> 234     <a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a> = (<a href='../S/1008.html#L43' title='Defined at 43 in components/cac.c.'>component_t</a> *)<a href='../D/529.html' title='Multiple defined in 6 places.'>CALLOC</a>(<a href='../Y/1140.html' title='Multiple used in 5 places.'>__MAX_COMPONENTS</a>, <b>sizeof</b>(<a href='../S/1008.html#L43' title='Defined at 43 in components/cac.c.'>component_t</a>));
+<a name='L235'> 235     <b>if</b> (<a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L236'> 236         <a href='../D/4593.html' title='Multiple defined in 6 places.'>PERROR</a>("calloc");
+<a name='L237'> 237         <b>return</b> -1;
+<a name='L238'> 238     <font color='red'>}</font>
+<a name='L239'> 239 
+<a name='L240'> 240     <b>if</b> (<a href='../S/1008.html#L76' title='Defined at 76 in components/cac.c.'>config_load</a>(<a href='../Y/2035.html' title='Multiple used in 2 places.'>compnt_file</a>) &lt; 0)
+<a name='L241'> 241         <b>return</b> -1;
+<a name='L242'> 242 
+<a name='L243'> 243     <a href='../D/6825.html' title='Multiple defined in 6 places.'>activate</a>();
+<a name='L244'> 244 
+<a name='L245'> 245     <b>return</b> 0;
+<a name='L246'> 246 <font color='red'>}</font>
+<a name='L247'> 247 
+<a name='L248'> 248 <i><font color='green'>/**</font></i>
+<a name='L249'> 249 <i><font color='green'> * \brief The cleanup function</font></i>
+<a name='L250'> 250 <i><font color='green'> * \param activated The activation flag of this component</font></i>
+<a name='L251'> 251 <i><font color='green'> */</font></i>
+<a name='L252'> 252 <b>int</b> <a href='../S/979.html#L142' title='Refered from 142 in components/include/component_list.h.'>cac_cleanup</a>(<b>int</b> *<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>)
+<a name='L253'> 253 <font color='red'>{</font>
+<a name='L254'> 254     <a href='../D/2419.html' title='Multiple defined in 6 places.'>LOG_INFO</a>(<a href='../S/1008.html#L21' title='Defined at 21 in components/cac.c.'>CAC_ID</a>, "Clean up - Component access control");
+<a name='L255'> 255 
+<a name='L256'> 256     <a href='../D/7280.html' title='Multiple defined in 6 places.'>deactivate</a>();
+<a name='L257'> 257 
+<a name='L258'> 258     <a href='../D/1836.html' title='Multiple defined in 7 places.'>FREE</a>(<a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>);
+<a name='L259'> 259 
+<a name='L260'> 260     <b>return</b> 0;
+<a name='L261'> 261 <font color='red'>}</font>
+<a name='L262'> 262 
+<a name='L263'> 263 <i><font color='green'>/**</font></i>
+<a name='L264'> 264 <i><font color='green'> * \brief The CLI function</font></i>
+<a name='L265'> 265 <i><font color='green'> * \param cli The CLI pointer</font></i>
+<a name='L266'> 266 <i><font color='green'> * \param args Arguments</font></i>
+<a name='L267'> 267 <i><font color='green'> */</font></i>
+<a name='L268'> 268 <b>int</b> <a href='../S/979.html#L142' title='Refered from 142 in components/include/component_list.h.'>cac_cli</a>(<a href='../D/7177.html' title='Multiple defined in 6 places.'>cli_t</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>char</b> **<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L269'> 269 <font color='red'>{</font>
+<a name='L270'> 270     <b>return</b> 0;
+<a name='L271'> 271 <font color='red'>}</font>
+<a name='L272'> 272 
+<a name='L273'> 273 <i><font color='green'>/**</font></i>
+<a name='L274'> 274 <i><font color='green'> * \brief The handler function</font></i>
+<a name='L275'> 275 <i><font color='green'> * \param ev Read-only event</font></i>
+<a name='L276'> 276 <i><font color='green'> * \param ev_out Read-write event (if this component has the write permission)</font></i>
+<a name='L277'> 277 <i><font color='green'> */</font></i>
+<a name='L278'> 278 <b>int</b> <a href='../S/979.html#L142' title='Refered from 142 in components/include/component_list.h.'>cac_handler</a>(<b>const</b> <a href='../D/7743.html' title='Multiple defined in 7 places.'>event_t</a> *<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>, <a href='../D/7740.html' title='Multiple defined in 7 places.'>event_out_t</a> *<a href='../Y/2897.html' title='Multiple used in 49 places.'>ev_out</a>)
+<a name='L279'> 279 <font color='red'>{</font>
+<a name='L280'> 280     <b>int</b> <a href='../Y/6406.html' title='Multiple used in 175 places.'>res</a> = <a href='../S/1008.html#L205' title='Defined at 205 in components/cac.c.'>verify_component</a>(<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>-&gt;<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>);
+<a name='L281'> 281     <b>if</b> (<a href='../Y/6406.html' title='Multiple used in 175 places.'>res</a> &lt; 0) <font color='red'>{</font>
+<a name='L282'> 282         <a href='../D/2421.html' title='Multiple defined in 6 places.'>LOG_WARN</a>(<a href='../S/1008.html#L21' title='Defined at 21 in components/cac.c.'>CAC_ID</a>, "Wrong component id (caller: %u, event: %s)", <a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>-&gt;<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/2898.html' title='Multiple used in 4 places.'>ev_str</a>[<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>]);
+<a name='L283'> 283         <b>return</b> -1;
+<a name='L284'> 284     <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../Y/6406.html' title='Multiple used in 175 places.'>res</a> &gt; 0) <font color='red'>{</font>
+<a name='L285'> 285         <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L286'> 286         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>=0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>&lt;<a href='../Y/4968.html' title='Multiple used in 22 places.'>num_components</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L287'> 287             <b>if</b> (<a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>].<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a> == <a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>-&gt;<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>) <font color='red'>{</font>
+<a name='L288'> 288                 <a href='../D/2421.html' title='Multiple defined in 6 places.'>LOG_WARN</a>(<a href='../S/1008.html#L21' title='Defined at 21 in components/cac.c.'>CAC_ID</a>, "Unexcepted access (caller: %s, event: %s)", <a href='../Y/2040.html' title='Multiple used in 23 places.'>component</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>].<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>, <a href='../Y/2898.html' title='Multiple used in 4 places.'>ev_str</a>[<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>]);
+<a name='L289'> 289                 <b>break</b>;
+<a name='L290'> 290             <font color='red'>}</font>
+<a name='L291'> 291         <font color='red'>}</font>
+<a name='L292'> 292         <b>return</b> -1;
+<a name='L293'> 293     <font color='red'>}</font>
+<a name='L294'> 294 
+<a name='L295'> 295     <b>return</b> 0;
+<a name='L296'> 296 <font color='red'>}</font>
+<a name='L297'> 297 
+<a name='L298'> 298 <i><font color='green'>/**</font></i>
+<a name='L299'> 299 <i><font color='green'> * @}</font></i>
+<a name='L300'> 300 <i><font color='green'> *</font></i>
+<a name='L301'> 301 <i><font color='green'> * @}</font></i>
+<a name='L302'> 302 <i><font color='green'> */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L60'>[^]</a><a href='#L278'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

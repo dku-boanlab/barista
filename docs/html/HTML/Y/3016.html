@@ -1,0 +1,433 @@
+<html>
+<head>
+<title>fd</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/26.html#L118'>fd</a>                118 cbench/oflops/cbench/cbench.c int timeout_connect(int fd, const char * hostname, int port, int mstimeout) {
+<a href='../S/26.html#L150'>fd</a>                150 cbench/oflops/cbench/cbench.c 	if((flags = fcntl(fd, F_GETFL)) &lt; 0) {
+<a href='../S/26.html#L155'>fd</a>                155 cbench/oflops/cbench/cbench.c 	if(fcntl(fd, F_SETFL, flags | O_NONBLOCK) &lt; 0) {
+<a href='../S/26.html#L165'>fd</a>                165 cbench/oflops/cbench/cbench.c 	ev.data.fd = fd;
+<a href='../S/26.html#L166'>fd</a>                166 cbench/oflops/cbench/cbench.c 	if(epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &amp;ev) == -1) {
+<a href='../S/26.html#L172'>fd</a>                172 cbench/oflops/cbench/cbench.c     FD_SET(fd, &amp;fds);
+<a href='../S/26.html#L182'>fd</a>                182 cbench/oflops/cbench/cbench.c 	    if(connect(fd, res-&gt;ai_addr, res-&gt;ai_addrlen) &lt; 0) 
+<a href='../S/26.html#L194'>fd</a>                194 cbench/oflops/cbench/cbench.c         ret = select(fd + 1, NULL, &amp;fds, NULL, &amp;tv);
+<a href='../S/26.html#L455'>fd</a>                455 cbench/oflops/cbench/cbench.c 	    ev.data.fd = sock;
+<a href='../S/28.html#L154'>fd</a>                154 cbench/oflops/cbench/fakeswitch.c     pfd-&gt;fd = fs-&gt;sock;
+<a href='../S/90.html#L386'>fd</a>                386 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c       poll_set[0].fd = ctx-&gt;control_fd;
+<a href='../S/106.html#L344'>fd</a>                344 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c       poll_set[0].fd = ctx-&gt;control_fd;
+<a href='../S/97.html#L383'>fd</a>                383 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c       poll_set[0].fd = ctx-&gt;control_fd;
+<a href='../S/38.html#L25'>fd</a>                 25 cbench/oflops/module_run.c static void process_event(oflops_context *ctx, test_module * mod, struct pollfd *fd);
+<a href='../S/38.html#L26'>fd</a>                 26 cbench/oflops/module_run.c static void process_control_event(oflops_context *ctx, test_module * mod, struct pollfd *fd);
+<a href='../S/38.html#L27'>fd</a>                 27 cbench/oflops/module_run.c static void process_pcap_event(oflops_context *ctx, test_module * mod, struct pollfd *fd, oflops_channel_name ch);
+<a href='../S/38.html#L117'>fd</a>                117 cbench/oflops/module_run.c 	  poll_set[n_fds].fd = ctx-&gt;channels[ch].pcap_fd;
+<a href='../S/38.html#L126'>fd</a>                126 cbench/oflops/module_run.c       poll_set[n_fds].fd = ctx-&gt;control_fd;	// add the control channel at the end
+<a href='../S/38.html#L182'>fd</a>                182 cbench/oflops/module_run.c   if(pfd-&gt;fd == ctx-&gt;control_fd)
+<a href='../S/38.html#L186'>fd</a>                186 cbench/oflops/module_run.c     if (pfd-&gt;fd == ctx-&gt;channels[ch].pcap_fd)
+<a href='../S/38.html#L189'>fd</a>                189 cbench/oflops/module_run.c   fprintf(stderr, "Event on unknown fd %d .. dying", pfd-&gt;fd);
+<a href='../S/38.html#L228'>fd</a>                228 cbench/oflops/module_run.c   count = read(pfd-&gt;fd,&amp;buf[bufend], buflen - bufend);
+<a href='../S/44.html#L100'>fd</a>                100 cbench/oflops/pkt_gen/common/nf2util.c 	if ((ret = ioctl(nf2-&gt;fd, SIOCREGREAD, &amp;ifreq)) == 0)
+<a href='../S/44.html#L124'>fd</a>                124 cbench/oflops/pkt_gen/common/nf2util.c 	if ((ret = ioctl(nf2-&gt;fd, SIOCREGREAD, &amp;nf2reg)) == 0)
+<a href='../S/44.html#L175'>fd</a>                175 cbench/oflops/pkt_gen/common/nf2util.c 	if ((ret = ioctl(nf2-&gt;fd, SIOCREGWRITE, &amp;ifreq)) == 0)
+<a href='../S/44.html#L200'>fd</a>                200 cbench/oflops/pkt_gen/common/nf2util.c 	if ((ret = ioctl(nf2-&gt;fd, SIOCREGWRITE, &amp;nf2reg)) == 0)
+<a href='../S/44.html#L267'>fd</a>                267 cbench/oflops/pkt_gen/common/nf2util.c 		nf2-&gt;fd = socket(AF_INET, SOCK_DGRAM, 0);
+<a href='../S/44.html#L268'>fd</a>                268 cbench/oflops/pkt_gen/common/nf2util.c 		if (nf2-&gt;fd == -1)
+<a href='../S/44.html#L280'>fd</a>                280 cbench/oflops/pkt_gen/common/nf2util.c 				if (setsockopt(nf2-&gt;fd, SOL_SOCKET, SO_BINDTODEVICE,
+<a href='../S/44.html#L293'>fd</a>                293 cbench/oflops/pkt_gen/common/nf2util.c 		nf2-&gt;fd = fileno(fopen(filename, "w+"));
+<a href='../S/44.html#L294'>fd</a>                294 cbench/oflops/pkt_gen/common/nf2util.c 		if (nf2-&gt;fd == -1)
+<a href='../S/44.html#L314'>fd</a>                314 cbench/oflops/pkt_gen/common/nf2util.c 		close(nf2-&gt;fd);
+<a href='../S/44.html#L318'>fd</a>                318 cbench/oflops/pkt_gen/common/nf2util.c 		close(nf2-&gt;fd);
+<a href='../S/44.html#L791'>fd</a>                791 cbench/oflops/pkt_gen/common/nf2util.c     if (!have_version_info || prev_dev.fd != nf2-&gt;fd) {
+<a href='../S/50.html#L28'>fd</a>                 28 cbench/oflops/pkt_gen/common/nf2util.h 	int fd;
+<a href='../S/223.html#L84'>fd</a>                 84 cbench/openflow/hw-lib/nf2/nf2util.c 	if ((ret = ioctl(nf2-&gt;fd, SIOCREGREAD, &amp;ifreq)) == 0)
+<a href='../S/223.html#L107'>fd</a>                107 cbench/openflow/hw-lib/nf2/nf2util.c 	if ((ret = ioctl(nf2-&gt;fd, SIOCREGREAD, &amp;nf2reg)) == 0)
+<a href='../S/223.html#L158'>fd</a>                158 cbench/openflow/hw-lib/nf2/nf2util.c 	if ((ret = ioctl(nf2-&gt;fd, SIOCREGWRITE, &amp;ifreq)) == 0)
+<a href='../S/223.html#L182'>fd</a>                182 cbench/openflow/hw-lib/nf2/nf2util.c 	if ((ret = ioctl(nf2-&gt;fd, SIOCREGWRITE, &amp;nf2reg)) == 0)
+<a href='../S/223.html#L247'>fd</a>                247 cbench/openflow/hw-lib/nf2/nf2util.c 		nf2-&gt;fd = socket(AF_INET, SOCK_DGRAM, 0);
+<a href='../S/223.html#L248'>fd</a>                248 cbench/openflow/hw-lib/nf2/nf2util.c 		if (nf2-&gt;fd == -1)
+<a href='../S/223.html#L260'>fd</a>                260 cbench/openflow/hw-lib/nf2/nf2util.c 				if (setsockopt(nf2-&gt;fd, SOL_SOCKET, SO_BINDTODEVICE,
+<a href='../S/223.html#L274'>fd</a>                274 cbench/openflow/hw-lib/nf2/nf2util.c 					if (ioctl (nf2-&gt;fd, SIOCGIFNAME, &amp;ifreq) &lt; 0)
+<a href='../S/223.html#L294'>fd</a>                294 cbench/openflow/hw-lib/nf2/nf2util.c 				if (ioctl (nf2-&gt;fd, SIOCGIFADDR, &amp;ifreq) &lt; 0)
+<a href='../S/223.html#L308'>fd</a>                308 cbench/openflow/hw-lib/nf2/nf2util.c 				if (bind(nf2-&gt;fd,(struct sockaddr *)&amp;address,sizeof(address)) == -1) {
+<a href='../S/223.html#L319'>fd</a>                319 cbench/openflow/hw-lib/nf2/nf2util.c 		nf2-&gt;fd = fileno(fopen(filename, "w+"));
+<a href='../S/223.html#L320'>fd</a>                320 cbench/openflow/hw-lib/nf2/nf2util.c 		if (nf2-&gt;fd == -1)
+<a href='../S/223.html#L337'>fd</a>                337 cbench/openflow/hw-lib/nf2/nf2util.c 		close(nf2-&gt;fd);
+<a href='../S/223.html#L341'>fd</a>                341 cbench/openflow/hw-lib/nf2/nf2util.c 		close(nf2-&gt;fd);
+<a href='../S/232.html#L24'>fd</a>                 24 cbench/openflow/hw-lib/nf2/nf2util.h 	int fd;
+<a href='../S/817.html#L114'>fd</a>                114 cbench/openflow/lib/daemon.c         int fd = open(pidfile, O_RDWR);
+<a href='../S/817.html#L115'>fd</a>                115 cbench/openflow/lib/daemon.c         if (fd &gt;= 0) {
+<a href='../S/817.html#L121'>fd</a>                121 cbench/openflow/lib/daemon.c             if (fcntl(fd, F_GETLK, &amp;lck) != -1 &amp;&amp; lck.l_type != F_UNLCK) {
+<a href='../S/817.html#L124'>fd</a>                124 cbench/openflow/lib/daemon.c             close(fd);
+<a href='../S/817.html#L158'>fd</a>                158 cbench/openflow/lib/daemon.c         int fd;
+<a href='../S/817.html#L162'>fd</a>                162 cbench/openflow/lib/daemon.c         fd = open(tmpfile, O_CREAT | O_WRONLY | O_TRUNC, 0666);
+<a href='../S/817.html#L163'>fd</a>                163 cbench/openflow/lib/daemon.c         if (fd &gt;= 0) {
+<a href='../S/817.html#L169'>fd</a>                169 cbench/openflow/lib/daemon.c             if (fcntl(fd, F_SETLK, &amp;lck) != -1) {
+<a href='../S/817.html#L171'>fd</a>                171 cbench/openflow/lib/daemon.c                 if (write(fd, text, strlen(text)) == strlen(text)) {
+<a href='../S/817.html#L177'>fd</a>                177 cbench/openflow/lib/daemon.c                         close(fd);
+<a href='../S/817.html#L184'>fd</a>                184 cbench/openflow/lib/daemon.c                     close(fd);
+<a href='../S/817.html#L188'>fd</a>                188 cbench/openflow/lib/daemon.c                 close(fd);
+<a href='../S/851.html#L317'>fd</a>                317 cbench/openflow/lib/netdev.c open_queue_socket(const char * name, uint16_t class_id, int * fd)
+<a href='../S/851.html#L324'>fd</a>                324 cbench/openflow/lib/netdev.c     *fd = socket(PF_PACKET, SOCK_RAW, htons(0)); /* this is a write-only sock */
+<a href='../S/851.html#L325'>fd</a>                325 cbench/openflow/lib/netdev.c     if (*fd &lt; 0) {
+<a href='../S/851.html#L330'>fd</a>                330 cbench/openflow/lib/netdev.c     error = set_nonblocking(*fd);
+<a href='../S/851.html#L337'>fd</a>                337 cbench/openflow/lib/netdev.c     if (ioctl(*fd, SIOCGIFINDEX, &amp;ifr) &lt; 0) {
+<a href='../S/851.html#L347'>fd</a>                347 cbench/openflow/lib/netdev.c     if (bind(*fd, (struct sockaddr *) &amp;sll, sizeof sll) &lt; 0) {
+<a href='../S/851.html#L357'>fd</a>                357 cbench/openflow/lib/netdev.c     if ( set_socket_priority(*fd,priority) &lt; 0) {
+<a href='../S/851.html#L367'>fd</a>                367 cbench/openflow/lib/netdev.c     close(*fd);
+<a href='../S/851.html#L434'>fd</a>                434 cbench/openflow/lib/netdev.c     int * fd;
+<a href='../S/851.html#L479'>fd</a>                479 cbench/openflow/lib/netdev.c         fd = &amp;netdev-&gt;queue_fd[i];
+<a href='../S/851.html#L480'>fd</a>                480 cbench/openflow/lib/netdev.c         error = open_queue_socket(netdev-&gt;name,i,fd);
+<a href='../S/826.html#L71'>fd</a>                 71 cbench/openflow/lib/netlink.c     int fd;
+<a href='../S/826.html#L118'>fd</a>                118 cbench/openflow/lib/netlink.c     sock-&gt;fd = socket(AF_NETLINK, SOCK_RAW, protocol);
+<a href='../S/826.html#L119'>fd</a>                119 cbench/openflow/lib/netlink.c     if (sock-&gt;fd &lt; 0) {
+<a href='../S/826.html#L130'>fd</a>                130 cbench/openflow/lib/netlink.c         &amp;&amp; setsockopt(sock-&gt;fd, SOL_SOCKET, SO_SNDBUF,
+<a href='../S/826.html#L137'>fd</a>                137 cbench/openflow/lib/netlink.c         &amp;&amp; setsockopt(sock-&gt;fd, SOL_SOCKET, SO_RCVBUF,
+<a href='../S/826.html#L152'>fd</a>                152 cbench/openflow/lib/netlink.c     if (bind(sock-&gt;fd, (struct sockaddr *) &amp;local, sizeof local) &lt; 0) {
+<a href='../S/826.html#L161'>fd</a>                161 cbench/openflow/lib/netlink.c     if (connect(sock-&gt;fd, (struct sockaddr *) &amp;remote, sizeof remote) &lt; 0) {
+<a href='../S/826.html#L176'>fd</a>                176 cbench/openflow/lib/netlink.c         &amp;&amp; setsockopt(sock-&gt;fd, SOL_NETLINK, NETLINK_ADD_MEMBERSHIP,
+<a href='../S/826.html#L195'>fd</a>                195 cbench/openflow/lib/netlink.c     if (sock-&gt;fd &gt;= 0) {
+<a href='../S/826.html#L196'>fd</a>                196 cbench/openflow/lib/netlink.c         close(sock-&gt;fd);
+<a href='../S/826.html#L207'>fd</a>                207 cbench/openflow/lib/netlink.c         close(sock-&gt;fd);
+<a href='../S/826.html#L228'>fd</a>                228 cbench/openflow/lib/netlink.c         retval = send(sock-&gt;fd, msg-&gt;data, msg-&gt;size, wait ? 0 : MSG_DONTWAIT);
+<a href='../S/826.html#L254'>fd</a>                254 cbench/openflow/lib/netlink.c         retval = sendmsg(sock-&gt;fd, &amp;msg, wait ? 0 : MSG_DONTWAIT);
+<a href='../S/826.html#L302'>fd</a>                302 cbench/openflow/lib/netlink.c         nbytes = recvmsg(sock-&gt;fd, &amp;msg, (wait ? 0 : MSG_DONTWAIT) | MSG_PEEK); 
+<a href='../S/826.html#L319'>fd</a>                319 cbench/openflow/lib/netlink.c         nbytes2 = recvmsg(sock-&gt;fd, &amp;msg, MSG_DONTWAIT);
+<a href='../S/826.html#L434'>fd</a>                434 cbench/openflow/lib/netlink.c     poll_fd_wait(sock-&gt;fd, events);
+<a href='../S/854.html#L53'>fd</a>                 53 cbench/openflow/lib/poll-loop.c     int fd;                     /* File descriptor. */
+<a href='../S/854.html#L83'>fd</a>                 83 cbench/openflow/lib/poll-loop.c static struct poll_waiter *new_waiter(int fd, short int events);
+<a href='../S/854.html#L93'>fd</a>                 93 cbench/openflow/lib/poll-loop.c poll_fd_wait(int fd, short int events)
+<a href='../S/854.html#L95'>fd</a>                 95 cbench/openflow/lib/poll-loop.c     return new_waiter(fd, events);
+<a href='../S/854.html#L173'>fd</a>                173 cbench/openflow/lib/poll-loop.c         pollfds[n_pollfds].fd = pw-&gt;fd;
+<a href='../S/854.html#L202'>fd</a>                202 cbench/openflow/lib/poll-loop.c                            pw-&gt;fd);
+<a href='../S/854.html#L209'>fd</a>                209 cbench/openflow/lib/poll-loop.c                 pw-&gt;function(pw-&gt;fd, pw-&gt;pollfd-&gt;revents, pw-&gt;aux);
+<a href='../S/854.html#L232'>fd</a>                232 cbench/openflow/lib/poll-loop.c poll_fd_callback(int fd, short int events, poll_fd_func *function, void *aux)
+<a href='../S/854.html#L234'>fd</a>                234 cbench/openflow/lib/poll-loop.c     struct poll_waiter *pw = new_waiter(fd, events);
+<a href='../S/854.html#L266'>fd</a>                266 cbench/openflow/lib/poll-loop.c new_waiter(int fd, short int events)
+<a href='../S/854.html#L269'>fd</a>                269 cbench/openflow/lib/poll-loop.c     assert(fd &gt;= 0);
+<a href='../S/854.html#L270'>fd</a>                270 cbench/openflow/lib/poll-loop.c     waiter-&gt;fd = fd;
+<a href='../S/901.html#L57'>fd</a>                 57 cbench/openflow/lib/poll-loop.h struct poll_waiter *poll_fd_wait(int fd, short int events);
+<a href='../S/901.html#L65'>fd</a>                 65 cbench/openflow/lib/poll-loop.h typedef void poll_fd_func(int fd, short int revents, void *aux);
+<a href='../S/901.html#L66'>fd</a>                 66 cbench/openflow/lib/poll-loop.h struct poll_waiter *poll_fd_callback(int fd, short int events,
+<a href='../S/918.html#L198'>fd</a>                198 cbench/openflow/lib/process.c         int fd;
+<a href='../S/918.html#L201'>fd</a>                201 cbench/openflow/lib/process.c         for (fd = 0; fd &lt; fd_max; fd++) {
+<a href='../S/918.html#L202'>fd</a>                202 cbench/openflow/lib/process.c             if (is_member(fd, null_fds, n_null_fds)) {
+<a href='../S/918.html#L204'>fd</a>                204 cbench/openflow/lib/process.c                 dup2(nullfd, fd);
+<a href='../S/918.html#L206'>fd</a>                206 cbench/openflow/lib/process.c             } else if (fd &gt;= 3 &amp;&amp; !is_member(fd, keep_fds, n_keep_fds)) {
+<a href='../S/918.html#L207'>fd</a>                207 cbench/openflow/lib/process.c                 close(fd);
+<a href='../S/835.html#L56'>fd</a>                 56 cbench/openflow/lib/socket-util.c set_nonblocking(int fd)
+<a href='../S/835.html#L58'>fd</a>                 58 cbench/openflow/lib/socket-util.c     int flags = fcntl(fd, F_GETFL, 0);
+<a href='../S/835.html#L60'>fd</a>                 60 cbench/openflow/lib/socket-util.c         if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) != -1) {
+<a href='../S/835.html#L75'>fd</a>                 75 cbench/openflow/lib/socket-util.c set_socket_priority(int fd, int priority)
+<a href='../S/835.html#L78'>fd</a>                 78 cbench/openflow/lib/socket-util.c     return setsockopt(fd, SOL_SOCKET, SO_PRIORITY, (char *)&amp;prio, sizeof(prio));
+<a href='../S/835.html#L127'>fd</a>                127 cbench/openflow/lib/socket-util.c get_socket_error(int fd) 
+<a href='../S/835.html#L131'>fd</a>                131 cbench/openflow/lib/socket-util.c     if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &amp;error, &amp;len) &lt; 0) {
+<a href='../S/835.html#L140'>fd</a>                140 cbench/openflow/lib/socket-util.c check_connection_completion(int fd) 
+<a href='../S/835.html#L145'>fd</a>                145 cbench/openflow/lib/socket-util.c     pfd.fd = fd;
+<a href='../S/835.html#L151'>fd</a>                151 cbench/openflow/lib/socket-util.c         return get_socket_error(fd);
+<a href='../S/835.html#L167'>fd</a>                167 cbench/openflow/lib/socket-util.c drain_rcvbuf(int fd)
+<a href='../S/835.html#L173'>fd</a>                173 cbench/openflow/lib/socket-util.c     if (getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &amp;rcvbuf, &amp;rcvbuf_len) &lt; 0) {
+<a href='../S/835.html#L193'>fd</a>                193 cbench/openflow/lib/socket-util.c         ssize_t n_bytes = recv(fd, buffer, sizeof buffer,
+<a href='../S/835.html#L207'>fd</a>                207 cbench/openflow/lib/socket-util.c drain_fd(int fd, size_t n_packets)
+<a href='../S/835.html#L215'>fd</a>                215 cbench/openflow/lib/socket-util.c         if (read(fd, buffer, sizeof buffer) &lt;= 0) {
+<a href='../S/835.html#L245'>fd</a>                245 cbench/openflow/lib/socket-util.c     int fd;
+<a href='../S/835.html#L247'>fd</a>                247 cbench/openflow/lib/socket-util.c     fd = socket(PF_UNIX, style, 0);
+<a href='../S/835.html#L248'>fd</a>                248 cbench/openflow/lib/socket-util.c     if (fd &lt; 0) {
+<a href='../S/835.html#L257'>fd</a>                257 cbench/openflow/lib/socket-util.c         int flags = fcntl(fd, F_GETFL, 0);
+<a href='../S/835.html#L261'>fd</a>                261 cbench/openflow/lib/socket-util.c         if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+<a href='../S/835.html#L274'>fd</a>                274 cbench/openflow/lib/socket-util.c         if (bind(fd, (struct sockaddr*) &amp;un, un_len)
+<a href='../S/835.html#L275'>fd</a>                275 cbench/openflow/lib/socket-util.c             || fchmod(fd, S_IRWXU)) {
+<a href='../S/835.html#L284'>fd</a>                284 cbench/openflow/lib/socket-util.c         if (connect(fd, (struct sockaddr*) &amp;un, un_len)
+<a href='../S/835.html#L293'>fd</a>                293 cbench/openflow/lib/socket-util.c         if (setsockopt(fd, SOL_SOCKET, SO_PASSCRED, &amp;enable, sizeof(enable))) {
+<a href='../S/835.html#L299'>fd</a>                299 cbench/openflow/lib/socket-util.c     return fd;
+<a href='../S/835.html#L306'>fd</a>                306 cbench/openflow/lib/socket-util.c     close(fd);
+<a href='../S/863.html#L41'>fd</a>                 41 cbench/openflow/lib/socket-util.h int set_nonblocking(int fd);
+<a href='../S/863.html#L42'>fd</a>                 42 cbench/openflow/lib/socket-util.h int set_socket_priority(int fd, int priority);
+<a href='../S/863.html#L46'>fd</a>                 46 cbench/openflow/lib/socket-util.h int check_connection_completion(int fd);
+<a href='../S/863.html#L47'>fd</a>                 47 cbench/openflow/lib/socket-util.h int drain_rcvbuf(int fd);
+<a href='../S/863.html#L48'>fd</a>                 48 cbench/openflow/lib/socket-util.h void drain_fd(int fd, size_t n_packets);
+<a href='../S/894.html#L1202'>fd</a>               1202 cbench/openflow/lib/stp.c     int ht, ma, fd;
+<a href='../S/894.html#L1206'>fd</a>               1206 cbench/openflow/lib/stp.c     fd = clamp(stp-&gt;rq_forward_delay, ma / 2 + 1000, 30000);
+<a href='../S/894.html#L1210'>fd</a>               1210 cbench/openflow/lib/stp.c     stp-&gt;bridge_forward_delay = ms_to_timer(fd);
+<a href='../S/827.html#L83'>fd</a>                 83 cbench/openflow/lib/vconn-ssl.c     int fd;
+<a href='../S/827.html#L177'>fd</a>                177 cbench/openflow/lib/vconn-ssl.c static void ssl_tx_poll_callback(int fd, short int revents, void *vconn_);
+<a href='../S/827.html#L200'>fd</a>                200 cbench/openflow/lib/vconn-ssl.c new_ssl_vconn(const char *name, int fd, enum session_type type,
+<a href='../S/827.html#L229'>fd</a>                229 cbench/openflow/lib/vconn-ssl.c     retval = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &amp;on, sizeof on);
+<a href='../S/827.html#L232'>fd</a>                232 cbench/openflow/lib/vconn-ssl.c         close(fd);
+<a href='../S/827.html#L240'>fd</a>                240 cbench/openflow/lib/vconn-ssl.c         close(fd);
+<a href='../S/827.html#L243'>fd</a>                243 cbench/openflow/lib/vconn-ssl.c     if (SSL_set_fd(ssl, fd) == 0) {
+<a href='../S/827.html#L257'>fd</a>                257 cbench/openflow/lib/vconn-ssl.c     sslv-&gt;fd = fd;
+<a href='../S/827.html#L270'>fd</a>                270 cbench/openflow/lib/vconn-ssl.c     close(fd);
+<a href='../S/827.html#L287'>fd</a>                287 cbench/openflow/lib/vconn-ssl.c     int fd;
+<a href='../S/827.html#L314'>fd</a>                314 cbench/openflow/lib/vconn-ssl.c     fd = socket(AF_INET, SOCK_STREAM, 0);
+<a href='../S/827.html#L315'>fd</a>                315 cbench/openflow/lib/vconn-ssl.c     if (fd &lt; 0) {
+<a href='../S/827.html#L319'>fd</a>                319 cbench/openflow/lib/vconn-ssl.c     retval = set_nonblocking(fd);
+<a href='../S/827.html#L321'>fd</a>                321 cbench/openflow/lib/vconn-ssl.c         close(fd);
+<a href='../S/827.html#L326'>fd</a>                326 cbench/openflow/lib/vconn-ssl.c     retval = connect(fd, (struct sockaddr *) &amp;sin, sizeof sin);
+<a href='../S/827.html#L329'>fd</a>                329 cbench/openflow/lib/vconn-ssl.c             return new_ssl_vconn(name, fd, CLIENT, STATE_TCP_CONNECTING,
+<a href='../S/827.html#L334'>fd</a>                334 cbench/openflow/lib/vconn-ssl.c             close(fd);
+<a href='../S/827.html#L338'>fd</a>                338 cbench/openflow/lib/vconn-ssl.c         return new_ssl_vconn(name, fd, CLIENT, STATE_SSL_CONNECTING,
+<a href='../S/827.html#L351'>fd</a>                351 cbench/openflow/lib/vconn-ssl.c     int fd;
+<a href='../S/827.html#L375'>fd</a>                375 cbench/openflow/lib/vconn-ssl.c     fd = open(ca_cert_file, O_CREAT | O_EXCL | O_WRONLY, 0444);
+<a href='../S/827.html#L376'>fd</a>                376 cbench/openflow/lib/vconn-ssl.c     if (fd &lt; 0) {
+<a href='../S/827.html#L382'>fd</a>                382 cbench/openflow/lib/vconn-ssl.c     file = fdopen(fd, "w");
+<a href='../S/827.html#L438'>fd</a>                438 cbench/openflow/lib/vconn-ssl.c         retval = check_connection_completion(sslv-&gt;fd);
+<a href='../S/827.html#L456'>fd</a>                456 cbench/openflow/lib/vconn-ssl.c                 shutdown(sslv-&gt;fd, SHUT_RDWR);
+<a href='../S/827.html#L490'>fd</a>                490 cbench/openflow/lib/vconn-ssl.c     close(sslv-&gt;fd);
+<a href='../S/827.html#L612'>fd</a>                612 cbench/openflow/lib/vconn-ssl.c             ssl_tx_poll_callback(sslv-&gt;fd, POLLIN, vconn);
+<a href='../S/827.html#L657'>fd</a>                657 cbench/openflow/lib/vconn-ssl.c     sslv-&gt;tx_waiter = poll_fd_callback(sslv-&gt;fd,
+<a href='../S/827.html#L693'>fd</a>                693 cbench/openflow/lib/vconn-ssl.c ssl_tx_poll_callback(int fd UNUSED, short int revents UNUSED, void *vconn_)
+<a href='../S/827.html#L744'>fd</a>                744 cbench/openflow/lib/vconn-ssl.c                 poll_fd_wait(sslv-&gt;fd, POLLOUT);
+<a href='../S/827.html#L750'>fd</a>                750 cbench/openflow/lib/vconn-ssl.c                 poll_fd_wait(sslv-&gt;fd,
+<a href='../S/827.html#L762'>fd</a>                762 cbench/openflow/lib/vconn-ssl.c             poll_fd_wait(sslv-&gt;fd, want_to_poll_events(sslv-&gt;rx_want));
+<a href='../S/827.html#L797'>fd</a>                797 cbench/openflow/lib/vconn-ssl.c     int fd;
+<a href='../S/827.html#L815'>fd</a>                815 cbench/openflow/lib/vconn-ssl.c     int fd;
+<a href='../S/827.html#L824'>fd</a>                824 cbench/openflow/lib/vconn-ssl.c     fd = socket(AF_INET, SOCK_STREAM, 0);
+<a href='../S/827.html#L825'>fd</a>                825 cbench/openflow/lib/vconn-ssl.c     if (fd &lt; 0) {
+<a href='../S/827.html#L831'>fd</a>                831 cbench/openflow/lib/vconn-ssl.c     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &amp;yes, sizeof yes) &lt; 0) {
+<a href='../S/827.html#L841'>fd</a>                841 cbench/openflow/lib/vconn-ssl.c     retval = bind(fd, (struct sockaddr *) &amp;sin, sizeof sin);
+<a href='../S/827.html#L845'>fd</a>                845 cbench/openflow/lib/vconn-ssl.c         close(fd);
+<a href='../S/827.html#L849'>fd</a>                849 cbench/openflow/lib/vconn-ssl.c     retval = listen(fd, 10);
+<a href='../S/827.html#L853'>fd</a>                853 cbench/openflow/lib/vconn-ssl.c         close(fd);
+<a href='../S/827.html#L857'>fd</a>                857 cbench/openflow/lib/vconn-ssl.c     retval = set_nonblocking(fd);
+<a href='../S/827.html#L859'>fd</a>                859 cbench/openflow/lib/vconn-ssl.c         close(fd);
+<a href='../S/827.html#L865'>fd</a>                865 cbench/openflow/lib/vconn-ssl.c     pssl-&gt;fd = fd;
+<a href='../S/827.html#L874'>fd</a>                874 cbench/openflow/lib/vconn-ssl.c     close(pssl-&gt;fd);
+<a href='../S/827.html#L888'>fd</a>                888 cbench/openflow/lib/vconn-ssl.c     new_fd = accept(pssl-&gt;fd, &amp;sin, &amp;sin_len);
+<a href='../S/827.html#L915'>fd</a>                915 cbench/openflow/lib/vconn-ssl.c     poll_fd_wait(pssl-&gt;fd, POLLIN);
+<a href='../S/861.html#L60'>fd</a>                 60 cbench/openflow/lib/vconn-stream.c     int fd;
+<a href='../S/861.html#L73'>fd</a>                 73 cbench/openflow/lib/vconn-stream.c new_stream_vconn(const char *name, int fd, int connect_status,
+<a href='../S/861.html#L81'>fd</a>                 81 cbench/openflow/lib/vconn-stream.c     s-&gt;fd = fd;
+<a href='../S/861.html#L103'>fd</a>                103 cbench/openflow/lib/vconn-stream.c     close(s-&gt;fd);
+<a href='../S/861.html#L111'>fd</a>                111 cbench/openflow/lib/vconn-stream.c     return check_connection_completion(s-&gt;fd);
+<a href='../S/861.html#L147'>fd</a>                147 cbench/openflow/lib/vconn-stream.c     retval = read(s-&gt;fd, ofpbuf_tail(rx), want_bytes);
+<a href='../S/861.html#L181'>fd</a>                181 cbench/openflow/lib/vconn-stream.c stream_do_tx(int fd UNUSED, short int revents UNUSED, void *vconn_)
+<a href='../S/861.html#L185'>fd</a>                185 cbench/openflow/lib/vconn-stream.c     ssize_t n = write(s-&gt;fd, s-&gt;txbuf-&gt;data, s-&gt;txbuf-&gt;size);
+<a href='../S/861.html#L199'>fd</a>                199 cbench/openflow/lib/vconn-stream.c     s-&gt;tx_waiter = poll_fd_callback(s-&gt;fd, POLLOUT, stream_do_tx, vconn);
+<a href='../S/861.html#L212'>fd</a>                212 cbench/openflow/lib/vconn-stream.c     retval = write(s-&gt;fd, buffer-&gt;data, buffer-&gt;size);
+<a href='../S/861.html#L222'>fd</a>                222 cbench/openflow/lib/vconn-stream.c         s-&gt;tx_waiter = poll_fd_callback(s-&gt;fd, POLLOUT, stream_do_tx, vconn);
+<a href='../S/861.html#L235'>fd</a>                235 cbench/openflow/lib/vconn-stream.c         poll_fd_wait(s-&gt;fd, POLLOUT);
+<a href='../S/861.html#L240'>fd</a>                240 cbench/openflow/lib/vconn-stream.c             poll_fd_wait(s-&gt;fd, POLLOUT);
+<a href='../S/861.html#L247'>fd</a>                247 cbench/openflow/lib/vconn-stream.c         poll_fd_wait(s-&gt;fd, POLLIN);
+<a href='../S/861.html#L270'>fd</a>                270 cbench/openflow/lib/vconn-stream.c     int fd;
+<a href='../S/861.html#L271'>fd</a>                271 cbench/openflow/lib/vconn-stream.c     int (*accept_cb)(int fd, const struct sockaddr *, size_t sa_len,
+<a href='../S/861.html#L285'>fd</a>                285 cbench/openflow/lib/vconn-stream.c new_pstream_pvconn(const char *name, int fd,
+<a href='../S/861.html#L286'>fd</a>                286 cbench/openflow/lib/vconn-stream.c                   int (*accept_cb)(int fd, const struct sockaddr *,
+<a href='../S/861.html#L293'>fd</a>                293 cbench/openflow/lib/vconn-stream.c     retval = set_nonblocking(fd);
+<a href='../S/861.html#L295'>fd</a>                295 cbench/openflow/lib/vconn-stream.c         close(fd);
+<a href='../S/861.html#L299'>fd</a>                299 cbench/openflow/lib/vconn-stream.c     if (listen(fd, 10) &lt; 0) {
+<a href='../S/861.html#L302'>fd</a>                302 cbench/openflow/lib/vconn-stream.c         close(fd);
+<a href='../S/861.html#L308'>fd</a>                308 cbench/openflow/lib/vconn-stream.c     ps-&gt;fd = fd;
+<a href='../S/861.html#L318'>fd</a>                318 cbench/openflow/lib/vconn-stream.c     close(ps-&gt;fd);
+<a href='../S/861.html#L331'>fd</a>                331 cbench/openflow/lib/vconn-stream.c     new_fd = accept(ps-&gt;fd, (struct sockaddr *) &amp;ss, &amp;ss_len);
+<a href='../S/861.html#L354'>fd</a>                354 cbench/openflow/lib/vconn-stream.c     poll_fd_wait(ps-&gt;fd, POLLIN);
+<a href='../S/853.html#L45'>fd</a>                 45 cbench/openflow/lib/vconn-stream.h int new_stream_vconn(const char *name, int fd, int connect_status,
+<a href='../S/853.html#L47'>fd</a>                 47 cbench/openflow/lib/vconn-stream.h int new_pstream_pvconn(const char *name, int fd,
+<a href='../S/853.html#L48'>fd</a>                 48 cbench/openflow/lib/vconn-stream.h                       int (*accept_cb)(int fd, const struct sockaddr *,
+<a href='../S/828.html#L57'>fd</a>                 57 cbench/openflow/lib/vconn-tcp.c new_tcp_vconn(const char *name, int fd, int connect_status,
+<a href='../S/828.html#L63'>fd</a>                 63 cbench/openflow/lib/vconn-tcp.c     retval = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &amp;on, sizeof on);
+<a href='../S/828.html#L66'>fd</a>                 66 cbench/openflow/lib/vconn-tcp.c         close(fd);
+<a href='../S/828.html#L70'>fd</a>                 70 cbench/openflow/lib/vconn-tcp.c     return new_stream_vconn(name, fd, connect_status, sin-&gt;sin_addr.s_addr,
+<a href='../S/828.html#L82'>fd</a>                 82 cbench/openflow/lib/vconn-tcp.c     int fd;
+<a href='../S/828.html#L102'>fd</a>                102 cbench/openflow/lib/vconn-tcp.c     fd = socket(AF_INET, SOCK_STREAM, 0);
+<a href='../S/828.html#L103'>fd</a>                103 cbench/openflow/lib/vconn-tcp.c     if (fd &lt; 0) {
+<a href='../S/828.html#L108'>fd</a>                108 cbench/openflow/lib/vconn-tcp.c     retval = set_nonblocking(fd);
+<a href='../S/828.html#L110'>fd</a>                110 cbench/openflow/lib/vconn-tcp.c         close(fd);
+<a href='../S/828.html#L114'>fd</a>                114 cbench/openflow/lib/vconn-tcp.c     retval = connect(fd, (struct sockaddr *) &amp;sin, sizeof sin);
+<a href='../S/828.html#L117'>fd</a>                117 cbench/openflow/lib/vconn-tcp.c             return new_tcp_vconn(name, fd, EAGAIN, &amp;sin, vconnp);
+<a href='../S/828.html#L121'>fd</a>                121 cbench/openflow/lib/vconn-tcp.c             close(fd);
+<a href='../S/828.html#L125'>fd</a>                125 cbench/openflow/lib/vconn-tcp.c         return new_tcp_vconn(name, fd, 0, &amp;sin, vconnp);
+<a href='../S/828.html#L141'>fd</a>                141 cbench/openflow/lib/vconn-tcp.c static int ptcp_accept(int fd, const struct sockaddr *sa, size_t sa_len,
+<a href='../S/828.html#L149'>fd</a>                149 cbench/openflow/lib/vconn-tcp.c     int fd;
+<a href='../S/828.html#L152'>fd</a>                152 cbench/openflow/lib/vconn-tcp.c     fd = socket(AF_INET, SOCK_STREAM, 0);
+<a href='../S/828.html#L153'>fd</a>                153 cbench/openflow/lib/vconn-tcp.c     if (fd &lt; 0) {
+<a href='../S/828.html#L158'>fd</a>                158 cbench/openflow/lib/vconn-tcp.c     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &amp;yes, sizeof yes) &lt; 0) {
+<a href='../S/828.html#L167'>fd</a>                167 cbench/openflow/lib/vconn-tcp.c     retval = bind(fd, (struct sockaddr *) &amp;sin, sizeof sin);
+<a href='../S/828.html#L171'>fd</a>                171 cbench/openflow/lib/vconn-tcp.c         close(fd);
+<a href='../S/828.html#L175'>fd</a>                175 cbench/openflow/lib/vconn-tcp.c     return new_pstream_pvconn("ptcp", fd, ptcp_accept, pvconnp);
+<a href='../S/828.html#L179'>fd</a>                179 cbench/openflow/lib/vconn-tcp.c ptcp_accept(int fd, const struct sockaddr *sa, size_t sa_len,
+<a href='../S/828.html#L193'>fd</a>                193 cbench/openflow/lib/vconn-tcp.c     return new_tcp_vconn(name, fd, 0, sin, vconnp);
+<a href='../S/917.html#L68'>fd</a>                 68 cbench/openflow/lib/vconn-unix.c     int fd;
+<a href='../S/917.html#L72'>fd</a>                 72 cbench/openflow/lib/vconn-unix.c     fd = make_unix_socket(SOCK_STREAM, true, false, bind_path, connect_path);
+<a href='../S/917.html#L73'>fd</a>                 73 cbench/openflow/lib/vconn-unix.c     if (fd &lt; 0) {
+<a href='../S/917.html#L75'>fd</a>                 75 cbench/openflow/lib/vconn-unix.c                  bind_path, connect_path, strerror(-fd));
+<a href='../S/917.html#L76'>fd</a>                 76 cbench/openflow/lib/vconn-unix.c         return -fd;
+<a href='../S/917.html#L79'>fd</a>                 79 cbench/openflow/lib/vconn-unix.c     return new_stream_vconn(name, fd, check_connection_completion(fd),
+<a href='../S/917.html#L95'>fd</a>                 95 cbench/openflow/lib/vconn-unix.c static int punix_accept(int fd, const struct sockaddr *sa, size_t sa_len,
+<a href='../S/917.html#L101'>fd</a>                101 cbench/openflow/lib/vconn-unix.c     int fd;
+<a href='../S/917.html#L103'>fd</a>                103 cbench/openflow/lib/vconn-unix.c     fd = make_unix_socket(SOCK_STREAM, true, true, suffix, NULL);
+<a href='../S/917.html#L104'>fd</a>                104 cbench/openflow/lib/vconn-unix.c     if (fd &lt; 0) {
+<a href='../S/917.html#L109'>fd</a>                109 cbench/openflow/lib/vconn-unix.c     return new_pstream_pvconn("punix", fd, punix_accept, pvconnp);
+<a href='../S/917.html#L113'>fd</a>                113 cbench/openflow/lib/vconn-unix.c punix_accept(int fd, const struct sockaddr *sa, size_t sa_len,
+<a href='../S/917.html#L125'>fd</a>                125 cbench/openflow/lib/vconn-unix.c     return new_stream_vconn(name, fd, 0, 0, true, vconnp);
+<a href='../S/890.html#L65'>fd</a>                 65 cbench/openflow/lib/vlog-socket.c     int fd;
+<a href='../S/890.html#L68'>fd</a>                 68 cbench/openflow/lib/vlog-socket.c static void poll_server(int fd, short int events, void *server_);
+<a href='../S/890.html#L101'>fd</a>                101 cbench/openflow/lib/vlog-socket.c     server-&gt;fd = make_unix_socket(SOCK_DGRAM, true, true, server-&gt;path, NULL);
+<a href='../S/890.html#L102'>fd</a>                102 cbench/openflow/lib/vlog-socket.c     if (server-&gt;fd &lt; 0) {
+<a href='../S/890.html#L103'>fd</a>                103 cbench/openflow/lib/vlog-socket.c         int fd = server-&gt;fd;
+<a href='../S/890.html#L105'>fd</a>                105 cbench/openflow/lib/vlog-socket.c                 strerror(-server-&gt;fd));
+<a href='../S/890.html#L111'>fd</a>                111 cbench/openflow/lib/vlog-socket.c         return fd;
+<a href='../S/890.html#L114'>fd</a>                114 cbench/openflow/lib/vlog-socket.c     server-&gt;waiter = poll_fd_callback(server-&gt;fd, POLLIN, poll_server, server);
+<a href='../S/890.html#L128'>fd</a>                128 cbench/openflow/lib/vlog-socket.c         close(server-&gt;fd);
+<a href='../S/890.html#L161'>fd</a>                161 cbench/openflow/lib/vlog-socket.c     n = recvmsg(server-&gt;fd, &amp;msg, 0);
+<a href='../S/890.html#L206'>fd</a>                206 cbench/openflow/lib/vlog-socket.c     n = recvfrom(server-&gt;fd, cmd_buf, cmd_buf_size - 1, 0,
+<a href='../S/890.html#L241'>fd</a>                241 cbench/openflow/lib/vlog-socket.c poll_server(int fd UNUSED, short int events UNUSED, void *server_)
+<a href='../S/890.html#L277'>fd</a>                277 cbench/openflow/lib/vlog-socket.c         sendto(server-&gt;fd, reply, strlen(reply), 0,
+<a href='../S/890.html#L281'>fd</a>                281 cbench/openflow/lib/vlog-socket.c     server-&gt;waiter = poll_fd_callback(server-&gt;fd, POLLIN, poll_server, server);
+<a href='../S/890.html#L289'>fd</a>                289 cbench/openflow/lib/vlog-socket.c     int fd;
+<a href='../S/890.html#L343'>fd</a>                343 cbench/openflow/lib/vlog-socket.c     client-&gt;fd = make_unix_socket(SOCK_DGRAM, false, false,
+<a href='../S/890.html#L345'>fd</a>                345 cbench/openflow/lib/vlog-socket.c     if (client-&gt;fd &lt; 0) {
+<a href='../S/890.html#L346'>fd</a>                346 cbench/openflow/lib/vlog-socket.c         error = -client-&gt;fd;
+<a href='../S/890.html#L369'>fd</a>                369 cbench/openflow/lib/vlog-socket.c         close(client-&gt;fd);
+<a href='../S/890.html#L407'>fd</a>                407 cbench/openflow/lib/vlog-socket.c     nbytes = sendmsg(client-&gt;fd, &amp;msg, 0);
+<a href='../S/890.html#L409'>fd</a>                409 cbench/openflow/lib/vlog-socket.c     ssize_t nbytes = send(client-&gt;fd, request, strlen(request), 0);
+<a href='../S/890.html#L432'>fd</a>                432 cbench/openflow/lib/vlog-socket.c     pfd.fd = client-&gt;fd;
+<a href='../S/890.html#L441'>fd</a>                441 cbench/openflow/lib/vlog-socket.c     nbytes = read(client-&gt;fd, buffer, sizeof buffer - 1);
+<a href='../S/501.html#L79'>fd</a>                 79 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h         const guint8* data, frame_data *fd, column_info *cinfo);
+<a href='../S/482.html#L75'>fd</a>                 75 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/frame_data.h extern void p_add_proto_data(frame_data *fd, int proto, void *proto_data);
+<a href='../S/482.html#L76'>fd</a>                 76 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/frame_data.h extern void *p_get_proto_data(frame_data *fd, int proto);
+<a href='../S/482.html#L77'>fd</a>                 77 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/frame_data.h extern void p_remove_proto_data(frame_data *fd, int proto);
+<a href='../S/446.html#L396'>fd</a>                396 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/packet.h     frame_data *fd, column_info *cinfo);
+<a href='../S/441.html#L45'>fd</a>                 45 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/packet_info.h   frame_data *fd;
+<a href='../S/590.html#L31'>fd</a>                 31 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/pcapio.h libpcap_fdopen(int fd, int linktype, int snaplen, long *bytes_written,
+<a href='../S/543.html#L163'>fd</a>                163 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap-int.h         int                     fd;           /* File descriptor for cap file */
+<a href='../S/533.html#L852'>fd</a>                852 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h wtap_dumper* wtap_dump_fdopen(int fd, int filetype, int encap, int snaplen,
+<a href='../S/1000.html#L343'>fd</a>                343 components/cluster.c                         sw-&gt;fd = (CLUSTER_DELIMITER * (cluster_id + 1)) + sw-&gt;fd;
+<a href='../S/1000.html#L351'>fd</a>                351 components/cluster.c                         sw-&gt;fd = (CLUSTER_DELIMITER * (cluster_id + 1)) + sw-&gt;fd;
+<a href='../S/1000.html#L359'>fd</a>                359 components/cluster.c                         sw-&gt;fd = (CLUSTER_DELIMITER * (cluster_id + 1)) + sw-&gt;fd;
+<a href='../S/1002.html#L202'>fd</a>                202 components/conn.c                     msg.fd = sock;
+<a href='../S/1002.html#L230'>fd</a>                230 components/conn.c                 msg.fd = sock;
+<a href='../S/1002.html#L288'>fd</a>                288 components/conn.c static int link_epoll(int epol, int fd, int flags)
+<a href='../S/1002.html#L292'>fd</a>                292 components/conn.c     event.data.fd = fd;
+<a href='../S/1002.html#L295'>fd</a>                295 components/conn.c     if (epoll_ctl(epol, EPOLL_CTL_ADD, fd, &amp;event) &lt; 0) {
+<a href='../S/1002.html#L309'>fd</a>                309 components/conn.c static int relink_epoll(int epol, int fd, int flags)
+<a href='../S/1002.html#L313'>fd</a>                313 components/conn.c     event.data.fd = fd;
+<a href='../S/1002.html#L316'>fd</a>                316 components/conn.c     epoll_ctl(epol, EPOLL_CTL_MOD, fd, &amp;event);
+<a href='../S/1002.html#L392'>fd</a>                392 components/conn.c             sw.fd = wsock;
+<a href='../S/1002.html#L401'>fd</a>                401 components/conn.c                 sw.fd = wsock;
+<a href='../S/1002.html#L448'>fd</a>                448 components/conn.c static int nonblocking_mode(const int fd)
+<a href='../S/1002.html#L452'>fd</a>                452 components/conn.c     if ((flags = fcntl(fd, F_GETFL, 0)) &lt; 0) {
+<a href='../S/1002.html#L460'>fd</a>                460 components/conn.c     if (fcntl(fd, F_SETFL, flags) &lt; 0) {
+<a href='../S/1002.html#L535'>fd</a>                535 components/conn.c             if (events[i].data.fd == sc) {
+<a href='../S/1002.html#L549'>fd</a>                549 components/conn.c                     sw.fd = csock;
+<a href='../S/1002.html#L555'>fd</a>                555 components/conn.c                         sw.fd = csock;
+<a href='../S/1002.html#L565'>fd</a>                565 components/conn.c                         sw.fd = csock;
+<a href='../S/1002.html#L574'>fd</a>                574 components/conn.c                 push_back(events[i].data.fd);
+<a href='../S/1002.html#L677'>fd</a>                677 components/conn.c             int fd = msg-&gt;fd;
+<a href='../S/1002.html#L684'>fd</a>                684 components/conn.c                 bytes = write(fd, msg-&gt;data + done, remain);
+<a href='../S/1009.html#L202'>fd</a>                202 components/conn_sb.c                     msg.fd = sock;
+<a href='../S/1009.html#L227'>fd</a>                227 components/conn_sb.c                 msg.fd = sock;
+<a href='../S/1009.html#L282'>fd</a>                282 components/conn_sb.c static int link_epoll(int epol, int fd, int flags)
+<a href='../S/1009.html#L286'>fd</a>                286 components/conn_sb.c     event.data.fd = fd;
+<a href='../S/1009.html#L289'>fd</a>                289 components/conn_sb.c     if (epoll_ctl(epol, EPOLL_CTL_ADD, fd, &amp;event) &lt; 0) {
+<a href='../S/1009.html#L303'>fd</a>                303 components/conn_sb.c static int relink_epoll(int epol, int fd, int flags)
+<a href='../S/1009.html#L307'>fd</a>                307 components/conn_sb.c     event.data.fd = fd;
+<a href='../S/1009.html#L310'>fd</a>                310 components/conn_sb.c     epoll_ctl(epol, EPOLL_CTL_MOD, fd, &amp;event);
+<a href='../S/1009.html#L386'>fd</a>                386 components/conn_sb.c             sw.fd = wsock;
+<a href='../S/1009.html#L395'>fd</a>                395 components/conn_sb.c                 sw.fd = wsock;
+<a href='../S/1009.html#L445'>fd</a>                445 components/conn_sb.c static int nonblocking_mode(const int fd)
+<a href='../S/1009.html#L449'>fd</a>                449 components/conn_sb.c     if ((flags = fcntl(fd, F_GETFL, 0)) &lt; 0) {
+<a href='../S/1009.html#L457'>fd</a>                457 components/conn_sb.c     if (fcntl(fd, F_SETFL, flags) &lt; 0) {
+<a href='../S/1009.html#L532'>fd</a>                532 components/conn_sb.c             if (events[i].data.fd == sc) {
+<a href='../S/1009.html#L546'>fd</a>                546 components/conn_sb.c                     sw.fd = csock;
+<a href='../S/1009.html#L552'>fd</a>                552 components/conn_sb.c                         sw.fd = csock;
+<a href='../S/1009.html#L562'>fd</a>                562 components/conn_sb.c                         sw.fd = csock;
+<a href='../S/1009.html#L571'>fd</a>                571 components/conn_sb.c                 push_back(events[i].data.fd);
+<a href='../S/1009.html#L682'>fd</a>                682 components/conn_sb.c             int fd = msg-&gt;fd;
+<a href='../S/1009.html#L689'>fd</a>                689 components/conn_sb.c                 bytes = write(fd, msg-&gt;data + done, remain);
+<a href='../S/998.html#L38'>fd</a>                 38 components/ofp10.c     out.fd = msg-&gt;fd;
+<a href='../S/998.html#L195'>fd</a>                195 components/ofp10.c     out.fd = msg-&gt;fd;
+<a href='../S/998.html#L221'>fd</a>                221 components/ofp10.c     out.fd = msg-&gt;fd;
+<a href='../S/998.html#L251'>fd</a>                251 components/ofp10.c     sw.fd = msg-&gt;fd;
+<a href='../S/998.html#L296'>fd</a>                296 components/ofp10.c static int ofp10_get_config_request(uint32_t fd)
+<a href='../S/998.html#L300'>fd</a>                300 components/ofp10.c     out.fd = fd;
+<a href='../S/998.html#L306'>fd</a>                306 components/ofp10.c     sw.fd = fd;
+<a href='../S/998.html#L331'>fd</a>                331 components/ofp10.c               msg-&gt;fd, ntohs(config-&gt;flags), ntohs(config-&gt;miss_send_len));
+<a href='../S/998.html#L341'>fd</a>                341 components/ofp10.c static int ofp10_set_config(uint32_t fd)
+<a href='../S/998.html#L345'>fd</a>                345 components/ofp10.c     out.fd = fd;
+<a href='../S/998.html#L351'>fd</a>                351 components/ofp10.c     sw.fd = fd;
+<a href='../S/998.html#L373'>fd</a>                373 components/ofp10.c static int ofp10_barrier_request(uint32_t fd)
+<a href='../S/998.html#L377'>fd</a>                377 components/ofp10.c     out.fd = fd;
+<a href='../S/998.html#L383'>fd</a>                383 components/ofp10.c     sw.fd = fd;
+<a href='../S/998.html#L458'>fd</a>                458 components/ofp10.c     sw.fd = msg-&gt;fd;
+<a href='../S/998.html#L586'>fd</a>                586 components/ofp10.c     sw.fd = msg-&gt;fd;
+<a href='../S/998.html#L711'>fd</a>                711 components/ofp10.c     sw.fd = msg-&gt;fd;
+<a href='../S/998.html#L828'>fd</a>                828 components/ofp10.c             sw.fd = msg-&gt;fd;
+<a href='../S/998.html#L847'>fd</a>                847 components/ofp10.c             sw.fd = msg-&gt;fd;
+<a href='../S/998.html#L952'>fd</a>                952 components/ofp10.c             sw.fd = msg-&gt;fd;
+<a href='../S/998.html#L980'>fd</a>                980 components/ofp10.c             sw.fd = msg-&gt;fd;
+<a href='../S/998.html#L1206'>fd</a>               1206 components/ofp10.c     msg.fd = sw.fd;
+<a href='../S/998.html#L1557'>fd</a>               1557 components/ofp10.c     msg.fd = sw.fd;
+<a href='../S/998.html#L1564'>fd</a>               1564 components/ofp10.c     ofp10_barrier_request(msg.fd);
+<a href='../S/998.html#L1573'>fd</a>               1573 components/ofp10.c static int ofp10_stats_desc_request(uint32_t fd)
+<a href='../S/998.html#L1580'>fd</a>               1580 components/ofp10.c     sw.fd = fd;
+<a href='../S/998.html#L1593'>fd</a>               1593 components/ofp10.c     out.fd = fd;
+<a href='../S/998.html#L1768'>fd</a>               1768 components/ofp10.c     msg.fd = sw.fd;
+<a href='../S/998.html#L1813'>fd</a>               1813 components/ofp10.c     msg.fd = sw.fd;
+<a href='../S/998.html#L1855'>fd</a>               1855 components/ofp10.c     msg.fd = sw.fd;
+<a href='../S/998.html#L1905'>fd</a>               1905 components/ofp10.c         ofp10_set_config(msg-&gt;fd);
+<a href='../S/998.html#L1906'>fd</a>               1906 components/ofp10.c         ofp10_barrier_request(msg-&gt;fd);
+<a href='../S/998.html#L1908'>fd</a>               1908 components/ofp10.c         ofp10_get_config_request(msg-&gt;fd);
+<a href='../S/998.html#L1909'>fd</a>               1909 components/ofp10.c         ofp10_stats_desc_request(msg-&gt;fd);
+<a href='../S/1001.html#L95'>fd</a>                 95 components/switch_mgmt.c         switch_table[tmp-&gt;fd] = NULL;
+<a href='../S/1001.html#L251'>fd</a>                251 components/switch_mgmt.c             LOG_DEBUG(SWITCH_MGMT_ID, "Accepted (FD=%d)", ev-&gt;sw-&gt;fd);
+<a href='../S/1001.html#L261'>fd</a>                261 components/switch_mgmt.c             if (switch_table[sw-&gt;fd] == NULL) {
+<a href='../S/1001.html#L266'>fd</a>                266 components/switch_mgmt.c             switch_t *curr = switch_table[sw-&gt;fd];
+<a href='../S/1001.html#L283'>fd</a>                283 components/switch_mgmt.c             switch_table[sw-&gt;fd] = NULL;
+<a href='../S/1001.html#L288'>fd</a>                288 components/switch_mgmt.c                 LOG_DEBUG(SWITCH_MGMT_ID, "Closed (FD=%d)", sw-&gt;fd);
+<a href='../S/1001.html#L295'>fd</a>                295 components/switch_mgmt.c                 out.fd = sw-&gt;fd;
+<a href='../S/1001.html#L299'>fd</a>                299 components/switch_mgmt.c                 LOG_INFO(SWITCH_MGMT_ID, "Disconnected (FD=%d, DPID=%lu)", sw-&gt;fd, tmp-&gt;dpid);
+<a href='../S/1001.html#L333'>fd</a>                333 components/switch_mgmt.c                 new-&gt;fd = sw-&gt;fd;
+<a href='../S/1001.html#L356'>fd</a>                356 components/switch_mgmt.c                 switch_table[sw-&gt;fd] = new;
+<a href='../S/1001.html#L365'>fd</a>                365 components/switch_mgmt.c                 out.fd = sw-&gt;fd;
+<a href='../S/1001.html#L371'>fd</a>                371 components/switch_mgmt.c                 LOG_INFO(SWITCH_MGMT_ID, "Connected (FD=%d, DPID=%lu)", sw-&gt;fd, sw-&gt;dpid);
+<a href='../S/1001.html#L382'>fd</a>                382 components/switch_mgmt.c             if (switch_table[sw-&gt;fd] != NULL) {
+<a href='../S/1001.html#L383'>fd</a>                383 components/switch_mgmt.c                 strncpy(switch_table[sw-&gt;fd]-&gt;mfr_desc, sw-&gt;mfr_desc, 256);
+<a href='../S/1001.html#L384'>fd</a>                384 components/switch_mgmt.c                 strncpy(switch_table[sw-&gt;fd]-&gt;hw_desc, sw-&gt;hw_desc, 256);
+<a href='../S/1001.html#L385'>fd</a>                385 components/switch_mgmt.c                 strncpy(switch_table[sw-&gt;fd]-&gt;sw_desc, sw-&gt;sw_desc, 256);
+<a href='../S/1001.html#L386'>fd</a>                386 components/switch_mgmt.c                 strncpy(switch_table[sw-&gt;fd]-&gt;serial_num, sw-&gt;serial_num, 32);
+<a href='../S/1001.html#L387'>fd</a>                387 components/switch_mgmt.c                 strncpy(switch_table[sw-&gt;fd]-&gt;dp_desc, sw-&gt;dp_desc, 256);
+<a href='../S/1001.html#L403'>fd</a>                403 components/switch_mgmt.c             if (switch_table[sw-&gt;fd] == NULL) {
+<a href='../S/1001.html#L408'>fd</a>                408 components/switch_mgmt.c             switch_t *curr = switch_table[sw-&gt;fd];
+<a href='../S/1001.html#L425'>fd</a>                425 components/switch_mgmt.c             switch_table[sw-&gt;fd] = NULL;
+<a href='../S/1001.html#L431'>fd</a>                431 components/switch_mgmt.c             LOG_INFO(SWITCH_MGMT_ID, "Disconnected (FD=%d, DPID=%lu)", sw-&gt;fd, tmp-&gt;dpid);
+<a href='../S/1001.html#L464'>fd</a>                464 components/switch_mgmt.c             if (switch_table[sw-&gt;fd] != NULL) {
+<a href='../S/1001.html#L465'>fd</a>                465 components/switch_mgmt.c                 sw-&gt;dpid = switch_table[sw-&gt;fd]-&gt;dpid;
+<a href='../S/1001.html#L469'>fd</a>                469 components/switch_mgmt.c                     if (curr-&gt;fd == sw-&gt;fd) {
+<a href='../S/1001.html#L490'>fd</a>                490 components/switch_mgmt.c                     sw-&gt;fd = curr-&gt;fd;
+<a href='../S/1001.html#L506'>fd</a>                506 components/switch_mgmt.c             if (sw-&gt;fd) {
+<a href='../S/1001.html#L507'>fd</a>                507 components/switch_mgmt.c                 sw-&gt;xid = switch_table[sw-&gt;fd]-&gt;xid++;
+<a href='../S/1001.html#L529'>fd</a>                529 components/switch_mgmt.c             if (sw-&gt;fd) {
+<a href='../S/1001.html#L530'>fd</a>                530 components/switch_mgmt.c                 sw-&gt;version = switch_table[sw-&gt;fd]-&gt;version;
+<a href='../S/1001.html#L557'>fd</a>                557 components/switch_mgmt.c                     sw-&gt;port = sw-&gt;fd = sw-&gt;xid = 0;
+<a href='../S/1001.html#L584'>fd</a>                584 components/switch_mgmt.c                 sw-&gt;port = sw-&gt;fd = sw-&gt;xid = 0;
+<a href='../S/1066.html#L51'>fd</a>                 51 ext_applications/l2_learning/shim/include/type.h     uint32_t fd; /**&lt; Network socket */
+<a href='../S/1066.html#L88'>fd</a>                 88 ext_applications/l2_learning/shim/include/type.h     uint32_t fd; /**&lt; Socket */
+<a href='../S/1048.html#L51'>fd</a>                 51 ext_applications/l2_shortest/shim/include/type.h     uint32_t fd; /**&lt; Network socket */
+<a href='../S/1048.html#L88'>fd</a>                 88 ext_applications/l2_shortest/shim/include/type.h     uint32_t fd; /**&lt; Socket */
+<a href='../S/1037.html#L51'>fd</a>                 51 ext_applications/shim/include/type.h     uint32_t fd; /**&lt; Network socket */
+<a href='../S/1037.html#L88'>fd</a>                 88 ext_applications/shim/include/type.h     uint32_t fd; /**&lt; Socket */
+<a href='../S/1090.html#L70'>fd</a>                 70 libraries/libcli/libcli.c static ssize_t _write(int fd, const void *buf, size_t count)
+<a href='../S/1090.html#L76'>fd</a>                 76 libraries/libcli/libcli.c         thisTime = write(fd, (char*)buf + written, count - written);
+<a href='../S/1012.html#L51'>fd</a>                 51 resource/src/include/type.h     uint32_t fd; /**&lt; Network socket */
+<a href='../S/1012.html#L88'>fd</a>                 88 resource/src/include/type.h     uint32_t fd; /**&lt; Socket */
+<a href='../S/951.html#L51'>fd</a>                 51 southbound/src/include/type.h     uint32_t fd; /**&lt; Network socket */
+<a href='../S/951.html#L88'>fd</a>                 88 southbound/src/include/type.h     uint32_t fd; /**&lt; Socket */
+<a href='../S/952.html#L278'>fd</a>                278 southbound/src/southbound.c int link_epoll(int epol, int fd, int flags)
+<a href='../S/952.html#L282'>fd</a>                282 southbound/src/southbound.c     event.data.fd = fd;
+<a href='../S/952.html#L285'>fd</a>                285 southbound/src/southbound.c     if (epoll_ctl(epol, EPOLL_CTL_ADD, fd, &amp;event) &lt; 0) {
+<a href='../S/952.html#L299'>fd</a>                299 southbound/src/southbound.c int relink_epoll(int epol, int fd, int flags)
+<a href='../S/952.html#L303'>fd</a>                303 southbound/src/southbound.c     event.data.fd = fd;
+<a href='../S/952.html#L306'>fd</a>                306 southbound/src/southbound.c     epoll_ctl(epol, EPOLL_CTL_MOD, fd, &amp;event);
+<a href='../S/952.html#L550'>fd</a>                550 southbound/src/southbound.c int nonblocking_mode(const int fd)
+<a href='../S/952.html#L554'>fd</a>                554 southbound/src/southbound.c     if ((flags = fcntl(fd, F_GETFL, 0)) &lt; 0) {
+<a href='../S/952.html#L562'>fd</a>                562 southbound/src/southbound.c     if (fcntl(fd, F_SETFL, flags) &lt; 0) {
+<a href='../S/952.html#L638'>fd</a>                638 southbound/src/southbound.c             ds_push_back(ds_events[i].data.fd);
+<a href='../S/952.html#L675'>fd</a>                675 southbound/src/southbound.c             if (events[i].data.fd == sc) {
+<a href='../S/952.html#L740'>fd</a>                740 southbound/src/southbound.c                 push_back(events[i].data.fd);
+<a href='../S/928.html#L51'>fd</a>                 51 src/include/type.h     uint32_t fd; /**&lt; Network socket */
+<a href='../S/928.html#L88'>fd</a>                 88 src/include/type.h     uint32_t fd; /**&lt; Socket */
+</pre>
+</body>
+</html>

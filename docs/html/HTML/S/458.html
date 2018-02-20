@@ -1,0 +1,101 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfilter-int.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/<a href='../files/1150.html'>dfilter</a>/dfilter-int.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='464.html#L28' title='Included from 28 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfvm.h.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * $Id: dfilter-int.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L5'>   5 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L6'>   6 <i><font color='green'> * Copyright 2001 Gerald Combs</font></i>
+<a name='L7'>   7 <i><font color='green'> *</font></i>
+<a name='L8'>   8 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L9'>   9 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L10'>  10 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L11'>  11 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L12'>  12 <i><font color='green'> *</font></i>
+<a name='L13'>  13 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L14'>  14 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L15'>  15 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L16'>  16 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L17'>  17 <i><font color='green'> *</font></i>
+<a name='L18'>  18 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L19'>  19 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L20'>  20 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L21'>  21 <i><font color='green'> */</font></i>
+<a name='L22'>  22 
+<a name='L23'>  23 <font color='darkred'>#ifndef</font> <a href='../S/458.html#L24' title='Defined at 24 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfilter-int.h.'>DFILTER_INT_H</a>
+<a name='L24'>  24 <font color='darkred'>#define</font> <a href='../S/458.html#L23' title='Refered from 23 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfilter-int.h.'>DFILTER_INT_H</a>
+<a name='L25'>  25 
+<a name='L26'>  26 <font color='darkred'>#include</font> "<a href='456.html'>dfilter.h</a>"
+<a name='L27'>  27 <font color='darkred'>#include</font> "<a href='468.html'>syntax-tree.h</a>"
+<a name='L28'>  28 
+<a name='L29'>  29 <font color='darkred'>#include</font> &lt;<a href='488.html'>epan/proto.h</a>&gt;
+<a name='L30'>  30 <font color='darkred'>#include</font> &lt;stdio.h&gt;
+<a name='L31'>  31 
+<a name='L32'>  32 <i><font color='green'>/* Passed back to user */</font></i>
+<a name='L33'>  33 <b>struct</b> <a href='../S/456.html#L29' title='Refered from 29 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfilter.h.'>_dfilter_t</a> <font color='red'>{</font>
+<a name='L34'>  34         <a href='../Y/390.html' title='Multiple used in 15 places.'>GPtrArray</a>       *<a href='../Y/3848.html' title='Multiple used in 3 places.'>insns</a>;
+<a name='L35'>  35         <a href='../Y/390.html' title='Multiple used in 15 places.'>GPtrArray</a>       *<a href='../Y/2102.html' title='Multiple used in 2 places.'>consts</a>;
+<a name='L36'>  36         <b>int</b>             num_registers;
+<a name='L37'>  37         <b>int</b>             max_registers;
+<a name='L38'>  38         <a href='../Y/384.html' title='Multiple used in 42 places.'>GList</a>           **registers;
+<a name='L39'>  39         <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a>        *attempted_load;
+<a name='L40'>  40         <b>int</b>             *<a href='../Y/3857.html' title='Multiple used in 2 places.'>interesting_fields</a>;
+<a name='L41'>  41         <b>int</b>             num_interesting_fields;
+<a name='L42'>  42         <a href='../Y/390.html' title='Multiple used in 15 places.'>GPtrArray</a>       *deprecated;
+<a name='L43'>  43 <font color='red'>}</font>;
+<a name='L44'>  44 
+<a name='L45'>  45 <b>typedef</b> <b>struct</b> <font color='red'>{</font>
+<a name='L46'>  46         <i><font color='green'>/* Syntax Tree stuff */</font></i>
+<a name='L47'>  47         <a href='../S/468.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>stnode_t</a>        *st_root;
+<a name='L48'>  48         <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a>        syntax_error;
+<a name='L49'>  49         <a href='../Y/390.html' title='Multiple used in 15 places.'>GPtrArray</a>       *<a href='../Y/3848.html' title='Multiple used in 3 places.'>insns</a>;
+<a name='L50'>  50         <a href='../Y/390.html' title='Multiple used in 15 places.'>GPtrArray</a>       *<a href='../Y/2102.html' title='Multiple used in 2 places.'>consts</a>;
+<a name='L51'>  51         <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a>      *loaded_fields;
+<a name='L52'>  52         <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a>      *<a href='../Y/3857.html' title='Multiple used in 2 places.'>interesting_fields</a>;
+<a name='L53'>  53         <b>int</b>             next_insn_id;
+<a name='L54'>  54         <b>int</b>             next_const_id;
+<a name='L55'>  55         <b>int</b>             next_register;
+<a name='L56'>  56         <b>int</b>             first_constant; <i><font color='green'>/* first register used as a constant */</font></i>
+<a name='L57'>  57 <font color='red'>}</font> <a href='../R/2593.html' title='Multiple refered from 4 places.'>dfwork_t</a>;
+<a name='L58'>  58 
+<a name='L59'>  59 <i><font color='green'>/* Constructor/Destructor prototypes for Lemon Parser */</font></i>
+<a name='L60'>  60 <font color='darkred'>#if</font> (<a href='../Y/382.html' title='Multiple used in 12 places.'>GLIB_MAJOR_VERSION</a> &gt; 2 || (<a href='../Y/382.html' title='Multiple used in 12 places.'>GLIB_MAJOR_VERSION</a> == 2 &amp;&amp; <a href='../Y/383.html' title='Multiple used in 3 places.'>GLIB_MINOR_VERSION</a> &gt;= 16))
+<a name='L61'>  61 <b>void</b> *DfilterAlloc(<b>void</b>* (*)(<a href='../Y/3462.html' title='Multiple used in 7 places.'>gsize</a>));
+<a name='L62'>  62 <font color='darkred'>#else</font>
+<a name='L63'>  63 <b>void</b> *DfilterAlloc(<b>void</b>* (*)(<a href='../Y/3514.html' title='Multiple used in 5 places.'>gulong</a>));
+<a name='L64'>  64 <font color='darkred'>#endif</font>
+<a name='L65'>  65 
+<a name='L66'>  66 <b>void</b> DfilterFree(<b>void</b>*, <b>void</b> (*)(<b>void</b> *));
+<a name='L67'>  67 <b>void</b> Dfilter(<b>void</b>*, <b>int</b>, <a href='../S/468.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>stnode_t</a>*, <a href='../S/458.html#L57' title='Defined at 57 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfilter-int.h.'>dfwork_t</a>*);
+<a name='L68'>  68 
+<a name='L69'>  69 <i><font color='green'>/* Scanner's lval */</font></i>
+<a name='L70'>  70 <b>extern</b> <a href='../S/468.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>stnode_t</a> *df_lval;
+<a name='L71'>  71 
+<a name='L72'>  72 <i><font color='green'>/* Return value for error in scanner. */</font></i>
+<a name='L73'>  73 <font color='darkred'>#define</font> SCAN_FAILED     -1      <i><font color='green'>/* not 0, as that means end-of-input */</font></i>
+<a name='L74'>  74 
+<a name='L75'>  75 <i><font color='green'>/* Set dfilter_error_msg_buf and dfilter_error_msg */</font></i>
+<a name='L76'>  76 <b>void</b>
+<a name='L77'>  77 dfilter_fail(<b>const</b> <b>char</b> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...);
+<a name='L78'>  78 
+<a name='L79'>  79 <b>void</b>
+<a name='L80'>  80 DfilterTrace(<a href='../Y/328.html' title='Multiple used in 113 places.'>FILE</a> *<a href='../Y/978.html' title='Multiple used in 2 places.'>TraceFILE</a>, <b>char</b> *<a href='../Y/8041.html' title='Multiple used in 2 places.'>zTracePrompt</a>);
+<a name='L81'>  81 
+<a name='L82'>  82 <font color='darkred'>#endif</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

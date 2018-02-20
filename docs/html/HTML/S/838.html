@@ -1,0 +1,203 @@
+<html>
+<head>
+<title>cbench/openflow/lib/port-array.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/port-array.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L44'>[^]</a><a href='#L170'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L44' title='Defined at 44.'>port_array_init</a>
+<li><a href='#L61' title='Defined at 61.'>port_array_destroy</a>
+<li><a href='#L84' title='Defined at 84.'>port_array_clear</a>
+<li><a href='#L92' title='Defined at 92.'>port_array_set</a>
+<li><a href='#L116' title='Defined at 116.'>next</a>
+<li><a href='#L159' title='Defined at 159.'>port_array_first</a>
+<li><a href='#L170' title='Defined at 170.'>port_array_next</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> * </font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> * </font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> * </font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> * </font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> "<a href='836.html'>port-array.h</a>"
+<a name='L36'>  36 <font color='darkred'>#include</font> &lt;stdlib.h&gt;
+<a name='L37'>  37 
+<a name='L38'>  38 <b>static</b> <b>struct</b> <a href='../S/836.html#L81' title='Defined at 81 in cbench/openflow/lib/port-array.h.'>port_array_l2</a> <a href='../Y/4042.html' title='Multiple used in 7 places.'>l2_sentinel</a>;
+<a name='L39'>  39 <b>static</b> <b>struct</b> <a href='../S/836.html#L85' title='Defined at 85 in cbench/openflow/lib/port-array.h.'>port_array_l3</a> <a href='../Y/4050.html' title='Multiple used in 6 places.'>l3_sentinel</a>;
+<a name='L40'>  40 <b>static</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/3825.html' title='Multiple used in 22 places.'>inited</a>;
+<a name='L41'>  41 
+<a name='L42'>  42 <i><font color='green'>/* Initializes 'pa' as an empty port_array. */</font></i>
+<a name='L43'>  43 <b>void</b>
+<a name='L44'>  44 <a href='../R/4079.html' title='Multiple refered from 3 places.'>port_array_init</a>(<b>struct</b> <a href='../Y/5796.html' title='Multiple used in 14 places.'>port_array</a> *<a href='../Y/5590.html' title='Multiple used in 22 places.'>pa</a>)
+<a name='L45'>  45 <font color='red'>{</font>
+<a name='L46'>  46     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L47'>  47     <b>if</b> (!<a href='../Y/3825.html' title='Multiple used in 22 places.'>inited</a>) <font color='red'>{</font>
+<a name='L48'>  48         <a href='../Y/3825.html' title='Multiple used in 22 places.'>inited</a> = <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>;
+<a name='L49'>  49         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../S/836.html#L57' title='Defined at 57 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_L2_SIZE</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L50'>  50             <a href='../Y/4042.html' title='Multiple used in 7 places.'>l2_sentinel</a>.<a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>] = &amp;<a href='../Y/4050.html' title='Multiple used in 6 places.'>l3_sentinel</a>;
+<a name='L51'>  51         <font color='red'>}</font>
+<a name='L52'>  52     <font color='red'>}</font>
+<a name='L53'>  53     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../S/836.html#L50' title='Defined at 50 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_L1_SIZE</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L54'>  54         <a href='../Y/5590.html' title='Multiple used in 22 places.'>pa</a>-&gt;<a href='../Y/4034.html' title='Multiple used in 6 places.'>l1</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>] = &amp;<a href='../Y/4042.html' title='Multiple used in 7 places.'>l2_sentinel</a>;
+<a name='L55'>  55     <font color='red'>}</font>
+<a name='L56'>  56 <font color='red'>}</font>
+<a name='L57'>  57 
+<a name='L58'>  58 <i><font color='green'>/* Frees all the memory allocated for 'pa'.  It is the client's responsibility</font></i>
+<a name='L59'>  59 <i><font color='green'> * to free memory that 'pa' elements point to. */</font></i>
+<a name='L60'>  60 <b>void</b>
+<a name='L61'>  61 <a href='../R/4075.html' title='Multiple refered from 2 places.'>port_array_destroy</a>(<b>struct</b> <a href='../Y/5796.html' title='Multiple used in 14 places.'>port_array</a> *<a href='../Y/5590.html' title='Multiple used in 22 places.'>pa</a>)
+<a name='L62'>  62 <font color='red'>{</font>
+<a name='L63'>  63     <b>unsigned</b> <b>int</b> <a href='../Y/4035.html' title='Multiple used in 10 places.'>l1_idx</a>;
+<a name='L64'>  64 
+<a name='L65'>  65     <b>for</b> (<a href='../Y/4035.html' title='Multiple used in 10 places.'>l1_idx</a> = 0; <a href='../Y/4035.html' title='Multiple used in 10 places.'>l1_idx</a> &lt; <a href='../S/836.html#L50' title='Defined at 50 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_L1_SIZE</a>; <a href='../Y/4035.html' title='Multiple used in 10 places.'>l1_idx</a>++) <font color='red'>{</font>
+<a name='L66'>  66         <b>struct</b> <a href='../S/836.html#L81' title='Defined at 81 in cbench/openflow/lib/port-array.h.'>port_array_l2</a> *<a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a> = <a href='../Y/5590.html' title='Multiple used in 22 places.'>pa</a>-&gt;<a href='../Y/4034.html' title='Multiple used in 6 places.'>l1</a>[<a href='../Y/4035.html' title='Multiple used in 10 places.'>l1_idx</a>];
+<a name='L67'>  67 
+<a name='L68'>  68         <b>if</b> (<a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a> != &amp;<a href='../Y/4042.html' title='Multiple used in 7 places.'>l2_sentinel</a>) <font color='red'>{</font>
+<a name='L69'>  69             <b>unsigned</b> <b>int</b> <a href='../Y/4037.html' title='Multiple used in 11 places.'>l2_idx</a>;
+<a name='L70'>  70 
+<a name='L71'>  71             <b>for</b> (<a href='../Y/4037.html' title='Multiple used in 11 places.'>l2_idx</a> = 0; <a href='../Y/4037.html' title='Multiple used in 11 places.'>l2_idx</a> &lt; <a href='../S/836.html#L57' title='Defined at 57 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_L2_SIZE</a>; <a href='../Y/4037.html' title='Multiple used in 11 places.'>l2_idx</a>++) <font color='red'>{</font>
+<a name='L72'>  72                 <b>struct</b> <a href='../S/836.html#L85' title='Defined at 85 in cbench/openflow/lib/port-array.h.'>port_array_l3</a> *<a href='../Y/4048.html' title='Multiple used in 22 places.'>l3</a> = <a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a>-&gt;<a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a>[<a href='../Y/4037.html' title='Multiple used in 11 places.'>l2_idx</a>];
+<a name='L73'>  73                 <b>if</b> (<a href='../Y/4048.html' title='Multiple used in 22 places.'>l3</a> != &amp;<a href='../Y/4050.html' title='Multiple used in 6 places.'>l3_sentinel</a>) <font color='red'>{</font>
+<a name='L74'>  74                     <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/4048.html' title='Multiple used in 22 places.'>l3</a>);
+<a name='L75'>  75                 <font color='red'>}</font>
+<a name='L76'>  76             <font color='red'>}</font>
+<a name='L77'>  77             <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a>);
+<a name='L78'>  78         <font color='red'>}</font>
+<a name='L79'>  79     <font color='red'>}</font>
+<a name='L80'>  80 <font color='red'>}</font>
+<a name='L81'>  81 
+<a name='L82'>  82 <i><font color='green'>/* Clears all elements of 'pa' to null pointers. */</font></i>
+<a name='L83'>  83 <b>void</b>
+<a name='L84'>  84 <a href='../S/836.html#L102' title='Refered from 102 in cbench/openflow/lib/port-array.h.'>port_array_clear</a>(<b>struct</b> <a href='../Y/5796.html' title='Multiple used in 14 places.'>port_array</a> *<a href='../Y/5590.html' title='Multiple used in 22 places.'>pa</a>)
+<a name='L85'>  85 <font color='red'>{</font>
+<a name='L86'>  86     <a href='../S/838.html#L61' title='Defined at 61 in cbench/openflow/lib/port-array.c.'>port_array_destroy</a>(<a href='../Y/5590.html' title='Multiple used in 22 places.'>pa</a>);
+<a name='L87'>  87     <a href='../S/838.html#L44' title='Defined at 44 in cbench/openflow/lib/port-array.c.'>port_array_init</a>(<a href='../Y/5590.html' title='Multiple used in 22 places.'>pa</a>);
+<a name='L88'>  88 <font color='red'>}</font>
+<a name='L89'>  89 
+<a name='L90'>  90 <i><font color='green'>/* Sets 'pa' element numbered 'idx' to 'p'. */</font></i>
+<a name='L91'>  91 <b>void</b>
+<a name='L92'>  92 <a href='../R/4083.html' title='Multiple refered from 3 places.'>port_array_set</a>(<b>struct</b> <a href='../Y/5796.html' title='Multiple used in 14 places.'>port_array</a> *<a href='../Y/5590.html' title='Multiple used in 22 places.'>pa</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/3716.html' title='Multiple used in 200 places.'>idx</a>, <b>void</b> *<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>)
+<a name='L93'>  93 <font color='red'>{</font>
+<a name='L94'>  94     <b>struct</b> <a href='../S/836.html#L81' title='Defined at 81 in cbench/openflow/lib/port-array.h.'>port_array_l2</a> **<a href='../Y/4047.html' title='Multiple used in 5 places.'>l2p</a>, *<a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a>;
+<a name='L95'>  95     <b>struct</b> <a href='../S/836.html#L85' title='Defined at 85 in cbench/openflow/lib/port-array.h.'>port_array_l3</a> **<a href='../Y/4051.html' title='Multiple used in 5 places.'>l3p</a>, *<a href='../Y/4048.html' title='Multiple used in 22 places.'>l3</a>;
+<a name='L96'>  96 
+<a name='L97'>  97     <i><font color='green'>/* Traverse level 1. */</font></i>
+<a name='L98'>  98     <a href='../Y/4047.html' title='Multiple used in 5 places.'>l2p</a> = &amp;<a href='../Y/5590.html' title='Multiple used in 22 places.'>pa</a>-&gt;<a href='../Y/4034.html' title='Multiple used in 6 places.'>l1</a>[<a href='../S/836.html#L51' title='Defined at 51 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_L1</a>(<a href='../Y/3716.html' title='Multiple used in 200 places.'>idx</a>)];
+<a name='L99'>  99     <b>if</b> (*<a href='../Y/4047.html' title='Multiple used in 5 places.'>l2p</a> == &amp;<a href='../Y/4042.html' title='Multiple used in 7 places.'>l2_sentinel</a>) <font color='red'>{</font>
+<a name='L100'> 100         *<a href='../Y/4047.html' title='Multiple used in 5 places.'>l2p</a> = <a href='../S/878.html#L81' title='Defined at 81 in cbench/openflow/lib/util.c.'>xmemdup</a>(&amp;<a href='../Y/4042.html' title='Multiple used in 7 places.'>l2_sentinel</a>, <b>sizeof</b> <a href='../Y/4042.html' title='Multiple used in 7 places.'>l2_sentinel</a>);
+<a name='L101'> 101     <font color='red'>}</font>
+<a name='L102'> 102     <a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a> = *<a href='../Y/4047.html' title='Multiple used in 5 places.'>l2p</a>;
+<a name='L103'> 103 
+<a name='L104'> 104     <i><font color='green'>/* Traverse level 2. */</font></i>
+<a name='L105'> 105     <a href='../Y/4051.html' title='Multiple used in 5 places.'>l3p</a> = &amp;<a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a>-&gt;<a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a>[<a href='../S/836.html#L58' title='Defined at 58 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_L2</a>(<a href='../Y/3716.html' title='Multiple used in 200 places.'>idx</a>)];
+<a name='L106'> 106     <b>if</b> (*<a href='../Y/4051.html' title='Multiple used in 5 places.'>l3p</a> == &amp;<a href='../Y/4050.html' title='Multiple used in 6 places.'>l3_sentinel</a>) <font color='red'>{</font>
+<a name='L107'> 107         *<a href='../Y/4051.html' title='Multiple used in 5 places.'>l3p</a> = <a href='../S/878.html#L81' title='Defined at 81 in cbench/openflow/lib/util.c.'>xmemdup</a>(&amp;<a href='../Y/4050.html' title='Multiple used in 6 places.'>l3_sentinel</a>, <b>sizeof</b> <a href='../Y/4050.html' title='Multiple used in 6 places.'>l3_sentinel</a>);
+<a name='L108'> 108     <font color='red'>}</font>
+<a name='L109'> 109     <a href='../Y/4048.html' title='Multiple used in 22 places.'>l3</a> = *<a href='../Y/4051.html' title='Multiple used in 5 places.'>l3p</a>;
+<a name='L110'> 110 
+<a name='L111'> 111     <i><font color='green'>/* Set level 3. */</font></i>
+<a name='L112'> 112     <a href='../Y/4048.html' title='Multiple used in 22 places.'>l3</a>-&gt;<a href='../Y/4048.html' title='Multiple used in 22 places.'>l3</a>[<a href='../S/836.html#L65' title='Defined at 65 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_L3</a>(<a href='../Y/3716.html' title='Multiple used in 200 places.'>idx</a>)] = <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>;
+<a name='L113'> 113 <font color='red'>}</font>
+<a name='L114'> 114 
+<a name='L115'> 115 <b>static</b> <b>void</b> *
+<a name='L116'> 116 <a href='../R/3628.html' title='Multiple refered from 514 places.'>next</a>(<b>const</b> <b>struct</b> <a href='../Y/5796.html' title='Multiple used in 14 places.'>port_array</a> *<a href='../Y/5590.html' title='Multiple used in 22 places.'>pa</a>, <b>unsigned</b> <b>int</b> *<a href='../Y/3719.html' title='Multiple used in 10 places.'>idxp</a>)
+<a name='L117'> 117 <font color='red'>{</font>
+<a name='L118'> 118     <b>unsigned</b> <b>int</b> <a href='../Y/3716.html' title='Multiple used in 200 places.'>idx</a> = *<a href='../Y/3719.html' title='Multiple used in 10 places.'>idxp</a>;
+<a name='L119'> 119 
+<a name='L120'> 120     <i><font color='green'>/* Using shift-right directly here, instead of PORT_ARRAY_L1(idx), ensures</font></i>
+<a name='L121'> 121 <i><font color='green'>     * that with an initially too-big value of '*idxp' we will skip the outer</font></i>
+<a name='L122'> 122 <i><font color='green'>     * loop and return NULL. */</font></i>
+<a name='L123'> 123     <b>unsigned</b> <b>int</b> <a href='../Y/4035.html' title='Multiple used in 10 places.'>l1_idx</a> = <a href='../Y/3716.html' title='Multiple used in 200 places.'>idx</a> &gt;&gt; <a href='../S/836.html#L49' title='Defined at 49 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_L1_SHIFT</a>;
+<a name='L124'> 124     <b>unsigned</b> <b>int</b> <a href='../Y/4037.html' title='Multiple used in 11 places.'>l2_idx</a> = <a href='../S/836.html#L58' title='Defined at 58 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_L2</a>(<a href='../Y/3716.html' title='Multiple used in 200 places.'>idx</a>);
+<a name='L125'> 125     <b>unsigned</b> <b>int</b> <a href='../Y/4049.html' title='Multiple used in 9 places.'>l3_idx</a> = <a href='../S/836.html#L65' title='Defined at 65 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_L3</a>(<a href='../Y/3716.html' title='Multiple used in 200 places.'>idx</a>);
+<a name='L126'> 126     <b>while</b> (<a href='../Y/4035.html' title='Multiple used in 10 places.'>l1_idx</a> &lt; <a href='../S/836.html#L50' title='Defined at 50 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_L1_SIZE</a>) <font color='red'>{</font>
+<a name='L127'> 127         <b>struct</b> <a href='../S/836.html#L81' title='Defined at 81 in cbench/openflow/lib/port-array.h.'>port_array_l2</a> *<a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a> = <a href='../Y/5590.html' title='Multiple used in 22 places.'>pa</a>-&gt;<a href='../Y/4034.html' title='Multiple used in 6 places.'>l1</a>[<a href='../Y/4035.html' title='Multiple used in 10 places.'>l1_idx</a>];
+<a name='L128'> 128         <b>if</b> (<a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a> != &amp;<a href='../Y/4042.html' title='Multiple used in 7 places.'>l2_sentinel</a>) <font color='red'>{</font>
+<a name='L129'> 129             <b>while</b> (<a href='../Y/4037.html' title='Multiple used in 11 places.'>l2_idx</a> &lt; <a href='../S/836.html#L57' title='Defined at 57 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_L2_SIZE</a>) <font color='red'>{</font>
+<a name='L130'> 130                 <b>struct</b> <a href='../S/836.html#L85' title='Defined at 85 in cbench/openflow/lib/port-array.h.'>port_array_l3</a> *<a href='../Y/4048.html' title='Multiple used in 22 places.'>l3</a> = <a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a>-&gt;<a href='../Y/4036.html' title='Multiple used in 26 places.'>l2</a>[<a href='../Y/4037.html' title='Multiple used in 11 places.'>l2_idx</a>];
+<a name='L131'> 131                 <b>if</b> (<a href='../Y/4048.html' title='Multiple used in 22 places.'>l3</a> != &amp;<a href='../Y/4050.html' title='Multiple used in 6 places.'>l3_sentinel</a>) <font color='red'>{</font>
+<a name='L132'> 132                     <b>while</b> (<a href='../Y/4049.html' title='Multiple used in 9 places.'>l3_idx</a> &lt; <a href='../S/836.html#L64' title='Defined at 64 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_L3_SIZE</a>) <font color='red'>{</font>
+<a name='L133'> 133                         <b>void</b> *<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> = <a href='../Y/4048.html' title='Multiple used in 22 places.'>l3</a>-&gt;<a href='../Y/4048.html' title='Multiple used in 22 places.'>l3</a>[<a href='../Y/4049.html' title='Multiple used in 9 places.'>l3_idx</a>];
+<a name='L134'> 134                         <b>if</b> (<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>) <font color='red'>{</font>
+<a name='L135'> 135                             *<a href='../Y/3719.html' title='Multiple used in 10 places.'>idxp</a> = ((<a href='../Y/4035.html' title='Multiple used in 10 places.'>l1_idx</a> &lt;&lt; <a href='../S/836.html#L49' title='Defined at 49 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_L1_SHIFT</a>)
+<a name='L136'> 136                                      | (<a href='../Y/4037.html' title='Multiple used in 11 places.'>l2_idx</a> &lt;&lt; <a href='../S/836.html#L56' title='Defined at 56 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_L2_SHIFT</a>)
+<a name='L137'> 137                                      | (<a href='../Y/4049.html' title='Multiple used in 9 places.'>l3_idx</a> &lt;&lt; <a href='../S/836.html#L63' title='Defined at 63 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_L3_SHIFT</a>));
+<a name='L138'> 138                             <b>return</b> <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>;
+<a name='L139'> 139                         <font color='red'>}</font>
+<a name='L140'> 140                         <a href='../Y/4049.html' title='Multiple used in 9 places.'>l3_idx</a>++;
+<a name='L141'> 141                     <font color='red'>}</font>
+<a name='L142'> 142                 <font color='red'>}</font>
+<a name='L143'> 143                 <a href='../Y/4037.html' title='Multiple used in 11 places.'>l2_idx</a>++;
+<a name='L144'> 144                 <a href='../Y/4049.html' title='Multiple used in 9 places.'>l3_idx</a> = 0;
+<a name='L145'> 145             <font color='red'>}</font>
+<a name='L146'> 146         <font color='red'>}</font>
+<a name='L147'> 147         <a href='../Y/4035.html' title='Multiple used in 10 places.'>l1_idx</a>++;
+<a name='L148'> 148         <a href='../Y/4037.html' title='Multiple used in 11 places.'>l2_idx</a> = 0;
+<a name='L149'> 149         <a href='../Y/4049.html' title='Multiple used in 9 places.'>l3_idx</a> = 0;
+<a name='L150'> 150     <font color='red'>}</font>
+<a name='L151'> 151     *<a href='../Y/3719.html' title='Multiple used in 10 places.'>idxp</a> = <a href='../S/836.html#L68' title='Defined at 68 in cbench/openflow/lib/port-array.h.'>PORT_ARRAY_SIZE</a>;
+<a name='L152'> 152     <b>return</b> <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L153'> 153 <font color='red'>}</font>
+<a name='L154'> 154 
+<a name='L155'> 155 <i><font color='green'>/* Returns the value of the lowest-numbered non-empty element of 'pa', and sets</font></i>
+<a name='L156'> 156 <i><font color='green'> * '*idxp' to that element's index.  If 'pa' is entirely empty, returns a null</font></i>
+<a name='L157'> 157 <i><font color='green'> * pointer and sets '*idxp' to 65536.  */</font></i>
+<a name='L158'> 158 <b>void</b> *
+<a name='L159'> 159 <a href='../R/4077.html' title='Multiple refered from 3 places.'>port_array_first</a>(<b>const</b> <b>struct</b> <a href='../Y/5796.html' title='Multiple used in 14 places.'>port_array</a> *<a href='../Y/5590.html' title='Multiple used in 22 places.'>pa</a>, <b>unsigned</b> <b>int</b> *<a href='../Y/3719.html' title='Multiple used in 10 places.'>idxp</a>)
+<a name='L160'> 160 <font color='red'>{</font>
+<a name='L161'> 161     *<a href='../Y/3719.html' title='Multiple used in 10 places.'>idxp</a> = 0;
+<a name='L162'> 162     <b>return</b> <a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>(<a href='../Y/5590.html' title='Multiple used in 22 places.'>pa</a>, <a href='../Y/3719.html' title='Multiple used in 10 places.'>idxp</a>);
+<a name='L163'> 163 <font color='red'>}</font>
+<a name='L164'> 164 
+<a name='L165'> 165 <i><font color='green'>/* Returns the value of the lowest-numbered non-empty element of 'pa' greater</font></i>
+<a name='L166'> 166 <i><font color='green'> * than the initial value of '*idxp', and sets '*idxp' to that element's index.</font></i>
+<a name='L167'> 167 <i><font color='green'> * If 'pa' contains no non-empty elements with indexes greater than the initial</font></i>
+<a name='L168'> 168 <i><font color='green'> * value of '*idxp', returns a null pointer and sets '*idxp' to 65536.  */</font></i>
+<a name='L169'> 169 <b>void</b> *
+<a name='L170'> 170 <a href='../R/4082.html' title='Multiple refered from 3 places.'>port_array_next</a>(<b>const</b> <b>struct</b> <a href='../Y/5796.html' title='Multiple used in 14 places.'>port_array</a> *<a href='../Y/5590.html' title='Multiple used in 22 places.'>pa</a>, <b>unsigned</b> <b>int</b> *<a href='../Y/3719.html' title='Multiple used in 10 places.'>idxp</a>)
+<a name='L171'> 171 <font color='red'>{</font>
+<a name='L172'> 172     ++*<a href='../Y/3719.html' title='Multiple used in 10 places.'>idxp</a>;
+<a name='L173'> 173     <b>return</b> <a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>(<a href='../Y/5590.html' title='Multiple used in 22 places.'>pa</a>, <a href='../Y/3719.html' title='Multiple used in 10 places.'>idxp</a>);
+<a name='L174'> 174 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L44'>[^]</a><a href='#L170'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

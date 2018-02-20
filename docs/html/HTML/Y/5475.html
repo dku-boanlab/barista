@@ -1,0 +1,41 @@
+<html>
+<head>
+<title>openflow_len</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/293.html#L158'>openflow_len</a>      158 cbench/openflow/datapath/datapath.c 	int openflow_len;
+<a href='../S/293.html#L168'>openflow_len</a>      168 cbench/openflow/datapath/datapath.c 	openflow_len = (skb_tailroom(skb) - NLA_HDRLEN) &amp; ~(NLA_ALIGNTO - 1);
+<a href='../S/293.html#L169'>openflow_len</a>      169 cbench/openflow/datapath/datapath.c 	if (openflow_len &lt; sizeof *oh)
+<a href='../S/293.html#L171'>openflow_len</a>      171 cbench/openflow/datapath/datapath.c 	*max_openflow_len = openflow_len;
+<a href='../S/293.html#L172'>openflow_len</a>      172 cbench/openflow/datapath/datapath.c 	attr = nla_reserve(skb, DP_GENL_A_OPENFLOW, openflow_len);
+<a href='../S/293.html#L205'>openflow_len</a>      205 cbench/openflow/datapath/datapath.c alloc_openflow_skb(struct datapath *dp, size_t openflow_len, uint8_t type,
+<a href='../S/293.html#L213'>openflow_len</a>      213 cbench/openflow/datapath/datapath.c 	if ((openflow_len + sizeof(struct ofp_header)) &gt; UINT16_MAX) {
+<a href='../S/293.html#L217'>openflow_len</a>      217 cbench/openflow/datapath/datapath.c 			       dp-&gt;netdev-&gt;name, openflow_len);
+<a href='../S/293.html#L223'>openflow_len</a>      223 cbench/openflow/datapath/datapath.c 	genl_len += nla_total_size(openflow_len);    /* DP_GENL_A_OPENFLOW */
+<a href='../S/293.html#L231'>openflow_len</a>      231 cbench/openflow/datapath/datapath.c 	resize_openflow_skb(skb, oh, openflow_len);
+<a href='../S/881.html#L790'>openflow_len</a>      790 cbench/openflow/lib/vconn.c make_openflow(size_t openflow_len, uint8_t type, struct ofpbuf **bufferp)
+<a href='../S/881.html#L792'>openflow_len</a>      792 cbench/openflow/lib/vconn.c     *bufferp = ofpbuf_new(openflow_len);
+<a href='../S/881.html#L793'>openflow_len</a>      793 cbench/openflow/lib/vconn.c     return put_openflow_xid(openflow_len, type, alloc_xid(), *bufferp);
+<a href='../S/881.html#L810'>openflow_len</a>      810 cbench/openflow/lib/vconn.c make_openflow_xid(size_t openflow_len, uint8_t type, uint32_t xid,
+<a href='../S/881.html#L813'>openflow_len</a>      813 cbench/openflow/lib/vconn.c     *bufferp = ofpbuf_new(openflow_len);
+<a href='../S/881.html#L814'>openflow_len</a>      814 cbench/openflow/lib/vconn.c     return put_openflow_xid(openflow_len, type, xid, *bufferp);
+<a href='../S/881.html#L827'>openflow_len</a>      827 cbench/openflow/lib/vconn.c put_openflow(size_t openflow_len, uint8_t type, struct ofpbuf *buffer)
+<a href='../S/881.html#L829'>openflow_len</a>      829 cbench/openflow/lib/vconn.c     return put_openflow_xid(openflow_len, type, alloc_xid(), buffer);
+<a href='../S/881.html#L842'>openflow_len</a>      842 cbench/openflow/lib/vconn.c put_openflow_xid(size_t openflow_len, uint8_t type, uint32_t xid,
+<a href='../S/881.html#L847'>openflow_len</a>      847 cbench/openflow/lib/vconn.c     assert(openflow_len &gt;= sizeof *oh);
+<a href='../S/881.html#L848'>openflow_len</a>      848 cbench/openflow/lib/vconn.c     assert(openflow_len &lt;= UINT16_MAX);
+<a href='../S/881.html#L850'>openflow_len</a>      850 cbench/openflow/lib/vconn.c     oh = ofpbuf_put_uninit(buffer, openflow_len);
+<a href='../S/881.html#L853'>openflow_len</a>      853 cbench/openflow/lib/vconn.c     oh-&gt;length = htons(openflow_len);
+<a href='../S/881.html#L855'>openflow_len</a>      855 cbench/openflow/lib/vconn.c     memset(oh + 1, 0, openflow_len - sizeof *oh);
+<a href='../S/906.html#L83'>openflow_len</a>       83 cbench/openflow/lib/vconn.h void *make_openflow(size_t openflow_len, uint8_t type, struct ofpbuf **);
+<a href='../S/906.html#L84'>openflow_len</a>       84 cbench/openflow/lib/vconn.h void *make_openflow_xid(size_t openflow_len, uint8_t type,
+<a href='../S/906.html#L86'>openflow_len</a>       86 cbench/openflow/lib/vconn.h void *put_openflow(size_t openflow_len, uint8_t type, struct ofpbuf *);
+<a href='../S/906.html#L87'>openflow_len</a>       87 cbench/openflow/lib/vconn.h void *put_openflow_xid(size_t openflow_len, uint8_t type, uint32_t xid,
+<a href='../S/204.html#L895'>openflow_len</a>      895 cbench/openflow/udatapath/datapath.c make_openflow_reply(size_t openflow_len, uint8_t type,
+<a href='../S/204.html#L898'>openflow_len</a>      898 cbench/openflow/udatapath/datapath.c     return make_openflow_xid(openflow_len, type, sender ? sender-&gt;xid : 0,
+</pre>
+</body>
+</html>

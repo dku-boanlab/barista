@@ -1,0 +1,135 @@
+<html>
+<head>
+<title>cbench/openflow/lib/random.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/random.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L44'>[^]</a><a href='#L104'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L44' title='Defined at 44.'>random_init</a>
+<li><a href='#L58' title='Defined at 58.'>random_bytes</a>
+<li><a href='#L68' title='Defined at 68.'>random_uint8</a>
+<li><a href='#L75' title='Defined at 75.'>random_uint16</a>
+<li><a href='#L88' title='Defined at 88.'>random_uint32</a>
+<li><a href='#L104' title='Defined at 104.'>random_range</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> *</font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> *</font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> "<a href='../I/129.html'>random.h</a>"
+<a name='L36'>  36 
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;errno.h&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;stdlib.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> &lt;sys/time.h&gt;
+<a name='L40'>  40 
+<a name='L41'>  41 <font color='darkred'>#include</font> "<a href='../I/69.html'>util.h</a>"
+<a name='L42'>  42 
+<a name='L43'>  43 <b>void</b>
+<a name='L44'>  44 <a href='../R/4250.html' title='Multiple refered from 6 places.'>random_init</a>(<b>void</b>)
+<a name='L45'>  45 <font color='red'>{</font>
+<a name='L46'>  46     <b>static</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/3825.html' title='Multiple used in 22 places.'>inited</a> = <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L47'>  47     <b>if</b> (!<a href='../Y/3825.html' title='Multiple used in 22 places.'>inited</a>) <font color='red'>{</font>
+<a name='L48'>  48         <b>struct</b> <a href='../Y/7388.html' title='Multiple used in 197 places.'>timeval</a> <a href='../Y/7508.html' title='Multiple used in 13 places.'>tv</a>;
+<a name='L49'>  49         <a href='../Y/3825.html' title='Multiple used in 22 places.'>inited</a> = <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>;
+<a name='L50'>  50         <b>if</b> (<a href='../Y/3429.html' title='Multiple used in 133 places.'>gettimeofday</a>(&amp;<a href='../Y/7508.html' title='Multiple used in 13 places.'>tv</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) &lt; 0) <font color='red'>{</font>
+<a name='L51'>  51             <a href='../S/878.html#L153' title='Defined at 153 in cbench/openflow/lib/util.c.'>ofp_fatal</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>, "gettimeofday");
+<a name='L52'>  52         <font color='red'>}</font>
+<a name='L53'>  53         <a href='../Y/6929.html' title='Multiple used in 3 places.'>srand</a>(<a href='../Y/7508.html' title='Multiple used in 13 places.'>tv</a>.<a href='../Y/7510.html' title='Multiple used in 122 places.'>tv_sec</a> ^ <a href='../Y/7508.html' title='Multiple used in 13 places.'>tv</a>.<a href='../Y/7511.html' title='Multiple used in 105 places.'>tv_usec</a>);
+<a name='L54'>  54     <font color='red'>}</font>
+<a name='L55'>  55 <font color='red'>}</font>
+<a name='L56'>  56 
+<a name='L57'>  57 <b>void</b>
+<a name='L58'>  58 <a href='../R/4249.html' title='Multiple refered from 5 places.'>random_bytes</a>(<b>void</b> *<a href='../Y/5575.html' title='Multiple used in 8 places.'>p_</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>)
+<a name='L59'>  59 <font color='red'>{</font>
+<a name='L60'>  60     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> *<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> = <a href='../Y/5575.html' title='Multiple used in 8 places.'>p_</a>;
+<a name='L61'>  61     <a href='../S/864.html#L44' title='Defined at 44 in cbench/openflow/lib/random.c.'>random_init</a>();
+<a name='L62'>  62     <b>while</b> (<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>--) <font color='red'>{</font>
+<a name='L63'>  63         *<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>++ = <a href='../Y/6232.html' title='Multiple used in 10 places.'>rand</a>();
+<a name='L64'>  64     <font color='red'>}</font>
+<a name='L65'>  65 <font color='red'>}</font>
+<a name='L66'>  66 
+<a name='L67'>  67 <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a>
+<a name='L68'>  68 <a href='../S/855.html#L42' title='Refered from 42 in cbench/openflow/lib/random.h.'>random_uint8</a>(<b>void</b>)
+<a name='L69'>  69 <font color='red'>{</font>
+<a name='L70'>  70     <a href='../S/864.html#L44' title='Defined at 44 in cbench/openflow/lib/random.c.'>random_init</a>();
+<a name='L71'>  71     <b>return</b> <a href='../Y/6232.html' title='Multiple used in 10 places.'>rand</a>();
+<a name='L72'>  72 <font color='red'>}</font>
+<a name='L73'>  73 
+<a name='L74'>  74 <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a>
+<a name='L75'>  75 <a href='../R/4252.html' title='Multiple refered from 2 places.'>random_uint16</a>(<b>void</b>)
+<a name='L76'>  76 <font color='red'>{</font>
+<a name='L77'>  77     <b>if</b> (<a href='../Y/724.html' title='Multiple used in 3 places.'>RAND_MAX</a> &gt;= <a href='../S/294.html#L24' title='Defined at 24 in cbench/openflow/datapath/forward.h.'>UINT16_MAX</a>) <font color='red'>{</font>
+<a name='L78'>  78         <a href='../S/864.html#L44' title='Defined at 44 in cbench/openflow/lib/random.c.'>random_init</a>();
+<a name='L79'>  79         <b>return</b> <a href='../Y/6232.html' title='Multiple used in 10 places.'>rand</a>();
+<a name='L80'>  80     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L81'>  81         <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>;
+<a name='L82'>  82         <a href='../S/864.html#L58' title='Defined at 58 in cbench/openflow/lib/random.c.'>random_bytes</a>(&amp;<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>, <b>sizeof</b> <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>);
+<a name='L83'>  83         <b>return</b> <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>;
+<a name='L84'>  84     <font color='red'>}</font>
+<a name='L85'>  85 <font color='red'>}</font>
+<a name='L86'>  86 
+<a name='L87'>  87 <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a>
+<a name='L88'>  88 <a href='../R/4253.html' title='Multiple refered from 6 places.'>random_uint32</a>(<b>void</b>)
+<a name='L89'>  89 <font color='red'>{</font>
+<a name='L90'>  90     <b>if</b> (<a href='../Y/724.html' title='Multiple used in 3 places.'>RAND_MAX</a> &gt;= <a href='../S/294.html#L23' title='Defined at 23 in cbench/openflow/datapath/forward.h.'>UINT32_MAX</a>) <font color='red'>{</font>
+<a name='L91'>  91         <a href='../S/864.html#L44' title='Defined at 44 in cbench/openflow/lib/random.c.'>random_init</a>();
+<a name='L92'>  92         <b>return</b> <a href='../Y/6232.html' title='Multiple used in 10 places.'>rand</a>();
+<a name='L93'>  93     <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../Y/724.html' title='Multiple used in 3 places.'>RAND_MAX</a> == INT32_MAX) <font color='red'>{</font>
+<a name='L94'>  94         <a href='../S/864.html#L44' title='Defined at 44 in cbench/openflow/lib/random.c.'>random_init</a>();
+<a name='L95'>  95         <b>return</b> <a href='../Y/6232.html' title='Multiple used in 10 places.'>rand</a>() | ((<a href='../Y/6232.html' title='Multiple used in 10 places.'>rand</a>() &amp; 1u) &lt;&lt; 31);
+<a name='L96'>  96     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L97'>  97         <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>;
+<a name='L98'>  98         <a href='../S/864.html#L58' title='Defined at 58 in cbench/openflow/lib/random.c.'>random_bytes</a>(&amp;<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>, <b>sizeof</b> <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>);
+<a name='L99'>  99         <b>return</b> <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>;
+<a name='L100'> 100     <font color='red'>}</font>
+<a name='L101'> 101 <font color='red'>}</font>
+<a name='L102'> 102 
+<a name='L103'> 103 <b>int</b>
+<a name='L104'> 104 <a href='../R/4251.html' title='Multiple refered from 3 places.'>random_range</a>(<b>int</b> <a href='../Y/4352.html' title='Multiple used in 27 places.'>max</a>) 
+<a name='L105'> 105 <font color='red'>{</font>
+<a name='L106'> 106     <b>return</b> <a href='../S/864.html#L88' title='Defined at 88 in cbench/openflow/lib/random.c.'>random_uint32</a>() % <a href='../Y/4352.html' title='Multiple used in 27 places.'>max</a>;
+<a name='L107'> 107 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L44'>[^]</a><a href='#L104'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

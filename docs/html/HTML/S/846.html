@@ -1,0 +1,285 @@
+<html>
+<head>
+<title>cbench/openflow/lib/ofpstat.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/ofpstat.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L46'>[^]</a><a href='#L244'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L46' title='Defined at 46.'>inc_protocol_message</a>
+<li><a href='#L116' title='Defined at 116.'>inc_error_notification</a>
+<li><a href='#L216' title='Defined at 216.'>inc_flow_manipulation</a>
+<li><a href='#L244' title='Defined at 244.'>ofpstat_inc_protocol_stat</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*-</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright (c) 2008, 2009</font></i>
+<a name='L3'>   3 <i><font color='green'> *      The Board of Trustees of The Leland Stanford Junior University</font></i>
+<a name='L4'>   4 <i><font color='green'> *</font></i>
+<a name='L5'>   5 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L6'>   6 <i><font color='green'> * (Software) available for public use and benefit with the expectation that</font></i>
+<a name='L7'>   7 <i><font color='green'> * others will use, modify and enhance the Software and contribute those</font></i>
+<a name='L8'>   8 <i><font color='green'> * enhancements back to the community. However, since we would like to make the</font></i>
+<a name='L9'>   9 <i><font color='green'> * Software available for broadest use, with as few restrictions as possible</font></i>
+<a name='L10'>  10 <i><font color='green'> * permission is hereby granted, free of charge, to any person obtaining a copy</font></i>
+<a name='L11'>  11 <i><font color='green'> * of this Software to deal in the Software under the copyrights without</font></i>
+<a name='L12'>  12 <i><font color='green'> * restriction, including without limitation the rights to use, copy, modify,</font></i>
+<a name='L13'>  13 <i><font color='green'> * merge, publish, distribute, sublicense, and/or sell copies of the Software,</font></i>
+<a name='L14'>  14 <i><font color='green'> * and to permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> *</font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be included in</font></i>
+<a name='L18'>  18 <i><font color='green'> * all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</font></i>
+<a name='L21'>  21 <i><font color='green'> * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</font></i>
+<a name='L22'>  22 <i><font color='green'> * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE</font></i>
+<a name='L23'>  23 <i><font color='green'> * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</font></i>
+<a name='L24'>  24 <i><font color='green'> * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</font></i>
+<a name='L25'>  25 <i><font color='green'> * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS</font></i>
+<a name='L26'>  26 <i><font color='green'> * IN THE SOFTWARE.</font></i>
+<a name='L27'>  27 <i><font color='green'> *</font></i>
+<a name='L28'>  28 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L29'>  29 <i><font color='green'> * advertising or publicity pertaining to the Software or any derivatives</font></i>
+<a name='L30'>  30 <i><font color='green'> * without specific, written prior permission.</font></i>
+<a name='L31'>  31 <i><font color='green'> */</font></i>
+<a name='L32'>  32 
+<a name='L33'>  33 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;netinet/in.h&gt;
+<a name='L35'>  35 
+<a name='L36'>  36 <font color='darkred'>#include</font> "<a href='181.html'>openflow/openflow.h</a>"
+<a name='L37'>  37 <font color='darkred'>#include</font> "<a href='833.html'>ofpstat.h</a>"
+<a name='L38'>  38 
+<a name='L39'>  39 <font color='darkred'>#define</font> <a href='../R/712.html' title='Multiple refered from 54 places.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a>) <b>do</b> <font color='red'>{</font>++(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>)-&gt;<a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a>;<font color='red'>}</font> <b>while</b> (0)
+<a name='L40'>  40 
+<a name='L41'>  41 <b>static</b> <b>void</b> <a href='../S/846.html#L46' title='Defined at 46 in cbench/openflow/lib/ofpstat.c.'>inc_protocol_message</a>(<b>struct</b> <a href='../Y/5408.html' title='Multiple used in 12 places.'>ofpstat</a> *, <b>struct</b> <a href='../Y/5176.html' title='Multiple used in 54 places.'>ofp_header</a> *);
+<a name='L42'>  42 <b>static</b> <b>void</b> <a href='../S/846.html#L116' title='Defined at 116 in cbench/openflow/lib/ofpstat.c.'>inc_error_notification</a>(<b>struct</b> <a href='../Y/5408.html' title='Multiple used in 12 places.'>ofpstat</a> *, <b>struct</b> <a href='../Y/5176.html' title='Multiple used in 54 places.'>ofp_header</a> *);
+<a name='L43'>  43 <b>static</b> <b>void</b> <a href='../S/846.html#L216' title='Defined at 216 in cbench/openflow/lib/ofpstat.c.'>inc_flow_manipulation</a>(<b>struct</b> <a href='../Y/5408.html' title='Multiple used in 12 places.'>ofpstat</a> *, <b>struct</b> <a href='../Y/5176.html' title='Multiple used in 54 places.'>ofp_header</a> *);
+<a name='L44'>  44 
+<a name='L45'>  45 <b>static</b> <b>void</b>
+<a name='L46'>  46 <a href='../R/3285.html' title='Multiple refered from 2 places.'>inc_protocol_message</a>(<b>struct</b> <a href='../Y/5408.html' title='Multiple used in 12 places.'>ofpstat</a> *<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <b>struct</b> <a href='../Y/5176.html' title='Multiple used in 54 places.'>ofp_header</a> *<a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>)
+<a name='L47'>  47 <font color='red'>{</font>
+<a name='L48'>  48         <b>switch</b> (<a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) <font color='red'>{</font>
+<a name='L49'>  49         <b>case</b> <a href='../D/3675.html' title='Multiple defined in 3 places.'>OFPT_HELLO</a>:
+<a name='L50'>  50                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5395.html' title='Multiple used in 10 places.'>ofps_hello</a>);
+<a name='L51'>  51                 <b>break</b>;
+<a name='L52'>  52         <b>case</b> <a href='../D/3662.html' title='Multiple defined in 3 places.'>OFPT_ERROR</a>:
+<a name='L53'>  53                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5385.html' title='Multiple used in 7 places.'>ofps_error</a>);
+<a name='L54'>  54                 <b>break</b>;
+<a name='L55'>  55         <b>case</b> <a href='../D/3660.html' title='Multiple defined in 3 places.'>OFPT_ECHO_REQUEST</a>:
+<a name='L56'>  56                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5384.html' title='Multiple used in 4 places.'>ofps_echo_request</a>);
+<a name='L57'>  57                 <b>break</b>;
+<a name='L58'>  58         <b>case</b> <a href='../D/3658.html' title='Multiple defined in 3 places.'>OFPT_ECHO_REPLY</a>:
+<a name='L59'>  59                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5383.html' title='Multiple used in 4 places.'>ofps_echo_reply</a>);
+<a name='L60'>  60                 <b>break</b>;
+<a name='L61'>  61         <b>case</b> <a href='../D/3698.html' title='Multiple defined in 2 places.'>OFPT_VENDOR</a>:
+<a name='L62'>  62                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5407.html' title='Multiple used in 4 places.'>ofps_vendor</a>);
+<a name='L63'>  63                 <b>break</b>;
+<a name='L64'>  64         <b>case</b> <a href='../D/3666.html' title='Multiple defined in 3 places.'>OFPT_FEATURES_REQUEST</a>:
+<a name='L65'>  65                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5389.html' title='Multiple used in 4 places.'>ofps_feats_request</a>);
+<a name='L66'>  66                 <b>break</b>;
+<a name='L67'>  67         <b>case</b> <a href='../D/3665.html' title='Multiple defined in 3 places.'>OFPT_FEATURES_REPLY</a>:
+<a name='L68'>  68                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5388.html' title='Multiple used in 4 places.'>ofps_feats_reply</a>);
+<a name='L69'>  69                 <b>break</b>;
+<a name='L70'>  70         <b>case</b> <a href='../D/3673.html' title='Multiple defined in 3 places.'>OFPT_GET_CONFIG_REQUEST</a>:
+<a name='L71'>  71                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5394.html' title='Multiple used in 4 places.'>ofps_get_config_request</a>);
+<a name='L72'>  72                 <b>break</b>;
+<a name='L73'>  73         <b>case</b> <a href='../D/3672.html' title='Multiple defined in 3 places.'>OFPT_GET_CONFIG_REPLY</a>:
+<a name='L74'>  74                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5393.html' title='Multiple used in 4 places.'>ofps_get_config_reply</a>);
+<a name='L75'>  75                 <b>break</b>;
+<a name='L76'>  76         <b>case</b> <a href='../D/3690.html' title='Multiple defined in 3 places.'>OFPT_SET_CONFIG</a>:
+<a name='L77'>  77                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5402.html' title='Multiple used in 4 places.'>ofps_set_config</a>);
+<a name='L78'>  78                 <b>break</b>;
+<a name='L79'>  79         <b>case</b> <a href='../D/3680.html' title='Multiple defined in 3 places.'>OFPT_PACKET_IN</a>:
+<a name='L80'>  80                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5396.html' title='Multiple used in 4 places.'>ofps_packet_in</a>);
+<a name='L81'>  81                 <b>break</b>;
+<a name='L82'>  82         <b>case</b> <a href='../D/3669.html' title='Multiple defined in 3 places.'>OFPT_FLOW_REMOVED</a>:
+<a name='L83'>  83                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5392.html' title='Multiple used in 4 places.'>ofps_flow_removed</a>);
+<a name='L84'>  84                 <b>break</b>;
+<a name='L85'>  85         <b>case</b> <a href='../D/3684.html' title='Multiple defined in 3 places.'>OFPT_PORT_STATUS</a>:
+<a name='L86'>  86                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5399.html' title='Multiple used in 4 places.'>ofps_port_status</a>);
+<a name='L87'>  87                 <b>break</b>;
+<a name='L88'>  88         <b>case</b> <a href='../D/3682.html' title='Multiple defined in 3 places.'>OFPT_PACKET_OUT</a>:
+<a name='L89'>  89                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5397.html' title='Multiple used in 4 places.'>ofps_packet_out</a>);
+<a name='L90'>  90                 <b>break</b>;
+<a name='L91'>  91         <b>case</b> <a href='../D/3667.html' title='Multiple defined in 3 places.'>OFPT_FLOW_MOD</a>:
+<a name='L92'>  92                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5390.html' title='Multiple used in 4 places.'>ofps_flow_mod</a>);
+<a name='L93'>  93                 <b>break</b>;
+<a name='L94'>  94         <b>case</b> <a href='../D/3683.html' title='Multiple defined in 3 places.'>OFPT_PORT_MOD</a>:
+<a name='L95'>  95                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5398.html' title='Multiple used in 4 places.'>ofps_port_mod</a>);
+<a name='L96'>  96                 <b>break</b>;
+<a name='L97'>  97         <b>case</b> <a href='../D/3694.html' title='Multiple defined in 2 places.'>OFPT_STATS_REQUEST</a>:
+<a name='L98'>  98                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5404.html' title='Multiple used in 4 places.'>ofps_stats_request</a>);
+<a name='L99'>  99                 <b>break</b>;
+<a name='L100'> 100         <b>case</b> <a href='../D/3691.html' title='Multiple defined in 2 places.'>OFPT_STATS_REPLY</a>:
+<a name='L101'> 101                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5403.html' title='Multiple used in 4 places.'>ofps_stats_reply</a>);
+<a name='L102'> 102                 <b>break</b>;
+<a name='L103'> 103         <b>case</b> <a href='../D/3657.html' title='Multiple defined in 3 places.'>OFPT_BARRIER_REQUEST</a>:
+<a name='L104'> 104                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5382.html' title='Multiple used in 4 places.'>ofps_barrier_request</a>);
+<a name='L105'> 105                 <b>break</b>;
+<a name='L106'> 106         <b>case</b> <a href='../D/3656.html' title='Multiple defined in 3 places.'>OFPT_BARRIER_REPLY</a>:
+<a name='L107'> 107                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5381.html' title='Multiple used in 4 places.'>ofps_barrier_reply</a>);
+<a name='L108'> 108                 <b>break</b>;
+<a name='L109'> 109         <b>default</b>:
+<a name='L110'> 110                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5406.html' title='Multiple used in 4 places.'>ofps_unknown</a>);
+<a name='L111'> 111                 <b>break</b>;
+<a name='L112'> 112         <font color='red'>}</font>
+<a name='L113'> 113 <font color='red'>}</font>
+<a name='L114'> 114 
+<a name='L115'> 115 <b>static</b> <b>void</b>
+<a name='L116'> 116 <a href='../R/3283.html' title='Multiple refered from 2 places.'>inc_error_notification</a>(<b>struct</b> <a href='../Y/5408.html' title='Multiple used in 12 places.'>ofpstat</a> *<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <b>struct</b> <a href='../Y/5176.html' title='Multiple used in 54 places.'>ofp_header</a> *<a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>)
+<a name='L117'> 117 <font color='red'>{</font>
+<a name='L118'> 118         <b>struct</b> <a href='../D/8772.html' title='Multiple defined in 3 places.'>ofp_error_msg</a> *<a href='../Y/2759.html' title='Multiple used in 3 places.'>errmsg</a> = (<b>struct</b> <a href='../D/8772.html' title='Multiple defined in 3 places.'>ofp_error_msg</a> *)<a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>;
+<a name='L119'> 119         <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/2778.html' title='Multiple used in 2 places.'>errtype</a> = <a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2759.html' title='Multiple used in 3 places.'>errmsg</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>);
+<a name='L120'> 120         <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/2758.html' title='Multiple used in 5 places.'>errcode</a> = <a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2759.html' title='Multiple used in 3 places.'>errmsg</a>-&gt;<a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a>);
+<a name='L121'> 121 
+<a name='L122'> 122         <b>switch</b> (<a href='../Y/2778.html' title='Multiple used in 2 places.'>errtype</a>) <font color='red'>{</font>
+<a name='L123'> 123         <b>case</b> <a href='../D/3395.html' title='Multiple defined in 3 places.'>OFPET_HELLO_FAILED</a>:
+<a name='L124'> 124                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5387.html' title='Multiple used in 20 places.'>ofps_error_type</a>.<a href='../Y/3599.html' title='Multiple used in 8 places.'>hello_fail</a>);
+<a name='L125'> 125                 <b>switch</b> (<a href='../Y/2758.html' title='Multiple used in 5 places.'>errcode</a>) <font color='red'>{</font>
+<a name='L126'> 126                 <b>case</b> <a href='../D/3479.html' title='Multiple defined in 3 places.'>OFPHFC_INCOMPATIBLE</a>:
+<a name='L127'> 127                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/3620.html' title='Multiple used in 8 places.'>hf_incompat</a>);
+<a name='L128'> 128                         <b>break</b>;
+<a name='L129'> 129                 <b>case</b> <a href='../D/3478.html' title='Multiple defined in 3 places.'>OFPHFC_EPERM</a>:
+<a name='L130'> 130                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/3610.html' title='Multiple used in 4 places.'>hf_eperm</a>);
+<a name='L131'> 131                         <b>break</b>;
+<a name='L132'> 132                 <b>default</b>:
+<a name='L133'> 133                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/7640.html' title='Multiple used in 15 places.'>unknown</a>);
+<a name='L134'> 134                         <b>break</b>;
+<a name='L135'> 135                 <font color='red'>}</font>
+<a name='L136'> 136                 <b>break</b>;
+<a name='L137'> 137         <b>case</b> <a href='../D/3391.html' title='Multiple defined in 3 places.'>OFPET_BAD_REQUEST</a>:
+<a name='L138'> 138                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5387.html' title='Multiple used in 20 places.'>ofps_error_type</a>.<a href='../Y/1591.html' title='Multiple used in 4 places.'>bad_request</a>);
+<a name='L139'> 139                 <b>switch</b> (<a href='../Y/2758.html' title='Multiple used in 5 places.'>errcode</a>) <font color='red'>{</font>
+<a name='L140'> 140                 <b>case</b> <a href='../D/3361.html' title='Multiple defined in 3 places.'>OFPBRC_BAD_VERSION</a>:
+<a name='L141'> 141                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/1666.html' title='Multiple used in 4 places.'>br_bad_version</a>);
+<a name='L142'> 142                         <b>break</b>;
+<a name='L143'> 143                 <b>case</b> <a href='../D/3359.html' title='Multiple defined in 3 places.'>OFPBRC_BAD_TYPE</a>:
+<a name='L144'> 144                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/1664.html' title='Multiple used in 4 places.'>br_bad_type</a>);
+<a name='L145'> 145                         <b>break</b>;
+<a name='L146'> 146                 <b>case</b> <a href='../D/3356.html' title='Multiple defined in 2 places.'>OFPBRC_BAD_STAT</a>:
+<a name='L147'> 147                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/1663.html' title='Multiple used in 4 places.'>br_bad_stat</a>);
+<a name='L148'> 148                         <b>break</b>;
+<a name='L149'> 149                 <b>case</b> <a href='../D/3360.html' title='Multiple defined in 2 places.'>OFPBRC_BAD_VENDOR</a>:
+<a name='L150'> 150                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/1665.html' title='Multiple used in 4 places.'>br_bad_vendor</a>);
+<a name='L151'> 151                         <b>break</b>;
+<a name='L152'> 152                 <b>case</b> <a href='../D/3364.html' title='Multiple defined in 3 places.'>OFPBRC_EPERM</a>:
+<a name='L153'> 153                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/1667.html' title='Multiple used in 4 places.'>br_eperm</a>);
+<a name='L154'> 154                         <b>break</b>;
+<a name='L155'> 155                 <b>default</b>:
+<a name='L156'> 156                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/7640.html' title='Multiple used in 15 places.'>unknown</a>);
+<a name='L157'> 157                         <b>break</b>;
+<a name='L158'> 158                 <font color='red'>}</font>
+<a name='L159'> 159                 <b>break</b>;
+<a name='L160'> 160         <b>case</b> <a href='../D/3388.html' title='Multiple defined in 3 places.'>OFPET_BAD_ACTION</a>:
+<a name='L161'> 161                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5387.html' title='Multiple used in 20 places.'>ofps_error_type</a>.<a href='../Y/1587.html' title='Multiple used in 4 places.'>bad_action</a>);
+<a name='L162'> 162                 <b>switch</b> (<a href='../Y/2758.html' title='Multiple used in 5 places.'>errcode</a>) <font color='red'>{</font>
+<a name='L163'> 163                 <b>case</b> <a href='../D/3322.html' title='Multiple defined in 3 places.'>OFPBAC_BAD_TYPE</a>:
+<a name='L164'> 164                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/1575.html' title='Multiple used in 4 places.'>ba_bad_type</a>);
+<a name='L165'> 165                         <b>break</b>;
+<a name='L166'> 166                 <b>case</b> <a href='../D/3314.html' title='Multiple defined in 3 places.'>OFPBAC_BAD_LEN</a>:
+<a name='L167'> 167                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/1573.html' title='Multiple used in 4 places.'>ba_bad_len</a>);
+<a name='L168'> 168                         <b>break</b>;
+<a name='L169'> 169                 <b>case</b> <a href='../D/3323.html' title='Multiple defined in 2 places.'>OFPBAC_BAD_VENDOR</a>:
+<a name='L170'> 170                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/1576.html' title='Multiple used in 4 places.'>ba_bad_vendor</a>);
+<a name='L171'> 171                         <b>break</b>;
+<a name='L172'> 172                 <b>case</b> <a href='../D/3324.html' title='Multiple defined in 2 places.'>OFPBAC_BAD_VENDOR_TYPE</a>:
+<a name='L173'> 173                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/1577.html' title='Multiple used in 4 places.'>ba_bad_vendor_type</a>);
+<a name='L174'> 174                         <b>break</b>;
+<a name='L175'> 175                 <b>case</b> <a href='../D/3316.html' title='Multiple defined in 3 places.'>OFPBAC_BAD_OUT_PORT</a>:
+<a name='L176'> 176                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/1574.html' title='Multiple used in 4 places.'>ba_bad_out_port</a>);
+<a name='L177'> 177                         <b>break</b>;
+<a name='L178'> 178                 <b>case</b> <a href='../D/3311.html' title='Multiple defined in 3 places.'>OFPBAC_BAD_ARGUMENT</a>:
+<a name='L179'> 179                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/1572.html' title='Multiple used in 3 places.'>ba_bad_argument</a>);
+<a name='L180'> 180                         <b>break</b>;
+<a name='L181'> 181                 <b>case</b> <a href='../D/3325.html' title='Multiple defined in 3 places.'>OFPBAC_EPERM</a>:
+<a name='L182'> 182                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/1578.html' title='Multiple used in 4 places.'>ba_eperm</a>);
+<a name='L183'> 183                         <b>break</b>;
+<a name='L184'> 184                 <b>default</b>:
+<a name='L185'> 185                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/7640.html' title='Multiple used in 15 places.'>unknown</a>);
+<a name='L186'> 186                         <b>break</b>;
+<a name='L187'> 187                 <font color='red'>}</font>
+<a name='L188'> 188                 <b>break</b>;
+<a name='L189'> 189         <b>case</b> <a href='../D/3393.html' title='Multiple defined in 3 places.'>OFPET_FLOW_MOD_FAILED</a>:
+<a name='L190'> 190                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5387.html' title='Multiple used in 20 places.'>ofps_error_type</a>.<a href='../Y/3153.html' title='Multiple used in 4 places.'>flow_mod_fail</a>);
+<a name='L191'> 191                 <b>switch</b> (<a href='../Y/2758.html' title='Multiple used in 5 places.'>errcode</a>) <font color='red'>{</font>
+<a name='L192'> 192                 <b>case</b> <a href='../D/3414.html' title='Multiple defined in 2 places.'>OFPFMFC_ALL_TABLES_FULL</a>:
+<a name='L193'> 193                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/3181.html' title='Multiple used in 4 places.'>fmf_all_tables_full</a>);
+<a name='L194'> 194                         <b>break</b>;
+<a name='L195'> 195                 <b>case</b> <a href='../D/3421.html' title='Multiple defined in 3 places.'>OFPFMFC_OVERLAP</a>:
+<a name='L196'> 196                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/3184.html' title='Multiple used in 4 places.'>fmf_overlap</a>);
+<a name='L197'> 197                         <b>break</b>;
+<a name='L198'> 198                 <b>case</b> <a href='../D/3420.html' title='Multiple defined in 3 places.'>OFPFMFC_EPERM</a>:
+<a name='L199'> 199                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/3183.html' title='Multiple used in 4 places.'>fmf_eperm</a>);
+<a name='L200'> 200                         <b>break</b>;
+<a name='L201'> 201                 <b>case</b> <a href='../D/3416.html' title='Multiple defined in 2 places.'>OFPFMFC_BAD_EMERG_TIMEOUT</a>:
+<a name='L202'> 202                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/3182.html' title='Multiple used in 3 places.'>fmf_emerg</a>);
+<a name='L203'> 203                         <b>break</b>;
+<a name='L204'> 204                 <b>default</b>:
+<a name='L205'> 205                         <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5386.html' title='Multiple used in 63 places.'>ofps_error_code</a>.<a href='../Y/7640.html' title='Multiple used in 15 places.'>unknown</a>);
+<a name='L206'> 206                         <b>break</b>;
+<a name='L207'> 207                 <font color='red'>}</font>
+<a name='L208'> 208                 <b>break</b>;
+<a name='L209'> 209         <b>default</b>:
+<a name='L210'> 210                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5387.html' title='Multiple used in 20 places.'>ofps_error_type</a>.<a href='../Y/7640.html' title='Multiple used in 15 places.'>unknown</a>);
+<a name='L211'> 211                 <b>break</b>;
+<a name='L212'> 212         <font color='red'>}</font>
+<a name='L213'> 213 <font color='red'>}</font>
+<a name='L214'> 214 
+<a name='L215'> 215 <b>static</b> <b>void</b>
+<a name='L216'> 216 <a href='../R/3284.html' title='Multiple refered from 2 places.'>inc_flow_manipulation</a>(<b>struct</b> <a href='../Y/5408.html' title='Multiple used in 12 places.'>ofpstat</a> *<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <b>struct</b> <a href='../Y/5176.html' title='Multiple used in 54 places.'>ofp_header</a> *<a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>)
+<a name='L217'> 217 <font color='red'>{</font>
+<a name='L218'> 218         <b>struct</b> <a href='../D/8779.html' title='Multiple defined in 3 places.'>ofp_flow_mod</a> *<a href='../Y/3172.html' title='Multiple used in 2 places.'>flowmodmsg</a> = (<b>struct</b> <a href='../D/8779.html' title='Multiple defined in 3 places.'>ofp_flow_mod</a> *)<a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>;
+<a name='L219'> 219         <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/3173.html' title='Multiple used in 2 places.'>flowmodops</a> = <a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/3172.html' title='Multiple used in 2 places.'>flowmodmsg</a>-&gt;<a href='../S/333.html#L92' title='Defined at 92 in cbench/openflow/utilities/dpctl.c.'>command</a>);
+<a name='L220'> 220 
+<a name='L221'> 221         <b>switch</b> (<a href='../Y/3173.html' title='Multiple used in 2 places.'>flowmodops</a>) <font color='red'>{</font>
+<a name='L222'> 222         <b>case</b> <a href='../D/3403.html' title='Multiple defined in 3 places.'>OFPFC_ADD</a>:
+<a name='L223'> 223                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5391.html' title='Multiple used in 18 places.'>ofps_flow_mod_ops</a>.<a href='../Y/1309.html' title='Multiple used in 6 places.'>add</a>);
+<a name='L224'> 224                 <b>break</b>;
+<a name='L225'> 225         <b>case</b> <a href='../D/3406.html' title='Multiple defined in 3 places.'>OFPFC_MODIFY</a>:
+<a name='L226'> 226                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5391.html' title='Multiple used in 18 places.'>ofps_flow_mod_ops</a>.<a href='../Y/4488.html' title='Multiple used in 19 places.'>modify</a>);
+<a name='L227'> 227                 <b>break</b>;
+<a name='L228'> 228         <b>case</b> <a href='../D/3407.html' title='Multiple defined in 3 places.'>OFPFC_MODIFY_STRICT</a>:
+<a name='L229'> 229                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5391.html' title='Multiple used in 18 places.'>ofps_flow_mod_ops</a>.<a href='../Y/4491.html' title='Multiple used in 3 places.'>modify_strict</a>);
+<a name='L230'> 230                 <b>break</b>;
+<a name='L231'> 231         <b>case</b> <a href='../D/3404.html' title='Multiple defined in 3 places.'>OFPFC_DELETE</a>:
+<a name='L232'> 232                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5391.html' title='Multiple used in 18 places.'>ofps_flow_mod_ops</a>.<a href='../Y/2320.html' title='Multiple used in 25 places.'>delete</a>);
+<a name='L233'> 233                 <b>break</b>;
+<a name='L234'> 234         <b>case</b> <a href='../D/3405.html' title='Multiple defined in 3 places.'>OFPFC_DELETE_STRICT</a>:
+<a name='L235'> 235                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5391.html' title='Multiple used in 18 places.'>ofps_flow_mod_ops</a>.<a href='../Y/2321.html' title='Multiple used in 4 places.'>delete_strict</a>);
+<a name='L236'> 236                 <b>break</b>;
+<a name='L237'> 237         <b>default</b>:
+<a name='L238'> 238                 <a href='../S/846.html#L39' title='Defined at 39 in cbench/openflow/lib/ofpstat.c.'>INC_IFP_STAT</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/5391.html' title='Multiple used in 18 places.'>ofps_flow_mod_ops</a>.<a href='../Y/7640.html' title='Multiple used in 15 places.'>unknown</a>);
+<a name='L239'> 239                 <b>break</b>;
+<a name='L240'> 240         <font color='red'>}</font>
+<a name='L241'> 241 <font color='red'>}</font>
+<a name='L242'> 242 
+<a name='L243'> 243 <b>void</b>
+<a name='L244'> 244 <a href='../R/3970.html' title='Multiple refered from 3 places.'>ofpstat_inc_protocol_stat</a>(<b>struct</b> <a href='../Y/5408.html' title='Multiple used in 12 places.'>ofpstat</a> *<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <b>struct</b> <a href='../Y/5176.html' title='Multiple used in 54 places.'>ofp_header</a> *<a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>)
+<a name='L245'> 245 <font color='red'>{</font>
+<a name='L246'> 246         ++<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>-&gt;<a href='../Y/5405.html' title='Multiple used in 11 places.'>ofps_total</a>;
+<a name='L247'> 247         <a href='../S/846.html#L46' title='Defined at 46 in cbench/openflow/lib/ofpstat.c.'>inc_protocol_message</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>);
+<a name='L248'> 248 
+<a name='L249'> 249         <b>switch</b> (<a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) <font color='red'>{</font>
+<a name='L250'> 250         <b>case</b> <a href='../D/3662.html' title='Multiple defined in 3 places.'>OFPT_ERROR</a>:
+<a name='L251'> 251                 <a href='../S/846.html#L116' title='Defined at 116 in cbench/openflow/lib/ofpstat.c.'>inc_error_notification</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>);
+<a name='L252'> 252                 <b>break</b>;
+<a name='L253'> 253         <b>case</b> <a href='../D/3667.html' title='Multiple defined in 3 places.'>OFPT_FLOW_MOD</a>:
+<a name='L254'> 254                 <a href='../S/846.html#L216' title='Defined at 216 in cbench/openflow/lib/ofpstat.c.'>inc_flow_manipulation</a>(<a href='../Y/3739.html' title='Multiple used in 119 places.'>ifps</a>, <a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>);
+<a name='L255'> 255                 <b>break</b>;
+<a name='L256'> 256         <b>default</b>:
+<a name='L257'> 257                 <b>break</b>;
+<a name='L258'> 258         <font color='red'>}</font>
+<a name='L259'> 259 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L46'>[^]</a><a href='#L244'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

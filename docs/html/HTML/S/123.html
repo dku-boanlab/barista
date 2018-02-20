@@ -1,0 +1,139 @@
+<html>
+<head>
+<title>cbench/oflops/module_default.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1101.html'>oflops</a>/module_default.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L8'>[^]</a><a href='#L101'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L8' title='Defined at 8.'>default_module_init</a>
+<li><a href='#L14' title='Defined at 14.'>default_module_destroy</a>
+<li><a href='#L19' title='Defined at 19.'>default_module_get_pcap_filter</a>
+<li><a href='#L38' title='Defined at 38.'>default_module_start</a>
+<li><a href='#L44' title='Defined at 44.'>default_module_handle_pcap_event</a>
+<li><a href='#L57' title='Defined at 57.'>default_module_of_event_packet_in</a>
+<li><a href='#L65' title='Defined at 65.'>default_module_of_event_flow_removed</a>
+<li><a href='#L75' title='Defined at 75.'>default_module_of_event_echo_request</a>
+<li><a href='#L85' title='Defined at 85.'>default_module_of_event_port_status</a>
+<li><a href='#L89' title='Defined at 89.'>default_module_of_event_other</a>
+<li><a href='#L93' title='Defined at 93.'>default_module_handle_timer_event</a>
+<li><a href='#L97' title='Defined at 97.'>default_module_handle_snmp_event</a>
+<li><a href='#L101' title='Defined at 101.'>default_module_handle_traffic_generation</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <font color='darkred'>#include</font> &lt;string.h&gt;
+<a name='L2'>   2 
+<a name='L3'>   3 <font color='darkred'>#include</font> "<a href='11.html'>module_default.h</a>"
+<a name='L4'>   4 <font color='darkred'>#include</font> "<a href='61.html'>pcap_track.h</a>"
+<a name='L5'>   5 
+<a name='L6'>   6 <i><font color='green'>// Set of default operations for modules; just NOOPs except for OFLOPS_CONTROL which we keep timestamps for</font></i>
+<a name='L7'>   7 
+<a name='L8'>   8 <b>int</b> <a href='../S/11.html#L13' title='Refered from 13 in cbench/oflops/module_default.h.'>default_module_init</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>char</b> * <a href='../Y/3809.html' title='Multiple used in 3 places.'>init</a>)
+<a name='L9'>   9 <font color='red'>{</font>
+<a name='L10'>  10         <b>return</b> 0;
+<a name='L11'>  11 <font color='red'>}</font>
+<a name='L12'>  12 
+<a name='L13'>  13 
+<a name='L14'>  14 <b>int</b> <a href='../S/11.html#L14' title='Refered from 14 in cbench/oflops/module_default.h.'>default_module_destroy</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>)
+<a name='L15'>  15 <font color='red'>{</font>
+<a name='L16'>  16         <b>return</b> 0;
+<a name='L17'>  17 <font color='red'>}</font>
+<a name='L18'>  18 
+<a name='L19'>  19 <b>int</b> <a href='../S/11.html#L15' title='Refered from 15 in cbench/oflops/module_default.h.'>default_module_get_pcap_filter</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <a href='../Y/5076.html' title='Multiple used in 49 places.'>oflops_channel_name</a> <a href='../Y/5060.html' title='Multiple used in 47 places.'>ofc</a>, <b>char</b> * <a href='../Y/3075.html' title='Multiple used in 66 places.'>filter</a>, <b>int</b> <a href='../Y/1713.html' title='Multiple used in 72 places.'>buflen</a>)
+<a name='L20'>  20 <font color='red'>{</font>
+<a name='L21'>  21         <b>if</b>(<a href='../Y/5060.html' title='Multiple used in 47 places.'>ofc</a> == <a href='../S/55.html#L13' title='Defined at 13 in cbench/oflops/test_module.h.'>OFLOPS_CONTROL</a>)       <i><font color='green'>// only pcap dump the control channel</font></i>
+<a name='L22'>  22 
+<a name='L23'>  23                 <i><font color='green'>/*********************</font></i>
+<a name='L24'>  24 <i><font color='green'>                 * Stolen from man pcap(3):</font></i>
+<a name='L25'>  25 <i><font color='green'>                 *      To print all IPv4 HTTP packets to and from port</font></i>
+<a name='L26'>  26 <i><font color='green'>                 *      80, i.e. print only packets that contain data,</font></i>
+<a name='L27'>  27 <i><font color='green'>                 *      not,  for  example,  SYN  and  FIN packets and ACK-only packets.</font></i>
+<a name='L28'>  28 <i><font color='green'>                 **/</font></i>
+<a name='L29'>  29                 <b>return</b> <a href='../Y/6891.html' title='Multiple used in 224 places.'>snprintf</a>(<a href='../Y/3075.html' title='Multiple used in 66 places.'>filter</a>,<a href='../Y/1713.html' title='Multiple used in 72 places.'>buflen</a>,"tcp port %d"             <i><font color='green'>// port openflow</font></i>
+<a name='L30'>  30                                 " and (((ip[2:2] - ((ip[0]&amp;0xf)&lt;&lt;2)) - "<i><font color='green'>// ip.tot_len - ip header len *4</font></i>
+<a name='L31'>  31                                 " ((tcp[12]&amp;0xf0)&gt;&gt;2)) != 0)",          <i><font color='green'>// - tcp header len *4</font></i>
+<a name='L32'>  32                                 <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/4170.html' title='Multiple used in 18 places.'>listen_port</a>);
+<a name='L33'>  33         <b>else</b>
+<a name='L34'>  34                 <b>return</b> 0;
+<a name='L35'>  35 <font color='red'>}</font>
+<a name='L36'>  36 
+<a name='L37'>  37 
+<a name='L38'>  38 <b>int</b> <a href='../S/11.html#L16' title='Refered from 16 in cbench/oflops/module_default.h.'>default_module_start</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> * <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>)
+<a name='L39'>  39 <font color='red'>{</font>
+<a name='L40'>  40         <b>return</b> 0;
+<a name='L41'>  41 <font color='red'>}</font>
+<a name='L42'>  42 
+<a name='L43'>  43 
+<a name='L44'>  44 <b>int</b> <a href='../S/11.html#L17' title='Refered from 17 in cbench/oflops/module_default.h.'>default_module_handle_pcap_event</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>struct</b> <a href='../Y/5671.html' title='Multiple used in 22 places.'>pcap_event</a> * <a href='../Y/5698.html' title='Multiple used in 154 places.'>pe</a>, <a href='../Y/5076.html' title='Multiple used in 49 places.'>oflops_channel_name</a> <a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>)
+<a name='L45'>  45 <font color='red'>{</font>
+<a name='L46'>  46   <b>return</b> 0;
+<a name='L47'>  47         <b>if</b>( <a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a> != <a href='../S/55.html#L13' title='Defined at 13 in cbench/oflops/test_module.h.'>OFLOPS_CONTROL</a>)
+<a name='L48'>  48                 <b>return</b> 0;
+<a name='L49'>  49         <b>if</b>(!<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/1859.html' title='Multiple used in 259 places.'>channels</a>[<a href='../S/55.html#L13' title='Defined at 13 in cbench/oflops/test_module.h.'>OFLOPS_CONTROL</a>].<a href='../Y/7386.html' title='Multiple used in 6 places.'>timestamps</a>)
+<a name='L50'>  50                 <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/1859.html' title='Multiple used in 259 places.'>channels</a>[<a href='../S/55.html#L13' title='Defined at 13 in cbench/oflops/test_module.h.'>OFLOPS_CONTROL</a>].<a href='../Y/7386.html' title='Multiple used in 6 places.'>timestamps</a> = <a href='../S/115.html#L46' title='Defined at 46 in cbench/oflops/pcap_track.c.'>ptrack_new</a>();
+<a name='L51'>  51         <i><font color='green'>// add this packet to the list of timestamps</font></i>
+<a name='L52'>  52         <b>return</b> <a href='../S/115.html#L59' title='Defined at 59 in cbench/oflops/pcap_track.c.'>ptrack_add_of_entry</a>(<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/1859.html' title='Multiple used in 259 places.'>channels</a>[<a href='../S/55.html#L13' title='Defined at 13 in cbench/oflops/test_module.h.'>OFLOPS_CONTROL</a>].<a href='../Y/7386.html' title='Multiple used in 6 places.'>timestamps</a>, <a href='../Y/5698.html' title='Multiple used in 154 places.'>pe</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/5698.html' title='Multiple used in 154 places.'>pe</a>-&gt;<a href='../Y/5688.html' title='Multiple used in 122 places.'>pcaphdr</a>.<a href='../Y/1794.html' title='Multiple used in 22 places.'>caplen</a>, <a href='../Y/5698.html' title='Multiple used in 154 places.'>pe</a>-&gt;<a href='../Y/5688.html' title='Multiple used in 122 places.'>pcaphdr</a>);
+<a name='L53'>  53 <font color='red'>}</font>
+<a name='L54'>  54 
+<a name='L55'>  55 
+<a name='L56'>  56 
+<a name='L57'>  57 <b>int</b> <a href='../S/11.html#L19' title='Refered from 19 in cbench/oflops/module_default.h.'>default_module_of_event_packet_in</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>const</b> <b>struct</b> <a href='../Y/5229.html' title='Multiple used in 18 places.'>ofp_packet_in</a> * <a href='../Y/5761.html' title='Multiple used in 212 places.'>pktin</a>)
+<a name='L58'>  58 <font color='red'>{</font>
+<a name='L59'>  59         <b>return</b> 0;
+<a name='L60'>  60 <font color='red'>}</font>
+<a name='L61'>  61 
+<a name='L62'>  62 
+<a name='L63'>  63 
+<a name='L64'>  64 <font color='darkred'>#ifdef</font> <a href='../Y/416.html' title='Multiple used in 4 places.'>HAVE_OFP_FLOW_EXPIRED</a>
+<a name='L65'>  65         <b>int</b> <a href='../R/2567.html' title='Multiple refered from 2 places.'>default_module_of_event_flow_removed</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>const</b> <b>struct</b> <a href='../Y/5139.html' title='Multiple used in 4 places.'>ofp_flow_expired</a> * <a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>)
+<a name='L66'>  66 <font color='darkred'>#elif</font> <b>defined</b>(<a href='../Y/417.html' title='Multiple used in 4 places.'>HAVE_OFP_FLOW_REMOVED</a>)
+<a name='L67'>  67         <b>int</b> default_module_of_event_flow_removed(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>const</b> <b>struct</b> <a href='../Y/5147.html' title='Multiple used in 5 places.'>ofp_flow_removed</a> * <a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>)
+<a name='L68'>  68 <font color='darkred'>#else</font>
+<a name='L69'>  69 <font color='darkred'>#error</font> "Unknown version of openflow"
+<a name='L70'>  70 <font color='darkred'>#endif</font>
+<a name='L71'>  71 <font color='red'>{</font>
+<a name='L72'>  72         <b>return</b> 0;
+<a name='L73'>  73 <font color='red'>}</font>
+<a name='L74'>  74 
+<a name='L75'>  75 <b>int</b> <a href='../S/11.html#L29' title='Refered from 29 in cbench/oflops/module_default.h.'>default_module_of_event_echo_request</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>const</b> <b>struct</b> <a href='../Y/5176.html' title='Multiple used in 54 places.'>ofp_header</a> * <a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>)
+<a name='L76'>  76 <font color='red'>{</font>
+<a name='L77'>  77         <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/6425.html' title='Multiple used in 4 places.'>resp</a>;
+<a name='L78'>  78         <a href='../Y/4417.html' title='Multiple used in 205 places.'>memcpy</a>(&amp;<a href='../Y/6425.html' title='Multiple used in 4 places.'>resp</a>,<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>,<b>sizeof</b>(<a href='../Y/6425.html' title='Multiple used in 4 places.'>resp</a>));
+<a name='L79'>  79         <a href='../Y/6425.html' title='Multiple used in 4 places.'>resp</a>.<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> = <a href='../D/3658.html' title='Multiple defined in 3 places.'>OFPT_ECHO_REPLY</a>;
+<a name='L80'>  80         <a href='../S/121.html#L119' title='Defined at 119 in cbench/oflops/test_module.c.'>oflops_send_of_mesg</a>(<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, &amp;<a href='../Y/6425.html' title='Multiple used in 4 places.'>resp</a>);
+<a name='L81'>  81         <b>return</b> 0;
+<a name='L82'>  82 <font color='red'>}</font>
+<a name='L83'>  83 
+<a name='L84'>  84 
+<a name='L85'>  85 <b>int</b> <a href='../S/11.html#L30' title='Refered from 30 in cbench/oflops/module_default.h.'>default_module_of_event_port_status</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> * <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>const</b> <b>struct</b> <a href='../Y/5300.html' title='Multiple used in 12 places.'>ofp_port_status</a> * <a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>)
+<a name='L86'>  86 <font color='red'>{</font>
+<a name='L87'>  87         <b>return</b> 0;
+<a name='L88'>  88 <font color='red'>}</font>
+<a name='L89'>  89 <b>int</b> <a href='../S/11.html#L31' title='Refered from 31 in cbench/oflops/module_default.h.'>default_module_of_event_other</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> * <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>const</b> <b>struct</b> <a href='../Y/5176.html' title='Multiple used in 54 places.'>ofp_header</a> * <a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>)
+<a name='L90'>  90 <font color='red'>{</font>
+<a name='L91'>  91         <b>return</b> 0;
+<a name='L92'>  92 <font color='red'>}</font>
+<a name='L93'>  93 <b>int</b> <a href='../S/11.html#L32' title='Refered from 32 in cbench/oflops/module_default.h.'>default_module_handle_timer_event</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> * <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>struct</b> <a href='../Y/7377.html' title='Multiple used in 19 places.'>timer_event</a> * <a href='../Y/7295.html' title='Multiple used in 60 places.'>te</a>)
+<a name='L94'>  94 <font color='red'>{</font>
+<a name='L95'>  95         <b>return</b> 0;
+<a name='L96'>  96 <font color='red'>}</font>
+<a name='L97'>  97 <b>int</b> <a href='../S/11.html#L33' title='Refered from 33 in cbench/oflops/module_default.h.'>default_module_handle_snmp_event</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> * <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>struct</b> <a href='../Y/6876.html' title='Multiple used in 17 places.'>snmp_event</a> * <a href='../Y/6614.html' title='Multiple used in 47 places.'>se</a>)
+<a name='L98'>  98 <font color='red'>{</font>
+<a name='L99'>  99         <b>return</b> 0;
+<a name='L100'> 100 <font color='red'>}</font>
+<a name='L101'> 101 <b>int</b> <a href='../S/11.html#L34' title='Refered from 34 in cbench/oflops/module_default.h.'>default_module_handle_traffic_generation</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> * <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>)
+<a name='L102'> 102 <font color='red'>{</font>
+<a name='L103'> 103         <b>return</b> 0;
+<a name='L104'> 104 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L8'>[^]</a><a href='#L101'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

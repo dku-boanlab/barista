@@ -1,0 +1,55 @@
+<html>
+<head>
+<title>ofr</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/293.html#L854'>ofr</a>               854 cbench/openflow/datapath/datapath.c fill_features_reply(struct datapath *dp, struct ofp_switch_features *ofr)
+<a href='../S/293.html#L860'>ofr</a>               860 cbench/openflow/datapath/datapath.c 	ofr-&gt;datapath_id  = cpu_to_be64(dpid);
+<a href='../S/293.html#L862'>ofr</a>               862 cbench/openflow/datapath/datapath.c 	ofr-&gt;n_buffers    = htonl(N_PKT_BUFFERS);
+<a href='../S/293.html#L863'>ofr</a>               863 cbench/openflow/datapath/datapath.c 	ofr-&gt;n_tables     = dp-&gt;chain-&gt;n_tables;
+<a href='../S/293.html#L864'>ofr</a>               864 cbench/openflow/datapath/datapath.c 	ofr-&gt;capabilities = htonl(OFP_SUPPORTED_CAPABILITIES);
+<a href='../S/293.html#L865'>ofr</a>               865 cbench/openflow/datapath/datapath.c 	ofr-&gt;actions      = htonl(OFP_SUPPORTED_ACTIONS);
+<a href='../S/293.html#L866'>ofr</a>               866 cbench/openflow/datapath/datapath.c 	memset(ofr-&gt;pad, 0, sizeof ofr-&gt;pad);
+<a href='../S/293.html#L869'>ofr</a>               869 cbench/openflow/datapath/datapath.c 		fill_port_desc(p, &amp;ofr-&gt;ports[port_count]);
+<a href='../S/293.html#L880'>ofr</a>               880 cbench/openflow/datapath/datapath.c 	struct ofp_switch_features *ofr;
+<a href='../S/293.html#L886'>ofr</a>               886 cbench/openflow/datapath/datapath.c 	ofr = alloc_openflow_skb(dp, sizeof(*ofr) + port_max_len,
+<a href='../S/293.html#L888'>ofr</a>               888 cbench/openflow/datapath/datapath.c 	if (!ofr)
+<a href='../S/293.html#L892'>ofr</a>               892 cbench/openflow/datapath/datapath.c 	port_count = fill_features_reply(dp, ofr);
+<a href='../S/293.html#L895'>ofr</a>               895 cbench/openflow/datapath/datapath.c 	ofr_len = sizeof(*ofr) + (sizeof(struct ofp_phy_port) * port_count);
+<a href='../S/293.html#L896'>ofr</a>               896 cbench/openflow/datapath/datapath.c 	resize_openflow_skb(skb, &amp;ofr-&gt;header, ofr_len);
+<a href='../S/293.html#L1040'>ofr</a>              1040 cbench/openflow/datapath/datapath.c 	struct ofp_flow_removed *ofr;
+<a href='../S/293.html#L1048'>ofr</a>              1048 cbench/openflow/datapath/datapath.c 	ofr = alloc_openflow_skb(dp, sizeof *ofr, OFPT_FLOW_REMOVED, 0, &amp;skb);
+<a href='../S/293.html#L1049'>ofr</a>              1049 cbench/openflow/datapath/datapath.c 	if (!ofr)
+<a href='../S/293.html#L1052'>ofr</a>              1052 cbench/openflow/datapath/datapath.c 	flow_fill_match(&amp;ofr-&gt;match, &amp;flow-&gt;key);
+<a href='../S/293.html#L1054'>ofr</a>              1054 cbench/openflow/datapath/datapath.c 	ofr-&gt;priority = htons(flow-&gt;priority);
+<a href='../S/293.html#L1055'>ofr</a>              1055 cbench/openflow/datapath/datapath.c 	ofr-&gt;reason = reason;
+<a href='../S/293.html#L1057'>ofr</a>              1057 cbench/openflow/datapath/datapath.c 	ofr-&gt;duration_sec = htonl(jiffies_64_to_secs(get_jiffies_64()-flow-&gt;created));
+<a href='../S/293.html#L1058'>ofr</a>              1058 cbench/openflow/datapath/datapath.c 	ofr-&gt;duration_nsec = htonl(jiffies_64_to_nsecs(get_jiffies_64()-flow-&gt;created));
+<a href='../S/293.html#L1059'>ofr</a>              1059 cbench/openflow/datapath/datapath.c 	ofr-&gt;idle_timeout = htons(flow-&gt;idle_timeout);
+<a href='../S/293.html#L1061'>ofr</a>              1061 cbench/openflow/datapath/datapath.c 	ofr-&gt;packet_count = cpu_to_be64(flow-&gt;packet_count);
+<a href='../S/293.html#L1062'>ofr</a>              1062 cbench/openflow/datapath/datapath.c 	ofr-&gt;byte_count   = cpu_to_be64(flow-&gt;byte_count);
+<a href='../S/204.html#L1038'>ofr</a>              1038 cbench/openflow/udatapath/datapath.c     struct ofp_switch_features *ofr;
+<a href='../S/204.html#L1041'>ofr</a>              1041 cbench/openflow/udatapath/datapath.c     ofr = make_openflow_reply(sizeof *ofr, OFPT_FEATURES_REPLY,
+<a href='../S/204.html#L1043'>ofr</a>              1043 cbench/openflow/udatapath/datapath.c     ofr-&gt;datapath_id  = htonll(dp-&gt;id);
+<a href='../S/204.html#L1044'>ofr</a>              1044 cbench/openflow/udatapath/datapath.c     ofr-&gt;n_tables     = dp-&gt;chain-&gt;n_tables;
+<a href='../S/204.html#L1045'>ofr</a>              1045 cbench/openflow/udatapath/datapath.c     ofr-&gt;n_buffers    = htonl(N_PKT_BUFFERS);
+<a href='../S/204.html#L1046'>ofr</a>              1046 cbench/openflow/udatapath/datapath.c     ofr-&gt;capabilities = htonl(OFP_SUPPORTED_CAPABILITIES);
+<a href='../S/204.html#L1047'>ofr</a>              1047 cbench/openflow/udatapath/datapath.c     ofr-&gt;actions      = htonl(OFP_SUPPORTED_ACTIONS);
+<a href='../S/204.html#L1093'>ofr</a>              1093 cbench/openflow/udatapath/datapath.c     struct ofp_flow_removed *ofr;
+<a href='../S/204.html#L1105'>ofr</a>              1105 cbench/openflow/udatapath/datapath.c     ofr = make_openflow_xid(sizeof *ofr, OFPT_FLOW_REMOVED, 0, &amp;buffer);
+<a href='../S/204.html#L1106'>ofr</a>              1106 cbench/openflow/udatapath/datapath.c     if (!ofr) {
+<a href='../S/204.html#L1110'>ofr</a>              1110 cbench/openflow/udatapath/datapath.c     flow_fill_match(&amp;ofr-&gt;match, &amp;flow-&gt;key.flow, flow-&gt;key.wildcards);
+<a href='../S/204.html#L1112'>ofr</a>              1112 cbench/openflow/udatapath/datapath.c     ofr-&gt;cookie = htonll(flow-&gt;cookie);
+<a href='../S/204.html#L1113'>ofr</a>              1113 cbench/openflow/udatapath/datapath.c     ofr-&gt;priority = htons(flow-&gt;priority);
+<a href='../S/204.html#L1114'>ofr</a>              1114 cbench/openflow/udatapath/datapath.c     ofr-&gt;reason = reason;
+<a href='../S/204.html#L1116'>ofr</a>              1116 cbench/openflow/udatapath/datapath.c     ofr-&gt;duration_sec = htonl(sec);
+<a href='../S/204.html#L1117'>ofr</a>              1117 cbench/openflow/udatapath/datapath.c     ofr-&gt;duration_nsec = htonl((tdiff - (sec * 1000)) * 1000000);
+<a href='../S/204.html#L1118'>ofr</a>              1118 cbench/openflow/udatapath/datapath.c     ofr-&gt;idle_timeout = htons(flow-&gt;idle_timeout);
+<a href='../S/204.html#L1120'>ofr</a>              1120 cbench/openflow/udatapath/datapath.c     ofr-&gt;packet_count = htonll(flow-&gt;packet_count);
+<a href='../S/204.html#L1121'>ofr</a>              1121 cbench/openflow/udatapath/datapath.c     ofr-&gt;byte_count   = htonll(flow-&gt;byte_count);
+</pre>
+</body>
+</html>

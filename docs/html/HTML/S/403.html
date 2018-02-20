@@ -1,0 +1,103 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reedsolomon.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/reedsolomon.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<pre>
+<a name='L1'>   1 <font color='darkred'>#ifdef</font> <a href='../Y/1158.html' title='Multiple used in 106 places.'>__cplusplus</a>
+<a name='L2'>   2 <b>extern</b> "C" <font color='red'>{</font>
+<a name='L3'>   3 <font color='darkred'>#endif</font>
+<a name='L4'>   4 
+<a name='L5'>   5 <i><font color='green'>/* Global definitions for Reed-Solomon encoder/decoder</font></i>
+<a name='L6'>   6 <i><font color='green'> * Phil Karn KA9Q, September 1996</font></i>
+<a name='L7'>   7 <i><font color='green'> */</font></i>
+<a name='L8'>   8 <i><font color='green'>/* Set one of these to enable encoder/decoder debugging and error checking,</font></i>
+<a name='L9'>   9 <i><font color='green'> * at the expense of speed */</font></i>
+<a name='L10'>  10 <i><font color='green'>/* #undef DEBUG 1*/</font></i>
+<a name='L11'>  11 <i><font color='green'>/* #undef DEBUG 2*/</font></i>
+<a name='L12'>  12 <font color='darkred'>#undef</font> <a href='../R/284.html' title='Multiple refered from 58 places.'>DEBUG</a>
+<a name='L13'>  13 
+<a name='L14'>  14 <i><font color='green'>/* To select the CCSDS standard (255,223) code, define CCSDS. This</font></i>
+<a name='L15'>  15 <i><font color='green'> * implies standard values for MM, KK, B0 and PRIM.</font></i>
+<a name='L16'>  16 <i><font color='green'> */</font></i>
+<a name='L17'>  17 <i><font color='green'>/* #undef CCSDS 1*/</font></i>
+<a name='L18'>  18 <font color='darkred'>#undef</font> <a href='../S/403.html#L19' title='Refered from 19 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reedsolomon.h.'>CCSDS</a>
+<a name='L19'>  19 <font color='darkred'>#ifndef</font> <a href='../S/403.html#L18' title='Defined at 18 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reedsolomon.h.'>CCSDS</a>
+<a name='L20'>  20 
+<a name='L21'>  21 <i><font color='green'>/* Otherwise, leave CCSDS undefined and set the parameters below:</font></i>
+<a name='L22'>  22 <i><font color='green'> *</font></i>
+<a name='L23'>  23 <i><font color='green'> * Set MM to be the size of each code symbol in bits. The Reed-Solomon</font></i>
+<a name='L24'>  24 <i><font color='green'> * block size will then be NN = 2**M - 1 symbols. Supported values are</font></i>
+<a name='L25'>  25 <i><font color='green'> * defined in rs.c.</font></i>
+<a name='L26'>  26 <i><font color='green'> */</font></i>
+<a name='L27'>  27 <font color='darkred'>#define</font> <a href='../R/907.html' title='Multiple refered from 2 places.'>MM</a> 8 <i><font color='green'>/* Symbol size in bits */</font></i>
+<a name='L28'>  28 
+<a name='L29'>  29 <i><font color='green'>/*</font></i>
+<a name='L30'>  30 <i><font color='green'> * Set KK to be the number of data symbols in each block, which must be</font></i>
+<a name='L31'>  31 <i><font color='green'> * less than the block size. The code will then be able to correct up</font></i>
+<a name='L32'>  32 <i><font color='green'> * to NN-KK erasures or (NN-KK)/2 errors, or combinations thereof with</font></i>
+<a name='L33'>  33 <i><font color='green'> * each error counting as two erasures.</font></i>
+<a name='L34'>  34 <i><font color='green'> */</font></i>
+<a name='L35'>  35 <font color='darkred'>#define</font> KK 207 <i><font color='green'>/* Number of data symbols per block */</font></i>
+<a name='L36'>  36 
+<a name='L37'>  37 <i><font color='green'>/* Set B0 to the first root of the generator polynomial, in alpha form, and</font></i>
+<a name='L38'>  38 <i><font color='green'> * set PRIM to the power of alpha used to generate the roots of the</font></i>
+<a name='L39'>  39 <i><font color='green'> * generator polynomial. The generator polynomial will then be</font></i>
+<a name='L40'>  40 <i><font color='green'> * @**PRIM*B0, @**PRIM*(B0+1), @**PRIM*(B0+2)...@**PRIM*(B0+NN-KK)</font></i>
+<a name='L41'>  41 <i><font color='green'> * where "@" represents a lower case alpha.</font></i>
+<a name='L42'>  42 <i><font color='green'> */</font></i>
+<a name='L43'>  43 <font color='darkred'>#define</font> B0 1 <i><font color='green'>/* First root of generator polynomial, alpha form */</font></i>
+<a name='L44'>  44 <font color='darkred'>#define</font> PRIM 1 <i><font color='green'>/* power of alpha used to generate roots of generator poly */</font></i>
+<a name='L45'>  45 <font color='darkred'>#define</font> STANDARD_ORDER
+<a name='L46'>  46 
+<a name='L47'>  47 <i><font color='green'>/* If you want to select your own field generator polynomial, you'll have</font></i>
+<a name='L48'>  48 <i><font color='green'> * to edit that in rs.c.</font></i>
+<a name='L49'>  49 <i><font color='green'> */</font></i>
+<a name='L50'>  50 
+<a name='L51'>  51 <font color='darkred'>#else</font> <i><font color='green'>/* CCSDS */</font></i>
+<a name='L52'>  52 <i><font color='green'>/* Don't change these, they're CCSDS standard */</font></i>
+<a name='L53'>  53 <font color='darkred'>#define</font> <a href='../R/907.html' title='Multiple refered from 2 places.'>MM</a> 8
+<a name='L54'>  54 <font color='darkred'>#define</font> KK 223
+<a name='L55'>  55 <font color='darkred'>#define</font> B0 112
+<a name='L56'>  56 <font color='darkred'>#define</font> PRIM 11
+<a name='L57'>  57 <font color='darkred'>#endif</font>
+<a name='L58'>  58 
+<a name='L59'>  59 <font color='darkred'>#define</font> NN ((1 &lt;&lt; <a href='../D/2861.html' title='Multiple defined in 2 places.'>MM</a>) - 1)
+<a name='L60'>  60 
+<a name='L61'>  61 <font color='darkred'>#if</font> <a href='../D/2861.html' title='Multiple defined in 2 places.'>MM</a> &lt;= 8
+<a name='L62'>  62 <b>typedef</b> <b>unsigned</b> <b>char</b> <a href='../R/2859.html' title='Multiple refered from 2 places.'>dtype</a>;
+<a name='L63'>  63 <font color='darkred'>#else</font>
+<a name='L64'>  64 <b>typedef</b> <b>unsigned</b> <b>int</b> <a href='../R/2859.html' title='Multiple refered from 2 places.'>dtype</a>;
+<a name='L65'>  65 <font color='darkred'>#endif</font>
+<a name='L66'>  66 
+<a name='L67'>  67 <i><font color='green'>/* Reed-Solomon encoding</font></i>
+<a name='L68'>  68 <i><font color='green'> * data[] is the input block, parity symbols are placed in bb[]</font></i>
+<a name='L69'>  69 <i><font color='green'> * bb[] may lie past the end of the data, e.g., for (255,223):</font></i>
+<a name='L70'>  70 <i><font color='green'> *      encode_rs(&amp;data[0],&amp;data[223]);</font></i>
+<a name='L71'>  71 <i><font color='green'> */</font></i>
+<a name='L72'>  72 <b>int</b> encode_rs(<a href='../D/7605.html' title='Multiple defined in 2 places.'>dtype</a> <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>[], <a href='../D/7605.html' title='Multiple defined in 2 places.'>dtype</a> bb[]);
+<a name='L73'>  73 
+<a name='L74'>  74 <i><font color='green'>/* Reed-Solomon erasures-and-errors decoding</font></i>
+<a name='L75'>  75 <i><font color='green'> * The received block goes into data[], and a list of zero-origin</font></i>
+<a name='L76'>  76 <i><font color='green'> * erasure positions, if any, goes in eras_pos[] with a count in no_eras.</font></i>
+<a name='L77'>  77 <i><font color='green'> *</font></i>
+<a name='L78'>  78 <i><font color='green'> * The decoder corrects the symbols in place, if possible and returns</font></i>
+<a name='L79'>  79 <i><font color='green'> * the number of corrected symbols. If the codeword is illegal or</font></i>
+<a name='L80'>  80 <i><font color='green'> * uncorrectible, the data array is unchanged and -1 is returned</font></i>
+<a name='L81'>  81 <i><font color='green'> */</font></i>
+<a name='L82'>  82 <b>int</b> eras_dec_rs(<a href='../D/7605.html' title='Multiple defined in 2 places.'>dtype</a> <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>[], <b>int</b> eras_pos[], <b>int</b> no_eras);
+<a name='L83'>  83 
+<a name='L84'>  84 <font color='darkred'>#ifdef</font> <a href='../Y/1158.html' title='Multiple used in 106 places.'>__cplusplus</a>
+<a name='L85'>  85 <font color='red'>}</font>
+<a name='L86'>  86 <font color='darkred'>#endif</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

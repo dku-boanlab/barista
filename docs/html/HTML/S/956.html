@@ -1,0 +1,185 @@
+<html>
+<head>
+<title>applications/include/mac_queue.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1098.html'>applications</a>/<a href='../files/1099.html'>include</a>/mac_queue.h</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L36'>[^]</a><a href='#L139'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/11.html' title='Multiple included from 4 places.'>INCLUDED FROM</a></h2>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L36' title='Defined at 36.'>mac_dequeue</a>
+<li><a href='#L78' title='Defined at 78.'>mac_enqueue</a>
+<li><a href='#L116' title='Defined at 116.'>mac_q_init</a>
+<li><a href='#L139' title='Defined at 139.'>mac_q_destroy</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright 2015-2018 NSSLab, KAIST</font></i>
+<a name='L3'>   3 <i><font color='green'> */</font></i>
+<a name='L4'>   4 
+<a name='L5'>   5 <i><font color='green'>/**</font></i>
+<a name='L6'>   6 <i><font color='green'> * \file</font></i>
+<a name='L7'>   7 <i><font color='green'> * \author Jaehyun Nam &lt;namjh@kaist.ac.kr&gt;</font></i>
+<a name='L8'>   8 <i><font color='green'> */</font></i>
+<a name='L9'>   9 
+<a name='L10'>  10 <i><font color='green'>// inside of either 'l2_learning.c' or 'l2_shortest.c'</font></i>
+<a name='L11'>  11 
+<a name='L12'>  12 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L13'>  13 
+<a name='L14'>  14 <i><font color='green'>/** \brief The number of pre-allocated MAC entries */</font></i>
+<a name='L15'>  15 <font color='darkred'>#define</font> <a href='../R/857.html' title='Multiple refered from 3 places.'>MAC_PRE_ALLOC</a> 1024
+<a name='L16'>  16 
+<a name='L17'>  17 <i><font color='green'>/** \brief The structure of a MAC pool */</font></i>
+<a name='L18'>  18 <b>typedef</b> <b>struct</b> _mac_queue_t <font color='red'>{</font>
+<a name='L19'>  19     <b>int</b> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>; <i><font color='green'>/**&lt; The number of entries */</font></i>
+<a name='L20'>  20 
+<a name='L21'>  21     <a href='../D/8296.html' title='Multiple defined in 4 places.'>mac_entry_t</a> *<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a>; <i><font color='green'>/**&lt; The head pointer */</font></i>
+<a name='L22'>  22     <a href='../D/8296.html' title='Multiple defined in 4 places.'>mac_entry_t</a> *<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a>; <i><font color='green'>/**&lt; The tail pointer */</font></i>
+<a name='L23'>  23 
+<a name='L24'>  24     <a href='../Y/6149.html' title='Multiple used in 10 places.'>pthread_spinlock_t</a> <a href='../Y/4206.html' title='Multiple used in 348 places.'>lock</a>; <i><font color='green'>/**&lt; The lock for management */</font></i>
+<a name='L25'>  25 <font color='red'>}</font> <a href='../R/3460.html' title='Multiple refered from 9 places.'>mac_queue_t</a>;
+<a name='L26'>  26 
+<a name='L27'>  27 <i><font color='green'>/** \brief MAC pool */</font></i>
+<a name='L28'>  28 <a href='../D/8309.html' title='Multiple defined in 3 places.'>mac_queue_t</a> <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>;
+<a name='L29'>  29 
+<a name='L30'>  30 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L31'>  31 
+<a name='L32'>  32 <i><font color='green'>/**</font></i>
+<a name='L33'>  33 <i><font color='green'> * \brief Function to pop a MAC entry from a MAC pool</font></i>
+<a name='L34'>  34 <i><font color='green'> * \return Empty MAC entry</font></i>
+<a name='L35'>  35 <i><font color='green'> */</font></i>
+<a name='L36'>  36 <b>static</b> <a href='../D/8296.html' title='Multiple defined in 4 places.'>mac_entry_t</a> *<a href='../R/3443.html' title='Multiple refered from 4 places.'>mac_dequeue</a>(<b>void</b>)
+<a name='L37'>  37 <font color='red'>{</font>
+<a name='L38'>  38     <a href='../D/8296.html' title='Multiple defined in 4 places.'>mac_entry_t</a> *<a href='../Y/4744.html' title='Multiple used in 252 places.'>new</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L39'>  39 
+<a name='L40'>  40     <a href='../Y/6147.html' title='Multiple used in 38 places.'>pthread_spin_lock</a>(&amp;<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/4206.html' title='Multiple used in 348 places.'>lock</a>);
+<a name='L41'>  41 
+<a name='L42'>  42     <b>if</b> (<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L43'>  43         <a href='../Y/6148.html' title='Multiple used in 57 places.'>pthread_spin_unlock</a>(&amp;<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/4206.html' title='Multiple used in 348 places.'>lock</a>);
+<a name='L44'>  44 
+<a name='L45'>  45         <a href='../Y/4744.html' title='Multiple used in 252 places.'>new</a> = (<a href='../D/8296.html' title='Multiple defined in 4 places.'>mac_entry_t</a> *)<a href='../D/529.html' title='Multiple defined in 6 places.'>CALLOC</a>(1, <b>sizeof</b>(<a href='../D/8296.html' title='Multiple defined in 4 places.'>mac_entry_t</a>));
+<a name='L46'>  46         <b>if</b> (<a href='../Y/4744.html' title='Multiple used in 252 places.'>new</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L47'>  47             <a href='../D/4593.html' title='Multiple defined in 6 places.'>PERROR</a>("calloc");
+<a name='L48'>  48             <b>return</b> <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L49'>  49         <font color='red'>}</font>
+<a name='L50'>  50 
+<a name='L51'>  51         <a href='../Y/6147.html' title='Multiple used in 38 places.'>pthread_spin_lock</a>(&amp;<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/4206.html' title='Multiple used in 348 places.'>lock</a>);
+<a name='L52'>  52         <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>--;
+<a name='L53'>  53         <a href='../Y/6148.html' title='Multiple used in 57 places.'>pthread_spin_unlock</a>(&amp;<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/4206.html' title='Multiple used in 348 places.'>lock</a>);
+<a name='L54'>  54 
+<a name='L55'>  55         <b>return</b> <a href='../Y/4744.html' title='Multiple used in 252 places.'>new</a>;
+<a name='L56'>  56     <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a> == <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a>) <font color='red'>{</font>
+<a name='L57'>  57         <a href='../Y/4744.html' title='Multiple used in 252 places.'>new</a> = <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a>;
+<a name='L58'>  58         <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a> = <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L59'>  59     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L60'>  60         <a href='../Y/4744.html' title='Multiple used in 252 places.'>new</a> = <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a>;
+<a name='L61'>  61         <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a> = <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a>-&gt;<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L62'>  62         <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a>-&gt;<a href='../Y/5873.html' title='Multiple used in 287 places.'>prev</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L63'>  63     <font color='red'>}</font>
+<a name='L64'>  64 
+<a name='L65'>  65     <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>--;
+<a name='L66'>  66 
+<a name='L67'>  67     <a href='../Y/6148.html' title='Multiple used in 57 places.'>pthread_spin_unlock</a>(&amp;<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/4206.html' title='Multiple used in 348 places.'>lock</a>);
+<a name='L68'>  68 
+<a name='L69'>  69     <a href='../Y/4419.html' title='Multiple used in 245 places.'>memset</a>(<a href='../Y/4744.html' title='Multiple used in 252 places.'>new</a>, 0, <b>sizeof</b>(<a href='../D/8296.html' title='Multiple defined in 4 places.'>mac_entry_t</a>));
+<a name='L70'>  70 
+<a name='L71'>  71     <b>return</b> <a href='../Y/4744.html' title='Multiple used in 252 places.'>new</a>;
+<a name='L72'>  72 <font color='red'>}</font>
+<a name='L73'>  73 
+<a name='L74'>  74 <i><font color='green'>/**</font></i>
+<a name='L75'>  75 <i><font color='green'> * \brief Function to push a used MAC entry into a MAC pool</font></i>
+<a name='L76'>  76 <i><font color='green'> * \param old Used MAC entry</font></i>
+<a name='L77'>  77 <i><font color='green'> */</font></i>
+<a name='L78'>  78 <b>static</b> <b>int</b> <a href='../R/3444.html' title='Multiple refered from 11 places.'>mac_enqueue</a>(<a href='../D/8296.html' title='Multiple defined in 4 places.'>mac_entry_t</a> *<a href='../Y/5425.html' title='Multiple used in 95 places.'>old</a>)
+<a name='L79'>  79 <font color='red'>{</font>
+<a name='L80'>  80     <b>if</b> (<a href='../Y/5425.html' title='Multiple used in 95 places.'>old</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>)
+<a name='L81'>  81         <b>return</b> -1;
+<a name='L82'>  82 
+<a name='L83'>  83     <a href='../Y/4419.html' title='Multiple used in 245 places.'>memset</a>(<a href='../Y/5425.html' title='Multiple used in 95 places.'>old</a>, 0, <b>sizeof</b>(<a href='../D/8296.html' title='Multiple defined in 4 places.'>mac_entry_t</a>));
+<a name='L84'>  84 
+<a name='L85'>  85     <a href='../Y/6147.html' title='Multiple used in 38 places.'>pthread_spin_lock</a>(&amp;<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/4206.html' title='Multiple used in 348 places.'>lock</a>);
+<a name='L86'>  86 
+<a name='L87'>  87     <b>if</b> (<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> &lt; 0) <font color='red'>{</font>
+<a name='L88'>  88         <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>++;
+<a name='L89'>  89 
+<a name='L90'>  90         <a href='../Y/6148.html' title='Multiple used in 57 places.'>pthread_spin_unlock</a>(&amp;<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/4206.html' title='Multiple used in 348 places.'>lock</a>);
+<a name='L91'>  91 
+<a name='L92'>  92         <a href='../D/1836.html' title='Multiple defined in 7 places.'>FREE</a>(<a href='../Y/5425.html' title='Multiple used in 95 places.'>old</a>);
+<a name='L93'>  93 
+<a name='L94'>  94         <b>return</b> 0;
+<a name='L95'>  95     <font color='red'>}</font>
+<a name='L96'>  96 
+<a name='L97'>  97     <b>if</b> (<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a> &amp;&amp; <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L98'>  98         <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a> = <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a> = <a href='../Y/5425.html' title='Multiple used in 95 places.'>old</a>;
+<a name='L99'>  99     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L100'> 100         <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a>-&gt;<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a> = <a href='../Y/5425.html' title='Multiple used in 95 places.'>old</a>;
+<a name='L101'> 101         <a href='../Y/5425.html' title='Multiple used in 95 places.'>old</a>-&gt;<a href='../Y/5873.html' title='Multiple used in 287 places.'>prev</a> = <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a>;
+<a name='L102'> 102         <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a> = <a href='../Y/5425.html' title='Multiple used in 95 places.'>old</a>;
+<a name='L103'> 103     <font color='red'>}</font>
+<a name='L104'> 104 
+<a name='L105'> 105     <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>++;
+<a name='L106'> 106 
+<a name='L107'> 107     <a href='../Y/6148.html' title='Multiple used in 57 places.'>pthread_spin_unlock</a>(&amp;<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/4206.html' title='Multiple used in 348 places.'>lock</a>);
+<a name='L108'> 108 
+<a name='L109'> 109     <b>return</b> 0;
+<a name='L110'> 110 <font color='red'>}</font>
+<a name='L111'> 111 
+<a name='L112'> 112 <i><font color='green'>/**</font></i>
+<a name='L113'> 113 <i><font color='green'> * \brief Function to initialize a MAC pool</font></i>
+<a name='L114'> 114 <i><font color='green'> * \return None</font></i>
+<a name='L115'> 115 <i><font color='green'> */</font></i>
+<a name='L116'> 116 <b>static</b> <b>int</b> <a href='../R/3459.html' title='Multiple refered from 4 places.'>mac_q_init</a>(<b>void</b>)
+<a name='L117'> 117 <font color='red'>{</font>
+<a name='L118'> 118     <a href='../Y/4419.html' title='Multiple used in 245 places.'>memset</a>(&amp;<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>, 0, <b>sizeof</b>(<a href='../D/8309.html' title='Multiple defined in 3 places.'>mac_queue_t</a>));
+<a name='L119'> 119     <a href='../Y/6146.html' title='Multiple used in 10 places.'>pthread_spin_init</a>(&amp;<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/4206.html' title='Multiple used in 348 places.'>lock</a>, <a href='../Y/711.html' title='Multiple used in 10 places.'>PTHREAD_PROCESS_PRIVATE</a>);
+<a name='L120'> 120 
+<a name='L121'> 121     <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L122'> 122     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>=0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>&lt;<a href='../D/2523.html' title='Multiple defined in 3 places.'>MAC_PRE_ALLOC</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L123'> 123         <a href='../D/8296.html' title='Multiple defined in 4 places.'>mac_entry_t</a> *<a href='../Y/4744.html' title='Multiple used in 252 places.'>new</a> = (<a href='../D/8296.html' title='Multiple defined in 4 places.'>mac_entry_t</a> *)<a href='../D/2525.html' title='Multiple defined in 6 places.'>MALLOC</a>(<b>sizeof</b>(<a href='../D/8296.html' title='Multiple defined in 4 places.'>mac_entry_t</a>));
+<a name='L124'> 124         <b>if</b> (<a href='../Y/4744.html' title='Multiple used in 252 places.'>new</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L125'> 125             <a href='../D/4593.html' title='Multiple defined in 6 places.'>PERROR</a>("malloc");
+<a name='L126'> 126             <b>return</b> -1;
+<a name='L127'> 127         <font color='red'>}</font>
+<a name='L128'> 128 
+<a name='L129'> 129         <a href='../D/8293.html' title='Multiple defined in 3 places.'>mac_enqueue</a>(<a href='../Y/4744.html' title='Multiple used in 252 places.'>new</a>);
+<a name='L130'> 130     <font color='red'>}</font>
+<a name='L131'> 131 
+<a name='L132'> 132     <b>return</b> 0;
+<a name='L133'> 133 <font color='red'>}</font>
+<a name='L134'> 134 
+<a name='L135'> 135 <i><font color='green'>/**</font></i>
+<a name='L136'> 136 <i><font color='green'> * \brief Function to destroy a MAC pool</font></i>
+<a name='L137'> 137 <i><font color='green'> * \return None</font></i>
+<a name='L138'> 138 <i><font color='green'> */</font></i>
+<a name='L139'> 139 <b>static</b> <b>int</b> <a href='../R/3458.html' title='Multiple refered from 4 places.'>mac_q_destroy</a>(<b>void</b>)
+<a name='L140'> 140 <font color='red'>{</font>
+<a name='L141'> 141     <a href='../Y/6147.html' title='Multiple used in 38 places.'>pthread_spin_lock</a>(&amp;<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/4206.html' title='Multiple used in 348 places.'>lock</a>);
+<a name='L142'> 142 
+<a name='L143'> 143     <a href='../D/8296.html' title='Multiple defined in 4 places.'>mac_entry_t</a> *<a href='../Y/2219.html' title='Multiple used in 811 places.'>curr</a> = <a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a>;
+<a name='L144'> 144     <b>while</b> (<a href='../Y/2219.html' title='Multiple used in 811 places.'>curr</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L145'> 145         <a href='../D/8296.html' title='Multiple defined in 4 places.'>mac_entry_t</a> *<a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a> = <a href='../Y/2219.html' title='Multiple used in 811 places.'>curr</a>;
+<a name='L146'> 146         <a href='../Y/2219.html' title='Multiple used in 811 places.'>curr</a> = <a href='../Y/2219.html' title='Multiple used in 811 places.'>curr</a>-&gt;<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L147'> 147         <a href='../D/1836.html' title='Multiple defined in 7 places.'>FREE</a>(<a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>);
+<a name='L148'> 148     <font color='red'>}</font>
+<a name='L149'> 149 
+<a name='L150'> 150     <a href='../Y/6148.html' title='Multiple used in 57 places.'>pthread_spin_unlock</a>(&amp;<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/4206.html' title='Multiple used in 348 places.'>lock</a>);
+<a name='L151'> 151     <a href='../Y/6145.html' title='Multiple used in 10 places.'>pthread_spin_destroy</a>(&amp;<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>.<a href='../Y/4206.html' title='Multiple used in 348 places.'>lock</a>);
+<a name='L152'> 152 
+<a name='L153'> 153     <a href='../Y/4419.html' title='Multiple used in 245 places.'>memset</a>(&amp;<a href='../Y/4306.html' title='Multiple used in 99 places.'>mac_q</a>, 0, <b>sizeof</b>(<a href='../D/8309.html' title='Multiple defined in 3 places.'>mac_queue_t</a>));
+<a name='L154'> 154 
+<a name='L155'> 155     <b>return</b> 0;
+<a name='L156'> 156 <font color='red'>}</font>
+<a name='L157'> 157 
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L36'>[^]</a><a href='#L139'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

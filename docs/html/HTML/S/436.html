@@ -1,0 +1,88 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/crypt-md5.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/<a href='../files/1149.html'>crypt</a>/crypt-md5.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* $Id: crypt-md5.h 3992 2008-06-10 03:13:11Z dgu $ */</font></i>
+<a name='L2'>   2 <i><font color='green'>/* </font></i>
+<a name='L3'>   3 <i><font color='green'> * Copyright (C) 2003-2005 Benny Prijono &lt;benny@prijono.org&gt;</font></i>
+<a name='L4'>   4 <i><font color='green'> *</font></i>
+<a name='L5'>   5 <i><font color='green'> * MD5 code from pjlib-util http://www.pjsip.org</font></i>
+<a name='L6'>   6 <i><font color='green'> *</font></i>
+<a name='L7'>   7 <i><font color='green'> * This program is free software; you can redistribute it and/or modify</font></i>
+<a name='L8'>   8 <i><font color='green'> * it under the terms of the GNU General Public License as published by</font></i>
+<a name='L9'>   9 <i><font color='green'> * the Free Software Foundation; either version 2 of the License, or</font></i>
+<a name='L10'>  10 <i><font color='green'> * (at your option) any later version.</font></i>
+<a name='L11'>  11 <i><font color='green'> *</font></i>
+<a name='L12'>  12 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L13'>  13 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L14'>  14 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L15'>  15 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L16'>  16 <i><font color='green'> *</font></i>
+<a name='L17'>  17 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L18'>  18 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L19'>  19 <i><font color='green'> * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA </font></i>
+<a name='L20'>  20 <i><font color='green'> */</font></i>
+<a name='L21'>  21 <font color='darkred'>#ifndef</font> <a href='../S/436.html#L22' title='Defined at 22 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/crypt-md5.h.'>__MD5_H__</a>
+<a name='L22'>  22 <font color='darkred'>#define</font> <a href='../S/436.html#L21' title='Refered from 21 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/crypt-md5.h.'>__MD5_H__</a>
+<a name='L23'>  23 
+<a name='L24'>  24 <i><font color='green'>/**</font></i>
+<a name='L25'>  25 <i><font color='green'> * @file md5.h</font></i>
+<a name='L26'>  26 <i><font color='green'> * @brief MD5 Functions</font></i>
+<a name='L27'>  27 <i><font color='green'> */</font></i>
+<a name='L28'>  28 
+<a name='L29'>  29 <i><font color='green'>/**</font></i>
+<a name='L30'>  30 <i><font color='green'> * @defgroup PJLIB_UTIL_MD5 MD5 Functions</font></i>
+<a name='L31'>  31 <i><font color='green'> * @ingroup PJLIB_UTIL</font></i>
+<a name='L32'>  32 <i><font color='green'> * @{</font></i>
+<a name='L33'>  33 <i><font color='green'> */</font></i>
+<a name='L34'>  34 
+<a name='L35'>  35 <font color='darkred'>#define</font> md5_byte_t <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>
+<a name='L36'>  36 
+<a name='L37'>  37 <i><font color='green'>/** MD5 context. */</font></i>
+<a name='L38'>  38 <b>typedef</b> <b>struct</b> md5_state_s
+<a name='L39'>  39 <font color='red'>{</font>
+<a name='L40'>  40         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>[4];
+<a name='L41'>  41         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/1632.html' title='Multiple used in 7 places.'>bits</a>[2];
+<a name='L42'>  42         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>[16];
+<a name='L43'>  43 <font color='red'>}</font> <a href='../R/3512.html' title='Multiple refered from 3 places.'>md5_state_t</a>;
+<a name='L44'>  44 
+<a name='L45'>  45 <i><font color='green'>/** Initialize the algorithm. </font></i>
+<a name='L46'>  46 <i><font color='green'> *  @param pms          MD5 context.</font></i>
+<a name='L47'>  47 <i><font color='green'> */</font></i>
+<a name='L48'>  48 <b>void</b> md5_init(<a href='../S/436.html#L43' title='Defined at 43 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/crypt-md5.h.'>md5_state_t</a> *<a href='../Y/5774.html' title='Multiple used in 3 places.'>pms</a>);
+<a name='L49'>  49 
+<a name='L50'>  50 <i><font color='green'>/** Append a string to the message. </font></i>
+<a name='L51'>  51 <i><font color='green'> *  @param pms          MD5 context.</font></i>
+<a name='L52'>  52 <i><font color='green'> *  @param data         Data.</font></i>
+<a name='L53'>  53 <i><font color='green'> *  @param nbytes       Length of data.</font></i>
+<a name='L54'>  54 <i><font color='green'> */</font></i>
+<a name='L55'>  55 <b>void</b> md5_append( <a href='../S/436.html#L43' title='Defined at 43 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/crypt-md5.h.'>md5_state_t</a> *<a href='../Y/5774.html' title='Multiple used in 3 places.'>pms</a>, 
+<a name='L56'>  56                              <b>const</b> <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/4660.html' title='Multiple used in 19 places.'>nbytes</a>);
+<a name='L57'>  57 
+<a name='L58'>  58 <i><font color='green'>/** Finish the message and return the digest. </font></i>
+<a name='L59'>  59 <i><font color='green'> *  @param pms          MD5 context.</font></i>
+<a name='L60'>  60 <i><font color='green'> *  @param digest       16 byte digest.</font></i>
+<a name='L61'>  61 <i><font color='green'> */</font></i>
+<a name='L62'>  62 <b>void</b> md5_finish(<a href='../S/436.html#L43' title='Defined at 43 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/crypt/crypt-md5.h.'>md5_state_t</a> *<a href='../Y/5774.html' title='Multiple used in 3 places.'>pms</a>, <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> <a href='../Y/2400.html' title='Multiple used in 7 places.'>digest</a>[16]);
+<a name='L63'>  63 
+<a name='L64'>  64 
+<a name='L65'>  65 <b>void</b> md5_hmac(<b>const</b> <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>* <a href='../Y/7318.html' title='Multiple used in 13 places.'>text</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> text_len, <b>const</b> <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>* <a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/4002.html' title='Multiple used in 2 places.'>key_len</a>, <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> <a href='../Y/2400.html' title='Multiple used in 7 places.'>digest</a>[16]);
+<a name='L66'>  66 
+<a name='L67'>  67 <i><font color='green'>/**</font></i>
+<a name='L68'>  68 <i><font color='green'> * @}</font></i>
+<a name='L69'>  69 <i><font color='green'> */</font></i>
+<a name='L70'>  70 
+<a name='L71'>  71 <font color='darkred'>#endif</font>  <i><font color='green'>/* _CRYPT_MD5_H__ */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

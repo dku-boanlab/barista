@@ -1,0 +1,284 @@
+<html>
+<head>
+<title>vconn</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/766.html#L107'>vconn</a>             107 cbench/openflow/controller/controller.c         struct vconn *vconn;
+<a href='../S/766.html#L110'>vconn</a>             110 cbench/openflow/controller/controller.c         retval = vconn_open(name, OFP_VERSION, &amp;vconn);
+<a href='../S/766.html#L115'>vconn</a>             115 cbench/openflow/controller/controller.c             new_switch(&amp;switches[n_switches++], vconn, name);
+<a href='../S/766.html#L149'>vconn</a>             149 cbench/openflow/controller/controller.c             struct vconn *new_vconn;
+<a href='../S/766.html#L212'>vconn</a>             212 cbench/openflow/controller/controller.c     sw-&gt;rconn = rconn_new_from_vconn(name, vconn);
+<a href='../S/849.html#L83'>vconn</a>              83 cbench/openflow/lib/rconn.c     struct vconn *vconn;
+<a href='../S/849.html#L133'>vconn</a>             133 cbench/openflow/lib/rconn.c     struct vconn *monitors[8];
+<a href='../S/849.html#L170'>vconn</a>             170 cbench/openflow/lib/rconn.c     rconn_connect_unreliably(rc, name, vconn);
+<a href='../S/849.html#L194'>vconn</a>             194 cbench/openflow/lib/rconn.c     rc-&gt;vconn = NULL;
+<a href='../S/849.html#L247'>vconn</a>             247 cbench/openflow/lib/rconn.c     assert(vconn != NULL);
+<a href='../S/849.html#L252'>vconn</a>             252 cbench/openflow/lib/rconn.c     rc-&gt;vconn = vconn;
+<a href='../S/849.html#L261'>vconn</a>             261 cbench/openflow/lib/rconn.c         if (rc-&gt;vconn) {
+<a href='../S/849.html#L262'>vconn</a>             262 cbench/openflow/lib/rconn.c             vconn_close(rc-&gt;vconn);
+<a href='../S/849.html#L263'>vconn</a>             263 cbench/openflow/lib/rconn.c             rc-&gt;vconn = NULL;
+<a href='../S/849.html#L284'>vconn</a>             284 cbench/openflow/lib/rconn.c         vconn_close(rc-&gt;vconn);
+<a href='../S/849.html#L313'>vconn</a>             313 cbench/openflow/lib/rconn.c     retval = vconn_open(rc-&gt;name, OFP_VERSION, &amp;rc-&gt;vconn);
+<a href='../S/849.html#L315'>vconn</a>             315 cbench/openflow/lib/rconn.c         if (!vconn_is_reconnectable(rc-&gt;vconn)) {
+<a href='../S/849.html#L351'>vconn</a>             351 cbench/openflow/lib/rconn.c     int retval = vconn_connect(rc-&gt;vconn);
+<a href='../S/849.html#L466'>vconn</a>             466 cbench/openflow/lib/rconn.c         vconn_wait(rc-&gt;vconn, WAIT_SEND);
+<a href='../S/849.html#L478'>vconn</a>             478 cbench/openflow/lib/rconn.c         int error = vconn_recv(rc-&gt;vconn, &amp;buffer);
+<a href='../S/849.html#L517'>vconn</a>             517 cbench/openflow/lib/rconn.c     if (rc-&gt;vconn) {
+<a href='../S/849.html#L518'>vconn</a>             518 cbench/openflow/lib/rconn.c         vconn_wait(rc-&gt;vconn, WAIT_RECV);
+<a href='../S/849.html#L598'>vconn</a>             598 cbench/openflow/lib/rconn.c         VLOG_INFO("new monitor connection from %s", vconn_get_name(vconn));
+<a href='../S/849.html#L599'>vconn</a>             599 cbench/openflow/lib/rconn.c         rc-&gt;monitors[rc-&gt;n_monitors++] = vconn;
+<a href='../S/849.html#L602'>vconn</a>             602 cbench/openflow/lib/rconn.c                  vconn_get_name(vconn));
+<a href='../S/849.html#L603'>vconn</a>             603 cbench/openflow/lib/rconn.c         vconn_close(vconn);
+<a href='../S/849.html#L645'>vconn</a>             645 cbench/openflow/lib/rconn.c     return rconn-&gt;vconn ? vconn_get_ip(rconn-&gt;vconn) : 0;
+<a href='../S/849.html#L747'>vconn</a>             747 cbench/openflow/lib/rconn.c     struct vconn *vconn = rconn-&gt;vconn;
+<a href='../S/849.html#L749'>vconn</a>             749 cbench/openflow/lib/rconn.c     if (vconn != NULL) {
+<a href='../S/849.html#L750'>vconn</a>             750 cbench/openflow/lib/rconn.c         rconn-&gt;ofps_rcvd.ofps_total += vconn-&gt;ofps_rcvd.ofps_total;
+<a href='../S/849.html#L751'>vconn</a>             751 cbench/openflow/lib/rconn.c         vconn-&gt;ofps_rcvd.ofps_total = 0;
+<a href='../S/849.html#L752'>vconn</a>             752 cbench/openflow/lib/rconn.c         rconn-&gt;ofps_rcvd.ofps_hello += vconn-&gt;ofps_rcvd.ofps_hello;
+<a href='../S/849.html#L753'>vconn</a>             753 cbench/openflow/lib/rconn.c         vconn-&gt;ofps_rcvd.ofps_hello = 0;
+<a href='../S/849.html#L757'>vconn</a>             757 cbench/openflow/lib/rconn.c     if (vconn != NULL) {
+<a href='../S/849.html#L758'>vconn</a>             758 cbench/openflow/lib/rconn.c         rconn-&gt;ofps_sent.ofps_total += vconn-&gt;ofps_sent.ofps_total;
+<a href='../S/849.html#L759'>vconn</a>             759 cbench/openflow/lib/rconn.c         vconn-&gt;ofps_sent.ofps_total = 0;
+<a href='../S/849.html#L760'>vconn</a>             760 cbench/openflow/lib/rconn.c         rconn-&gt;ofps_sent.ofps_hello += vconn-&gt;ofps_sent.ofps_hello;
+<a href='../S/849.html#L761'>vconn</a>             761 cbench/openflow/lib/rconn.c         vconn-&gt;ofps_sent.ofps_hello = 0;
+<a href='../S/849.html#L762'>vconn</a>             762 cbench/openflow/lib/rconn.c         rconn-&gt;ofps_sent.ofps_error += vconn-&gt;ofps_sent.ofps_error;
+<a href='../S/849.html#L763'>vconn</a>             763 cbench/openflow/lib/rconn.c         vconn-&gt;ofps_sent.ofps_error = 0;
+<a href='../S/849.html#L765'>vconn</a>             765 cbench/openflow/lib/rconn.c             += vconn-&gt;ofps_sent.ofps_error_type.hello_fail;
+<a href='../S/849.html#L766'>vconn</a>             766 cbench/openflow/lib/rconn.c         vconn-&gt;ofps_sent.ofps_error_type.hello_fail = 0;
+<a href='../S/849.html#L768'>vconn</a>             768 cbench/openflow/lib/rconn.c             += vconn-&gt;ofps_sent.ofps_error_code.hf_incompat;
+<a href='../S/849.html#L769'>vconn</a>             769 cbench/openflow/lib/rconn.c         vconn-&gt;ofps_sent.ofps_error_code.hf_incompat = 0;
+<a href='../S/849.html#L785'>vconn</a>             785 cbench/openflow/lib/rconn.c     retval = vconn_send(rc-&gt;vconn, rc-&gt;txq.head);
+<a href='../S/849.html#L821'>vconn</a>             821 cbench/openflow/lib/rconn.c             vconn_close(rc-&gt;vconn);
+<a href='../S/849.html#L822'>vconn</a>             822 cbench/openflow/lib/rconn.c             rc-&gt;vconn = NULL;
+<a href='../S/849.html#L919'>vconn</a>             919 cbench/openflow/lib/rconn.c         struct vconn *vconn = rc-&gt;monitors[i];
+<a href='../S/849.html#L924'>vconn</a>             924 cbench/openflow/lib/rconn.c         retval = vconn_send(vconn, clone);
+<a href='../S/849.html#L929'>vconn</a>             929 cbench/openflow/lib/rconn.c                      rconn_get_name(rc), vconn_get_name(vconn),
+<a href='../S/883.html#L54'>vconn</a>              54 cbench/openflow/lib/rconn.h struct vconn;
+<a href='../S/896.html#L61'>vconn</a>              61 cbench/openflow/lib/vconn-netlink.c     struct vconn vconn;
+<a href='../S/896.html#L69'>vconn</a>              69 cbench/openflow/lib/vconn-netlink.c     vconn_assert_class(vconn, &amp;netlink_vconn_class);
+<a href='../S/896.html#L70'>vconn</a>              70 cbench/openflow/lib/vconn-netlink.c     return CONTAINER_OF(vconn, struct netlink_vconn, vconn); 
+<a href='../S/896.html#L88'>vconn</a>              88 cbench/openflow/lib/vconn-netlink.c     vconn_init(&amp;netlink-&gt;vconn, &amp;netlink_vconn_class, 0, 0, name, true);
+<a href='../S/896.html#L96'>vconn</a>              96 cbench/openflow/lib/vconn-netlink.c     *vconnp = &amp;netlink-&gt;vconn;
+<a href='../S/896.html#L103'>vconn</a>             103 cbench/openflow/lib/vconn-netlink.c     struct netlink_vconn *netlink = netlink_vconn_cast(vconn);
+<a href='../S/896.html#L111'>vconn</a>             111 cbench/openflow/lib/vconn-netlink.c     struct netlink_vconn *netlink = netlink_vconn_cast(vconn);
+<a href='../S/896.html#L118'>vconn</a>             118 cbench/openflow/lib/vconn-netlink.c     struct netlink_vconn *netlink = netlink_vconn_cast(vconn);
+<a href='../S/896.html#L129'>vconn</a>             129 cbench/openflow/lib/vconn-netlink.c     struct netlink_vconn *netlink = netlink_vconn_cast(vconn);
+<a href='../S/895.html#L68'>vconn</a>              68 cbench/openflow/lib/vconn-provider.h     assert(vconn-&gt;class == class);
+<a href='../S/895.html#L88'>vconn</a>              88 cbench/openflow/lib/vconn-provider.h     int (*open)(const char *name, char *suffix, struct vconn **vconnp);
+<a href='../S/895.html#L91'>vconn</a>              91 cbench/openflow/lib/vconn-provider.h     void (*close)(struct vconn *vconn);
+<a href='../S/895.html#L100'>vconn</a>             100 cbench/openflow/lib/vconn-provider.h     int (*connect)(struct vconn *vconn);
+<a href='../S/895.html#L112'>vconn</a>             112 cbench/openflow/lib/vconn-provider.h     int (*recv)(struct vconn *vconn, struct ofpbuf **msgp);
+<a href='../S/895.html#L124'>vconn</a>             124 cbench/openflow/lib/vconn-provider.h     int (*send)(struct vconn *vconn, struct ofpbuf *msg);
+<a href='../S/895.html#L128'>vconn</a>             128 cbench/openflow/lib/vconn-provider.h     void (*wait)(struct vconn *vconn, enum vconn_wait_type type);
+<a href='../S/895.html#L174'>vconn</a>             174 cbench/openflow/lib/vconn-provider.h     int (*accept)(struct pvconn *pvconn, struct vconn **new_vconnp);
+<a href='../S/827.html#L79'>vconn</a>              79 cbench/openflow/lib/vconn-ssl.c     struct vconn vconn;
+<a href='../S/827.html#L253'>vconn</a>             253 cbench/openflow/lib/vconn-ssl.c     vconn_init(&amp;sslv-&gt;vconn, &amp;ssl_vconn_class, EAGAIN, sin-&gt;sin_addr.s_addr,
+<a href='../S/827.html#L263'>vconn</a>             263 cbench/openflow/lib/vconn-ssl.c     *vconnp = &amp;sslv-&gt;vconn;
+<a href='../S/827.html#L277'>vconn</a>             277 cbench/openflow/lib/vconn-ssl.c     vconn_assert_class(vconn, &amp;ssl_vconn_class);
+<a href='../S/827.html#L278'>vconn</a>             278 cbench/openflow/lib/vconn-ssl.c     return CONTAINER_OF(vconn, struct ssl_vconn, vconn);
+<a href='../S/827.html#L346'>vconn</a>             346 cbench/openflow/lib/vconn-ssl.c     struct ssl_vconn *sslv = ssl_vconn_cast(vconn);
+<a href='../S/827.html#L433'>vconn</a>             433 cbench/openflow/lib/vconn-ssl.c     struct ssl_vconn *sslv = ssl_vconn_cast(vconn);
+<a href='../S/827.html#L460'>vconn</a>             460 cbench/openflow/lib/vconn-ssl.c             return do_ca_cert_bootstrap(vconn);
+<a href='../S/827.html#L485'>vconn</a>             485 cbench/openflow/lib/vconn-ssl.c     struct ssl_vconn *sslv = ssl_vconn_cast(vconn);
+<a href='../S/827.html#L572'>vconn</a>             572 cbench/openflow/lib/vconn-ssl.c     struct ssl_vconn *sslv = ssl_vconn_cast(vconn);
+<a href='../S/827.html#L612'>vconn</a>             612 cbench/openflow/lib/vconn-ssl.c             ssl_tx_poll_callback(sslv-&gt;fd, POLLIN, vconn);
+<a href='../S/827.html#L656'>vconn</a>             656 cbench/openflow/lib/vconn-ssl.c     struct ssl_vconn *sslv = ssl_vconn_cast(vconn);
+<a href='../S/827.html#L659'>vconn</a>             659 cbench/openflow/lib/vconn-ssl.c                                        ssl_tx_poll_callback, vconn);
+<a href='../S/827.html#L665'>vconn</a>             665 cbench/openflow/lib/vconn-ssl.c     struct ssl_vconn *sslv = ssl_vconn_cast(vconn);
+<a href='../S/827.html#L695'>vconn</a>             695 cbench/openflow/lib/vconn-ssl.c     struct vconn *vconn = vconn_;
+<a href='../S/827.html#L696'>vconn</a>             696 cbench/openflow/lib/vconn-ssl.c     struct ssl_vconn *sslv = ssl_vconn_cast(vconn);
+<a href='../S/827.html#L697'>vconn</a>             697 cbench/openflow/lib/vconn-ssl.c     int error = ssl_do_tx(vconn);
+<a href='../S/827.html#L701'>vconn</a>             701 cbench/openflow/lib/vconn-ssl.c         ssl_register_tx_waiter(vconn);
+<a href='../S/827.html#L708'>vconn</a>             708 cbench/openflow/lib/vconn-ssl.c     struct ssl_vconn *sslv = ssl_vconn_cast(vconn);
+<a href='../S/827.html#L716'>vconn</a>             716 cbench/openflow/lib/vconn-ssl.c         error = ssl_do_tx(vconn);
+<a href='../S/827.html#L723'>vconn</a>             723 cbench/openflow/lib/vconn-ssl.c             ssl_register_tx_waiter(vconn);
+<a href='../S/827.html#L735'>vconn</a>             735 cbench/openflow/lib/vconn-ssl.c     struct ssl_vconn *sslv = ssl_vconn_cast(vconn);
+<a href='../S/827.html#L739'>vconn</a>             739 cbench/openflow/lib/vconn-ssl.c         if (vconn_connect(vconn) != EAGAIN) {
+<a href='../S/861.html#L59'>vconn</a>              59 cbench/openflow/lib/vconn-stream.c     struct vconn vconn;
+<a href='../S/861.html#L79'>vconn</a>              79 cbench/openflow/lib/vconn-stream.c     vconn_init(&amp;s-&gt;vconn, &amp;stream_vconn_class, connect_status, ip, name,
+<a href='../S/861.html#L85'>vconn</a>              85 cbench/openflow/lib/vconn-stream.c     *vconnp = &amp;s-&gt;vconn;
+<a href='../S/861.html#L92'>vconn</a>              92 cbench/openflow/lib/vconn-stream.c     vconn_assert_class(vconn, &amp;stream_vconn_class);
+<a href='../S/861.html#L93'>vconn</a>              93 cbench/openflow/lib/vconn-stream.c     return CONTAINER_OF(vconn, struct stream_vconn, vconn);
+<a href='../S/861.html#L99'>vconn</a>              99 cbench/openflow/lib/vconn-stream.c     struct stream_vconn *s = stream_vconn_cast(vconn);
+<a href='../S/861.html#L110'>vconn</a>             110 cbench/openflow/lib/vconn-stream.c     struct stream_vconn *s = stream_vconn_cast(vconn);
+<a href='../S/861.html#L117'>vconn</a>             117 cbench/openflow/lib/vconn-stream.c     struct stream_vconn *s = stream_vconn_cast(vconn);
+<a href='../S/861.html#L183'>vconn</a>             183 cbench/openflow/lib/vconn-stream.c     struct vconn *vconn = vconn_;
+<a href='../S/861.html#L184'>vconn</a>             184 cbench/openflow/lib/vconn-stream.c     struct stream_vconn *s = stream_vconn_cast(vconn);
+<a href='../S/861.html#L199'>vconn</a>             199 cbench/openflow/lib/vconn-stream.c     s-&gt;tx_waiter = poll_fd_callback(s-&gt;fd, POLLOUT, stream_do_tx, vconn);
+<a href='../S/861.html#L205'>vconn</a>             205 cbench/openflow/lib/vconn-stream.c     struct stream_vconn *s = stream_vconn_cast(vconn);
+<a href='../S/861.html#L222'>vconn</a>             222 cbench/openflow/lib/vconn-stream.c         s-&gt;tx_waiter = poll_fd_callback(s-&gt;fd, POLLOUT, stream_do_tx, vconn);
+<a href='../S/861.html#L232'>vconn</a>             232 cbench/openflow/lib/vconn-stream.c     struct stream_vconn *s = stream_vconn_cast(vconn);
+<a href='../S/861.html#L272'>vconn</a>             272 cbench/openflow/lib/vconn-stream.c                      struct vconn **);
+<a href='../S/853.html#L41'>vconn</a>              41 cbench/openflow/lib/vconn-stream.h struct vconn;
+<a href='../S/881.html#L212'>vconn</a>             212 cbench/openflow/lib/vconn.c             struct vconn *vconn;
+<a href='../S/881.html#L214'>vconn</a>             214 cbench/openflow/lib/vconn.c             int retval = class-&gt;open(name, suffix_copy, &amp;vconn);
+<a href='../S/881.html#L217'>vconn</a>             217 cbench/openflow/lib/vconn.c                 assert(vconn-&gt;state != VCS_CONNECTING
+<a href='../S/881.html#L218'>vconn</a>             218 cbench/openflow/lib/vconn.c                        || vconn-&gt;class-&gt;connect);
+<a href='../S/881.html#L219'>vconn</a>             219 cbench/openflow/lib/vconn.c                 vconn-&gt;min_version = min_version;
+<a href='../S/881.html#L220'>vconn</a>             220 cbench/openflow/lib/vconn.c                 *vconnp = vconn;
+<a href='../S/881.html#L231'>vconn</a>             231 cbench/openflow/lib/vconn.c     struct vconn *vconn;
+<a href='../S/881.html#L234'>vconn</a>             234 cbench/openflow/lib/vconn.c     error = vconn_open(name, min_version, &amp;vconn);
+<a href='../S/881.html#L236'>vconn</a>             236 cbench/openflow/lib/vconn.c         vconn_connect_wait(vconn);
+<a href='../S/881.html#L238'>vconn</a>             238 cbench/openflow/lib/vconn.c         error = vconn_connect(vconn);
+<a href='../S/881.html#L242'>vconn</a>             242 cbench/openflow/lib/vconn.c         vconn_close(vconn);
+<a href='../S/881.html#L245'>vconn</a>             245 cbench/openflow/lib/vconn.c         *vconnp = vconn;
+<a href='../S/881.html#L254'>vconn</a>             254 cbench/openflow/lib/vconn.c     if (vconn != NULL) {
+<a href='../S/881.html#L255'>vconn</a>             255 cbench/openflow/lib/vconn.c         char *name = vconn-&gt;name;
+<a href='../S/881.html#L256'>vconn</a>             256 cbench/openflow/lib/vconn.c         (vconn-&gt;class-&gt;close)(vconn);
+<a href='../S/881.html#L265'>vconn</a>             265 cbench/openflow/lib/vconn.c     return vconn-&gt;name;
+<a href='../S/881.html#L273'>vconn</a>             273 cbench/openflow/lib/vconn.c     return vconn-&gt;ip;
+<a href='../S/881.html#L286'>vconn</a>             286 cbench/openflow/lib/vconn.c     return vconn-&gt;reconnectable;
+<a href='../S/881.html#L292'>vconn</a>             292 cbench/openflow/lib/vconn.c     int retval = (vconn-&gt;class-&gt;connect)(vconn);
+<a href='../S/881.html#L295'>vconn</a>             295 cbench/openflow/lib/vconn.c         vconn-&gt;state = VCS_SEND_HELLO;
+<a href='../S/881.html#L297'>vconn</a>             297 cbench/openflow/lib/vconn.c         vconn-&gt;state = VCS_DISCONNECTED;
+<a href='../S/881.html#L298'>vconn</a>             298 cbench/openflow/lib/vconn.c         vconn-&gt;error = retval;
+<a href='../S/881.html#L309'>vconn</a>             309 cbench/openflow/lib/vconn.c     retval = do_send(vconn, b);
+<a href='../S/881.html#L311'>vconn</a>             311 cbench/openflow/lib/vconn.c         ++vconn-&gt;ofps_sent.ofps_total;
+<a href='../S/881.html#L312'>vconn</a>             312 cbench/openflow/lib/vconn.c         ++vconn-&gt;ofps_sent.ofps_hello;
+<a href='../S/881.html#L313'>vconn</a>             313 cbench/openflow/lib/vconn.c         vconn-&gt;state = VCS_RECV_HELLO;
+<a href='../S/881.html#L317'>vconn</a>             317 cbench/openflow/lib/vconn.c             vconn-&gt;state = VCS_DISCONNECTED;
+<a href='../S/881.html#L318'>vconn</a>             318 cbench/openflow/lib/vconn.c             vconn-&gt;error = retval;
+<a href='../S/881.html#L329'>vconn</a>             329 cbench/openflow/lib/vconn.c     retval = do_recv(vconn, &amp;b);
+<a href='../S/881.html#L336'>vconn</a>             336 cbench/openflow/lib/vconn.c                 ds_put_format(&amp;msg, "%s: extra-long hello:\n", vconn-&gt;name);
+<a href='../S/881.html#L342'>vconn</a>             342 cbench/openflow/lib/vconn.c             vconn-&gt;version = MIN(OFP_VERSION, oh-&gt;version);
+<a href='../S/881.html#L343'>vconn</a>             343 cbench/openflow/lib/vconn.c             if (vconn-&gt;version &lt; vconn-&gt;min_version) {
+<a href='../S/881.html#L347'>vconn</a>             347 cbench/openflow/lib/vconn.c                              vconn-&gt;name, vconn-&gt;min_version, OFP_VERSION,
+<a href='../S/881.html#L349'>vconn</a>             349 cbench/openflow/lib/vconn.c                 vconn-&gt;state = VCS_SEND_ERROR;
+<a href='../S/881.html#L354'>vconn</a>             354 cbench/openflow/lib/vconn.c                          vconn-&gt;name, vconn-&gt;version, vconn-&gt;min_version,
+<a href='../S/881.html#L356'>vconn</a>             356 cbench/openflow/lib/vconn.c                 vconn-&gt;state = VCS_CONNECTED;
+<a href='../S/881.html#L358'>vconn</a>             358 cbench/openflow/lib/vconn.c             ++vconn-&gt;ofps_rcvd.ofps_total;
+<a href='../S/881.html#L359'>vconn</a>             359 cbench/openflow/lib/vconn.c             ++vconn-&gt;ofps_rcvd.ofps_hello;
+<a href='../S/881.html#L365'>vconn</a>             365 cbench/openflow/lib/vconn.c                          vconn-&gt;name, s);
+<a href='../S/881.html#L373'>vconn</a>             373 cbench/openflow/lib/vconn.c         vconn-&gt;state = VCS_DISCONNECTED;
+<a href='../S/881.html#L374'>vconn</a>             374 cbench/openflow/lib/vconn.c         vconn-&gt;error = retval;
+<a href='../S/881.html#L388'>vconn</a>             388 cbench/openflow/lib/vconn.c              vconn-&gt;min_version, OFP_VERSION, vconn-&gt;version);
+<a href='../S/881.html#L394'>vconn</a>             394 cbench/openflow/lib/vconn.c     retval = do_send(vconn, b);
+<a href='../S/881.html#L396'>vconn</a>             396 cbench/openflow/lib/vconn.c         ++vconn-&gt;ofps_sent.ofps_total;
+<a href='../S/881.html#L397'>vconn</a>             397 cbench/openflow/lib/vconn.c         ++vconn-&gt;ofps_sent.ofps_error;
+<a href='../S/881.html#L398'>vconn</a>             398 cbench/openflow/lib/vconn.c         ++vconn-&gt;ofps_sent.ofps_error_type.hello_fail;
+<a href='../S/881.html#L399'>vconn</a>             399 cbench/openflow/lib/vconn.c         ++vconn-&gt;ofps_sent.ofps_error_code.hf_incompat;
+<a href='../S/881.html#L403'>vconn</a>             403 cbench/openflow/lib/vconn.c         vconn-&gt;state = VCS_DISCONNECTED;
+<a href='../S/881.html#L404'>vconn</a>             404 cbench/openflow/lib/vconn.c         vconn-&gt;error = retval ? retval : EPROTO;
+<a href='../S/881.html#L417'>vconn</a>             417 cbench/openflow/lib/vconn.c     assert(vconn-&gt;min_version &gt;= 0);
+<a href='../S/881.html#L419'>vconn</a>             419 cbench/openflow/lib/vconn.c         last_state = vconn-&gt;state;
+<a href='../S/881.html#L420'>vconn</a>             420 cbench/openflow/lib/vconn.c         switch (vconn-&gt;state) {
+<a href='../S/881.html#L422'>vconn</a>             422 cbench/openflow/lib/vconn.c             vcs_connecting(vconn);
+<a href='../S/881.html#L426'>vconn</a>             426 cbench/openflow/lib/vconn.c             vcs_send_hello(vconn);
+<a href='../S/881.html#L430'>vconn</a>             430 cbench/openflow/lib/vconn.c             vcs_recv_hello(vconn);
+<a href='../S/881.html#L437'>vconn</a>             437 cbench/openflow/lib/vconn.c             vcs_send_error(vconn);
+<a href='../S/881.html#L441'>vconn</a>             441 cbench/openflow/lib/vconn.c             return vconn-&gt;error;
+<a href='../S/881.html#L446'>vconn</a>             446 cbench/openflow/lib/vconn.c     } while (vconn-&gt;state != last_state);
+<a href='../S/881.html#L462'>vconn</a>             462 cbench/openflow/lib/vconn.c     int retval = vconn_connect(vconn);
+<a href='../S/881.html#L464'>vconn</a>             464 cbench/openflow/lib/vconn.c         retval = do_recv(vconn, msgp);
+<a href='../S/881.html#L475'>vconn</a>             475 cbench/openflow/lib/vconn.c     retval = (vconn-&gt;class-&gt;recv)(vconn, msgp);
+<a href='../S/881.html#L481'>vconn</a>             481 cbench/openflow/lib/vconn.c             VLOG_DBG_RL(&amp;rl, "%s: received: %s", vconn-&gt;name, s);
+<a href='../S/881.html#L486'>vconn</a>             486 cbench/openflow/lib/vconn.c         if (oh-&gt;version != vconn-&gt;version
+<a href='../S/881.html#L493'>vconn</a>             493 cbench/openflow/lib/vconn.c             if (vconn-&gt;version &lt; 0) {
+<a href='../S/881.html#L510'>vconn</a>             510 cbench/openflow/lib/vconn.c                             vconn-&gt;name, oh-&gt;type);
+<a href='../S/881.html#L514'>vconn</a>             514 cbench/openflow/lib/vconn.c                             vconn-&gt;name, oh-&gt;version, vconn-&gt;version);
+<a href='../S/881.html#L540'>vconn</a>             540 cbench/openflow/lib/vconn.c     int retval = vconn_connect(vconn);
+<a href='../S/881.html#L542'>vconn</a>             542 cbench/openflow/lib/vconn.c         retval = do_send(vconn, msg);
+<a href='../S/881.html#L555'>vconn</a>             555 cbench/openflow/lib/vconn.c         retval = (vconn-&gt;class-&gt;send)(vconn, msg);
+<a href='../S/881.html#L558'>vconn</a>             558 cbench/openflow/lib/vconn.c         retval = (vconn-&gt;class-&gt;send)(vconn, msg);
+<a href='../S/881.html#L561'>vconn</a>             561 cbench/openflow/lib/vconn.c                         vconn-&gt;name, strerror(retval), s);
+<a href='../S/881.html#L573'>vconn</a>             573 cbench/openflow/lib/vconn.c     while ((retval = vconn_send(vconn, msg)) == EAGAIN) {
+<a href='../S/881.html#L574'>vconn</a>             574 cbench/openflow/lib/vconn.c         vconn_send_wait(vconn);
+<a href='../S/881.html#L585'>vconn</a>             585 cbench/openflow/lib/vconn.c     while ((retval = vconn_recv(vconn, msgp)) == EAGAIN) {
+<a href='../S/881.html#L586'>vconn</a>             586 cbench/openflow/lib/vconn.c         vconn_recv_wait(vconn);
+<a href='../S/881.html#L606'>vconn</a>             606 cbench/openflow/lib/vconn.c         error = vconn_recv_block(vconn, &amp;reply);
+<a href='../S/881.html#L618'>vconn</a>             618 cbench/openflow/lib/vconn.c                     "%08"PRIx32, vconn-&gt;name, recv_xid, xid);
+<a href='../S/881.html#L637'>vconn</a>             637 cbench/openflow/lib/vconn.c     error = vconn_send_block(vconn, request);
+<a href='../S/881.html#L641'>vconn</a>             641 cbench/openflow/lib/vconn.c     return error ? error : vconn_recv_xid(vconn, send_xid, replyp);
+<a href='../S/881.html#L649'>vconn</a>             649 cbench/openflow/lib/vconn.c     switch (vconn-&gt;state) {
+<a href='../S/881.html#L670'>vconn</a>             670 cbench/openflow/lib/vconn.c     (vconn-&gt;class-&gt;wait)(vconn, wait);
+<a href='../S/881.html#L676'>vconn</a>             676 cbench/openflow/lib/vconn.c     vconn_wait(vconn, WAIT_CONNECT);
+<a href='../S/881.html#L682'>vconn</a>             682 cbench/openflow/lib/vconn.c     vconn_wait(vconn, WAIT_RECV);
+<a href='../S/881.html#L688'>vconn</a>             688 cbench/openflow/lib/vconn.c     vconn_wait(vconn, WAIT_SEND);
+<a href='../S/881.html#L1142'>vconn</a>            1142 cbench/openflow/lib/vconn.c     vconn-&gt;class = class;
+<a href='../S/881.html#L1143'>vconn</a>            1143 cbench/openflow/lib/vconn.c     vconn-&gt;state = (connect_status == EAGAIN ? VCS_CONNECTING
+<a href='../S/881.html#L1146'>vconn</a>            1146 cbench/openflow/lib/vconn.c     vconn-&gt;error = connect_status;
+<a href='../S/881.html#L1147'>vconn</a>            1147 cbench/openflow/lib/vconn.c     vconn-&gt;version = -1;
+<a href='../S/881.html#L1148'>vconn</a>            1148 cbench/openflow/lib/vconn.c     vconn-&gt;min_version = -1;
+<a href='../S/881.html#L1149'>vconn</a>            1149 cbench/openflow/lib/vconn.c     vconn-&gt;ip = ip;
+<a href='../S/881.html#L1150'>vconn</a>            1150 cbench/openflow/lib/vconn.c     vconn-&gt;name = xstrdup(name);
+<a href='../S/881.html#L1151'>vconn</a>            1151 cbench/openflow/lib/vconn.c     vconn-&gt;reconnectable = reconnectable;
+<a href='../S/881.html#L1152'>vconn</a>            1152 cbench/openflow/lib/vconn.c     memset(&amp;vconn-&gt;ofps_rcvd, 0, sizeof(vconn-&gt;ofps_rcvd));
+<a href='../S/881.html#L1153'>vconn</a>            1153 cbench/openflow/lib/vconn.c     memset(&amp;vconn-&gt;ofps_sent, 0, sizeof(vconn-&gt;ofps_sent));
+<a href='../S/906.html#L46'>vconn</a>              46 cbench/openflow/lib/vconn.h struct vconn;
+<a href='../S/801.html#L253'>vconn</a>             253 cbench/openflow/secchan/secchan.c             struct vconn *new = accept_vconn(monitor);
+<a href='../S/801.html#L316'>vconn</a>             316 cbench/openflow/secchan/secchan.c static struct vconn *
+<a href='../S/801.html#L319'>vconn</a>             319 cbench/openflow/secchan/secchan.c     struct vconn *new;
+<a href='../S/801.html#L401'>vconn</a>             401 cbench/openflow/secchan/secchan.c     struct vconn *new_remote, *new_local;
+<a href='../S/204.html#L601'>vconn</a>             601 cbench/openflow/udatapath/datapath.c         struct vconn *new_vconn;
+<a href='../S/333.html#L418'>vconn</a>             418 cbench/openflow/utilities/dpctl.c     run(vconn_send_block(vconn, buffer), "failed to send packet to switch");
+<a href='../S/333.html#L424'>vconn</a>             424 cbench/openflow/utilities/dpctl.c     struct vconn *vconn;
+<a href='../S/333.html#L428'>vconn</a>             428 cbench/openflow/utilities/dpctl.c     open_vconn(vconn_name, &amp;vconn);
+<a href='../S/333.html#L429'>vconn</a>             429 cbench/openflow/utilities/dpctl.c     run(vconn_transact(vconn, request, &amp;reply), "talking to %s", vconn_name);
+<a href='../S/333.html#L431'>vconn</a>             431 cbench/openflow/utilities/dpctl.c     vconn_close(vconn);
+<a href='../S/333.html#L446'>vconn</a>             446 cbench/openflow/utilities/dpctl.c     struct vconn *vconn;
+<a href='../S/333.html#L449'>vconn</a>             449 cbench/openflow/utilities/dpctl.c     open_vconn(vconn_name, &amp;vconn);
+<a href='../S/333.html#L450'>vconn</a>             450 cbench/openflow/utilities/dpctl.c     send_openflow_buffer(vconn, request);
+<a href='../S/333.html#L455'>vconn</a>             455 cbench/openflow/utilities/dpctl.c         run(vconn_recv_block(vconn, &amp;reply), "OpenFlow packet receive failed");
+<a href='../S/333.html#L471'>vconn</a>             471 cbench/openflow/utilities/dpctl.c     vconn_close(vconn);
+<a href='../S/333.html#L515'>vconn</a>             515 cbench/openflow/utilities/dpctl.c     struct vconn *vconn;
+<a href='../S/333.html#L524'>vconn</a>             524 cbench/openflow/utilities/dpctl.c     open_vconn(argv[1], &amp;vconn);
+<a href='../S/333.html#L525'>vconn</a>             525 cbench/openflow/utilities/dpctl.c     run(vconn_transact(vconn, b, &amp;b), "talking to %s", argv[1]);
+<a href='../S/333.html#L526'>vconn</a>             526 cbench/openflow/utilities/dpctl.c     vconn_close(vconn);
+<a href='../S/333.html#L690'>vconn</a>             690 cbench/openflow/utilities/dpctl.c     struct vconn *vconn;
+<a href='../S/333.html#L699'>vconn</a>             699 cbench/openflow/utilities/dpctl.c     open_vconn(argv[1], &amp;vconn);
+<a href='../S/333.html#L700'>vconn</a>             700 cbench/openflow/utilities/dpctl.c     run(vconn_transact(vconn, buf, &amp;buf), "talking to %s", argv[1]);
+<a href='../S/333.html#L701'>vconn</a>             701 cbench/openflow/utilities/dpctl.c     vconn_close(vconn);
+<a href='../S/333.html#L1094'>vconn</a>            1094 cbench/openflow/utilities/dpctl.c     struct vconn * vconn;
+<a href='../S/333.html#L1108'>vconn</a>            1108 cbench/openflow/utilities/dpctl.c     open_vconn(argv[1], &amp;vconn);
+<a href='../S/333.html#L1109'>vconn</a>            1109 cbench/openflow/utilities/dpctl.c     send_openflow_buffer(vconn, msg);
+<a href='../S/333.html#L1110'>vconn</a>            1110 cbench/openflow/utilities/dpctl.c     vconn_close(vconn);
+<a href='../S/333.html#L1150'>vconn</a>            1150 cbench/openflow/utilities/dpctl.c     struct vconn *vconn;
+<a href='../S/333.html#L1176'>vconn</a>            1176 cbench/openflow/utilities/dpctl.c     open_vconn(argv[1], &amp;vconn);
+<a href='../S/333.html#L1177'>vconn</a>            1177 cbench/openflow/utilities/dpctl.c     send_openflow_buffer(vconn, buffer);
+<a href='../S/333.html#L1178'>vconn</a>            1178 cbench/openflow/utilities/dpctl.c     vconn_close(vconn);
+<a href='../S/333.html#L1184'>vconn</a>            1184 cbench/openflow/utilities/dpctl.c     struct vconn *vconn;
+<a href='../S/333.html#L1193'>vconn</a>            1193 cbench/openflow/utilities/dpctl.c     open_vconn(argv[1], &amp;vconn);
+<a href='../S/333.html#L1234'>vconn</a>            1234 cbench/openflow/utilities/dpctl.c         send_openflow_buffer(vconn, buffer);
+<a href='../S/333.html#L1236'>vconn</a>            1236 cbench/openflow/utilities/dpctl.c     vconn_close(vconn);
+<a href='../S/333.html#L1246'>vconn</a>            1246 cbench/openflow/utilities/dpctl.c     struct vconn *vconn;
+<a href='../S/333.html#L1268'>vconn</a>            1268 cbench/openflow/utilities/dpctl.c     open_vconn(argv[1], &amp;vconn);
+<a href='../S/333.html#L1269'>vconn</a>            1269 cbench/openflow/utilities/dpctl.c     send_openflow_buffer(vconn, buffer);
+<a href='../S/333.html#L1270'>vconn</a>            1270 cbench/openflow/utilities/dpctl.c     vconn_close(vconn);
+<a href='../S/333.html#L1275'>vconn</a>            1275 cbench/openflow/utilities/dpctl.c     struct vconn *vconn;
+<a href='../S/333.html#L1299'>vconn</a>            1299 cbench/openflow/utilities/dpctl.c     open_vconn(argv[1], &amp;vconn);
+<a href='../S/333.html#L1300'>vconn</a>            1300 cbench/openflow/utilities/dpctl.c     send_openflow_buffer(vconn, buffer);
+<a href='../S/333.html#L1301'>vconn</a>            1301 cbench/openflow/utilities/dpctl.c     vconn_close(vconn);
+<a href='../S/333.html#L1307'>vconn</a>            1307 cbench/openflow/utilities/dpctl.c     struct vconn *vconn;
+<a href='../S/333.html#L1318'>vconn</a>            1318 cbench/openflow/utilities/dpctl.c     open_vconn(argv[1], &amp;vconn);
+<a href='../S/333.html#L1321'>vconn</a>            1321 cbench/openflow/utilities/dpctl.c         run(vconn_recv_block(vconn, &amp;b), "vconn_recv");
+<a href='../S/333.html#L1360'>vconn</a>            1360 cbench/openflow/utilities/dpctl.c     struct vconn *vconn;
+<a href='../S/333.html#L1364'>vconn</a>            1364 cbench/openflow/utilities/dpctl.c     open_vconn(argv[1], &amp;vconn);
+<a href='../S/333.html#L1365'>vconn</a>            1365 cbench/openflow/utilities/dpctl.c     run(vconn_transact(vconn, request, &amp;reply), "talking to %s", argv[1]);
+<a href='../S/333.html#L1370'>vconn</a>            1370 cbench/openflow/utilities/dpctl.c     vconn_close(vconn);
+<a href='../S/333.html#L1379'>vconn</a>            1379 cbench/openflow/utilities/dpctl.c     struct vconn *vconn;
+<a href='../S/333.html#L1396'>vconn</a>            1396 cbench/openflow/utilities/dpctl.c     open_vconn(argv[1], &amp;vconn);
+<a href='../S/333.html#L1397'>vconn</a>            1397 cbench/openflow/utilities/dpctl.c     run(vconn_transact(vconn, request, &amp;reply), "talking to %s", argv[1]);
+<a href='../S/333.html#L1447'>vconn</a>            1447 cbench/openflow/utilities/dpctl.c     send_openflow_buffer(vconn, request);
+<a href='../S/333.html#L1450'>vconn</a>            1450 cbench/openflow/utilities/dpctl.c     vconn_close(vconn);
+<a href='../S/333.html#L1458'>vconn</a>            1458 cbench/openflow/utilities/dpctl.c     struct vconn *vconn;
+<a href='../S/333.html#L1466'>vconn</a>            1466 cbench/openflow/utilities/dpctl.c     open_vconn(argv[1], &amp;vconn);
+<a href='../S/333.html#L1477'>vconn</a>            1477 cbench/openflow/utilities/dpctl.c         run(vconn_transact(vconn, ofpbuf_clone(request), &amp;reply), "transact");
+<a href='../S/333.html#L1497'>vconn</a>            1497 cbench/openflow/utilities/dpctl.c     vconn_close(vconn);
+<a href='../S/333.html#L1506'>vconn</a>            1506 cbench/openflow/utilities/dpctl.c     struct vconn *vconn;
+<a href='../S/333.html#L1522'>vconn</a>            1522 cbench/openflow/utilities/dpctl.c     open_vconn(argv[1], &amp;vconn);
+<a href='../S/333.html#L1530'>vconn</a>            1530 cbench/openflow/utilities/dpctl.c         run(vconn_transact(vconn, request, &amp;reply), "transact");
+<a href='../S/333.html#L1534'>vconn</a>            1534 cbench/openflow/utilities/dpctl.c     vconn_close(vconn);
+<a href='../S/333.html#L1631'>vconn</a>            1631 cbench/openflow/utilities/dpctl.c     struct vconn *vconn;
+<a href='../S/333.html#L1652'>vconn</a>            1652 cbench/openflow/utilities/dpctl.c     open_vconn(argv[1], &amp;vconn);
+<a href='../S/333.html#L1654'>vconn</a>            1654 cbench/openflow/utilities/dpctl.c     send_openflow_buffer(vconn, b);
+<a href='../S/333.html#L1655'>vconn</a>            1655 cbench/openflow/utilities/dpctl.c     vconn_close(vconn);
+<a href='../S/333.html#L1694'>vconn</a>            1694 cbench/openflow/utilities/dpctl.c     struct vconn *vconn;
+<a href='../S/333.html#L1698'>vconn</a>            1698 cbench/openflow/utilities/dpctl.c     open_vconn(vconn_name, &amp;vconn);
+<a href='../S/333.html#L1699'>vconn</a>            1699 cbench/openflow/utilities/dpctl.c     run(vconn_transact(vconn, request, &amp;reply), "talking to %s", vconn_name);
+<a href='../S/333.html#L1700'>vconn</a>            1700 cbench/openflow/utilities/dpctl.c     vconn_close(vconn);
+</pre>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/<a href='../files/1150.html'>dfilter</a>/syntax-tree.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/407.html' title='Multiple included from 4 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * $Id: syntax-tree.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L5'>   5 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L6'>   6 <i><font color='green'> * Copyright 2001 Gerald Combs</font></i>
+<a name='L7'>   7 <i><font color='green'> *</font></i>
+<a name='L8'>   8 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L9'>   9 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L10'>  10 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L11'>  11 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L12'>  12 <i><font color='green'> *</font></i>
+<a name='L13'>  13 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L14'>  14 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L15'>  15 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L16'>  16 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L17'>  17 <i><font color='green'> *</font></i>
+<a name='L18'>  18 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L19'>  19 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L20'>  20 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L21'>  21 <i><font color='green'> */</font></i>
+<a name='L22'>  22 
+<a name='L23'>  23 <font color='darkred'>#ifndef</font> <a href='../S/468.html#L24' title='Defined at 24 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>SYNTAX_TREE_H</a>
+<a name='L24'>  24 <font color='darkred'>#define</font> <a href='../S/468.html#L23' title='Refered from 23 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>SYNTAX_TREE_H</a>
+<a name='L25'>  25 
+<a name='L26'>  26 <font color='darkred'>#include</font> &lt;glib.h&gt;
+<a name='L27'>  27 <font color='darkred'>#include</font> "cppmagic.h"
+<a name='L28'>  28 
+<a name='L29'>  29 <b>typedef</b> <b>enum</b> <font color='red'>{</font>
+<a name='L30'>  30         STTYPE_UNINITIALIZED,
+<a name='L31'>  31         STTYPE_TEST,
+<a name='L32'>  32         STTYPE_UNPARSED,
+<a name='L33'>  33         STTYPE_STRING,
+<a name='L34'>  34         STTYPE_FIELD,
+<a name='L35'>  35         STTYPE_FVALUE,
+<a name='L36'>  36         STTYPE_INTEGER,
+<a name='L37'>  37         STTYPE_RANGE,
+<a name='L38'>  38         STTYPE_FUNCTION,
+<a name='L39'>  39         STTYPE_NUM_TYPES
+<a name='L40'>  40 <font color='red'>}</font> <a href='../R/4651.html' title='Multiple refered from 5 places.'>sttype_id_t</a>;
+<a name='L41'>  41 
+<a name='L42'>  42 <b>typedef</b> <a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a>        (*<a href='../Y/906.html' title='Multiple used in 2 places.'>STTypeNewFunc</a>)(<a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a>);
+<a name='L43'>  43 <b>typedef</b> <b>void</b>            (*<a href='../Y/905.html' title='Multiple used in 2 places.'>STTypeFreeFunc</a>)(<a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a>);
+<a name='L44'>  44 
+<a name='L45'>  45 
+<a name='L46'>  46 <i><font color='green'>/* Type information */</font></i>
+<a name='L47'>  47 <b>typedef</b> <b>struct</b> <font color='red'>{</font>
+<a name='L48'>  48         <a href='../S/468.html#L40' title='Defined at 40 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>sttype_id_t</a>             <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>;
+<a name='L49'>  49         <b>const</b> <b>char</b>              *<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;
+<a name='L50'>  50         <a href='../Y/906.html' title='Multiple used in 2 places.'>STTypeNewFunc</a>           func_new;
+<a name='L51'>  51         <a href='../Y/905.html' title='Multiple used in 2 places.'>STTypeFreeFunc</a>          func_free;
+<a name='L52'>  52 <font color='red'>}</font> <a href='../R/4652.html' title='Multiple refered from 2 places.'>sttype_t</a>;
+<a name='L53'>  53 
+<a name='L54'>  54 <i><font color='green'>/* Node (type instance) information */</font></i>
+<a name='L55'>  55 <b>typedef</b> <b>struct</b> <font color='red'>{</font>
+<a name='L56'>  56         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a>         <a href='../Y/4312.html' title='Multiple used in 19 places.'>magic</a>;
+<a name='L57'>  57         <a href='../S/468.html#L52' title='Defined at 52 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>sttype_t</a>        *<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;
+<a name='L58'>  58 
+<a name='L59'>  59         <i><font color='green'>/* This could be made an enum, but I haven't</font></i>
+<a name='L60'>  60 <i><font color='green'>         * set aside to time to do so. */</font></i>
+<a name='L61'>  61         <a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a>        <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L62'>  62         <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a>          <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>;
+<a name='L63'>  63         <b>const</b> <b>char</b>      *deprecated_token;
+<a name='L64'>  64 <font color='red'>}</font> <a href='../R/4535.html' title='Multiple refered from 24 places.'>stnode_t</a>;
+<a name='L65'>  65 
+<a name='L66'>  66 <i><font color='green'>/* These are the sttype_t registration function prototypes. */</font></i>
+<a name='L67'>  67 <b>void</b> sttype_register_function(<b>void</b>);
+<a name='L68'>  68 <b>void</b> sttype_register_integer(<b>void</b>);
+<a name='L69'>  69 <b>void</b> sttype_register_pointer(<b>void</b>);
+<a name='L70'>  70 <b>void</b> sttype_register_range(<b>void</b>);
+<a name='L71'>  71 <b>void</b> sttype_register_string(<b>void</b>);
+<a name='L72'>  72 <b>void</b> sttype_register_test(<b>void</b>);
+<a name='L73'>  73 
+<a name='L74'>  74 <b>void</b>
+<a name='L75'>  75 sttype_init(<b>void</b>);
+<a name='L76'>  76 
+<a name='L77'>  77 <b>void</b>
+<a name='L78'>  78 sttype_cleanup(<b>void</b>);
+<a name='L79'>  79 
+<a name='L80'>  80 <b>void</b>
+<a name='L81'>  81 sttype_register(<a href='../S/468.html#L52' title='Defined at 52 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>sttype_t</a> *<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>);
+<a name='L82'>  82 
+<a name='L83'>  83 <a href='../S/468.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>stnode_t</a>*
+<a name='L84'>  84 stnode_new(<a href='../S/468.html#L40' title='Defined at 40 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>sttype_id_t</a> <a href='../Y/7555.html' title='Multiple used in 3 places.'>type_id</a>, <a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a> <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L85'>  85 
+<a name='L86'>  86 <b>void</b>
+<a name='L87'>  87 stnode_init(<a href='../S/468.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>stnode_t</a> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>, <a href='../S/468.html#L40' title='Defined at 40 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>sttype_id_t</a> <a href='../Y/7555.html' title='Multiple used in 3 places.'>type_id</a>, <a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a> <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L88'>  88 
+<a name='L89'>  89 <b>void</b>
+<a name='L90'>  90 stnode_init_int(<a href='../S/468.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>stnode_t</a> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>, <a href='../S/468.html#L40' title='Defined at 40 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>sttype_id_t</a> <a href='../Y/7555.html' title='Multiple used in 3 places.'>type_id</a>, <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a> <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>);
+<a name='L91'>  91 
+<a name='L92'>  92 <b>void</b>
+<a name='L93'>  93 stnode_free(<a href='../S/468.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>stnode_t</a> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L94'>  94 
+<a name='L95'>  95 <b>const</b> <b>char</b>*
+<a name='L96'>  96 stnode_type_name(<a href='../S/468.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>stnode_t</a> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L97'>  97 
+<a name='L98'>  98 <a href='../S/468.html#L40' title='Defined at 40 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>sttype_id_t</a>
+<a name='L99'>  99 stnode_type_id(<a href='../S/468.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>stnode_t</a> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L100'> 100 
+<a name='L101'> 101 <a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a>
+<a name='L102'> 102 stnode_data(<a href='../S/468.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>stnode_t</a> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L103'> 103 
+<a name='L104'> 104 <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a>
+<a name='L105'> 105 stnode_value(<a href='../S/468.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>stnode_t</a> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L106'> 106 
+<a name='L107'> 107 <b>const</b> <b>char</b> *
+<a name='L108'> 108 stnode_deprecated(<a href='../S/468.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>stnode_t</a> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L109'> 109 
+<a name='L110'> 110 <font color='darkred'>#define</font> <a href='../S/468.html#L127' title='Refered from 127 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>assert_magic</a>(<a href='../Y/5036.html' title='Multiple used in 5 places.'>obj</a>, <a href='../Y/4480.html' title='Multiple used in 4 places.'>mnum</a>) \
+<a name='L111'> 111         <a href='../Y/3292.html' title='Multiple used in 3 places.'>g_assert</a>((<a href='../Y/5036.html' title='Multiple used in 5 places.'>obj</a>)); \
+<a name='L112'> 112         <b>if</b> ((<a href='../Y/5036.html' title='Multiple used in 5 places.'>obj</a>)-&gt;<a href='../Y/4312.html' title='Multiple used in 19 places.'>magic</a> != (<a href='../Y/4480.html' title='Multiple used in 4 places.'>mnum</a>)) <font color='red'>{</font> \
+<a name='L113'> 113                 g_print("\nMagic num is 0x%08x, but should be 0x%08x", \
+<a name='L114'> 114                                 (<a href='../Y/5036.html' title='Multiple used in 5 places.'>obj</a>)-&gt;<a href='../Y/4312.html' title='Multiple used in 19 places.'>magic</a>, (<a href='../Y/4480.html' title='Multiple used in 4 places.'>mnum</a>)); \
+<a name='L115'> 115                 <a href='../Y/3292.html' title='Multiple used in 3 places.'>g_assert</a>((<a href='../Y/5036.html' title='Multiple used in 5 places.'>obj</a>)-&gt;<a href='../Y/4312.html' title='Multiple used in 19 places.'>magic</a> == (<a href='../Y/4480.html' title='Multiple used in 4 places.'>mnum</a>)); \
+<a name='L116'> 116         <font color='red'>}</font>
+<a name='L117'> 117 
+<a name='L118'> 118 
+<a name='L119'> 119 
+<a name='L120'> 120 
+<a name='L121'> 121 <font color='darkred'>#define</font> STTYPE_ACCESSOR(<a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a>,<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>,<a href='../Y/1518.html' title='Multiple used in 19 places.'>attr</a>,<a href='../Y/4314.html' title='Multiple used in 2 places.'>magicnum</a>) \
+<a name='L122'> 122         <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> \
+<a name='L123'> 123         <a href='../Y/165.html' title='Multiple used in 3 places.'>CONCAT</a>(<a href='../Y/165.html' title='Multiple used in 3 places.'>CONCAT</a>(<a href='../Y/165.html' title='Multiple used in 3 places.'>CONCAT</a>(<a href='../Y/7116.html' title='Multiple used in 2 places.'>sttype_</a>,<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>),<a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a>),<a href='../Y/1518.html' title='Multiple used in 19 places.'>attr</a>) (<a href='../S/468.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>stnode_t</a> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>) \
+<a name='L124'> 124 <font color='red'>{</font>\
+<a name='L125'> 125         <a href='../Y/165.html' title='Multiple used in 3 places.'>CONCAT</a>(<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>,_t) *<a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>; \
+<a name='L126'> 126         <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a> = stnode_data(<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);\
+<a name='L127'> 127         <a href='../S/468.html#L110' title='Defined at 110 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>assert_magic</a>(<a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>, <a href='../Y/4314.html' title='Multiple used in 2 places.'>magicnum</a>); \
+<a name='L128'> 128         <b>return</b> <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>-&gt;<a href='../Y/1518.html' title='Multiple used in 19 places.'>attr</a>; \
+<a name='L129'> 129 <font color='red'>}</font>
+<a name='L130'> 130 
+<a name='L131'> 131 <font color='darkred'>#define</font> <a href='../R/1610.html' title='Multiple refered from 2 places.'>STTYPE_ACCESSOR_PROTOTYPE</a>(<a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a>,<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>,<a href='../Y/1518.html' title='Multiple used in 19 places.'>attr</a>) \
+<a name='L132'> 132         <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> \
+<a name='L133'> 133         <a href='../Y/165.html' title='Multiple used in 3 places.'>CONCAT</a>(<a href='../Y/165.html' title='Multiple used in 3 places.'>CONCAT</a>(<a href='../Y/165.html' title='Multiple used in 3 places.'>CONCAT</a>(<a href='../Y/7116.html' title='Multiple used in 2 places.'>sttype_</a>,<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>),<a href='../Y/1106.html' title='Multiple used in 31 places.'>_</a>),<a href='../Y/1518.html' title='Multiple used in 19 places.'>attr</a>) (<a href='../S/468.html#L64' title='Defined at 64 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/syntax-tree.h.'>stnode_t</a> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L134'> 134 
+<a name='L135'> 135 
+<a name='L136'> 136 <font color='darkred'>#endif</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<html>
+<head>
+<title>cbench/openflow/tests/test-flows.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1142.html'>tests</a>/test-flows.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L18'>[^]</a>[v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L18' title='Defined at 18.'>main</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L2'>   2 <font color='darkred'>#include</font> "<a href='../I/98.html'>flow.h</a>"
+<a name='L3'>   3 <font color='darkred'>#include</font> &lt;errno.h&gt;
+<a name='L4'>   4 <font color='darkred'>#include</font> &lt;stdlib.h&gt;
+<a name='L5'>   5 <font color='darkred'>#include</font> &lt;string.h&gt;
+<a name='L6'>   6 <font color='darkred'>#include</font> "<a href='181.html'>openflow/openflow.h</a>"
+<a name='L7'>   7 <font color='darkred'>#include</font> "<a href='812.html'>timeval.h</a>"
+<a name='L8'>   8 <font color='darkred'>#include</font> "<a href='865.html'>ofpbuf.h</a>"
+<a name='L9'>   9 <font color='darkred'>#include</font> "<a href='898.html'>ofp-print.h</a>"
+<a name='L10'>  10 <font color='darkred'>#include</font> "<a href='821.html'>pcap.h</a>"
+<a name='L11'>  11 <font color='darkred'>#include</font> "<a href='../I/69.html'>util.h</a>"
+<a name='L12'>  12 <font color='darkred'>#include</font> "<a href='859.html'>vlog.h</a>"
+<a name='L13'>  13 
+<a name='L14'>  14 <font color='darkred'>#undef</font> <a href='../R/951.html' title='Multiple refered from 4 places.'>NDEBUG</a>
+<a name='L15'>  15 <font color='darkred'>#include</font> &lt;assert.h&gt;
+<a name='L16'>  16 
+<a name='L17'>  17 <b>int</b>
+<a name='L18'>  18 <a href='../R/3464.html' title='Multiple refered from 20 places.'>main</a>(<b>int</b> <a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a> <a href='../D/5808.html' title='Multiple defined in 5 places.'>UNUSED</a>, <b>char</b> *<a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>[])
+<a name='L19'>  19 <font color='red'>{</font>
+<a name='L20'>  20     <b>struct</b> <a href='../D/8818.html' title='Multiple defined in 3 places.'>ofp_match</a> <a href='../Y/2952.html' title='Multiple used in 4 places.'>expected_match</a>;
+<a name='L21'>  21     <a href='../Y/328.html' title='Multiple used in 113 places.'>FILE</a> *<a href='../Y/3174.html' title='Multiple used in 129 places.'>flows</a>, *<a href='../Y/5664.html' title='Multiple used in 16 places.'>pcap</a>;
+<a name='L22'>  22     <b>int</b> <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>;
+<a name='L23'>  23     <b>int</b> <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> = 0, <a href='../Y/2774.html' title='Multiple used in 5 places.'>errors</a> = 0;
+<a name='L24'>  24 
+<a name='L25'>  25     <a href='../S/878.html#L187' title='Defined at 187 in cbench/openflow/lib/util.c.'>set_program_name</a>(<a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>[0]);
+<a name='L26'>  26     <a href='../S/902.html#L65' title='Defined at 65 in cbench/openflow/lib/timeval.c.'>time_init</a>();
+<a name='L27'>  27     <a href='../S/848.html#L405' title='Defined at 405 in cbench/openflow/lib/vlog.c.'>vlog_init</a>();
+<a name='L28'>  28 
+<a name='L29'>  29     <a href='../Y/3174.html' title='Multiple used in 129 places.'>flows</a> = stdin;
+<a name='L30'>  30     <a href='../Y/5664.html' title='Multiple used in 16 places.'>pcap</a> = <a href='../Y/3022.html' title='Multiple used in 4 places.'>fdopen</a>(3, "rb");
+<a name='L31'>  31     <b>if</b> (!<a href='../Y/5664.html' title='Multiple used in 16 places.'>pcap</a>) <font color='red'>{</font>
+<a name='L32'>  32         <a href='../S/878.html#L153' title='Defined at 153 in cbench/openflow/lib/util.c.'>ofp_fatal</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>, "failed to open fd 3 for reading");
+<a name='L33'>  33     <font color='red'>}</font>
+<a name='L34'>  34 
+<a name='L35'>  35     <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../S/903.html#L89' title='Defined at 89 in cbench/openflow/lib/pcap.c.'>pcap_read_header</a>(<a href='../Y/5664.html' title='Multiple used in 16 places.'>pcap</a>);
+<a name='L36'>  36     <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>) <font color='red'>{</font>
+<a name='L37'>  37         <a href='../S/878.html#L153' title='Defined at 153 in cbench/openflow/lib/util.c.'>ofp_fatal</a>(<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> &gt; 0 ? <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> : 0, "reading pcap header failed");
+<a name='L38'>  38     <font color='red'>}</font>
+<a name='L39'>  39 
+<a name='L40'>  40     <b>while</b> (<a href='../Y/3232.html' title='Multiple used in 6 places.'>fread</a>(&amp;<a href='../Y/2952.html' title='Multiple used in 4 places.'>expected_match</a>, <b>sizeof</b> <a href='../Y/2952.html' title='Multiple used in 4 places.'>expected_match</a>, 1, <a href='../Y/3174.html' title='Multiple used in 129 places.'>flows</a>)) <font color='red'>{</font>
+<a name='L41'>  41         <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> *<a href='../Y/5592.html' title='Multiple used in 61 places.'>packet</a>;
+<a name='L42'>  42         <b>struct</b> <a href='../D/8818.html' title='Multiple defined in 3 places.'>ofp_match</a> <a href='../Y/2977.html' title='Multiple used in 4 places.'>extracted_match</a>;
+<a name='L43'>  43         <b>struct</b> <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a> <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>;
+<a name='L44'>  44 
+<a name='L45'>  45         <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>++;
+<a name='L46'>  46 
+<a name='L47'>  47         <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../S/903.html#L123' title='Defined at 123 in cbench/openflow/lib/pcap.c.'>pcap_read</a>(<a href='../Y/5664.html' title='Multiple used in 16 places.'>pcap</a>, &amp;<a href='../Y/5592.html' title='Multiple used in 61 places.'>packet</a>);
+<a name='L48'>  48         <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> == <a href='../Y/281.html' title='Multiple used in 14 places.'>EOF</a>) <font color='red'>{</font>
+<a name='L49'>  49             <a href='../S/878.html#L153' title='Defined at 153 in cbench/openflow/lib/util.c.'>ofp_fatal</a>(0, "unexpected end of file reading pcap file");
+<a name='L50'>  50         <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>) <font color='red'>{</font>
+<a name='L51'>  51             <a href='../S/878.html#L153' title='Defined at 153 in cbench/openflow/lib/util.c.'>ofp_fatal</a>(<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>, "error reading pcap file");
+<a name='L52'>  52         <font color='red'>}</font>
+<a name='L53'>  53 
+<a name='L54'>  54         <a href='../D/7839.html' title='Multiple defined in 2 places.'>flow_extract</a>(<a href='../Y/5592.html' title='Multiple used in 61 places.'>packet</a>, 0, &amp;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>);
+<a name='L55'>  55         <a href='../D/7842.html' title='Multiple defined in 2 places.'>flow_fill_match</a>(&amp;<a href='../Y/2977.html' title='Multiple used in 4 places.'>extracted_match</a>, &amp;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>, 0);
+<a name='L56'>  56 
+<a name='L57'>  57         <b>if</b> (<a href='../Y/4416.html' title='Multiple used in 69 places.'>memcmp</a>(&amp;<a href='../Y/2952.html' title='Multiple used in 4 places.'>expected_match</a>, &amp;<a href='../Y/2977.html' title='Multiple used in 4 places.'>extracted_match</a>, <b>sizeof</b> <a href='../Y/2952.html' title='Multiple used in 4 places.'>expected_match</a>)) <font color='red'>{</font>
+<a name='L58'>  58             <b>char</b> *<a href='../Y/2950.html' title='Multiple used in 3 places.'>exp_s</a> = <a href='../S/825.html#L668' title='Defined at 668 in cbench/openflow/lib/ofp-print.c.'>ofp_match_to_string</a>(&amp;<a href='../Y/2952.html' title='Multiple used in 4 places.'>expected_match</a>, 2);
+<a name='L59'>  59             <b>char</b> *<a href='../Y/3448.html' title='Multiple used in 3 places.'>got_s</a> = <a href='../S/825.html#L668' title='Defined at 668 in cbench/openflow/lib/ofp-print.c.'>ofp_match_to_string</a>(&amp;<a href='../Y/2977.html' title='Multiple used in 4 places.'>extracted_match</a>, 2);
+<a name='L60'>  60             <a href='../Y/2774.html' title='Multiple used in 5 places.'>errors</a>++;
+<a name='L61'>  61             <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("mismatch on packet #%d (1-based).\n", <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>);
+<a name='L62'>  62             <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("Packet:\n");
+<a name='L63'>  63             <a href='../S/825.html#L1637' title='Defined at 1637 in cbench/openflow/lib/ofp-print.c.'>ofp_print_packet</a>(<a href='../Y/7051.html' title='Multiple used in 64 places.'>stdout</a>, <a href='../Y/5592.html' title='Multiple used in 61 places.'>packet</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/5592.html' title='Multiple used in 61 places.'>packet</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>, <a href='../Y/5592.html' title='Multiple used in 61 places.'>packet</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L64'>  64             <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("Expected flow:\n%s\n", <a href='../Y/2950.html' title='Multiple used in 3 places.'>exp_s</a>);
+<a name='L65'>  65             <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("Actually extracted flow:\n%s\n", <a href='../Y/3448.html' title='Multiple used in 3 places.'>got_s</a>);
+<a name='L66'>  66             <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("\n");
+<a name='L67'>  67             <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/2950.html' title='Multiple used in 3 places.'>exp_s</a>);
+<a name='L68'>  68             <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/3448.html' title='Multiple used in 3 places.'>got_s</a>);
+<a name='L69'>  69         <font color='red'>}</font>
+<a name='L70'>  70 
+<a name='L71'>  71         <a href='../S/887.html#L110' title='Defined at 110 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_delete</a>(<a href='../Y/5592.html' title='Multiple used in 61 places.'>packet</a>);
+<a name='L72'>  72     <font color='red'>}</font>
+<a name='L73'>  73     <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("checked %d packets, %d errors\n", <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>, <a href='../Y/2774.html' title='Multiple used in 5 places.'>errors</a>);
+<a name='L74'>  74     <b>return</b> <a href='../Y/2774.html' title='Multiple used in 5 places.'>errors</a> != 0;
+<a name='L75'>  75 <font color='red'>}</font>
+<a name='L76'>  76 
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^]<a href='#L18'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

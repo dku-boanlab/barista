@@ -1,0 +1,144 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/camel-persistentdata.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/camel-persistentdata.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * camel-persistentdata.h</font></i>
+<a name='L3'>   3 <i><font color='green'> * Definitions for lists and hash tables used in wireshark's camel dissector</font></i>
+<a name='L4'>   4 <i><font color='green'> * for calculation of delays in camel-transactions</font></i>
+<a name='L5'>   5 <i><font color='green'> * Copyright 2006 Florent Drouin</font></i>
+<a name='L6'>   6 <i><font color='green'> *</font></i>
+<a name='L7'>   7 <i><font color='green'> * $Id: camel-persistentdata.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L8'>   8 <i><font color='green'> *</font></i>
+<a name='L9'>   9 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L10'>  10 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L11'>  11 <i><font color='green'> * Copyright 1998 Gerald Combs</font></i>
+<a name='L12'>  12 <i><font color='green'> *</font></i>
+<a name='L13'>  13 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L14'>  14 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L15'>  15 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L16'>  16 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L17'>  17 <i><font color='green'> *</font></i>
+<a name='L18'>  18 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L19'>  19 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L20'>  20 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L21'>  21 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L22'>  22 <i><font color='green'> *</font></i>
+<a name='L23'>  23 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L24'>  24 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L25'>  25 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L26'>  26 <i><font color='green'> */</font></i>
+<a name='L27'>  27 
+<a name='L28'>  28 <font color='darkred'>#ifndef</font> <a href='../S/370.html#L29' title='Defined at 29 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/camel-persistentdata.h.'>__CAMEL_PERSISTENTDATA_H__</a>
+<a name='L29'>  29 <font color='darkred'>#define</font> <a href='../S/370.html#L28' title='Refered from 28 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/camel-persistentdata.h.'>__CAMEL_PERSISTENTDATA_H__</a>
+<a name='L30'>  30 
+<a name='L31'>  31 <font color='darkred'>#include</font> &lt;<a href='446.html'>epan/packet.h</a>&gt;
+<a name='L32'>  32 <font color='darkred'>#include</font> &lt;<a href='360.html'>epan/conversation.h</a>&gt;
+<a name='L33'>  33 <font color='darkred'>#include</font> &lt;epan/dissectors/packet-camel.h&gt;
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='358.html'>epan/tcap-persistentdata.h</a>&gt;
+<a name='L35'>  35 
+<a name='L36'>  36 <font color='darkred'>#ifdef</font> <a href='../Y/1158.html' title='Multiple used in 106 places.'>__cplusplus</a>
+<a name='L37'>  37 <b>extern</b> "C" <font color='red'>{</font>
+<a name='L38'>  38 <font color='darkred'>#endif</font> <i><font color='green'>/* __cplusplus */</font></i>
+<a name='L39'>  39 
+<a name='L40'>  40 <font color='darkred'>#define</font> <a href='../R/950.html' title='Multiple refered from 3 places.'>NB_CAMELSRT_CATEGORY</a> 9+1 <i><font color='green'>/* Number of type of message */</font></i>
+<a name='L41'>  41 <i><font color='green'>/* for example TC_BEGIN with InitalDP, and TC_CONT with RequestReportBCSMEvent</font></i>
+<a name='L42'>  42 <i><font color='green'>   is a category, we want to measure the delay between the two messages */</font></i> 
+<a name='L43'>  43 
+<a name='L44'>  44 <font color='darkred'>#define</font> CAMELSRT_SESSION 1
+<a name='L45'>  45 
+<a name='L46'>  46 <font color='darkred'>#define</font> CAMELSRT_VOICE_INITIALDP 2
+<a name='L47'>  47 <font color='darkred'>#define</font> CAMELSRT_VOICE_ACR1 3
+<a name='L48'>  48 <font color='darkred'>#define</font> CAMELSRT_VOICE_ACR2 4
+<a name='L49'>  49 <font color='darkred'>#define</font> CAMELSRT_VOICE_ACR3 5
+<a name='L50'>  50 <font color='darkred'>#define</font> CAMELSRT_VOICE_DISC 6
+<a name='L51'>  51 
+<a name='L52'>  52 <font color='darkred'>#define</font> CAMELSRT_GPRS_INITIALDP 7
+<a name='L53'>  53 <font color='darkred'>#define</font> CAMELSRT_GPRS_REPORT 8
+<a name='L54'>  54 
+<a name='L55'>  55 <font color='darkred'>#define</font> CAMELSRT_SMS_INITIALDP 9
+<a name='L56'>  56 
+<a name='L57'>  57 <a href='../S/588.html#L318' title='Defined at 318 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/config.h.'>WS_VAR_IMPORT</a> <b>const</b> <a href='../S/375.html#L35' title='Defined at 35 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/value_string.h.'>value_string</a>  camelSRTtype_naming[];
+<a name='L58'>  58 
+<a name='L59'>  59 <i><font color='green'>/* If we have a request message and its response,</font></i>
+<a name='L60'>  60 <i><font color='green'>   (eg: ApplyCharging, ApplyChargingReport)</font></i>
+<a name='L61'>  61 <i><font color='green'>   the frames numbers are stored in this structure */</font></i> 
+<a name='L62'>  62 
+<a name='L63'>  63 <b>struct</b> <a href='../S/370.html#L78' title='Refered from 78 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/camel-persistentdata.h.'>camelsrt_category_t</a> <font color='red'>{</font>
+<a name='L64'>  64   <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/6395.html' title='Multiple used in 2 places.'>req_num</a>;      <i><font color='green'>/* frame number request seen */</font></i>
+<a name='L65'>  65   <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/6485.html' title='Multiple used in 2 places.'>rsp_num</a>;      <i><font color='green'>/* frame number response seen */</font></i>
+<a name='L66'>  66   <a href='../S/438.html#L35' title='Defined at 35 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/nstime.h.'>nstime_t</a> <a href='../Y/6397.html' title='Multiple used in 3 places.'>req_time</a>;    <i><font color='green'>/* arrival time of request */</font></i>
+<a name='L67'>  67   <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/6426.html' title='Multiple used in 3 places.'>responded</a>;   <i><font color='green'>/* true, if request has been responded */</font></i>
+<a name='L68'>  68 <font color='red'>}</font>;
+<a name='L69'>  69 
+<a name='L70'>  70 <i><font color='green'>/* List of stored parameters for a Camel dialogue</font></i>
+<a name='L71'>  71 <i><font color='green'>   All this parameters are linked to the hash table key below (use of Tid)</font></i>
+<a name='L72'>  72 <i><font color='green'>   In case of same Tid reused, the Camel parameters are chained.</font></i>
+<a name='L73'>  73 <i><font color='green'>   The right dialogue will be identified with the arrival time of the InitialDP */</font></i>
+<a name='L74'>  74 
+<a name='L75'>  75 <b>struct</b> camelsrt_call_t <font color='red'>{</font>
+<a name='L76'>  76   <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/6681.html' title='Multiple used in 3 places.'>session_id</a>;    <i><font color='green'>/* Identify the session, with an internal number */</font></i>
+<a name='L77'>  77   <b>struct</b> <a href='../S/358.html#L36' title='Defined at 36 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tcap-persistentdata.h.'>tcaphash_context_t</a> * <a href='../Y/7266.html' title='Multiple used in 2 places.'>tcap_context</a>;
+<a name='L78'>  78   <b>struct</b> <a href='../S/370.html#L63' title='Defined at 63 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/camel-persistentdata.h.'>camelsrt_category_t</a> <a href='../Y/1817.html' title='Multiple used in 12 places.'>category</a>[<a href='../S/370.html#L40' title='Defined at 40 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/camel-persistentdata.h.'>NB_CAMELSRT_CATEGORY</a>];
+<a name='L79'>  79 <font color='red'>}</font>;
+<a name='L80'>  80 
+<a name='L81'>  81 
+<a name='L82'>  82 <i><font color='green'>/* The Key for the hash table is the TCAP origine transaction identifier </font></i>
+<a name='L83'>  83 <i><font color='green'>   of the TC_BEGIN containing the InitialDP */</font></i>
+<a name='L84'>  84 
+<a name='L85'>  85 <b>struct</b> camelsrt_call_info_key_t <font color='red'>{</font>
+<a name='L86'>  86   <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> SessionIdKey;
+<a name='L87'>  87 <font color='red'>}</font>;
+<a name='L88'>  88 
+<a name='L89'>  89 <i><font color='green'>/* Info for a couple of messages (or category)</font></i>
+<a name='L90'>  90 <i><font color='green'>   The request must be available, not duplicated, </font></i>
+<a name='L91'>  91 <i><font color='green'>   and once the corresponding response received, </font></i>
+<a name='L92'>  92 <i><font color='green'>   we can deduce the Delta Time between Request/response */</font></i>
+<a name='L93'>  93 
+<a name='L94'>  94 <b>struct</b> <a href='../S/370.html#L109' title='Refered from 109 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/camel-persistentdata.h.'>camelsrt_msginfo_t</a> <font color='red'>{</font>
+<a name='L95'>  95   <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> request_available;
+<a name='L96'>  96   <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> is_duplicate;
+<a name='L97'>  97   <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> is_delta_time;
+<a name='L98'>  98   <a href='../S/438.html#L35' title='Defined at 35 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/nstime.h.'>nstime_t</a> <a href='../Y/6397.html' title='Multiple used in 3 places.'>req_time</a>;
+<a name='L99'>  99   <a href='../S/438.html#L35' title='Defined at 35 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/nstime.h.'>nstime_t</a> delta_time;
+<a name='L100'> 100 <font color='red'>}</font>;
+<a name='L101'> 101 
+<a name='L102'> 102 <i><font color='green'>/* List of infos to store for the analyse */</font></i>
+<a name='L103'> 103 
+<a name='L104'> 104 <b>struct</b> <a href='../R/2312.html' title='Multiple refered from 2 places.'>camelsrt_info_t</a> <font color='red'>{</font> 
+<a name='L105'> 105   <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/7267.html' title='Multiple used in 2 places.'>tcap_session_id</a>;
+<a name='L106'> 106   <b>void</b> * <a href='../Y/7266.html' title='Multiple used in 2 places.'>tcap_context</a>;
+<a name='L107'> 107   <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> <a href='../Y/5463.html' title='Multiple used in 18 places.'>opcode</a>; <i><font color='green'>/* operation code of message received */</font></i>
+<a name='L108'> 108   <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> bool_msginfo[<a href='../S/370.html#L40' title='Defined at 40 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/camel-persistentdata.h.'>NB_CAMELSRT_CATEGORY</a>]; <i><font color='green'>/* category for the received message */</font></i>
+<a name='L109'> 109   <b>struct</b> <a href='../S/370.html#L94' title='Defined at 94 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/camel-persistentdata.h.'>camelsrt_msginfo_t</a> msginfo[<a href='../S/370.html#L40' title='Defined at 40 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/camel-persistentdata.h.'>NB_CAMELSRT_CATEGORY</a>];
+<a name='L110'> 110 <font color='red'>}</font>;
+<a name='L111'> 111 
+<a name='L112'> 112 <b>void</b> camelsrt_init_routine(<b>void</b>);
+<a name='L113'> 113 
+<a name='L114'> 114 <b>struct</b> <a href='../S/370.html#L104' title='Defined at 104 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/camel-persistentdata.h.'>camelsrt_info_t</a> * camelsrt_razinfo(<b>void</b>);
+<a name='L115'> 115 
+<a name='L116'> 116 <b>void</b> camelsrt_call_matching(<a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/7512.html' title='Multiple used in 508 places.'>tvb</a>,
+<a name='L117'> 117                             <a href='../S/441.html#L182' title='Defined at 182 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/packet_info.h.'>packet_info</a> * <a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>,
+<a name='L118'> 118                             <a href='../S/488.html#L264' title='Defined at 264 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>proto_tree</a> *<a href='../S/252.html#L280' title='Defined at 280 in cbench/openflow/tests/test-stp.c.'>tree</a>,
+<a name='L119'> 119                             <b>struct</b> <a href='../S/370.html#L104' title='Defined at 104 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/camel-persistentdata.h.'>camelsrt_info_t</a> * p_camel_info);
+<a name='L120'> 120 
+<a name='L121'> 121 <a href='../S/588.html#L318' title='Defined at 318 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/config.h.'>WS_VAR_IMPORT</a> <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> gcamel_StatSRT;
+<a name='L122'> 122 
+<a name='L123'> 123 <font color='darkred'>#ifdef</font> <a href='../Y/1158.html' title='Multiple used in 106 places.'>__cplusplus</a>
+<a name='L124'> 124 <font color='red'>}</font>
+<a name='L125'> 125 <font color='darkred'>#endif</font> <i><font color='green'>/* __cplusplus */</font></i>
+<a name='L126'> 126 
+<a name='L127'> 127 <font color='darkred'>#endif</font> <i><font color='green'>/* camel-persistentdata.h */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

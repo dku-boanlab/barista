@@ -1,0 +1,1143 @@
+<html>
+<head>
+<title>cbench/openflow/lib/netlink.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/netlink.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L100'>[^]</a><a href='#L1064'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L100' title='Defined at 100.'>nl_sock_create</a>
+<li><a href='#L204' title='Defined at 204.'>nl_sock_destroy</a>
+<li><a href='#L221' title='Defined at 221.'>nl_sock_send</a>
+<li><a href='#L243' title='Defined at 243.'>nl_sock_sendv</a>
+<li><a href='#L272' title='Defined at 272.'>nl_sock_recv</a>
+<li><a href='#L379' title='Defined at 379.'>nl_sock_transact</a>
+<li><a href='#L432' title='Defined at 432.'>nl_sock_wait</a>
+<li><a href='#L443' title='Defined at 443.'>nl_msg_nlmsghdr</a>
+<li><a href='#L453' title='Defined at 453.'>nl_msg_genlmsghdr</a>
+<li><a href='#L464' title='Defined at 464.'>nl_msg_nlmsgerr</a>
+<li><a href='#L487' title='Defined at 487.'>nl_msg_reserve</a>
+<li><a href='#L509' title='Defined at 509.'>nl_msg_put_nlmsghdr</a>
+<li><a href='#L545' title='Defined at 545.'>nl_msg_put_genlmsghdr</a>
+<li><a href='#L564' title='Defined at 564.'>nl_msg_put</a>
+<li><a href='#L573' title='Defined at 573.'>nl_msg_put_uninit</a>
+<li><a href='#L588' title='Defined at 588.'>nl_msg_put_unspec_uninit</a>
+<li><a href='#L603' title='Defined at 603.'>nl_msg_put_unspec</a>
+<li><a href='#L613' title='Defined at 613.'>nl_msg_put_flag</a>
+<li><a href='#L621' title='Defined at 621.'>nl_msg_put_u8</a>
+<li><a href='#L629' title='Defined at 629.'>nl_msg_put_u16</a>
+<li><a href='#L637' title='Defined at 637.'>nl_msg_put_u32</a>
+<li><a href='#L645' title='Defined at 645.'>nl_msg_put_u64</a>
+<li><a href='#L653' title='Defined at 653.'>nl_msg_put_string</a>
+<li><a href='#L662' title='Defined at 662.'>nl_msg_put_nested</a>
+<li><a href='#L671' title='Defined at 671.'>nl_attr_get</a>
+<li><a href='#L679' title='Defined at 679.'>nl_attr_get_size</a>
+<li><a href='#L688' title='Defined at 688.'>nl_attr_get_unspec</a>
+<li><a href='#L697' title='Defined at 697.'>nl_attr_get_flag</a>
+<li><a href='#L709' title='Defined at 709.'>nl_attr_get_u8</a>
+<li><a href='#L718' title='Defined at 718.'>nl_attr_get_u16</a>
+<li><a href='#L727' title='Defined at 727.'>nl_attr_get_u32</a>
+<li><a href='#L736' title='Defined at 736.'>nl_attr_get_u64</a>
+<li><a href='#L745' title='Defined at 745.'>nl_attr_get_string</a>
+<li><a href='#L772' title='Defined at 772.'>nl_policy_parse</a>
+<li><a href='#L870' title='Defined at 870.'>do_lookup_genl_family</a>
+<li><a href='#L914' title='Defined at 914.'>nl_lookup_genl_family</a>
+<li><a href='#L947' title='Defined at 947.'>alloc_pid</a>
+<li><a href='#L964' title='Defined at 964.'>free_pid</a>
+<li><a href='#L972' title='Defined at 972.'>nlmsghdr_to_string</a>
+<li><a href='#L1024' title='Defined at 1024.'>nlmsg_to_string</a>
+<li><a href='#L1064' title='Defined at 1064.'>log_nlmsg</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008, 2009 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> * </font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> * </font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> * </font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> * </font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> "<a href='../I/128.html'>netlink.h</a>"
+<a name='L36'>  36 <font color='darkred'>#include</font> &lt;assert.h&gt;
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;errno.h&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;inttypes.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> &lt;stdio.h&gt;
+<a name='L40'>  40 <font color='darkred'>#include</font> &lt;stdlib.h&gt;
+<a name='L41'>  41 <font color='darkred'>#include</font> &lt;string.h&gt;
+<a name='L42'>  42 <font color='darkred'>#include</font> &lt;time.h&gt;
+<a name='L43'>  43 <font color='darkred'>#include</font> &lt;unistd.h&gt;
+<a name='L44'>  44 <font color='darkred'>#include</font> "<a href='908.html'>dynamic-string.h</a>"
+<a name='L45'>  45 <font color='darkred'>#include</font> "<a href='867.html'>netlink-protocol.h</a>"
+<a name='L46'>  46 <font color='darkred'>#include</font> "<a href='865.html'>ofpbuf.h</a>"
+<a name='L47'>  47 <font color='darkred'>#include</font> "<a href='901.html'>poll-loop.h</a>"
+<a name='L48'>  48 <font color='darkred'>#include</font> "<a href='812.html'>timeval.h</a>"
+<a name='L49'>  49 <font color='darkred'>#include</font> "<a href='../I/69.html'>util.h</a>"
+<a name='L50'>  50 
+<a name='L51'>  51 <font color='darkred'>#include</font> "<a href='859.html'>vlog.h</a>"
+<a name='L52'>  52 <font color='darkred'>#define</font> <a href='../R/1643.html' title='Multiple refered from 13 places.'>THIS_MODULE</a> VLM_netlink
+<a name='L53'>  53 
+<a name='L54'>  54 <i><font color='green'>/* Linux header file confusion causes this to be undefined. */</font></i>
+<a name='L55'>  55 <font color='darkred'>#ifndef</font> <a href='../S/826.html#L56' title='Defined at 56 in cbench/openflow/lib/netlink.c.'>SOL_NETLINK</a>
+<a name='L56'>  56 <font color='darkred'>#define</font> <a href='../R/1569.html' title='Multiple refered from 2 places.'>SOL_NETLINK</a> 270
+<a name='L57'>  57 <font color='darkred'>#endif</font>
+<a name='L58'>  58 
+<a name='L59'>  59 <i><font color='green'>/* A single (bad) Netlink message can in theory dump out many, many log</font></i>
+<a name='L60'>  60 <i><font color='green'> * messages, so the burst size is set quite high here to avoid missing useful</font></i>
+<a name='L61'>  61 <i><font color='green'> * information.  Also, at high logging levels we log *all* Netlink messages. */</font></i>
+<a name='L62'>  62 <b>static</b> <b>struct</b> <a href='../D/10099.html' title='Multiple defined in 2 places.'>vlog_rate_limit</a> <a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a> = <a href='../S/859.html#L107' title='Defined at 107 in cbench/openflow/lib/vlog.h.'>VLOG_RATE_LIMIT_INIT</a>(60, 600);
+<a name='L63'>  63 
+<a name='L64'>  64 <b>static</b> <b>void</b> <a href='../S/826.html#L1064' title='Defined at 1064 in cbench/openflow/lib/netlink.c.'>log_nlmsg</a>(<b>const</b> <b>char</b> *<a href='../Y/3277.html' title='Multiple used in 38 places.'>function</a>, <b>int</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>,
+<a name='L65'>  65                       <b>const</b> <b>void</b> *<a href='../Y/4426.html' title='Multiple used in 32 places.'>message</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L66'>  66 
+<a name='L67'>  67 <i><font color='green'>/* Netlink sockets. */</font></i>
+<a name='L68'>  68 
+<a name='L69'>  69 <b>struct</b> <a href='../R/3740.html' title='Multiple refered from 8 places.'>nl_sock</a>
+<a name='L70'>  70 <font color='red'>{</font>
+<a name='L71'>  71     <b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>;
+<a name='L72'>  72     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>;
+<a name='L73'>  73 <font color='red'>}</font>;
+<a name='L74'>  74 
+<a name='L75'>  75 <i><font color='green'>/* Next nlmsghdr sequence number.</font></i>
+<a name='L76'>  76 <i><font color='green'> * </font></i>
+<a name='L77'>  77 <i><font color='green'> * This implementation uses sequence numbers that are unique process-wide, to</font></i>
+<a name='L78'>  78 <i><font color='green'> * avoid a hypothetical race: send request, close socket, open new socket that</font></i>
+<a name='L79'>  79 <i><font color='green'> * reuses the old socket's PID value, send request on new socket, receive reply</font></i>
+<a name='L80'>  80 <i><font color='green'> * from kernel to old socket but with same PID and sequence number.  (This race</font></i>
+<a name='L81'>  81 <i><font color='green'> * could be avoided other ways, e.g. by preventing PIDs from being quickly</font></i>
+<a name='L82'>  82 <i><font color='green'> * reused). */</font></i>
+<a name='L83'>  83 <b>static</b> <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/4816.html' title='Multiple used in 4 places.'>next_seq</a>;
+<a name='L84'>  84 
+<a name='L85'>  85 <b>static</b> <b>int</b> <a href='../S/826.html#L947' title='Defined at 947 in cbench/openflow/lib/netlink.c.'>alloc_pid</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> *);
+<a name='L86'>  86 <b>static</b> <b>void</b> <a href='../S/826.html#L964' title='Defined at 964 in cbench/openflow/lib/netlink.c.'>free_pid</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a>);
+<a name='L87'>  87 
+<a name='L88'>  88 <i><font color='green'>/* Creates a new netlink socket for the given netlink 'protocol'</font></i>
+<a name='L89'>  89 <i><font color='green'> * (NETLINK_ROUTE, NETLINK_GENERIC, ...).  Returns 0 and sets '*sockp' to the</font></i>
+<a name='L90'>  90 <i><font color='green'> * new socket if successful, otherwise returns a positive errno value.</font></i>
+<a name='L91'>  91 <i><font color='green'> *</font></i>
+<a name='L92'>  92 <i><font color='green'> * If 'multicast_group' is nonzero, the new socket subscribes to the specified</font></i>
+<a name='L93'>  93 <i><font color='green'> * netlink multicast group.  (A netlink socket may listen to an arbitrary</font></i>
+<a name='L94'>  94 <i><font color='green'> * number of multicast groups, but so far we only need one at a time.)</font></i>
+<a name='L95'>  95 <i><font color='green'> *</font></i>
+<a name='L96'>  96 <i><font color='green'> * Nonzero 'so_sndbuf' or 'so_rcvbuf' override the kernel default send or</font></i>
+<a name='L97'>  97 <i><font color='green'> * receive buffer size, respectively.</font></i>
+<a name='L98'>  98 <i><font color='green'> */</font></i>
+<a name='L99'>  99 <b>int</b>
+<a name='L100'> 100 <a href='../R/3741.html' title='Multiple refered from 5 places.'>nl_sock_create</a>(<b>int</b> <a href='../Y/6104.html' title='Multiple used in 3 places.'>protocol</a>, <b>int</b> <a href='../Y/4542.html' title='Multiple used in 15 places.'>multicast_group</a>,
+<a name='L101'> 101                <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6893.html' title='Multiple used in 5 places.'>so_sndbuf</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6892.html' title='Multiple used in 5 places.'>so_rcvbuf</a>, <b>struct</b> <a href='../Y/4883.html' title='Multiple used in 18 places.'>nl_sock</a> **<a href='../Y/6905.html' title='Multiple used in 3 places.'>sockp</a>)
+<a name='L102'> 102 <font color='red'>{</font>
+<a name='L103'> 103     <b>struct</b> <a href='../S/826.html#L69' title='Defined at 69 in cbench/openflow/lib/netlink.c.'>nl_sock</a> *<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>;
+<a name='L104'> 104     <b>struct</b> <a href='../S/867.html#L48' title='Defined at 48 in cbench/openflow/lib/netlink-protocol.h.'>sockaddr_nl</a> <a href='../Y/4190.html' title='Multiple used in 19 places.'>local</a>, <a href='../S/204.html#L165' title='Defined at 165 in cbench/openflow/udatapath/datapath.c.'>remote</a>;
+<a name='L105'> 105     <b>int</b> <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = 0;
+<a name='L106'> 106 
+<a name='L107'> 107     <b>if</b> (<a href='../Y/4816.html' title='Multiple used in 4 places.'>next_seq</a> == 0) <font color='red'>{</font>
+<a name='L108'> 108         <i><font color='green'>/* Pick initial sequence number. */</font></i>
+<a name='L109'> 109         <a href='../Y/4816.html' title='Multiple used in 4 places.'>next_seq</a> = <a href='../Y/3426.html' title='Multiple used in 12 places.'>getpid</a>() ^ <a href='../S/902.html#L108' title='Defined at 108 in cbench/openflow/lib/timeval.c.'>time_now</a>();
+<a name='L110'> 110     <font color='red'>}</font>
+<a name='L111'> 111 
+<a name='L112'> 112     *<a href='../Y/6905.html' title='Multiple used in 3 places.'>sockp</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L113'> 113     <a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a> = <a href='../Y/4326.html' title='Multiple used in 68 places.'>malloc</a>(<b>sizeof</b> *<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>);
+<a name='L114'> 114     <b>if</b> (<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L115'> 115         <b>return</b> <a href='../Y/276.html' title='Multiple used in 35 places.'>ENOMEM</a>;
+<a name='L116'> 116     <font color='red'>}</font>
+<a name='L117'> 117 
+<a name='L118'> 118     <a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a> = <a href='../Y/6901.html' title='Multiple used in 21 places.'>socket</a>(<a href='../Y/19.html' title='Multiple used in 3 places.'>AF_NETLINK</a>, <a href='../Y/829.html' title='Multiple used in 4 places.'>SOCK_RAW</a>, <a href='../S/333.html#L918' title='Defined at 918 in cbench/openflow/utilities/dpctl.c.'>protocol</a>);
+<a name='L119'> 119     <b>if</b> (<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a> &lt; 0) <font color='red'>{</font>
+<a name='L120'> 120         <a href='../S/859.html#L150' title='Defined at 150 in cbench/openflow/lib/vlog.h.'>VLOG_ERR</a>("fcntl: %s", <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>));
+<a name='L121'> 121         <b>goto</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L122'> 122     <font color='red'>}</font>
+<a name='L123'> 123 
+<a name='L124'> 124     <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../S/826.html#L947' title='Defined at 947 in cbench/openflow/lib/netlink.c.'>alloc_pid</a>(&amp;<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>);
+<a name='L125'> 125     <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>) <font color='red'>{</font>
+<a name='L126'> 126         <b>goto</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L127'> 127     <font color='red'>}</font>
+<a name='L128'> 128 
+<a name='L129'> 129     <b>if</b> (<a href='../Y/6893.html' title='Multiple used in 5 places.'>so_sndbuf</a> != 0
+<a name='L130'> 130         &amp;&amp; <a href='../Y/6713.html' title='Multiple used in 17 places.'>setsockopt</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/831.html' title='Multiple used in 17 places.'>SOL_SOCKET</a>, SO_SNDBUF,
+<a name='L131'> 131                       &amp;<a href='../Y/6893.html' title='Multiple used in 5 places.'>so_sndbuf</a>, <b>sizeof</b> <a href='../Y/6893.html' title='Multiple used in 5 places.'>so_sndbuf</a>) &lt; 0) <font color='red'>{</font>
+<a name='L132'> 132         <a href='../S/859.html#L150' title='Defined at 150 in cbench/openflow/lib/vlog.h.'>VLOG_ERR</a>("setsockopt(SO_SNDBUF,%zu): %s", <a href='../Y/6893.html' title='Multiple used in 5 places.'>so_sndbuf</a>, <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>));
+<a name='L133'> 133         <b>goto</b> <a href='../Y/2768.html' title='Multiple used in 6 places.'>error_free_pid</a>;
+<a name='L134'> 134     <font color='red'>}</font>
+<a name='L135'> 135 
+<a name='L136'> 136     <b>if</b> (<a href='../Y/6892.html' title='Multiple used in 5 places.'>so_rcvbuf</a> != 0
+<a name='L137'> 137         &amp;&amp; <a href='../Y/6713.html' title='Multiple used in 17 places.'>setsockopt</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/831.html' title='Multiple used in 17 places.'>SOL_SOCKET</a>, <a href='../Y/839.html' title='Multiple used in 2 places.'>SO_RCVBUF</a>,
+<a name='L138'> 138                       &amp;<a href='../Y/6892.html' title='Multiple used in 5 places.'>so_rcvbuf</a>, <b>sizeof</b> <a href='../Y/6892.html' title='Multiple used in 5 places.'>so_rcvbuf</a>) &lt; 0) <font color='red'>{</font>
+<a name='L139'> 139         <a href='../S/859.html#L150' title='Defined at 150 in cbench/openflow/lib/vlog.h.'>VLOG_ERR</a>("setsockopt(SO_RCVBUF,%zu): %s", <a href='../Y/6892.html' title='Multiple used in 5 places.'>so_rcvbuf</a>, <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>));
+<a name='L140'> 140         <b>goto</b> <a href='../Y/2768.html' title='Multiple used in 6 places.'>error_free_pid</a>;
+<a name='L141'> 141     <font color='red'>}</font>
+<a name='L142'> 142 
+<a name='L143'> 143     <i><font color='green'>/* Bind local address as our selected pid. */</font></i>
+<a name='L144'> 144     <a href='../Y/4419.html' title='Multiple used in 245 places.'>memset</a>(&amp;<a href='../Y/4190.html' title='Multiple used in 19 places.'>local</a>, 0, <b>sizeof</b> <a href='../Y/4190.html' title='Multiple used in 19 places.'>local</a>);
+<a name='L145'> 145     <a href='../Y/4190.html' title='Multiple used in 19 places.'>local</a>.<a href='../Y/4877.html' title='Multiple used in 3 places.'>nl_family</a> = <a href='../Y/19.html' title='Multiple used in 3 places.'>AF_NETLINK</a>;
+<a name='L146'> 146     <a href='../Y/4190.html' title='Multiple used in 19 places.'>local</a>.<a href='../Y/4881.html' title='Multiple used in 3 places.'>nl_pid</a> = <a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>;
+<a name='L147'> 147     <b>if</b> (<a href='../Y/4542.html' title='Multiple used in 15 places.'>multicast_group</a> &gt; 0 &amp;&amp; <a href='../Y/4542.html' title='Multiple used in 15 places.'>multicast_group</a> &lt;= 32) <font color='red'>{</font>
+<a name='L148'> 148         <i><font color='green'>/* This method of joining multicast groups is supported by old kernels,</font></i>
+<a name='L149'> 149 <i><font color='green'>         * but it only allows 32 multicast groups per protocol. */</font></i>
+<a name='L150'> 150         <a href='../Y/4190.html' title='Multiple used in 19 places.'>local</a>.<a href='../Y/4878.html' title='Multiple used in 2 places.'>nl_groups</a> |= 1ul &lt;&lt; (<a href='../Y/4542.html' title='Multiple used in 15 places.'>multicast_group</a> - 1);
+<a name='L151'> 151     <font color='red'>}</font>
+<a name='L152'> 152     <b>if</b> (<a href='../Y/1622.html' title='Multiple used in 14 places.'>bind</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, (<b>struct</b> <a href='../Y/6895.html' title='Multiple used in 43 places.'>sockaddr</a> *) &amp;<a href='../Y/4190.html' title='Multiple used in 19 places.'>local</a>, <b>sizeof</b> <a href='../Y/4190.html' title='Multiple used in 19 places.'>local</a>) &lt; 0) <font color='red'>{</font>
+<a name='L153'> 153         <a href='../S/859.html#L150' title='Defined at 150 in cbench/openflow/lib/vlog.h.'>VLOG_ERR</a>("bind(%"<a href='../Y/698.html' title='Multiple used in 15 places.'>PRIu32</a>"): %s", <a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>, <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>));
+<a name='L154'> 154         <b>goto</b> <a href='../Y/2768.html' title='Multiple used in 6 places.'>error_free_pid</a>;
+<a name='L155'> 155     <font color='red'>}</font>
+<a name='L156'> 156 
+<a name='L157'> 157     <i><font color='green'>/* Bind remote address as the kernel (pid 0). */</font></i>
+<a name='L158'> 158     <a href='../Y/4419.html' title='Multiple used in 245 places.'>memset</a>(&amp;<a href='../S/204.html#L165' title='Defined at 165 in cbench/openflow/udatapath/datapath.c.'>remote</a>, 0, <b>sizeof</b> <a href='../S/204.html#L165' title='Defined at 165 in cbench/openflow/udatapath/datapath.c.'>remote</a>);
+<a name='L159'> 159     <a href='../S/204.html#L165' title='Defined at 165 in cbench/openflow/udatapath/datapath.c.'>remote</a>.<a href='../Y/4877.html' title='Multiple used in 3 places.'>nl_family</a> = <a href='../Y/19.html' title='Multiple used in 3 places.'>AF_NETLINK</a>;
+<a name='L160'> 160     <a href='../S/204.html#L165' title='Defined at 165 in cbench/openflow/udatapath/datapath.c.'>remote</a>.<a href='../Y/4881.html' title='Multiple used in 3 places.'>nl_pid</a> = 0;
+<a name='L161'> 161     <b>if</b> (<a href='../Y/2093.html' title='Multiple used in 10 places.'>connect</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, (<b>struct</b> <a href='../Y/6895.html' title='Multiple used in 43 places.'>sockaddr</a> *) &amp;<a href='../S/204.html#L165' title='Defined at 165 in cbench/openflow/udatapath/datapath.c.'>remote</a>, <b>sizeof</b> <a href='../S/204.html#L165' title='Defined at 165 in cbench/openflow/udatapath/datapath.c.'>remote</a>) &lt; 0) <font color='red'>{</font>
+<a name='L162'> 162         <a href='../S/859.html#L150' title='Defined at 150 in cbench/openflow/lib/vlog.h.'>VLOG_ERR</a>("connect(0): %s", <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>));
+<a name='L163'> 163         <b>goto</b> <a href='../Y/2768.html' title='Multiple used in 6 places.'>error_free_pid</a>;
+<a name='L164'> 164     <font color='red'>}</font>
+<a name='L165'> 165 
+<a name='L166'> 166     <i><font color='green'>/* Older kernel headers failed to define this macro.  We want our programs</font></i>
+<a name='L167'> 167 <i><font color='green'>     * to support the newer kernel features even if compiled with older</font></i>
+<a name='L168'> 168 <i><font color='green'>     * headers, so define it ourselves in such a case. */</font></i>
+<a name='L169'> 169 <font color='darkred'>#ifndef</font> <a href='../D/2931.html' title='Multiple defined in 2 places.'>NETLINK_ADD_MEMBERSHIP</a>
+<a name='L170'> 170 <font color='darkred'>#define</font> <a href='../R/964.html' title='Multiple refered from 2 places.'>NETLINK_ADD_MEMBERSHIP</a> 1
+<a name='L171'> 171 <font color='darkred'>#endif</font>
+<a name='L172'> 172 
+<a name='L173'> 173     <i><font color='green'>/* This method of joining multicast groups is only supported by newish</font></i>
+<a name='L174'> 174 <i><font color='green'>     * kernels, but it allows for an arbitrary number of multicast groups. */</font></i>
+<a name='L175'> 175     <b>if</b> (<a href='../Y/4542.html' title='Multiple used in 15 places.'>multicast_group</a> &gt; 32
+<a name='L176'> 176         &amp;&amp; <a href='../Y/6713.html' title='Multiple used in 17 places.'>setsockopt</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../S/826.html#L56' title='Defined at 56 in cbench/openflow/lib/netlink.c.'>SOL_NETLINK</a>, <a href='../D/2931.html' title='Multiple defined in 2 places.'>NETLINK_ADD_MEMBERSHIP</a>,
+<a name='L177'> 177                       &amp;<a href='../Y/4542.html' title='Multiple used in 15 places.'>multicast_group</a>, <b>sizeof</b> <a href='../Y/4542.html' title='Multiple used in 15 places.'>multicast_group</a>) &lt; 0) <font color='red'>{</font>
+<a name='L178'> 178         <a href='../S/859.html#L150' title='Defined at 150 in cbench/openflow/lib/vlog.h.'>VLOG_ERR</a>("setsockopt(NETLINK_ADD_MEMBERSHIP,%d): %s",
+<a name='L179'> 179                  <a href='../Y/4542.html' title='Multiple used in 15 places.'>multicast_group</a>, <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>));
+<a name='L180'> 180         <b>goto</b> <a href='../Y/2768.html' title='Multiple used in 6 places.'>error_free_pid</a>;
+<a name='L181'> 181     <font color='red'>}</font>
+<a name='L182'> 182 
+<a name='L183'> 183     *<a href='../Y/6905.html' title='Multiple used in 3 places.'>sockp</a> = <a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>;
+<a name='L184'> 184     <b>return</b> 0;
+<a name='L185'> 185 
+<a name='L186'> 186 <a href='../Y/2768.html' title='Multiple used in 6 places.'>error_free_pid</a>:
+<a name='L187'> 187     <a href='../S/826.html#L964' title='Defined at 964 in cbench/openflow/lib/netlink.c.'>free_pid</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>);
+<a name='L188'> 188 <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>:
+<a name='L189'> 189     <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> == 0) <font color='red'>{</font>
+<a name='L190'> 190         <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>;
+<a name='L191'> 191         <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> == 0) <font color='red'>{</font>
+<a name='L192'> 192             <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../Y/267.html' title='Multiple used in 50 places.'>EINVAL</a>;
+<a name='L193'> 193         <font color='red'>}</font>
+<a name='L194'> 194     <font color='red'>}</font>
+<a name='L195'> 195     <b>if</b> (<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a> &gt;= 0) <font color='red'>{</font>
+<a name='L196'> 196         <a href='../Y/1918.html' title='Multiple used in 102 places.'>close</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>);
+<a name='L197'> 197     <font color='red'>}</font>
+<a name='L198'> 198     <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>);
+<a name='L199'> 199     <b>return</b> <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>;
+<a name='L200'> 200 <font color='red'>}</font>
+<a name='L201'> 201 
+<a name='L202'> 202 <i><font color='green'>/* Destroys netlink socket 'sock'. */</font></i>
+<a name='L203'> 203 <b>void</b>
+<a name='L204'> 204 <a href='../R/3742.html' title='Multiple refered from 9 places.'>nl_sock_destroy</a>(<b>struct</b> <a href='../Y/4883.html' title='Multiple used in 18 places.'>nl_sock</a> *<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>) 
+<a name='L205'> 205 <font color='red'>{</font>
+<a name='L206'> 206     <b>if</b> (<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>) <font color='red'>{</font>
+<a name='L207'> 207         <a href='../Y/1918.html' title='Multiple used in 102 places.'>close</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>);
+<a name='L208'> 208         <a href='../S/826.html#L964' title='Defined at 964 in cbench/openflow/lib/netlink.c.'>free_pid</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>);
+<a name='L209'> 209         <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>);
+<a name='L210'> 210     <font color='red'>}</font>
+<a name='L211'> 211 <font color='red'>}</font>
+<a name='L212'> 212 
+<a name='L213'> 213 <i><font color='green'>/* Tries to send 'msg', which must contain a Netlink message, to the kernel on</font></i>
+<a name='L214'> 214 <i><font color='green'> * 'sock'.  nlmsg_len in 'msg' will be finalized to match msg-&gt;size before the</font></i>
+<a name='L215'> 215 <i><font color='green'> * message is sent.</font></i>
+<a name='L216'> 216 <i><font color='green'> *</font></i>
+<a name='L217'> 217 <i><font color='green'> * Returns 0 if successful, otherwise a positive errno value.  If</font></i>
+<a name='L218'> 218 <i><font color='green'> * 'wait' is true, then the send will wait until buffer space is ready;</font></i>
+<a name='L219'> 219 <i><font color='green'> * otherwise, returns EAGAIN if the 'sock' send buffer is full. */</font></i>
+<a name='L220'> 220 <b>int</b>
+<a name='L221'> 221 <a href='../R/3744.html' title='Multiple refered from 2 places.'>nl_sock_send</a>(<b>struct</b> <a href='../Y/4883.html' title='Multiple used in 18 places.'>nl_sock</a> *<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>, <b>const</b> <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/7837.html' title='Multiple used in 31 places.'>wait</a>) 
+<a name='L222'> 222 <font color='red'>{</font>
+<a name='L223'> 223     <b>int</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L224'> 224 
+<a name='L225'> 225     <a href='../S/826.html#L443' title='Defined at 443 in cbench/openflow/lib/netlink.c.'>nl_msg_nlmsghdr</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>)-&gt;<a href='../Y/4902.html' title='Multiple used in 8 places.'>nlmsg_len</a> = <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>;
+<a name='L226'> 226     <b>do</b> <font color='red'>{</font>
+<a name='L227'> 227         <b>int</b> <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>;
+<a name='L228'> 228         <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../Y/6650.html' title='Multiple used in 11 places.'>send</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>, <a href='../Y/7837.html' title='Multiple used in 31 places.'>wait</a> ? 0 : <a href='../Y/546.html' title='Multiple used in 5 places.'>MSG_DONTWAIT</a>);
+<a name='L229'> 229         <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> = <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> &lt; 0 ? <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a> : 0;
+<a name='L230'> 230     <font color='red'>}</font> <b>while</b> (<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> == <a href='../Y/266.html' title='Multiple used in 24 places.'>EINTR</a>);
+<a name='L231'> 231     <a href='../S/826.html#L1064' title='Defined at 1064 in cbench/openflow/lib/netlink.c.'>log_nlmsg</a>(<a href='../Y/1164.html' title='Multiple used in 3 places.'>__func__</a>, <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>, <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L232'> 232     <b>return</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L233'> 233 <font color='red'>}</font>
+<a name='L234'> 234 
+<a name='L235'> 235 <i><font color='green'>/* Tries to send the 'n_iov' chunks of data in 'iov' to the kernel on 'sock' as</font></i>
+<a name='L236'> 236 <i><font color='green'> * a single Netlink message.  (The message must be fully formed and not require</font></i>
+<a name='L237'> 237 <i><font color='green'> * finalization of its nlmsg_len field.)</font></i>
+<a name='L238'> 238 <i><font color='green'> *</font></i>
+<a name='L239'> 239 <i><font color='green'> * Returns 0 if successful, otherwise a positive errno value.  If 'wait' is</font></i>
+<a name='L240'> 240 <i><font color='green'> * true, then the send will wait until buffer space is ready; otherwise,</font></i>
+<a name='L241'> 241 <i><font color='green'> * returns EAGAIN if the 'sock' send buffer is full. */</font></i>
+<a name='L242'> 242 <b>int</b>
+<a name='L243'> 243 <a href='../R/3745.html' title='Multiple refered from 2 places.'>nl_sock_sendv</a>(<b>struct</b> <a href='../Y/4883.html' title='Multiple used in 18 places.'>nl_sock</a> *<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>, <b>const</b> <b>struct</b> <a href='../Y/3873.html' title='Multiple used in 7 places.'>iovec</a> <a href='../Y/3870.html' title='Multiple used in 26 places.'>iov</a>[], <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4593.html' title='Multiple used in 7 places.'>n_iov</a>,
+<a name='L244'> 244               <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/7837.html' title='Multiple used in 31 places.'>wait</a>) 
+<a name='L245'> 245 <font color='red'>{</font>
+<a name='L246'> 246     <b>struct</b> <a href='../Y/4529.html' title='Multiple used in 4 places.'>msghdr</a> <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>;
+<a name='L247'> 247     <b>int</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L248'> 248 
+<a name='L249'> 249     <a href='../Y/4419.html' title='Multiple used in 245 places.'>memset</a>(&amp;<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, 0, <b>sizeof</b> <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>);
+<a name='L250'> 250     <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/4522.html' title='Multiple used in 4 places.'>msg_iov</a> = (<b>struct</b> <a href='../Y/3873.html' title='Multiple used in 7 places.'>iovec</a> *) <a href='../Y/3870.html' title='Multiple used in 26 places.'>iov</a>;
+<a name='L251'> 251     <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/4523.html' title='Multiple used in 4 places.'>msg_iovlen</a> = <a href='../Y/4593.html' title='Multiple used in 7 places.'>n_iov</a>;
+<a name='L252'> 252     <b>do</b> <font color='red'>{</font>
+<a name='L253'> 253         <b>int</b> <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>;
+<a name='L254'> 254         <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../Y/6662.html' title='Multiple used in 2 places.'>sendmsg</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, &amp;<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7837.html' title='Multiple used in 31 places.'>wait</a> ? 0 : <a href='../Y/546.html' title='Multiple used in 5 places.'>MSG_DONTWAIT</a>);
+<a name='L255'> 255         <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> = <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> &lt; 0 ? <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a> : 0;
+<a name='L256'> 256     <font color='red'>}</font> <b>while</b> (<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> == <a href='../Y/266.html' title='Multiple used in 24 places.'>EINTR</a>);
+<a name='L257'> 257     <b>if</b> (<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> != <a href='../Y/259.html' title='Multiple used in 75 places.'>EAGAIN</a>) <font color='red'>{</font>
+<a name='L258'> 258         <a href='../S/826.html#L1064' title='Defined at 1064 in cbench/openflow/lib/netlink.c.'>log_nlmsg</a>(<a href='../Y/1164.html' title='Multiple used in 3 places.'>__func__</a>, <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>, <a href='../Y/3870.html' title='Multiple used in 26 places.'>iov</a>[0].<a href='../Y/3871.html' title='Multiple used in 8 places.'>iov_base</a>, <a href='../Y/3870.html' title='Multiple used in 26 places.'>iov</a>[0].<a href='../Y/3872.html' title='Multiple used in 8 places.'>iov_len</a>);
+<a name='L259'> 259     <font color='red'>}</font>
+<a name='L260'> 260     <b>return</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L261'> 261 <font color='red'>}</font>
+<a name='L262'> 262 
+<a name='L263'> 263 <i><font color='green'>/* Tries to receive a netlink message from the kernel on 'sock'.  If</font></i>
+<a name='L264'> 264 <i><font color='green'> * successful, stores the received message into '*bufp' and returns 0.  The</font></i>
+<a name='L265'> 265 <i><font color='green'> * caller is responsible for destroying the message with ofpbuf_delete().  On</font></i>
+<a name='L266'> 266 <i><font color='green'> * failure, returns a positive errno value and stores a null pointer into</font></i>
+<a name='L267'> 267 <i><font color='green'> * '*bufp'.</font></i>
+<a name='L268'> 268 <i><font color='green'> *</font></i>
+<a name='L269'> 269 <i><font color='green'> * If 'wait' is true, nl_sock_recv waits for a message to be ready; otherwise,</font></i>
+<a name='L270'> 270 <i><font color='green'> * returns EAGAIN if the 'sock' receive buffer is empty. */</font></i>
+<a name='L271'> 271 <b>int</b>
+<a name='L272'> 272 <a href='../R/3743.html' title='Multiple refered from 4 places.'>nl_sock_recv</a>(<b>struct</b> <a href='../Y/4883.html' title='Multiple used in 18 places.'>nl_sock</a> *<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>, <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> **<a href='../Y/1714.html' title='Multiple used in 6 places.'>bufp</a>, <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/7837.html' title='Multiple used in 31 places.'>wait</a>) 
+<a name='L273'> 273 <font color='red'>{</font>
+<a name='L274'> 274     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>;
+<a name='L275'> 275     <a href='../Y/6954.html' title='Multiple used in 20 places.'>ssize_t</a> <a href='../Y/1715.html' title='Multiple used in 17 places.'>bufsize</a> = 2048;
+<a name='L276'> 276     <a href='../Y/6954.html' title='Multiple used in 20 places.'>ssize_t</a> <a href='../Y/4660.html' title='Multiple used in 19 places.'>nbytes</a>, <a href='../Y/4661.html' title='Multiple used in 4 places.'>nbytes2</a>;
+<a name='L277'> 277     <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> *<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>;
+<a name='L278'> 278     <b>struct</b> <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a> *<a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a>;
+<a name='L279'> 279     <b>struct</b> <a href='../Y/3873.html' title='Multiple used in 7 places.'>iovec</a> <a href='../Y/3870.html' title='Multiple used in 26 places.'>iov</a>;
+<a name='L280'> 280     <b>struct</b> <a href='../Y/4529.html' title='Multiple used in 4 places.'>msghdr</a> <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a> = <font color='red'>{</font>
+<a name='L281'> 281         .<a href='../Y/4524.html' title='Multiple used in 2 places.'>msg_name</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>,
+<a name='L282'> 282         .<a href='../Y/4525.html' title='Multiple used in 3 places.'>msg_namelen</a> = 0,
+<a name='L283'> 283         .<a href='../Y/4522.html' title='Multiple used in 4 places.'>msg_iov</a> = &amp;<a href='../Y/3870.html' title='Multiple used in 26 places.'>iov</a>,
+<a name='L284'> 284         .<a href='../Y/4523.html' title='Multiple used in 4 places.'>msg_iovlen</a> = 1,
+<a name='L285'> 285         .<a href='../Y/4518.html' title='Multiple used in 3 places.'>msg_control</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>,
+<a name='L286'> 286         .<a href='../Y/4519.html' title='Multiple used in 4 places.'>msg_controllen</a> = 0,
+<a name='L287'> 287         .<a href='../Y/4520.html' title='Multiple used in 2 places.'>msg_flags</a> = 0
+<a name='L288'> 288     <font color='red'>}</font>;
+<a name='L289'> 289 
+<a name='L290'> 290     <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a> = <a href='../S/887.html#L87' title='Defined at 87 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_new</a>(<a href='../Y/1715.html' title='Multiple used in 17 places.'>bufsize</a>);
+<a name='L291'> 291     *<a href='../Y/1714.html' title='Multiple used in 6 places.'>bufp</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L292'> 292 
+<a name='L293'> 293 <a href='../Y/7488.html' title='Multiple used in 2 places.'>try_again</a>:
+<a name='L294'> 294     <i><font color='green'>/* Attempt to read the message.  We don't know the size of the data</font></i>
+<a name='L295'> 295 <i><font color='green'>     * yet, so we take a guess at 2048.  If we're wrong, we keep trying</font></i>
+<a name='L296'> 296 <i><font color='green'>     * and doubling the buffer size each time. </font></i>
+<a name='L297'> 297 <i><font color='green'>     */</font></i>
+<a name='L298'> 298     <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a> = <a href='../S/887.html#L175' title='Defined at 175 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_put_uninit</a>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <a href='../Y/1715.html' title='Multiple used in 17 places.'>bufsize</a>);
+<a name='L299'> 299     <a href='../Y/3870.html' title='Multiple used in 26 places.'>iov</a>.<a href='../Y/3871.html' title='Multiple used in 8 places.'>iov_base</a> = <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a>;
+<a name='L300'> 300     <a href='../Y/3870.html' title='Multiple used in 26 places.'>iov</a>.<a href='../Y/3872.html' title='Multiple used in 8 places.'>iov_len</a> = <a href='../Y/1715.html' title='Multiple used in 17 places.'>bufsize</a>;
+<a name='L301'> 301     <b>do</b> <font color='red'>{</font>
+<a name='L302'> 302         <a href='../Y/4660.html' title='Multiple used in 19 places.'>nbytes</a> = <a href='../Y/6315.html' title='Multiple used in 3 places.'>recvmsg</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, &amp;<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, (<a href='../Y/7837.html' title='Multiple used in 31 places.'>wait</a> ? 0 : <a href='../Y/546.html' title='Multiple used in 5 places.'>MSG_DONTWAIT</a>) | MSG_PEEK); 
+<a name='L303'> 303     <font color='red'>}</font> <b>while</b> (<a href='../Y/4660.html' title='Multiple used in 19 places.'>nbytes</a> &lt; 0 &amp;&amp; <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a> == <a href='../Y/266.html' title='Multiple used in 24 places.'>EINTR</a>);
+<a name='L304'> 304     <b>if</b> (<a href='../Y/4660.html' title='Multiple used in 19 places.'>nbytes</a> &lt; 0) <font color='red'>{</font>
+<a name='L305'> 305         <a href='../S/887.html#L110' title='Defined at 110 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_delete</a>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>);
+<a name='L306'> 306         <b>return</b> <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>;
+<a name='L307'> 307     <font color='red'>}</font>
+<a name='L308'> 308     <b>if</b> (<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/4520.html' title='Multiple used in 2 places.'>msg_flags</a> &amp; <a href='../Y/548.html' title='Multiple used in 2 places.'>MSG_TRUNC</a>) <font color='red'>{</font>
+<a name='L309'> 309         <a href='../Y/1715.html' title='Multiple used in 17 places.'>bufsize</a> *= 2;
+<a name='L310'> 310         <a href='../S/887.html#L78' title='Defined at 78 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_reinit</a>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <a href='../Y/1715.html' title='Multiple used in 17 places.'>bufsize</a>);
+<a name='L311'> 311         <b>goto</b> <a href='../Y/7488.html' title='Multiple used in 2 places.'>try_again</a>;
+<a name='L312'> 312     <font color='red'>}</font>
+<a name='L313'> 313     <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> = <a href='../Y/4660.html' title='Multiple used in 19 places.'>nbytes</a>;
+<a name='L314'> 314 
+<a name='L315'> 315     <i><font color='green'>/* We successfully read the message, so recv again to clear the queue */</font></i>
+<a name='L316'> 316     <a href='../Y/3870.html' title='Multiple used in 26 places.'>iov</a>.<a href='../Y/3871.html' title='Multiple used in 8 places.'>iov_base</a> = &amp;<a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>;
+<a name='L317'> 317     <a href='../Y/3870.html' title='Multiple used in 26 places.'>iov</a>.<a href='../Y/3872.html' title='Multiple used in 8 places.'>iov_len</a> = 1;
+<a name='L318'> 318     <b>do</b> <font color='red'>{</font>
+<a name='L319'> 319         <a href='../Y/4661.html' title='Multiple used in 4 places.'>nbytes2</a> = <a href='../Y/6315.html' title='Multiple used in 3 places.'>recvmsg</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, &amp;<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/546.html' title='Multiple used in 5 places.'>MSG_DONTWAIT</a>);
+<a name='L320'> 320     <font color='red'>}</font> <b>while</b> (<a href='../Y/4661.html' title='Multiple used in 4 places.'>nbytes2</a> &lt; 0 &amp;&amp; <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a> == <a href='../Y/266.html' title='Multiple used in 24 places.'>EINTR</a>);
+<a name='L321'> 321     <b>if</b> (<a href='../Y/4661.html' title='Multiple used in 4 places.'>nbytes2</a> &lt; 0) <font color='red'>{</font>
+<a name='L322'> 322         <b>if</b> (<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a> == <a href='../Y/273.html' title='Multiple used in 24 places.'>ENOBUFS</a>) <font color='red'>{</font>
+<a name='L323'> 323             <i><font color='green'>/* The kernel is notifying us that a message it tried to send to us</font></i>
+<a name='L324'> 324 <i><font color='green'>             * was dropped.  We have to pass this along to the caller in case</font></i>
+<a name='L325'> 325 <i><font color='green'>             * it wants to retry a request.  So kill the buffer, which we can</font></i>
+<a name='L326'> 326 <i><font color='green'>             * re-read next time. */</font></i>
+<a name='L327'> 327             <a href='../S/887.html#L110' title='Defined at 110 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_delete</a>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>);
+<a name='L328'> 328             <b>return</b> <a href='../Y/273.html' title='Multiple used in 24 places.'>ENOBUFS</a>;
+<a name='L329'> 329         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L330'> 330             <a href='../S/859.html#L170' title='Defined at 170 in cbench/openflow/lib/vlog.h.'>VLOG_ERR_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "failed to remove nlmsg from socket: %s\n",
+<a name='L331'> 331                         <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>));
+<a name='L332'> 332         <font color='red'>}</font>
+<a name='L333'> 333     <font color='red'>}</font>
+<a name='L334'> 334     <b>if</b> (<a href='../Y/4660.html' title='Multiple used in 19 places.'>nbytes</a> &lt; <b>sizeof</b> *<a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a>
+<a name='L335'> 335         || <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a>-&gt;<a href='../Y/4902.html' title='Multiple used in 8 places.'>nlmsg_len</a> &lt; <b>sizeof</b> *<a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a>
+<a name='L336'> 336         || <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a>-&gt;<a href='../Y/4902.html' title='Multiple used in 8 places.'>nlmsg_len</a> &gt; <a href='../Y/4660.html' title='Multiple used in 19 places.'>nbytes</a>) <font color='red'>{</font>
+<a name='L337'> 337         <a href='../S/859.html#L170' title='Defined at 170 in cbench/openflow/lib/vlog.h.'>VLOG_ERR_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "received invalid nlmsg (%zd bytes &lt; %d)",
+<a name='L338'> 338                     <a href='../Y/1715.html' title='Multiple used in 17 places.'>bufsize</a>, <a href='../S/867.html#L86' title='Defined at 86 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_HDRLEN</a>);
+<a name='L339'> 339         <a href='../S/887.html#L110' title='Defined at 110 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_delete</a>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>);
+<a name='L340'> 340         <b>return</b> <a href='../Y/291.html' title='Multiple used in 24 places.'>EPROTO</a>;
+<a name='L341'> 341     <font color='red'>}</font>
+<a name='L342'> 342     *<a href='../Y/1714.html' title='Multiple used in 6 places.'>bufp</a> = <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>;
+<a name='L343'> 343     <a href='../S/826.html#L1064' title='Defined at 1064 in cbench/openflow/lib/netlink.c.'>log_nlmsg</a>(<a href='../Y/1164.html' title='Multiple used in 3 places.'>__func__</a>, 0, <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L344'> 344     <b>return</b> 0;
+<a name='L345'> 345 <font color='red'>}</font>
+<a name='L346'> 346 
+<a name='L347'> 347 <i><font color='green'>/* Sends 'request' to the kernel via 'sock' and waits for a response.  If</font></i>
+<a name='L348'> 348 <i><font color='green'> * successful, stores the reply into '*replyp' and returns 0.  The caller is</font></i>
+<a name='L349'> 349 <i><font color='green'> * responsible for destroying the reply with ofpbuf_delete().  On failure,</font></i>
+<a name='L350'> 350 <i><font color='green'> * returns a positive errno value and stores a null pointer into '*replyp'.</font></i>
+<a name='L351'> 351 <i><font color='green'> *</font></i>
+<a name='L352'> 352 <i><font color='green'> * Bare Netlink is an unreliable transport protocol.  This function layers</font></i>
+<a name='L353'> 353 <i><font color='green'> * reliable delivery and reply semantics on top of bare Netlink.</font></i>
+<a name='L354'> 354 <i><font color='green'> * </font></i>
+<a name='L355'> 355 <i><font color='green'> * In Netlink, sending a request to the kernel is reliable enough, because the</font></i>
+<a name='L356'> 356 <i><font color='green'> * kernel will tell us if the message cannot be queued (and we will in that</font></i>
+<a name='L357'> 357 <i><font color='green'> * case put it on the transmit queue and wait until it can be delivered).</font></i>
+<a name='L358'> 358 <i><font color='green'> * </font></i>
+<a name='L359'> 359 <i><font color='green'> * Receiving the reply is the real problem: if the socket buffer is full when</font></i>
+<a name='L360'> 360 <i><font color='green'> * the kernel tries to send the reply, the reply will be dropped.  However, the</font></i>
+<a name='L361'> 361 <i><font color='green'> * kernel sets a flag that a reply has been dropped.  The next call to recv</font></i>
+<a name='L362'> 362 <i><font color='green'> * then returns ENOBUFS.  We can then re-send the request.</font></i>
+<a name='L363'> 363 <i><font color='green'> *</font></i>
+<a name='L364'> 364 <i><font color='green'> * Caveats:</font></i>
+<a name='L365'> 365 <i><font color='green'> *</font></i>
+<a name='L366'> 366 <i><font color='green'> *      1. Netlink depends on sequence numbers to match up requests and</font></i>
+<a name='L367'> 367 <i><font color='green'> *         replies.  The sender of a request supplies a sequence number, and</font></i>
+<a name='L368'> 368 <i><font color='green'> *         the reply echos back that sequence number.</font></i>
+<a name='L369'> 369 <i><font color='green'> *</font></i>
+<a name='L370'> 370 <i><font color='green'> *         This is fine, but (1) some kernel netlink implementations are</font></i>
+<a name='L371'> 371 <i><font color='green'> *         broken, in that they fail to echo sequence numbers and (2) this</font></i>
+<a name='L372'> 372 <i><font color='green'> *         function will drop packets with non-matching sequence numbers, so</font></i>
+<a name='L373'> 373 <i><font color='green'> *         that only a single request can be usefully transacted at a time.</font></i>
+<a name='L374'> 374 <i><font color='green'> *</font></i>
+<a name='L375'> 375 <i><font color='green'> *      2. Resending the request causes it to be re-executed, so the request</font></i>
+<a name='L376'> 376 <i><font color='green'> *         needs to be idempotent.</font></i>
+<a name='L377'> 377 <i><font color='green'> */</font></i>
+<a name='L378'> 378 <b>int</b>
+<a name='L379'> 379 <a href='../R/3746.html' title='Multiple refered from 4 places.'>nl_sock_transact</a>(<b>struct</b> <a href='../Y/4883.html' title='Multiple used in 18 places.'>nl_sock</a> *<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>,
+<a name='L380'> 380                  <b>const</b> <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/6400.html' title='Multiple used in 153 places.'>request</a>, <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> **<a href='../Y/6384.html' title='Multiple used in 9 places.'>replyp</a>) 
+<a name='L381'> 381 <font color='red'>{</font>
+<a name='L382'> 382     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/6669.html' title='Multiple used in 19 places.'>seq</a> = <a href='../S/826.html#L443' title='Defined at 443 in cbench/openflow/lib/netlink.c.'>nl_msg_nlmsghdr</a>(<a href='../Y/6400.html' title='Multiple used in 153 places.'>request</a>)-&gt;<a href='../Y/4905.html' title='Multiple used in 7 places.'>nlmsg_seq</a>;
+<a name='L383'> 383     <b>struct</b> <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a> *<a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a>;
+<a name='L384'> 384     <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> *<a href='../Y/6383.html' title='Multiple used in 144 places.'>reply</a>;
+<a name='L385'> 385     <b>int</b> <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>;
+<a name='L386'> 386 
+<a name='L387'> 387     *<a href='../Y/6384.html' title='Multiple used in 9 places.'>replyp</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L388'> 388 
+<a name='L389'> 389     <i><font color='green'>/* Ensure that we get a reply even if this message doesn't ordinarily call</font></i>
+<a name='L390'> 390 <i><font color='green'>     * for one. */</font></i>
+<a name='L391'> 391     <a href='../S/826.html#L443' title='Defined at 443 in cbench/openflow/lib/netlink.c.'>nl_msg_nlmsghdr</a>(<a href='../Y/6400.html' title='Multiple used in 153 places.'>request</a>)-&gt;<a href='../Y/4901.html' title='Multiple used in 5 places.'>nlmsg_flags</a> |= <a href='../S/867.html#L59' title='Defined at 59 in cbench/openflow/lib/netlink-protocol.h.'>NLM_F_ACK</a>;
+<a name='L392'> 392     
+<a name='L393'> 393 <a href='../Y/6650.html' title='Multiple used in 11 places.'>send</a>:
+<a name='L394'> 394     <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../S/826.html#L221' title='Defined at 221 in cbench/openflow/lib/netlink.c.'>nl_sock_send</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>, <a href='../Y/6400.html' title='Multiple used in 153 places.'>request</a>, <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>);
+<a name='L395'> 395     <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>) <font color='red'>{</font>
+<a name='L396'> 396         <b>return</b> <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>;
+<a name='L397'> 397     <font color='red'>}</font>
+<a name='L398'> 398 
+<a name='L399'> 399 <a href='../Y/6310.html' title='Multiple used in 12 places.'>recv</a>:
+<a name='L400'> 400     <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../S/826.html#L272' title='Defined at 272 in cbench/openflow/lib/netlink.c.'>nl_sock_recv</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>, &amp;<a href='../Y/6383.html' title='Multiple used in 144 places.'>reply</a>, <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>);
+<a name='L401'> 401     <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>) <font color='red'>{</font>
+<a name='L402'> 402         <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> == <a href='../Y/273.html' title='Multiple used in 24 places.'>ENOBUFS</a>) <font color='red'>{</font>
+<a name='L403'> 403             <a href='../S/859.html#L173' title='Defined at 173 in cbench/openflow/lib/vlog.h.'>VLOG_DBG_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "receive buffer overflow, resending request");
+<a name='L404'> 404             <b>goto</b> <a href='../Y/6650.html' title='Multiple used in 11 places.'>send</a>;
+<a name='L405'> 405         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L406'> 406             <b>return</b> <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>;
+<a name='L407'> 407         <font color='red'>}</font>
+<a name='L408'> 408     <font color='red'>}</font>
+<a name='L409'> 409     <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a> = <a href='../S/826.html#L443' title='Defined at 443 in cbench/openflow/lib/netlink.c.'>nl_msg_nlmsghdr</a>(<a href='../Y/6383.html' title='Multiple used in 144 places.'>reply</a>);
+<a name='L410'> 410     <b>if</b> (<a href='../Y/6669.html' title='Multiple used in 19 places.'>seq</a> != <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a>-&gt;<a href='../Y/4905.html' title='Multiple used in 7 places.'>nlmsg_seq</a>) <font color='red'>{</font>
+<a name='L411'> 411         <a href='../S/859.html#L173' title='Defined at 173 in cbench/openflow/lib/vlog.h.'>VLOG_DBG_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "ignoring seq %"<a href='../Y/698.html' title='Multiple used in 15 places.'>PRIu32</a>" != expected %"<a href='../Y/698.html' title='Multiple used in 15 places.'>PRIu32</a>,
+<a name='L412'> 412                     <a href='../S/826.html#L443' title='Defined at 443 in cbench/openflow/lib/netlink.c.'>nl_msg_nlmsghdr</a>(<a href='../Y/6383.html' title='Multiple used in 144 places.'>reply</a>)-&gt;<a href='../Y/4905.html' title='Multiple used in 7 places.'>nlmsg_seq</a>, <a href='../Y/6669.html' title='Multiple used in 19 places.'>seq</a>);
+<a name='L413'> 413         <a href='../S/887.html#L110' title='Defined at 110 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_delete</a>(<a href='../Y/6383.html' title='Multiple used in 144 places.'>reply</a>);
+<a name='L414'> 414         <b>goto</b> <a href='../Y/6310.html' title='Multiple used in 12 places.'>recv</a>;
+<a name='L415'> 415     <font color='red'>}</font>
+<a name='L416'> 416     <b>if</b> (<a href='../S/826.html#L464' title='Defined at 464 in cbench/openflow/lib/netlink.c.'>nl_msg_nlmsgerr</a>(<a href='../Y/6383.html' title='Multiple used in 144 places.'>reply</a>, &amp;<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>)) <font color='red'>{</font>
+<a name='L417'> 417         <a href='../S/887.html#L110' title='Defined at 110 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_delete</a>(<a href='../Y/6383.html' title='Multiple used in 144 places.'>reply</a>);
+<a name='L418'> 418         <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>) <font color='red'>{</font>
+<a name='L419'> 419             <a href='../S/859.html#L173' title='Defined at 173 in cbench/openflow/lib/vlog.h.'>VLOG_DBG_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "received NAK error=%d (%s)",
+<a name='L420'> 420                         <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>, <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>));
+<a name='L421'> 421         <font color='red'>}</font>
+<a name='L422'> 422         <b>return</b> <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> != <a href='../Y/259.html' title='Multiple used in 75 places.'>EAGAIN</a> ? <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> : <a href='../Y/291.html' title='Multiple used in 24 places.'>EPROTO</a>;
+<a name='L423'> 423     <font color='red'>}</font>
+<a name='L424'> 424 
+<a name='L425'> 425     *<a href='../Y/6384.html' title='Multiple used in 9 places.'>replyp</a> = <a href='../Y/6383.html' title='Multiple used in 144 places.'>reply</a>;
+<a name='L426'> 426     <b>return</b> 0;
+<a name='L427'> 427 <font color='red'>}</font>
+<a name='L428'> 428 
+<a name='L429'> 429 <i><font color='green'>/* Causes poll_block() to wake up when any of the specified 'events' (which is</font></i>
+<a name='L430'> 430 <i><font color='green'> * a OR'd combination of POLLIN, POLLOUT, etc.) occur on 'sock'. */</font></i>
+<a name='L431'> 431 <b>void</b>
+<a name='L432'> 432 <a href='../R/3747.html' title='Multiple refered from 3 places.'>nl_sock_wait</a>(<b>const</b> <b>struct</b> <a href='../Y/4883.html' title='Multiple used in 18 places.'>nl_sock</a> *<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>, <b>short</b> <b>int</b> <a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a>)
+<a name='L433'> 433 <font color='red'>{</font>
+<a name='L434'> 434     <a href='../S/854.html#L93' title='Defined at 93 in cbench/openflow/lib/poll-loop.c.'>poll_fd_wait</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/2905.html' title='Multiple used in 91 places.'>events</a>);
+<a name='L435'> 435 <font color='red'>}</font>
+<a name='L436'> 436 
+<a name='L437'> 437 <i><font color='green'>/* Netlink messages. */</font></i>
+<a name='L438'> 438 
+<a name='L439'> 439 <i><font color='green'>/* Returns the nlmsghdr at the head of 'msg'.</font></i>
+<a name='L440'> 440 <i><font color='green'> *</font></i>
+<a name='L441'> 441 <i><font color='green'> * 'msg' must be at least as large as a nlmsghdr. */</font></i>
+<a name='L442'> 442 <b>struct</b> <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a> *
+<a name='L443'> 443 <a href='../R/3723.html' title='Multiple refered from 12 places.'>nl_msg_nlmsghdr</a>(<b>const</b> <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>) 
+<a name='L444'> 444 <font color='red'>{</font>
+<a name='L445'> 445     <b>return</b> <a href='../S/887.html#L244' title='Defined at 244 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_at_assert</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, 0, <a href='../S/867.html#L86' title='Defined at 86 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_HDRLEN</a>);
+<a name='L446'> 446 <font color='red'>}</font>
+<a name='L447'> 447 
+<a name='L448'> 448 <i><font color='green'>/* Returns the genlmsghdr just past 'msg''s nlmsghdr.</font></i>
+<a name='L449'> 449 <i><font color='green'> *</font></i>
+<a name='L450'> 450 <i><font color='green'> * Returns a null pointer if 'msg' is not large enough to contain an nlmsghdr</font></i>
+<a name='L451'> 451 <i><font color='green'> * and a genlmsghdr. */</font></i>
+<a name='L452'> 452 <b>struct</b> <a href='../S/867.html#L99' title='Defined at 99 in cbench/openflow/lib/netlink-protocol.h.'>genlmsghdr</a> *
+<a name='L453'> 453 <a href='../R/3721.html' title='Multiple refered from 2 places.'>nl_msg_genlmsghdr</a>(<b>const</b> <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>) 
+<a name='L454'> 454 <font color='red'>{</font>
+<a name='L455'> 455     <b>return</b> <a href='../S/887.html#L236' title='Defined at 236 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_at</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../S/867.html#L86' title='Defined at 86 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_HDRLEN</a>, <a href='../S/867.html#L106' title='Defined at 106 in cbench/openflow/lib/netlink-protocol.h.'>GENL_HDRLEN</a>);
+<a name='L456'> 456 <font color='red'>}</font>
+<a name='L457'> 457 
+<a name='L458'> 458 <i><font color='green'>/* If 'buffer' is a NLMSG_ERROR message, stores 0 in '*errorp' if it is an ACK</font></i>
+<a name='L459'> 459 <i><font color='green'> * message, otherwise a positive errno value, and returns true.  If 'buffer' is</font></i>
+<a name='L460'> 460 <i><font color='green'> * not an NLMSG_ERROR message, returns false.</font></i>
+<a name='L461'> 461 <i><font color='green'> *</font></i>
+<a name='L462'> 462 <i><font color='green'> * 'msg' must be at least as large as a nlmsghdr. */</font></i>
+<a name='L463'> 463 <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a>
+<a name='L464'> 464 <a href='../R/3722.html' title='Multiple refered from 3 places.'>nl_msg_nlmsgerr</a>(<b>const</b> <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <b>int</b> *<a href='../Y/2773.html' title='Multiple used in 3 places.'>errorp</a>) 
+<a name='L465'> 465 <font color='red'>{</font>
+<a name='L466'> 466     <b>if</b> (<a href='../S/826.html#L443' title='Defined at 443 in cbench/openflow/lib/netlink.c.'>nl_msg_nlmsghdr</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>)-&gt;<a href='../Y/4907.html' title='Multiple used in 14 places.'>nlmsg_type</a> == <a href='../S/867.html#L69' title='Defined at 69 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_ERROR</a>) <font color='red'>{</font>
+<a name='L467'> 467         <b>struct</b> <a href='../S/867.html#L88' title='Defined at 88 in cbench/openflow/lib/netlink-protocol.h.'>nlmsgerr</a> *<a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a> = <a href='../S/887.html#L236' title='Defined at 236 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_at</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../S/867.html#L86' title='Defined at 86 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_HDRLEN</a>, <b>sizeof</b> *<a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>);
+<a name='L468'> 468         <b>int</b> <a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a> = <a href='../Y/291.html' title='Multiple used in 24 places.'>EPROTO</a>;
+<a name='L469'> 469         <b>if</b> (!<a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>) <font color='red'>{</font>
+<a name='L470'> 470             <a href='../S/859.html#L170' title='Defined at 170 in cbench/openflow/lib/vlog.h.'>VLOG_ERR_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "received invalid nlmsgerr (%zd bytes &lt; %zd)",
+<a name='L471'> 471                         <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>, <a href='../S/867.html#L86' title='Defined at 86 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_HDRLEN</a> + <b>sizeof</b> *<a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>);
+<a name='L472'> 472         <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>-&gt;<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> &lt;= 0 &amp;&amp; <a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>-&gt;<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> &gt; <a href='../Y/462.html' title='Multiple used in 14 places.'>INT_MIN</a>) <font color='red'>{</font>
+<a name='L473'> 473             <a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a> = -<a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>-&gt;<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L474'> 474         <font color='red'>}</font>
+<a name='L475'> 475         <b>if</b> (<a href='../Y/2773.html' title='Multiple used in 3 places.'>errorp</a>) <font color='red'>{</font>
+<a name='L476'> 476             *<a href='../Y/2773.html' title='Multiple used in 3 places.'>errorp</a> = <a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a>;
+<a name='L477'> 477         <font color='red'>}</font>
+<a name='L478'> 478         <b>return</b> <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>;
+<a name='L479'> 479     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L480'> 480         <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L481'> 481     <font color='red'>}</font>
+<a name='L482'> 482 <font color='red'>}</font>
+<a name='L483'> 483 
+<a name='L484'> 484 <i><font color='green'>/* Ensures that 'b' has room for at least 'size' bytes plus netlink padding at</font></i>
+<a name='L485'> 485 <i><font color='green'> * its tail end, reallocating and copying its data if necessary. */</font></i>
+<a name='L486'> 486 <b>void</b>
+<a name='L487'> 487 <a href='../R/3737.html' title='Multiple refered from 2 places.'>nl_msg_reserve</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L488'> 488 <font color='red'>{</font>
+<a name='L489'> 489     <a href='../S/887.html#L139' title='Defined at 139 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_prealloc_tailroom</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../S/867.html#L85' title='Defined at 85 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_ALIGN</a>(<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>));
+<a name='L490'> 490 <font color='red'>}</font>
+<a name='L491'> 491 
+<a name='L492'> 492 <i><font color='green'>/* Puts a nlmsghdr at the beginning of 'msg', which must be initially empty.</font></i>
+<a name='L493'> 493 <i><font color='green'> * Uses the given 'type' and 'flags'.  'sock' is used to obtain a PID and</font></i>
+<a name='L494'> 494 <i><font color='green'> * sequence number for proper routing of replies.  'expected_payload' should be</font></i>
+<a name='L495'> 495 <i><font color='green'> * an estimate of the number of payload bytes to be supplied; if the size of</font></i>
+<a name='L496'> 496 <i><font color='green'> * the payload is unknown a value of 0 is acceptable.</font></i>
+<a name='L497'> 497 <i><font color='green'> *</font></i>
+<a name='L498'> 498 <i><font color='green'> * 'type' is ordinarily an enumerated value specific to the Netlink protocol</font></i>
+<a name='L499'> 499 <i><font color='green'> * (e.g. RTM_NEWLINK, for NETLINK_ROUTE protocol).  For Generic Netlink, 'type'</font></i>
+<a name='L500'> 500 <i><font color='green'> * is the family number obtained via nl_lookup_genl_family().</font></i>
+<a name='L501'> 501 <i><font color='green'> *</font></i>
+<a name='L502'> 502 <i><font color='green'> * 'flags' is a bit-mask that indicates what kind of request is being made.  It</font></i>
+<a name='L503'> 503 <i><font color='green'> * is often NLM_F_REQUEST indicating that a request is being made, commonly</font></i>
+<a name='L504'> 504 <i><font color='green'> * or'd with NLM_F_ACK to request an acknowledgement.</font></i>
+<a name='L505'> 505 <i><font color='green'> *</font></i>
+<a name='L506'> 506 <i><font color='green'> * nl_msg_put_genlmsghdr is more convenient for composing a Generic Netlink</font></i>
+<a name='L507'> 507 <i><font color='green'> * message. */</font></i>
+<a name='L508'> 508 <b>void</b>
+<a name='L509'> 509 <a href='../R/3728.html' title='Multiple refered from 2 places.'>nl_msg_put_nlmsghdr</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <b>struct</b> <a href='../Y/4883.html' title='Multiple used in 18 places.'>nl_sock</a> *<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>,
+<a name='L510'> 510                     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/2953.html' title='Multiple used in 6 places.'>expected_payload</a>, <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>) 
+<a name='L511'> 511 <font color='red'>{</font>
+<a name='L512'> 512     <b>struct</b> <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a> *<a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a>;
+<a name='L513'> 513 
+<a name='L514'> 514     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> == 0);
+<a name='L515'> 515 
+<a name='L516'> 516     <a href='../S/826.html#L487' title='Defined at 487 in cbench/openflow/lib/netlink.c.'>nl_msg_reserve</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../S/867.html#L86' title='Defined at 86 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_HDRLEN</a> + <a href='../Y/2953.html' title='Multiple used in 6 places.'>expected_payload</a>);
+<a name='L517'> 517     <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a> = <a href='../S/826.html#L573' title='Defined at 573 in cbench/openflow/lib/netlink.c.'>nl_msg_put_uninit</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../S/867.html#L86' title='Defined at 86 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_HDRLEN</a>);
+<a name='L518'> 518     <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a>-&gt;<a href='../Y/4902.html' title='Multiple used in 8 places.'>nlmsg_len</a> = 0;
+<a name='L519'> 519     <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a>-&gt;<a href='../Y/4907.html' title='Multiple used in 14 places.'>nlmsg_type</a> = <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;
+<a name='L520'> 520     <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a>-&gt;<a href='../Y/4901.html' title='Multiple used in 5 places.'>nlmsg_flags</a> = <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>;
+<a name='L521'> 521     <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a>-&gt;<a href='../Y/4905.html' title='Multiple used in 7 places.'>nlmsg_seq</a> = ++<a href='../Y/4816.html' title='Multiple used in 4 places.'>next_seq</a>;
+<a name='L522'> 522     <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a>-&gt;<a href='../Y/4904.html' title='Multiple used in 5 places.'>nlmsg_pid</a> = <a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>-&gt;<a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>;
+<a name='L523'> 523 <font color='red'>}</font>
+<a name='L524'> 524 
+<a name='L525'> 525 <i><font color='green'>/* Puts a nlmsghdr and genlmsghdr at the beginning of 'msg', which must be</font></i>
+<a name='L526'> 526 <i><font color='green'> * initially empty.  'sock' is used to obtain a PID and sequence number for</font></i>
+<a name='L527'> 527 <i><font color='green'> * proper routing of replies.  'expected_payload' should be an estimate of the</font></i>
+<a name='L528'> 528 <i><font color='green'> * number of payload bytes to be supplied; if the size of the payload is</font></i>
+<a name='L529'> 529 <i><font color='green'> * unknown a value of 0 is acceptable.</font></i>
+<a name='L530'> 530 <i><font color='green'> *</font></i>
+<a name='L531'> 531 <i><font color='green'> * 'family' is the family number obtained via nl_lookup_genl_family().</font></i>
+<a name='L532'> 532 <i><font color='green'> *</font></i>
+<a name='L533'> 533 <i><font color='green'> * 'flags' is a bit-mask that indicates what kind of request is being made.  It</font></i>
+<a name='L534'> 534 <i><font color='green'> * is often NLM_F_REQUEST indicating that a request is being made, commonly</font></i>
+<a name='L535'> 535 <i><font color='green'> * or'd with NLM_F_ACK to request an acknowledgement.</font></i>
+<a name='L536'> 536 <i><font color='green'> *</font></i>
+<a name='L537'> 537 <i><font color='green'> * 'cmd' is an enumerated value specific to the Generic Netlink family</font></i>
+<a name='L538'> 538 <i><font color='green'> * (e.g. CTRL_CMD_NEWFAMILY for the GENL_ID_CTRL family).</font></i>
+<a name='L539'> 539 <i><font color='green'> *</font></i>
+<a name='L540'> 540 <i><font color='green'> * 'version' is a version number specific to the family and command (often 1).</font></i>
+<a name='L541'> 541 <i><font color='green'> *</font></i>
+<a name='L542'> 542 <i><font color='green'> * nl_msg_put_nlmsghdr should be used to compose Netlink messages that are not</font></i>
+<a name='L543'> 543 <i><font color='green'> * Generic Netlink messages. */</font></i>
+<a name='L544'> 544 <b>void</b>
+<a name='L545'> 545 <a href='../R/3726.html' title='Multiple refered from 5 places.'>nl_msg_put_genlmsghdr</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <b>struct</b> <a href='../Y/4883.html' title='Multiple used in 18 places.'>nl_sock</a> *<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>,
+<a name='L546'> 546                       <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/2953.html' title='Multiple used in 6 places.'>expected_payload</a>, <b>int</b> <a href='../Y/3002.html' title='Multiple used in 11 places.'>family</a>, <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>,
+<a name='L547'> 547                       <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/1933.html' title='Multiple used in 169 places.'>cmd</a>, <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/7770.html' title='Multiple used in 173 places.'>version</a>)
+<a name='L548'> 548 <font color='red'>{</font>
+<a name='L549'> 549     <b>struct</b> <a href='../S/867.html#L99' title='Defined at 99 in cbench/openflow/lib/netlink-protocol.h.'>genlmsghdr</a> *<a href='../S/867.html#L99' title='Defined at 99 in cbench/openflow/lib/netlink-protocol.h.'>genlmsghdr</a>;
+<a name='L550'> 550 
+<a name='L551'> 551     <a href='../S/826.html#L509' title='Defined at 509 in cbench/openflow/lib/netlink.c.'>nl_msg_put_nlmsghdr</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>, <a href='../S/867.html#L106' title='Defined at 106 in cbench/openflow/lib/netlink-protocol.h.'>GENL_HDRLEN</a> + <a href='../Y/2953.html' title='Multiple used in 6 places.'>expected_payload</a>,
+<a name='L552'> 552                         <a href='../Y/3002.html' title='Multiple used in 11 places.'>family</a>, <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>);
+<a name='L553'> 553     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> == <a href='../S/867.html#L86' title='Defined at 86 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_HDRLEN</a>);
+<a name='L554'> 554     <a href='../S/867.html#L99' title='Defined at 99 in cbench/openflow/lib/netlink-protocol.h.'>genlmsghdr</a> = <a href='../S/826.html#L573' title='Defined at 573 in cbench/openflow/lib/netlink.c.'>nl_msg_put_uninit</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../S/867.html#L106' title='Defined at 106 in cbench/openflow/lib/netlink-protocol.h.'>GENL_HDRLEN</a>);
+<a name='L555'> 555     <a href='../S/867.html#L99' title='Defined at 99 in cbench/openflow/lib/netlink-protocol.h.'>genlmsghdr</a>-&gt;<a href='../Y/1933.html' title='Multiple used in 169 places.'>cmd</a> = <a href='../Y/1933.html' title='Multiple used in 169 places.'>cmd</a>;
+<a name='L556'> 556     <a href='../S/867.html#L99' title='Defined at 99 in cbench/openflow/lib/netlink-protocol.h.'>genlmsghdr</a>-&gt;<a href='../Y/7770.html' title='Multiple used in 173 places.'>version</a> = <a href='../Y/7770.html' title='Multiple used in 173 places.'>version</a>;
+<a name='L557'> 557     <a href='../S/867.html#L99' title='Defined at 99 in cbench/openflow/lib/netlink-protocol.h.'>genlmsghdr</a>-&gt;<a href='../Y/6409.html' title='Multiple used in 7 places.'>reserved</a> = 0;
+<a name='L558'> 558 <font color='red'>}</font>
+<a name='L559'> 559 
+<a name='L560'> 560 <i><font color='green'>/* Appends the 'size' bytes of data in 'p', plus Netlink padding if needed, to</font></i>
+<a name='L561'> 561 <i><font color='green'> * the tail end of 'msg'.  Data in 'msg' is reallocated and copied if</font></i>
+<a name='L562'> 562 <i><font color='green'> * necessary. */</font></i>
+<a name='L563'> 563 <b>void</b>
+<a name='L564'> 564 <a href='../S/892.html#L85' title='Refered from 85 in cbench/openflow/lib/netlink.h.'>nl_msg_put</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <b>const</b> <b>void</b> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L565'> 565 <font color='red'>{</font>
+<a name='L566'> 566     <a href='../Y/4417.html' title='Multiple used in 205 places.'>memcpy</a>(<a href='../S/826.html#L573' title='Defined at 573 in cbench/openflow/lib/netlink.c.'>nl_msg_put_uninit</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L567'> 567 <font color='red'>}</font>
+<a name='L568'> 568 
+<a name='L569'> 569 <i><font color='green'>/* Appends 'size' bytes of data, plus Netlink padding if needed, to the tail</font></i>
+<a name='L570'> 570 <i><font color='green'> * end of 'msg', reallocating and copying its data if necessary.  Returns a</font></i>
+<a name='L571'> 571 <i><font color='green'> * pointer to the first byte of the new data, which is left uninitialized. */</font></i>
+<a name='L572'> 572 <b>void</b> *
+<a name='L573'> 573 <a href='../R/3734.html' title='Multiple refered from 5 places.'>nl_msg_put_uninit</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L574'> 574 <font color='red'>{</font>
+<a name='L575'> 575     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a> = <a href='../S/867.html#L85' title='Defined at 85 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_ALIGN</a>(<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) - <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>;
+<a name='L576'> 576     <b>char</b> *<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> = <a href='../S/887.html#L175' title='Defined at 175 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_put_uninit</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> + <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>);
+<a name='L577'> 577     <b>if</b> (<a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>) <font color='red'>{</font>
+<a name='L578'> 578         <a href='../Y/4419.html' title='Multiple used in 245 places.'>memset</a>(<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> + <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>, 0, <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>); 
+<a name='L579'> 579     <font color='red'>}</font>
+<a name='L580'> 580     <b>return</b> <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>;
+<a name='L581'> 581 <font color='red'>}</font>
+<a name='L582'> 582 
+<a name='L583'> 583 <i><font color='green'>/* Appends a Netlink attribute of the given 'type' and room for 'size' bytes of</font></i>
+<a name='L584'> 584 <i><font color='green'> * data as its payload, plus Netlink padding if needed, to the tail end of</font></i>
+<a name='L585'> 585 <i><font color='green'> * 'msg', reallocating and copying its data if necessary.  Returns a pointer to</font></i>
+<a name='L586'> 586 <i><font color='green'> * the first byte of data in the attribute, which is left uninitialized. */</font></i>
+<a name='L587'> 587 <b>void</b> *
+<a name='L588'> 588 <a href='../R/3736.html' title='Multiple refered from 2 places.'>nl_msg_put_unspec_uninit</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L589'> 589 <font color='red'>{</font>
+<a name='L590'> 590     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/7439.html' title='Multiple used in 4 places.'>total_size</a> = <a href='../S/867.html#L116' title='Defined at 116 in cbench/openflow/lib/netlink-protocol.h.'>NLA_HDRLEN</a> + <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>;
+<a name='L591'> 591     <b>struct</b> <a href='../S/867.html#L108' title='Defined at 108 in cbench/openflow/lib/netlink-protocol.h.'>nlattr</a>* <a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a> = <a href='../S/826.html#L573' title='Defined at 573 in cbench/openflow/lib/netlink.c.'>nl_msg_put_uninit</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7439.html' title='Multiple used in 4 places.'>total_size</a>);
+<a name='L592'> 592     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../S/867.html#L115' title='Defined at 115 in cbench/openflow/lib/netlink-protocol.h.'>NLA_ALIGN</a>(<a href='../Y/7439.html' title='Multiple used in 4 places.'>total_size</a>) &lt;= <a href='../S/294.html#L24' title='Defined at 24 in cbench/openflow/datapath/forward.h.'>UINT16_MAX</a>);
+<a name='L593'> 593     <a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>-&gt;<a href='../Y/4889.html' title='Multiple used in 22 places.'>nla_len</a> = <a href='../Y/7439.html' title='Multiple used in 4 places.'>total_size</a>;
+<a name='L594'> 594     <a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>-&gt;<a href='../Y/4896.html' title='Multiple used in 5 places.'>nla_type</a> = <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;
+<a name='L595'> 595     <b>return</b> <a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a> + 1;
+<a name='L596'> 596 <font color='red'>}</font>
+<a name='L597'> 597 
+<a name='L598'> 598 <i><font color='green'>/* Appends a Netlink attribute of the given 'type' and the 'size' bytes of</font></i>
+<a name='L599'> 599 <i><font color='green'> * 'data' as its payload, to the tail end of 'msg', reallocating and copying</font></i>
+<a name='L600'> 600 <i><font color='green'> * its data if necessary.  Returns a pointer to the first byte of data in the</font></i>
+<a name='L601'> 601 <i><font color='green'> * attribute, which is left uninitialized. */</font></i>
+<a name='L602'> 602 <b>void</b>
+<a name='L603'> 603 <a href='../R/3735.html' title='Multiple refered from 8 places.'>nl_msg_put_unspec</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>,
+<a name='L604'> 604                   <b>const</b> <b>void</b> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L605'> 605 <font color='red'>{</font>
+<a name='L606'> 606     <a href='../Y/4417.html' title='Multiple used in 205 places.'>memcpy</a>(<a href='../S/826.html#L588' title='Defined at 588 in cbench/openflow/lib/netlink.c.'>nl_msg_put_unspec_uninit</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L607'> 607 <font color='red'>}</font>
+<a name='L608'> 608 
+<a name='L609'> 609 <i><font color='green'>/* Appends a Netlink attribute of the given 'type' and no payload to 'msg'.</font></i>
+<a name='L610'> 610 <i><font color='green'> * (Some Netlink protocols use the presence or absence of an attribute as a</font></i>
+<a name='L611'> 611 <i><font color='green'> * Boolean flag.) */</font></i>
+<a name='L612'> 612 <b>void</b>
+<a name='L613'> 613 <a href='../S/892.html#L91' title='Refered from 91 in cbench/openflow/lib/netlink.h.'>nl_msg_put_flag</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) 
+<a name='L614'> 614 <font color='red'>{</font>
+<a name='L615'> 615     <a href='../S/826.html#L603' title='Defined at 603 in cbench/openflow/lib/netlink.c.'>nl_msg_put_unspec</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, 0);
+<a name='L616'> 616 <font color='red'>}</font>
+<a name='L617'> 617 
+<a name='L618'> 618 <i><font color='green'>/* Appends a Netlink attribute of the given 'type' and the given 8-bit 'value'</font></i>
+<a name='L619'> 619 <i><font color='green'> * to 'msg'. */</font></i>
+<a name='L620'> 620 <b>void</b>
+<a name='L621'> 621 <a href='../S/892.html#L92' title='Refered from 92 in cbench/openflow/lib/netlink.h.'>nl_msg_put_u8</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>) 
+<a name='L622'> 622 <font color='red'>{</font>
+<a name='L623'> 623     <a href='../S/826.html#L603' title='Defined at 603 in cbench/openflow/lib/netlink.c.'>nl_msg_put_unspec</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, &amp;<a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>, <b>sizeof</b> <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>);
+<a name='L624'> 624 <font color='red'>}</font>
+<a name='L625'> 625 
+<a name='L626'> 626 <i><font color='green'>/* Appends a Netlink attribute of the given 'type' and the given 16-bit 'value'</font></i>
+<a name='L627'> 627 <i><font color='green'> * to 'msg'. */</font></i>
+<a name='L628'> 628 <b>void</b>
+<a name='L629'> 629 <a href='../S/892.html#L93' title='Refered from 93 in cbench/openflow/lib/netlink.h.'>nl_msg_put_u16</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>)
+<a name='L630'> 630 <font color='red'>{</font>
+<a name='L631'> 631     <a href='../S/826.html#L603' title='Defined at 603 in cbench/openflow/lib/netlink.c.'>nl_msg_put_unspec</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, &amp;<a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>, <b>sizeof</b> <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>);
+<a name='L632'> 632 <font color='red'>}</font>
+<a name='L633'> 633 
+<a name='L634'> 634 <i><font color='green'>/* Appends a Netlink attribute of the given 'type' and the given 32-bit 'value'</font></i>
+<a name='L635'> 635 <i><font color='green'> * to 'msg'. */</font></i>
+<a name='L636'> 636 <b>void</b>
+<a name='L637'> 637 <a href='../R/3731.html' title='Multiple refered from 4 places.'>nl_msg_put_u32</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>)
+<a name='L638'> 638 <font color='red'>{</font>
+<a name='L639'> 639     <a href='../S/826.html#L603' title='Defined at 603 in cbench/openflow/lib/netlink.c.'>nl_msg_put_unspec</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, &amp;<a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>, <b>sizeof</b> <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>);
+<a name='L640'> 640 <font color='red'>}</font>
+<a name='L641'> 641 
+<a name='L642'> 642 <i><font color='green'>/* Appends a Netlink attribute of the given 'type' and the given 64-bit 'value'</font></i>
+<a name='L643'> 643 <i><font color='green'> * to 'msg'. */</font></i>
+<a name='L644'> 644 <b>void</b>
+<a name='L645'> 645 <a href='../S/892.html#L95' title='Refered from 95 in cbench/openflow/lib/netlink.h.'>nl_msg_put_u64</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>)
+<a name='L646'> 646 <font color='red'>{</font>
+<a name='L647'> 647     <a href='../S/826.html#L603' title='Defined at 603 in cbench/openflow/lib/netlink.c.'>nl_msg_put_unspec</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, &amp;<a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>, <b>sizeof</b> <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>);
+<a name='L648'> 648 <font color='red'>}</font>
+<a name='L649'> 649 
+<a name='L650'> 650 <i><font color='green'>/* Appends a Netlink attribute of the given 'type' and the given</font></i>
+<a name='L651'> 651 <i><font color='green'> * null-terminated string 'value' to 'msg'. */</font></i>
+<a name='L652'> 652 <b>void</b>
+<a name='L653'> 653 <a href='../R/3729.html' title='Multiple refered from 5 places.'>nl_msg_put_string</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <b>const</b> <b>char</b> *<a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>)
+<a name='L654'> 654 <font color='red'>{</font>
+<a name='L655'> 655     <a href='../S/826.html#L603' title='Defined at 603 in cbench/openflow/lib/netlink.c.'>nl_msg_put_unspec</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>, <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>) + 1);
+<a name='L656'> 656 <font color='red'>}</font>
+<a name='L657'> 657 
+<a name='L658'> 658 <i><font color='green'>/* Appends a Netlink attribute of the given 'type' and the given buffered</font></i>
+<a name='L659'> 659 <i><font color='green'> * netlink message in 'nested_msg' to 'msg'.  The nlmsg_len field in</font></i>
+<a name='L660'> 660 <i><font color='green'> * 'nested_msg' is finalized to match 'nested_msg-&gt;size'. */</font></i>
+<a name='L661'> 661 <b>void</b>
+<a name='L662'> 662 <a href='../S/892.html#L97' title='Refered from 97 in cbench/openflow/lib/netlink.h.'>nl_msg_put_nested</a>(<b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>,
+<a name='L663'> 663                   <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4696.html' title='Multiple used in 3 places.'>nested_msg</a>)
+<a name='L664'> 664 <font color='red'>{</font>
+<a name='L665'> 665     <a href='../S/826.html#L443' title='Defined at 443 in cbench/openflow/lib/netlink.c.'>nl_msg_nlmsghdr</a>(<a href='../Y/4696.html' title='Multiple used in 3 places.'>nested_msg</a>)-&gt;<a href='../Y/4902.html' title='Multiple used in 8 places.'>nlmsg_len</a> = <a href='../Y/4696.html' title='Multiple used in 3 places.'>nested_msg</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>;
+<a name='L666'> 666     <a href='../S/826.html#L603' title='Defined at 603 in cbench/openflow/lib/netlink.c.'>nl_msg_put_unspec</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/4696.html' title='Multiple used in 3 places.'>nested_msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/4696.html' title='Multiple used in 3 places.'>nested_msg</a>-&gt;<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L667'> 667 <font color='red'>}</font>
+<a name='L668'> 668 
+<a name='L669'> 669 <i><font color='green'>/* Returns the first byte in the payload of attribute 'nla'. */</font></i>
+<a name='L670'> 670 <b>const</b> <b>void</b> *
+<a name='L671'> 671 <a href='../R/3710.html' title='Multiple refered from 4 places.'>nl_attr_get</a>(<b>const</b> <b>struct</b> <a href='../Y/4897.html' title='Multiple used in 24 places.'>nlattr</a> *<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>) 
+<a name='L672'> 672 <font color='red'>{</font>
+<a name='L673'> 673     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>-&gt;<a href='../Y/4889.html' title='Multiple used in 22 places.'>nla_len</a> &gt;= <a href='../S/867.html#L116' title='Defined at 116 in cbench/openflow/lib/netlink-protocol.h.'>NLA_HDRLEN</a>);
+<a name='L674'> 674     <b>return</b> <a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a> + 1;
+<a name='L675'> 675 <font color='red'>}</font>
+<a name='L676'> 676 
+<a name='L677'> 677 <i><font color='green'>/* Returns the number of bytes in the payload of attribute 'nla'. */</font></i>
+<a name='L678'> 678 <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a>
+<a name='L679'> 679 <a href='../R/3712.html' title='Multiple refered from 2 places.'>nl_attr_get_size</a>(<b>const</b> <b>struct</b> <a href='../Y/4897.html' title='Multiple used in 24 places.'>nlattr</a> *<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>) 
+<a name='L680'> 680 <font color='red'>{</font>
+<a name='L681'> 681     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>-&gt;<a href='../Y/4889.html' title='Multiple used in 22 places.'>nla_len</a> &gt;= <a href='../S/867.html#L116' title='Defined at 116 in cbench/openflow/lib/netlink-protocol.h.'>NLA_HDRLEN</a>);
+<a name='L682'> 682     <b>return</b> <a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>-&gt;<a href='../Y/4889.html' title='Multiple used in 22 places.'>nla_len</a> - <a href='../S/867.html#L116' title='Defined at 116 in cbench/openflow/lib/netlink-protocol.h.'>NLA_HDRLEN</a>;
+<a name='L683'> 683 <font color='red'>}</font>
+<a name='L684'> 684 
+<a name='L685'> 685 <i><font color='green'>/* Asserts that 'nla''s payload is at least 'size' bytes long, and returns the</font></i>
+<a name='L686'> 686 <i><font color='green'> * first byte of the payload. */</font></i>
+<a name='L687'> 687 <b>const</b> <b>void</b> *
+<a name='L688'> 688 <a href='../R/3718.html' title='Multiple refered from 2 places.'>nl_attr_get_unspec</a>(<b>const</b> <b>struct</b> <a href='../Y/4897.html' title='Multiple used in 24 places.'>nlattr</a> *<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>) 
+<a name='L689'> 689 <font color='red'>{</font>
+<a name='L690'> 690     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>-&gt;<a href='../Y/4889.html' title='Multiple used in 22 places.'>nla_len</a> &gt;= <a href='../S/867.html#L116' title='Defined at 116 in cbench/openflow/lib/netlink-protocol.h.'>NLA_HDRLEN</a> + <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>);
+<a name='L691'> 691     <b>return</b> <a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a> + 1;
+<a name='L692'> 692 <font color='red'>}</font>
+<a name='L693'> 693 
+<a name='L694'> 694 <i><font color='green'>/* Returns true if 'nla' is nonnull.  (Some Netlink protocols use the presence</font></i>
+<a name='L695'> 695 <i><font color='green'> * or absence of an attribute as a Boolean flag.) */</font></i>
+<a name='L696'> 696 <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a>
+<a name='L697'> 697 <a href='../S/892.html#L118' title='Refered from 118 in cbench/openflow/lib/netlink.h.'>nl_attr_get_flag</a>(<b>const</b> <b>struct</b> <a href='../Y/4897.html' title='Multiple used in 24 places.'>nlattr</a> *<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>) 
+<a name='L698'> 698 <font color='red'>{</font>
+<a name='L699'> 699     <b>return</b> <a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L700'> 700 <font color='red'>}</font>
+<a name='L701'> 701 
+<a name='L702'> 702 <font color='darkred'>#define</font> <a href='../R/1003.html' title='Multiple refered from 4 places.'>NL_ATTR_GET_AS</a>(NLA, <a href='../Y/977.html' title='Multiple used in 14 places.'>TYPE</a>) \
+<a name='L703'> 703         (*(<a href='../Y/977.html' title='Multiple used in 14 places.'>TYPE</a>*) <a href='../S/826.html#L688' title='Defined at 688 in cbench/openflow/lib/netlink.c.'>nl_attr_get_unspec</a>(<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>, <b>sizeof</b>(<a href='../Y/977.html' title='Multiple used in 14 places.'>TYPE</a>)))
+<a name='L704'> 704 
+<a name='L705'> 705 <i><font color='green'>/* Returns the 8-bit value in 'nla''s payload.</font></i>
+<a name='L706'> 706 <i><font color='green'> *</font></i>
+<a name='L707'> 707 <i><font color='green'> * Asserts that 'nla''s payload is at least 1 byte long. */</font></i>
+<a name='L708'> 708 <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a>
+<a name='L709'> 709 <a href='../S/892.html#L119' title='Refered from 119 in cbench/openflow/lib/netlink.h.'>nl_attr_get_u8</a>(<b>const</b> <b>struct</b> <a href='../Y/4897.html' title='Multiple used in 24 places.'>nlattr</a> *<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>) 
+<a name='L710'> 710 <font color='red'>{</font>
+<a name='L711'> 711     <b>return</b> <a href='../S/826.html#L702' title='Defined at 702 in cbench/openflow/lib/netlink.c.'>NL_ATTR_GET_AS</a>(<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>, <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a>);
+<a name='L712'> 712 <font color='red'>}</font>
+<a name='L713'> 713 
+<a name='L714'> 714 <i><font color='green'>/* Returns the 16-bit value in 'nla''s payload.</font></i>
+<a name='L715'> 715 <i><font color='green'> *</font></i>
+<a name='L716'> 716 <i><font color='green'> * Asserts that 'nla''s payload is at least 2 bytes long. */</font></i>
+<a name='L717'> 717 <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a>
+<a name='L718'> 718 <a href='../R/3714.html' title='Multiple refered from 2 places.'>nl_attr_get_u16</a>(<b>const</b> <b>struct</b> <a href='../Y/4897.html' title='Multiple used in 24 places.'>nlattr</a> *<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>) 
+<a name='L719'> 719 <font color='red'>{</font>
+<a name='L720'> 720     <b>return</b> <a href='../S/826.html#L702' title='Defined at 702 in cbench/openflow/lib/netlink.c.'>NL_ATTR_GET_AS</a>(<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a>);
+<a name='L721'> 721 <font color='red'>}</font>
+<a name='L722'> 722 
+<a name='L723'> 723 <i><font color='green'>/* Returns the 32-bit value in 'nla''s payload.</font></i>
+<a name='L724'> 724 <i><font color='green'> *</font></i>
+<a name='L725'> 725 <i><font color='green'> * Asserts that 'nla''s payload is at least 4 bytes long. */</font></i>
+<a name='L726'> 726 <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a>
+<a name='L727'> 727 <a href='../R/3715.html' title='Multiple refered from 4 places.'>nl_attr_get_u32</a>(<b>const</b> <b>struct</b> <a href='../Y/4897.html' title='Multiple used in 24 places.'>nlattr</a> *<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>) 
+<a name='L728'> 728 <font color='red'>{</font>
+<a name='L729'> 729     <b>return</b> <a href='../S/826.html#L702' title='Defined at 702 in cbench/openflow/lib/netlink.c.'>NL_ATTR_GET_AS</a>(<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>, <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a>);
+<a name='L730'> 730 <font color='red'>}</font>
+<a name='L731'> 731 
+<a name='L732'> 732 <i><font color='green'>/* Returns the 64-bit value in 'nla''s payload.</font></i>
+<a name='L733'> 733 <i><font color='green'> *</font></i>
+<a name='L734'> 734 <i><font color='green'> * Asserts that 'nla''s payload is at least 8 bytes long. */</font></i>
+<a name='L735'> 735 <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a>
+<a name='L736'> 736 <a href='../S/892.html#L122' title='Refered from 122 in cbench/openflow/lib/netlink.h.'>nl_attr_get_u64</a>(<b>const</b> <b>struct</b> <a href='../Y/4897.html' title='Multiple used in 24 places.'>nlattr</a> *<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>) 
+<a name='L737'> 737 <font color='red'>{</font>
+<a name='L738'> 738     <b>return</b> <a href='../S/826.html#L702' title='Defined at 702 in cbench/openflow/lib/netlink.c.'>NL_ATTR_GET_AS</a>(<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>, <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a>);
+<a name='L739'> 739 <font color='red'>}</font>
+<a name='L740'> 740 
+<a name='L741'> 741 <i><font color='green'>/* Returns the null-terminated string value in 'nla''s payload.</font></i>
+<a name='L742'> 742 <i><font color='green'> *</font></i>
+<a name='L743'> 743 <i><font color='green'> * Asserts that 'nla''s payload contains a null-terminated string. */</font></i>
+<a name='L744'> 744 <b>const</b> <b>char</b> *
+<a name='L745'> 745 <a href='../R/3713.html' title='Multiple refered from 2 places.'>nl_attr_get_string</a>(<b>const</b> <b>struct</b> <a href='../Y/4897.html' title='Multiple used in 24 places.'>nlattr</a> *<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>) 
+<a name='L746'> 746 <font color='red'>{</font>
+<a name='L747'> 747     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>-&gt;<a href='../Y/4889.html' title='Multiple used in 22 places.'>nla_len</a> &gt; <a href='../S/867.html#L116' title='Defined at 116 in cbench/openflow/lib/netlink-protocol.h.'>NLA_HDRLEN</a>);
+<a name='L748'> 748     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/4415.html' title='Multiple used in 3 places.'>memchr</a>(<a href='../S/826.html#L671' title='Defined at 671 in cbench/openflow/lib/netlink.c.'>nl_attr_get</a>(<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>), '\0', <a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>-&gt;<a href='../Y/4889.html' title='Multiple used in 22 places.'>nla_len</a> - <a href='../S/867.html#L116' title='Defined at 116 in cbench/openflow/lib/netlink-protocol.h.'>NLA_HDRLEN</a>) != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>);
+<a name='L749'> 749     <b>return</b> <a href='../S/826.html#L671' title='Defined at 671 in cbench/openflow/lib/netlink.c.'>nl_attr_get</a>(<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>);
+<a name='L750'> 750 <font color='red'>}</font>
+<a name='L751'> 751 
+<a name='L752'> 752 <i><font color='green'>/* Default minimum and maximum payload sizes for each type of attribute. */</font></i>
+<a name='L753'> 753 <b>static</b> <b>const</b> <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/1519.html' title='Multiple used in 3 places.'>attr_len_range</a>[][2] = <font color='red'>{</font>
+<a name='L754'> 754     [0 ... <a href='../Y/605.html' title='Multiple used in 3 places.'>N_NL_ATTR_TYPES</a> - 1] = <font color='red'>{</font> 0, <a href='../Y/823.html' title='Multiple used in 53 places.'>SIZE_MAX</a> <font color='red'>}</font>,
+<a name='L755'> 755     [<a href='../Y/593.html' title='Multiple used in 2 places.'>NL_A_U8</a>] = <font color='red'>{</font> 1, 1 <font color='red'>}</font>,
+<a name='L756'> 756     [<a href='../Y/590.html' title='Multiple used in 3 places.'>NL_A_U16</a>] = <font color='red'>{</font> 2, 2 <font color='red'>}</font>,
+<a name='L757'> 757     [<a href='../Y/591.html' title='Multiple used in 5 places.'>NL_A_U32</a>] = <font color='red'>{</font> 4, 4 <font color='red'>}</font>,
+<a name='L758'> 758     [<a href='../Y/592.html' title='Multiple used in 2 places.'>NL_A_U64</a>] = <font color='red'>{</font> 8, 8 <font color='red'>}</font>,
+<a name='L759'> 759     [<a href='../Y/589.html' title='Multiple used in 5 places.'>NL_A_STRING</a>] = <font color='red'>{</font> 1, <a href='../Y/823.html' title='Multiple used in 53 places.'>SIZE_MAX</a> <font color='red'>}</font>,
+<a name='L760'> 760     [<a href='../Y/586.html' title='Multiple used in 3 places.'>NL_A_FLAG</a>] = <font color='red'>{</font> 0, <a href='../Y/823.html' title='Multiple used in 53 places.'>SIZE_MAX</a> <font color='red'>}</font>,
+<a name='L761'> 761     [<a href='../Y/587.html' title='Multiple used in 2 places.'>NL_A_NESTED</a>] = <font color='red'>{</font> <a href='../S/867.html#L86' title='Defined at 86 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_HDRLEN</a>, <a href='../Y/823.html' title='Multiple used in 53 places.'>SIZE_MAX</a> <font color='red'>}</font>,
+<a name='L762'> 762 <font color='red'>}</font>;
+<a name='L763'> 763 
+<a name='L764'> 764 <i><font color='green'>/* Parses the 'msg' starting at the given 'nla_offset' as a sequence of Netlink</font></i>
+<a name='L765'> 765 <i><font color='green'> * attributes.  'policy[i]', for 0 &lt;= i &lt; n_attrs, specifies how the attribute</font></i>
+<a name='L766'> 766 <i><font color='green'> * with nla_type == i is parsed; a pointer to attribute i is stored in</font></i>
+<a name='L767'> 767 <i><font color='green'> * attrs[i].  Returns true if successful, false on failure.</font></i>
+<a name='L768'> 768 <i><font color='green'> *</font></i>
+<a name='L769'> 769 <i><font color='green'> * If the Netlink attributes in 'msg' follow a Netlink header and a Generic</font></i>
+<a name='L770'> 770 <i><font color='green'> * Netlink header, then 'nla_offset' should be NLMSG_HDRLEN + GENL_HDRLEN. */</font></i>
+<a name='L771'> 771 <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a>
+<a name='L772'> 772 <a href='../R/3739.html' title='Multiple refered from 5 places.'>nl_policy_parse</a>(<b>const</b> <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4890.html' title='Multiple used in 2 places.'>nla_offset</a>,
+<a name='L773'> 773                 <b>const</b> <b>struct</b> <a href='../Y/4882.html' title='Multiple used in 2 places.'>nl_policy</a> <a href='../Y/5778.html' title='Multiple used in 13 places.'>policy</a>[],
+<a name='L774'> 774                 <b>struct</b> <a href='../Y/4897.html' title='Multiple used in 24 places.'>nlattr</a> *<a href='../Y/1524.html' title='Multiple used in 40 places.'>attrs</a>[], <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4569.html' title='Multiple used in 4 places.'>n_attrs</a>)
+<a name='L775'> 775 <font color='red'>{</font>
+<a name='L776'> 776     <b>void</b> *<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>, *<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a>;
+<a name='L777'> 777     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4617.html' title='Multiple used in 7 places.'>n_required</a>;
+<a name='L778'> 778     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L779'> 779 
+<a name='L780'> 780     <a href='../Y/4617.html' title='Multiple used in 7 places.'>n_required</a> = 0;
+<a name='L781'> 781     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../Y/4569.html' title='Multiple used in 4 places.'>n_attrs</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L782'> 782         <a href='../Y/1524.html' title='Multiple used in 40 places.'>attrs</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>] = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L783'> 783 
+<a name='L784'> 784         <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/5778.html' title='Multiple used in 13 places.'>policy</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>].<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> &lt; <a href='../Y/605.html' title='Multiple used in 3 places.'>N_NL_ATTR_TYPES</a>);
+<a name='L785'> 785         <b>if</b> (<a href='../Y/5778.html' title='Multiple used in 13 places.'>policy</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>].<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> != <a href='../Y/588.html' title='Multiple used in 3 places.'>NL_A_NO_ATTR</a>
+<a name='L786'> 786             &amp;&amp; <a href='../Y/5778.html' title='Multiple used in 13 places.'>policy</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>].<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> != <a href='../Y/586.html' title='Multiple used in 3 places.'>NL_A_FLAG</a>
+<a name='L787'> 787             &amp;&amp; !<a href='../Y/5778.html' title='Multiple used in 13 places.'>policy</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>].<a href='../Y/5505.html' title='Multiple used in 6 places.'>optional</a>) <font color='red'>{</font>
+<a name='L788'> 788             <a href='../Y/4617.html' title='Multiple used in 7 places.'>n_required</a>++;
+<a name='L789'> 789         <font color='red'>}</font>
+<a name='L790'> 790     <font color='red'>}</font>
+<a name='L791'> 791 
+<a name='L792'> 792     <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> = <a href='../S/887.html#L236' title='Defined at 236 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_at</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/4890.html' title='Multiple used in 2 places.'>nla_offset</a>, 0);
+<a name='L793'> 793     <b>if</b> (<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L794'> 794         <a href='../S/859.html#L173' title='Defined at 173 in cbench/openflow/lib/vlog.h.'>VLOG_DBG_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "missing headers in nl_policy_parse");
+<a name='L795'> 795         <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L796'> 796     <font color='red'>}</font>
+<a name='L797'> 797     <a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a> = <a href='../S/887.html#L252' title='Defined at 252 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_tail</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>);
+<a name='L798'> 798 
+<a name='L799'> 799     <b>while</b> (<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> &lt; <a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a>) <font color='red'>{</font>
+<a name='L800'> 800         <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a> = (<b>char</b>*)<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> - (<b>char</b>*)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L801'> 801         <b>struct</b> <a href='../S/867.html#L108' title='Defined at 108 in cbench/openflow/lib/netlink-protocol.h.'>nlattr</a> *<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a> = <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>;
+<a name='L802'> 802         <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <a href='../Y/1373.html' title='Multiple used in 4 places.'>aligned_len</a>;
+<a name='L803'> 803         <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;
+<a name='L804'> 804 
+<a name='L805'> 805         <i><font color='green'>/* Make sure its claimed length is plausible. */</font></i>
+<a name='L806'> 806         <b>if</b> (<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>-&gt;<a href='../Y/4889.html' title='Multiple used in 22 places.'>nla_len</a> &lt; <a href='../S/867.html#L116' title='Defined at 116 in cbench/openflow/lib/netlink-protocol.h.'>NLA_HDRLEN</a>) <font color='red'>{</font>
+<a name='L807'> 807             <a href='../S/859.html#L173' title='Defined at 173 in cbench/openflow/lib/vlog.h.'>VLOG_DBG_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "%zu: attr shorter than NLA_HDRLEN (%"<a href='../Y/697.html' title='Multiple used in 38 places.'>PRIu16</a>")",
+<a name='L808'> 808                         <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>-&gt;<a href='../Y/4889.html' title='Multiple used in 22 places.'>nla_len</a>);
+<a name='L809'> 809             <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L810'> 810         <font color='red'>}</font>
+<a name='L811'> 811         <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a> = <a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>-&gt;<a href='../Y/4889.html' title='Multiple used in 22 places.'>nla_len</a> - <a href='../S/867.html#L116' title='Defined at 116 in cbench/openflow/lib/netlink-protocol.h.'>NLA_HDRLEN</a>;
+<a name='L812'> 812         <a href='../Y/1373.html' title='Multiple used in 4 places.'>aligned_len</a> = <a href='../S/867.html#L115' title='Defined at 115 in cbench/openflow/lib/netlink-protocol.h.'>NLA_ALIGN</a>(<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>);
+<a name='L813'> 813         <b>if</b> (<a href='../Y/1373.html' title='Multiple used in 4 places.'>aligned_len</a> &gt; (<b>char</b>*)<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a> - (<b>char</b>*)<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>) <font color='red'>{</font>
+<a name='L814'> 814             <a href='../S/859.html#L173' title='Defined at 173 in cbench/openflow/lib/vlog.h.'>VLOG_DBG_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "%zu: attr %"<a href='../Y/697.html' title='Multiple used in 38 places.'>PRIu16</a>" aligned data len (%zu) "
+<a name='L815'> 815                         "&gt; bytes left (%tu)",
+<a name='L816'> 816                         <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>-&gt;<a href='../Y/4896.html' title='Multiple used in 5 places.'>nla_type</a>, <a href='../Y/1373.html' title='Multiple used in 4 places.'>aligned_len</a>,
+<a name='L817'> 817                         (<b>char</b>*)<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a> - (<b>char</b>*)<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>);
+<a name='L818'> 818             <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L819'> 819         <font color='red'>}</font>
+<a name='L820'> 820 
+<a name='L821'> 821         <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> = <a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>-&gt;<a href='../Y/4896.html' title='Multiple used in 5 places.'>nla_type</a>;
+<a name='L822'> 822         <b>if</b> (<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> &lt; <a href='../Y/4569.html' title='Multiple used in 4 places.'>n_attrs</a> &amp;&amp; <a href='../Y/5778.html' title='Multiple used in 13 places.'>policy</a>[<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>].<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> != <a href='../Y/588.html' title='Multiple used in 3 places.'>NL_A_NO_ATTR</a>) <font color='red'>{</font>
+<a name='L823'> 823             <b>const</b> <b>struct</b> <a href='../S/892.html#L129' title='Defined at 129 in cbench/openflow/lib/netlink.h.'>nl_policy</a> *<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> = &amp;<a href='../Y/5778.html' title='Multiple used in 13 places.'>policy</a>[<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>];
+<a name='L824'> 824             <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4456.html' title='Multiple used in 11 places.'>min_len</a>, <a href='../Y/4375.html' title='Multiple used in 47 places.'>max_len</a>;
+<a name='L825'> 825 
+<a name='L826'> 826             <i><font color='green'>/* Validate length and content. */</font></i>
+<a name='L827'> 827             <a href='../Y/4456.html' title='Multiple used in 11 places.'>min_len</a> = <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>-&gt;<a href='../Y/4456.html' title='Multiple used in 11 places.'>min_len</a> ? <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>-&gt;<a href='../Y/4456.html' title='Multiple used in 11 places.'>min_len</a> : <a href='../Y/1519.html' title='Multiple used in 3 places.'>attr_len_range</a>[<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>][0];
+<a name='L828'> 828             <a href='../Y/4375.html' title='Multiple used in 47 places.'>max_len</a> = <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>-&gt;<a href='../Y/4375.html' title='Multiple used in 47 places.'>max_len</a> ? <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>-&gt;<a href='../Y/4375.html' title='Multiple used in 47 places.'>max_len</a> : <a href='../Y/1519.html' title='Multiple used in 3 places.'>attr_len_range</a>[<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>][1];
+<a name='L829'> 829             <b>if</b> (<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a> &lt; <a href='../Y/4456.html' title='Multiple used in 11 places.'>min_len</a> || <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a> &gt; <a href='../Y/4375.html' title='Multiple used in 47 places.'>max_len</a>) <font color='red'>{</font>
+<a name='L830'> 830                 <a href='../S/859.html#L173' title='Defined at 173 in cbench/openflow/lib/vlog.h.'>VLOG_DBG_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "%zu: attr %"<a href='../Y/697.html' title='Multiple used in 38 places.'>PRIu16</a>" length %zu not in "
+<a name='L831'> 831                             "allowed range %zu...%zu",
+<a name='L832'> 832                             <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <a href='../Y/4456.html' title='Multiple used in 11 places.'>min_len</a>, <a href='../Y/4375.html' title='Multiple used in 47 places.'>max_len</a>);
+<a name='L833'> 833                 <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L834'> 834             <font color='red'>}</font>
+<a name='L835'> 835             <b>if</b> (<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> == <a href='../Y/589.html' title='Multiple used in 5 places.'>NL_A_STRING</a>) <font color='red'>{</font>
+<a name='L836'> 836                 <b>if</b> (((<b>char</b> *) <a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>)[<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>-&gt;<a href='../Y/4889.html' title='Multiple used in 22 places.'>nla_len</a> - 1]) <font color='red'>{</font>
+<a name='L837'> 837                     <a href='../S/859.html#L173' title='Defined at 173 in cbench/openflow/lib/vlog.h.'>VLOG_DBG_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "%zu: attr %"<a href='../Y/697.html' title='Multiple used in 38 places.'>PRIu16</a>" lacks null at end",
+<a name='L838'> 838                                 <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>);
+<a name='L839'> 839                     <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L840'> 840                 <font color='red'>}</font>
+<a name='L841'> 841                 <b>if</b> (<a href='../Y/4415.html' title='Multiple used in 3 places.'>memchr</a>(<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a> + 1, '\0', <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a> - 1) != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L842'> 842                     <a href='../S/859.html#L173' title='Defined at 173 in cbench/openflow/lib/vlog.h.'>VLOG_DBG_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "%zu: attr %"<a href='../Y/697.html' title='Multiple used in 38 places.'>PRIu16</a>" has bad length",
+<a name='L843'> 843                                 <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>);
+<a name='L844'> 844                     <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L845'> 845                 <font color='red'>}</font>
+<a name='L846'> 846             <font color='red'>}</font>
+<a name='L847'> 847             <b>if</b> (!<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>-&gt;<a href='../Y/5505.html' title='Multiple used in 6 places.'>optional</a> &amp;&amp; <a href='../Y/1524.html' title='Multiple used in 40 places.'>attrs</a>[<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>] == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L848'> 848                 <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/4617.html' title='Multiple used in 7 places.'>n_required</a> &gt; 0);
+<a name='L849'> 849                 --<a href='../Y/4617.html' title='Multiple used in 7 places.'>n_required</a>;
+<a name='L850'> 850             <font color='red'>}</font>
+<a name='L851'> 851             <a href='../Y/1524.html' title='Multiple used in 40 places.'>attrs</a>[<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>] = <a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>;
+<a name='L852'> 852         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L853'> 853             <i><font color='green'>/* Skip attribute type that we don't care about. */</font></i>
+<a name='L854'> 854         <font color='red'>}</font>
+<a name='L855'> 855         <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> = (<b>char</b>*)<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> + <a href='../S/867.html#L115' title='Defined at 115 in cbench/openflow/lib/netlink-protocol.h.'>NLA_ALIGN</a>(<a href='../Y/4884.html' title='Multiple used in 46 places.'>nla</a>-&gt;<a href='../Y/4889.html' title='Multiple used in 22 places.'>nla_len</a>);
+<a name='L856'> 856     <font color='red'>}</font>
+<a name='L857'> 857     <b>if</b> (<a href='../Y/4617.html' title='Multiple used in 7 places.'>n_required</a>) <font color='red'>{</font>
+<a name='L858'> 858         <a href='../S/859.html#L173' title='Defined at 173 in cbench/openflow/lib/vlog.h.'>VLOG_DBG_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "%zu required attrs missing", <a href='../Y/4617.html' title='Multiple used in 7 places.'>n_required</a>);
+<a name='L859'> 859         <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L860'> 860     <font color='red'>}</font>
+<a name='L861'> 861     <b>return</b> <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>;
+<a name='L862'> 862 <font color='red'>}</font>
+<a name='L863'> 863 
+<a name='L864'> 864 <i><font color='green'>/* Miscellaneous.  */</font></i>
+<a name='L865'> 865 
+<a name='L866'> 866 <b>static</b> <b>const</b> <b>struct</b> <a href='../S/892.html#L129' title='Defined at 129 in cbench/openflow/lib/netlink.h.'>nl_policy</a> <a href='../Y/3003.html' title='Multiple used in 3 places.'>family_policy</a>[<a href='../S/867.html#L147' title='Defined at 147 in cbench/openflow/lib/netlink-protocol.h.'>CTRL_ATTR_MAX</a> + 1] = <font color='red'>{</font> 
+<a name='L867'> 867     [<a href='../S/867.html#L138' title='Defined at 138 in cbench/openflow/lib/netlink-protocol.h.'>CTRL_ATTR_FAMILY_ID</a>] = <font color='red'>{</font>.<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> = <a href='../Y/590.html' title='Multiple used in 3 places.'>NL_A_U16</a><font color='red'>}</font>,
+<a name='L868'> 868 <font color='red'>}</font>;
+<a name='L869'> 869 
+<a name='L870'> 870 <b>static</b> <b>int</b> <a href='../S/826.html#L917' title='Refered from 917 in cbench/openflow/lib/netlink.c.'>do_lookup_genl_family</a>(<b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>) 
+<a name='L871'> 871 <font color='red'>{</font>
+<a name='L872'> 872     <b>struct</b> <a href='../S/826.html#L69' title='Defined at 69 in cbench/openflow/lib/netlink.c.'>nl_sock</a> *<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>;
+<a name='L873'> 873     <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> <a href='../Y/6400.html' title='Multiple used in 153 places.'>request</a>, *<a href='../Y/6383.html' title='Multiple used in 144 places.'>reply</a>;
+<a name='L874'> 874     <b>struct</b> <a href='../S/867.html#L108' title='Defined at 108 in cbench/openflow/lib/netlink-protocol.h.'>nlattr</a> *<a href='../Y/1524.html' title='Multiple used in 40 places.'>attrs</a>[<a href='../S/840.html#L69' title='Defined at 69 in cbench/openflow/lib/util.h.'>ARRAY_SIZE</a>(<a href='../Y/3003.html' title='Multiple used in 3 places.'>family_policy</a>)];
+<a name='L875'> 875     <b>int</b> <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>;
+<a name='L876'> 876 
+<a name='L877'> 877     <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../S/826.html#L100' title='Defined at 100 in cbench/openflow/lib/netlink.c.'>nl_sock_create</a>(<a href='../S/867.html#L46' title='Defined at 46 in cbench/openflow/lib/netlink-protocol.h.'>NETLINK_GENERIC</a>, 0, 0, 0, &amp;<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>);
+<a name='L878'> 878     <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>) <font color='red'>{</font>
+<a name='L879'> 879         <b>return</b> -<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>;
+<a name='L880'> 880     <font color='red'>}</font>
+<a name='L881'> 881 
+<a name='L882'> 882     <a href='../S/887.html#L62' title='Defined at 62 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_init</a>(&amp;<a href='../Y/6400.html' title='Multiple used in 153 places.'>request</a>, 0);
+<a name='L883'> 883     <a href='../S/826.html#L545' title='Defined at 545 in cbench/openflow/lib/netlink.c.'>nl_msg_put_genlmsghdr</a>(&amp;<a href='../Y/6400.html' title='Multiple used in 153 places.'>request</a>, <a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>, 0, <a href='../S/867.html#L121' title='Defined at 121 in cbench/openflow/lib/netlink-protocol.h.'>GENL_ID_CTRL</a>, <a href='../S/867.html#L57' title='Defined at 57 in cbench/openflow/lib/netlink-protocol.h.'>NLM_F_REQUEST</a>,
+<a name='L884'> 884                           <a href='../S/867.html#L127' title='Defined at 127 in cbench/openflow/lib/netlink-protocol.h.'>CTRL_CMD_GETFAMILY</a>, 1);
+<a name='L885'> 885     <a href='../S/826.html#L653' title='Defined at 653 in cbench/openflow/lib/netlink.c.'>nl_msg_put_string</a>(&amp;<a href='../Y/6400.html' title='Multiple used in 153 places.'>request</a>, <a href='../S/867.html#L139' title='Defined at 139 in cbench/openflow/lib/netlink-protocol.h.'>CTRL_ATTR_FAMILY_NAME</a>, <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>);
+<a name='L886'> 886     <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../S/826.html#L379' title='Defined at 379 in cbench/openflow/lib/netlink.c.'>nl_sock_transact</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>, &amp;<a href='../Y/6400.html' title='Multiple used in 153 places.'>request</a>, &amp;<a href='../Y/6383.html' title='Multiple used in 144 places.'>reply</a>);
+<a name='L887'> 887     <a href='../S/887.html#L69' title='Defined at 69 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_uninit</a>(&amp;<a href='../Y/6400.html' title='Multiple used in 153 places.'>request</a>);
+<a name='L888'> 888     <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>) <font color='red'>{</font>
+<a name='L889'> 889         <a href='../S/826.html#L204' title='Defined at 204 in cbench/openflow/lib/netlink.c.'>nl_sock_destroy</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>);
+<a name='L890'> 890         <b>return</b> -<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>;
+<a name='L891'> 891     <font color='red'>}</font>
+<a name='L892'> 892 
+<a name='L893'> 893     <b>if</b> (!<a href='../S/826.html#L772' title='Defined at 772 in cbench/openflow/lib/netlink.c.'>nl_policy_parse</a>(<a href='../Y/6383.html' title='Multiple used in 144 places.'>reply</a>, <a href='../S/867.html#L86' title='Defined at 86 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_HDRLEN</a> + <a href='../S/867.html#L106' title='Defined at 106 in cbench/openflow/lib/netlink-protocol.h.'>GENL_HDRLEN</a>,
+<a name='L894'> 894                          <a href='../Y/3003.html' title='Multiple used in 3 places.'>family_policy</a>, <a href='../Y/1524.html' title='Multiple used in 40 places.'>attrs</a>, <a href='../S/840.html#L69' title='Defined at 69 in cbench/openflow/lib/util.h.'>ARRAY_SIZE</a>(<a href='../Y/3003.html' title='Multiple used in 3 places.'>family_policy</a>))) <font color='red'>{</font>
+<a name='L895'> 895         <a href='../S/826.html#L204' title='Defined at 204 in cbench/openflow/lib/netlink.c.'>nl_sock_destroy</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>);
+<a name='L896'> 896         <a href='../S/887.html#L110' title='Defined at 110 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_delete</a>(<a href='../Y/6383.html' title='Multiple used in 144 places.'>reply</a>);
+<a name='L897'> 897         <b>return</b> -<a href='../Y/291.html' title='Multiple used in 24 places.'>EPROTO</a>;
+<a name='L898'> 898     <font color='red'>}</font>
+<a name='L899'> 899 
+<a name='L900'> 900     <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../S/826.html#L718' title='Defined at 718 in cbench/openflow/lib/netlink.c.'>nl_attr_get_u16</a>(<a href='../Y/1524.html' title='Multiple used in 40 places.'>attrs</a>[<a href='../S/867.html#L138' title='Defined at 138 in cbench/openflow/lib/netlink-protocol.h.'>CTRL_ATTR_FAMILY_ID</a>]);
+<a name='L901'> 901     <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> == 0) <font color='red'>{</font>
+<a name='L902'> 902         <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = -<a href='../Y/291.html' title='Multiple used in 24 places.'>EPROTO</a>;
+<a name='L903'> 903     <font color='red'>}</font>
+<a name='L904'> 904     <a href='../S/826.html#L204' title='Defined at 204 in cbench/openflow/lib/netlink.c.'>nl_sock_destroy</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>);
+<a name='L905'> 905     <a href='../S/887.html#L110' title='Defined at 110 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_delete</a>(<a href='../Y/6383.html' title='Multiple used in 144 places.'>reply</a>);
+<a name='L906'> 906     <b>return</b> <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>;
+<a name='L907'> 907 <font color='red'>}</font>
+<a name='L908'> 908 
+<a name='L909'> 909 <i><font color='green'>/* If '*number' is 0, translates the given Generic Netlink family 'name' to a</font></i>
+<a name='L910'> 910 <i><font color='green'> * number and stores it in '*number'.  If successful, returns 0 and the caller</font></i>
+<a name='L911'> 911 <i><font color='green'> * may use '*number' as the family number.  On failure, returns a positive</font></i>
+<a name='L912'> 912 <i><font color='green'> * errno value and '*number' caches the errno value. */</font></i>
+<a name='L913'> 913 <b>int</b>
+<a name='L914'> 914 <a href='../R/3720.html' title='Multiple refered from 2 places.'>nl_lookup_genl_family</a>(<b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>, <b>int</b> *<a href='../Y/5007.html' title='Multiple used in 9 places.'>number</a>) 
+<a name='L915'> 915 <font color='red'>{</font>
+<a name='L916'> 916     <b>if</b> (*<a href='../Y/5007.html' title='Multiple used in 9 places.'>number</a> == 0) <font color='red'>{</font>
+<a name='L917'> 917         *<a href='../Y/5007.html' title='Multiple used in 9 places.'>number</a> = <a href='../S/826.html#L870' title='Defined at 870 in cbench/openflow/lib/netlink.c.'>do_lookup_genl_family</a>(<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>);
+<a name='L918'> 918         <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(*<a href='../Y/5007.html' title='Multiple used in 9 places.'>number</a> != 0);
+<a name='L919'> 919     <font color='red'>}</font>
+<a name='L920'> 920     <b>return</b> *<a href='../Y/5007.html' title='Multiple used in 9 places.'>number</a> &gt; 0 ? 0 : -*<a href='../Y/5007.html' title='Multiple used in 9 places.'>number</a>;
+<a name='L921'> 921 <font color='red'>}</font>
+<a name='L922'> 922 
+<a name='L923'> 923 <i><font color='green'>/* Netlink PID.</font></i>
+<a name='L924'> 924 <i><font color='green'> *</font></i>
+<a name='L925'> 925 <i><font color='green'> * Every Netlink socket must be bound to a unique 32-bit PID.  By convention,</font></i>
+<a name='L926'> 926 <i><font color='green'> * programs that have a single Netlink socket use their Unix process ID as PID,</font></i>
+<a name='L927'> 927 <i><font color='green'> * and programs with multiple Netlink sockets add a unique per-socket</font></i>
+<a name='L928'> 928 <i><font color='green'> * identifier in the bits above the Unix process ID.</font></i>
+<a name='L929'> 929 <i><font color='green'> *</font></i>
+<a name='L930'> 930 <i><font color='green'> * The kernel has Netlink PID 0.</font></i>
+<a name='L931'> 931 <i><font color='green'> */</font></i>
+<a name='L932'> 932 
+<a name='L933'> 933 <i><font color='green'>/* Parameters for how many bits in the PID should come from the Unix process ID</font></i>
+<a name='L934'> 934 <i><font color='green'> * and how many unique per-socket. */</font></i>
+<a name='L935'> 935 <font color='darkred'>#define</font> <a href='../R/1567.html' title='Multiple refered from 2 places.'>SOCKET_BITS</a> 10
+<a name='L936'> 936 <font color='darkred'>#define</font> <a href='../R/888.html' title='Multiple refered from 2 places.'>MAX_SOCKETS</a> (1u &lt;&lt; <a href='../S/826.html#L935' title='Defined at 935 in cbench/openflow/lib/netlink.c.'>SOCKET_BITS</a>)
+<a name='L937'> 937 
+<a name='L938'> 938 <font color='darkred'>#define</font> <a href='../R/1469.html' title='Multiple refered from 4 places.'>PROCESS_BITS</a> (32 - <a href='../S/826.html#L935' title='Defined at 935 in cbench/openflow/lib/netlink.c.'>SOCKET_BITS</a>)
+<a name='L939'> 939 <font color='darkred'>#define</font> <a href='../S/826.html#L940' title='Refered from 940 in cbench/openflow/lib/netlink.c.'>MAX_PROCESSES</a> (1u &lt;&lt; <a href='../S/826.html#L938' title='Defined at 938 in cbench/openflow/lib/netlink.c.'>PROCESS_BITS</a>)
+<a name='L940'> 940 <font color='darkred'>#define</font> <a href='../R/1471.html' title='Multiple refered from 2 places.'>PROCESS_MASK</a> ((<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a>) (<a href='../S/826.html#L939' title='Defined at 939 in cbench/openflow/lib/netlink.c.'>MAX_PROCESSES</a> - 1))
+<a name='L941'> 941 
+<a name='L942'> 942 <i><font color='green'>/* Bit vector of unused socket identifiers. */</font></i>
+<a name='L943'> 943 <b>static</b> <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/1559.html' title='Multiple used in 5 places.'>avail_sockets</a>[<a href='../S/840.html#L70' title='Defined at 70 in cbench/openflow/lib/util.h.'>ROUND_UP</a>(<a href='../S/826.html#L936' title='Defined at 936 in cbench/openflow/lib/netlink.c.'>MAX_SOCKETS</a>, 32)];
+<a name='L944'> 944 
+<a name='L945'> 945 <i><font color='green'>/* Allocates and returns a new Netlink PID. */</font></i>
+<a name='L946'> 946 <b>static</b> <b>int</b>
+<a name='L947'> 947 <a href='../R/2182.html' title='Multiple refered from 2 places.'>alloc_pid</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> *<a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>)
+<a name='L948'> 948 <font color='red'>{</font>
+<a name='L949'> 949     <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L950'> 950 
+<a name='L951'> 951     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../S/826.html#L936' title='Defined at 936 in cbench/openflow/lib/netlink.c.'>MAX_SOCKETS</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L952'> 952         <b>if</b> ((<a href='../Y/1559.html' title='Multiple used in 5 places.'>avail_sockets</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> / 32] &amp; (1u &lt;&lt; (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> % 32))) == 0) <font color='red'>{</font>
+<a name='L953'> 953             <a href='../Y/1559.html' title='Multiple used in 5 places.'>avail_sockets</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> / 32] |= 1u &lt;&lt; (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> % 32);
+<a name='L954'> 954             *<a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a> = (<a href='../Y/3426.html' title='Multiple used in 12 places.'>getpid</a>() &amp; <a href='../S/826.html#L940' title='Defined at 940 in cbench/openflow/lib/netlink.c.'>PROCESS_MASK</a>) | (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt;&lt; <a href='../S/826.html#L938' title='Defined at 938 in cbench/openflow/lib/netlink.c.'>PROCESS_BITS</a>);
+<a name='L955'> 955             <b>return</b> 0;
+<a name='L956'> 956         <font color='red'>}</font>
+<a name='L957'> 957     <font color='red'>}</font>
+<a name='L958'> 958     <a href='../S/859.html#L150' title='Defined at 150 in cbench/openflow/lib/vlog.h.'>VLOG_ERR</a>("netlink pid space exhausted");
+<a name='L959'> 959     <b>return</b> <a href='../Y/273.html' title='Multiple used in 24 places.'>ENOBUFS</a>;
+<a name='L960'> 960 <font color='red'>}</font>
+<a name='L961'> 961 
+<a name='L962'> 962 <i><font color='green'>/* Makes the specified 'pid' available for reuse. */</font></i>
+<a name='L963'> 963 <b>static</b> <b>void</b>
+<a name='L964'> 964 <a href='../R/3101.html' title='Multiple refered from 3 places.'>free_pid</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>)
+<a name='L965'> 965 <font color='red'>{</font>
+<a name='L966'> 966     <b>int</b> <a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a> = <a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a> &gt;&gt; <a href='../S/826.html#L938' title='Defined at 938 in cbench/openflow/lib/netlink.c.'>PROCESS_BITS</a>;
+<a name='L967'> 967     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/1559.html' title='Multiple used in 5 places.'>avail_sockets</a>[<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a> / 32] &amp; (1u &lt;&lt; (<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a> % 32)));
+<a name='L968'> 968     <a href='../Y/1559.html' title='Multiple used in 5 places.'>avail_sockets</a>[<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a> / 32] &amp;= ~(1u &lt;&lt; (<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a> % 32));
+<a name='L969'> 969 <font color='red'>}</font>
+<a name='L970'> 970 
+<a name='L971'> 971 <b>static</b> <b>void</b>
+<a name='L972'> 972 <a href='../R/3756.html' title='Multiple refered from 2 places.'>nlmsghdr_to_string</a>(<b>const</b> <b>struct</b> <a href='../Y/4909.html' title='Multiple used in 2 places.'>nlmsghdr</a> *<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>, <b>struct</b> <a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a> *<a href='../Y/2558.html' title='Multiple used in 85 places.'>ds</a>)
+<a name='L973'> 973 <font color='red'>{</font>
+<a name='L974'> 974     <b>struct</b> <a href='../R/3750.html' title='Multiple refered from 2 places.'>nlmsg_flag</a> <font color='red'>{</font>
+<a name='L975'> 975         <b>unsigned</b> <b>int</b> <a href='../Y/1632.html' title='Multiple used in 7 places.'>bits</a>;
+<a name='L976'> 976         <b>const</b> <b>char</b> *<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;
+<a name='L977'> 977     <font color='red'>}</font>;
+<a name='L978'> 978     <b>static</b> <b>const</b> <b>struct</b> <a href='../S/826.html#L974' title='Defined at 974 in cbench/openflow/lib/netlink.c.'>nlmsg_flag</a> <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>[] = <font color='red'>{</font> 
+<a name='L979'> 979         <font color='red'>{</font> <a href='../S/867.html#L57' title='Defined at 57 in cbench/openflow/lib/netlink-protocol.h.'>NLM_F_REQUEST</a>, "REQUEST" <font color='red'>}</font>,
+<a name='L980'> 980         <font color='red'>{</font> <a href='../S/867.html#L58' title='Defined at 58 in cbench/openflow/lib/netlink-protocol.h.'>NLM_F_MULTI</a>, "MULTI" <font color='red'>}</font>,
+<a name='L981'> 981         <font color='red'>{</font> <a href='../S/867.html#L59' title='Defined at 59 in cbench/openflow/lib/netlink-protocol.h.'>NLM_F_ACK</a>, "ACK" <font color='red'>}</font>,
+<a name='L982'> 982         <font color='red'>{</font> <a href='../S/867.html#L60' title='Defined at 60 in cbench/openflow/lib/netlink-protocol.h.'>NLM_F_ECHO</a>, "ECHO" <font color='red'>}</font>,
+<a name='L983'> 983         <font color='red'>{</font> <a href='../S/867.html#L65' title='Defined at 65 in cbench/openflow/lib/netlink-protocol.h.'>NLM_F_DUMP</a>, "DUMP" <font color='red'>}</font>,
+<a name='L984'> 984         <font color='red'>{</font> <a href='../S/867.html#L62' title='Defined at 62 in cbench/openflow/lib/netlink-protocol.h.'>NLM_F_ROOT</a>, "ROOT" <font color='red'>}</font>,
+<a name='L985'> 985         <font color='red'>{</font> <a href='../S/867.html#L63' title='Defined at 63 in cbench/openflow/lib/netlink-protocol.h.'>NLM_F_MATCH</a>, "MATCH" <font color='red'>}</font>,
+<a name='L986'> 986         <font color='red'>{</font> <a href='../S/867.html#L64' title='Defined at 64 in cbench/openflow/lib/netlink-protocol.h.'>NLM_F_ATOMIC</a>, "ATOMIC" <font color='red'>}</font>,
+<a name='L987'> 987     <font color='red'>}</font>;
+<a name='L988'> 988     <b>const</b> <b>struct</b> <a href='../S/826.html#L974' title='Defined at 974 in cbench/openflow/lib/netlink.c.'>nlmsg_flag</a> *<a href='../Y/3118.html' title='Multiple used in 61 places.'>flag</a>;
+<a name='L989'> 989     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/3120.html' title='Multiple used in 6 places.'>flags_left</a>;
+<a name='L990'> 990 
+<a name='L991'> 991     <a href='../S/907.html#L111' title='Defined at 111 in cbench/openflow/lib/dynamic-string.c.'>ds_put_format</a>(<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, "nl(len:%"<a href='../Y/698.html' title='Multiple used in 15 places.'>PRIu32</a>", type=%"<a href='../Y/697.html' title='Multiple used in 38 places.'>PRIu16</a>,
+<a name='L992'> 992                   <a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>-&gt;<a href='../Y/4902.html' title='Multiple used in 8 places.'>nlmsg_len</a>, <a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>-&gt;<a href='../Y/4907.html' title='Multiple used in 14 places.'>nlmsg_type</a>);
+<a name='L993'> 993     <b>if</b> (<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>-&gt;<a href='../Y/4907.html' title='Multiple used in 14 places.'>nlmsg_type</a> == <a href='../S/867.html#L68' title='Defined at 68 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_NOOP</a>) <font color='red'>{</font>
+<a name='L994'> 994         <a href='../S/907.html#L104' title='Defined at 104 in cbench/openflow/lib/dynamic-string.c.'>ds_put_cstr</a>(<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, "(no-op)");
+<a name='L995'> 995     <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>-&gt;<a href='../Y/4907.html' title='Multiple used in 14 places.'>nlmsg_type</a> == <a href='../S/867.html#L69' title='Defined at 69 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_ERROR</a>) <font color='red'>{</font>
+<a name='L996'> 996         <a href='../S/907.html#L104' title='Defined at 104 in cbench/openflow/lib/dynamic-string.c.'>ds_put_cstr</a>(<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, "(error)");
+<a name='L997'> 997     <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>-&gt;<a href='../Y/4907.html' title='Multiple used in 14 places.'>nlmsg_type</a> == <a href='../S/867.html#L70' title='Defined at 70 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_DONE</a>) <font color='red'>{</font>
+<a name='L998'> 998         <a href='../S/907.html#L104' title='Defined at 104 in cbench/openflow/lib/dynamic-string.c.'>ds_put_cstr</a>(<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, "(done)");
+<a name='L999'> 999     <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>-&gt;<a href='../Y/4907.html' title='Multiple used in 14 places.'>nlmsg_type</a> == <a href='../S/867.html#L71' title='Defined at 71 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_OVERRUN</a>) <font color='red'>{</font>
+<a name='L1000'>1000         <a href='../S/907.html#L104' title='Defined at 104 in cbench/openflow/lib/dynamic-string.c.'>ds_put_cstr</a>(<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, "(overrun)");
+<a name='L1001'>1001     <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>-&gt;<a href='../Y/4907.html' title='Multiple used in 14 places.'>nlmsg_type</a> &lt; <a href='../S/867.html#L73' title='Defined at 73 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_MIN_TYPE</a>) <font color='red'>{</font>
+<a name='L1002'>1002         <a href='../S/907.html#L104' title='Defined at 104 in cbench/openflow/lib/dynamic-string.c.'>ds_put_cstr</a>(<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, "(reserved)");
+<a name='L1003'>1003     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L1004'>1004         <a href='../S/907.html#L104' title='Defined at 104 in cbench/openflow/lib/dynamic-string.c.'>ds_put_cstr</a>(<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, "(family-defined)");
+<a name='L1005'>1005     <font color='red'>}</font>
+<a name='L1006'>1006     <a href='../S/907.html#L111' title='Defined at 111 in cbench/openflow/lib/dynamic-string.c.'>ds_put_format</a>(<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, ", flags=%"<a href='../Y/701.html' title='Multiple used in 6 places.'>PRIx16</a>, <a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>-&gt;<a href='../Y/4901.html' title='Multiple used in 5 places.'>nlmsg_flags</a>);
+<a name='L1007'>1007     <a href='../Y/3120.html' title='Multiple used in 6 places.'>flags_left</a> = <a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>-&gt;<a href='../Y/4901.html' title='Multiple used in 5 places.'>nlmsg_flags</a>;
+<a name='L1008'>1008     <b>for</b> (<a href='../Y/3118.html' title='Multiple used in 61 places.'>flag</a> = <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>; <a href='../Y/3118.html' title='Multiple used in 61 places.'>flag</a> &lt; &amp;<a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>[<a href='../S/840.html#L69' title='Defined at 69 in cbench/openflow/lib/util.h.'>ARRAY_SIZE</a>(<a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>)]; <a href='../Y/3118.html' title='Multiple used in 61 places.'>flag</a>++) <font color='red'>{</font>
+<a name='L1009'>1009         <b>if</b> ((<a href='../Y/3120.html' title='Multiple used in 6 places.'>flags_left</a> &amp; <a href='../Y/3118.html' title='Multiple used in 61 places.'>flag</a>-&gt;<a href='../Y/1632.html' title='Multiple used in 7 places.'>bits</a>) == <a href='../Y/3118.html' title='Multiple used in 61 places.'>flag</a>-&gt;<a href='../Y/1632.html' title='Multiple used in 7 places.'>bits</a>) <font color='red'>{</font>
+<a name='L1010'>1010             <a href='../S/907.html#L111' title='Defined at 111 in cbench/openflow/lib/dynamic-string.c.'>ds_put_format</a>(<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, "[%s]", <a href='../Y/3118.html' title='Multiple used in 61 places.'>flag</a>-&gt;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>);
+<a name='L1011'>1011             <a href='../Y/3120.html' title='Multiple used in 6 places.'>flags_left</a> &amp;= ~<a href='../Y/3118.html' title='Multiple used in 61 places.'>flag</a>-&gt;<a href='../Y/1632.html' title='Multiple used in 7 places.'>bits</a>;
+<a name='L1012'>1012         <font color='red'>}</font>
+<a name='L1013'>1013     <font color='red'>}</font>
+<a name='L1014'>1014     <b>if</b> (<a href='../Y/3120.html' title='Multiple used in 6 places.'>flags_left</a>) <font color='red'>{</font>
+<a name='L1015'>1015         <a href='../S/907.html#L111' title='Defined at 111 in cbench/openflow/lib/dynamic-string.c.'>ds_put_format</a>(<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, "[OTHER:%"<a href='../Y/701.html' title='Multiple used in 6 places.'>PRIx16</a>"]", <a href='../Y/3120.html' title='Multiple used in 6 places.'>flags_left</a>);
+<a name='L1016'>1016     <font color='red'>}</font>
+<a name='L1017'>1017     <a href='../S/907.html#L111' title='Defined at 111 in cbench/openflow/lib/dynamic-string.c.'>ds_put_format</a>(<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, ", seq=%"<a href='../Y/702.html' title='Multiple used in 15 places.'>PRIx32</a>", pid=%"<a href='../Y/698.html' title='Multiple used in 15 places.'>PRIu32</a>"(%d:%d))",
+<a name='L1018'>1018                   <a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>-&gt;<a href='../Y/4905.html' title='Multiple used in 7 places.'>nlmsg_seq</a>, <a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>-&gt;<a href='../Y/4904.html' title='Multiple used in 5 places.'>nlmsg_pid</a>,
+<a name='L1019'>1019                   (<b>int</b>) (<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>-&gt;<a href='../Y/4904.html' title='Multiple used in 5 places.'>nlmsg_pid</a> &amp; <a href='../S/826.html#L940' title='Defined at 940 in cbench/openflow/lib/netlink.c.'>PROCESS_MASK</a>),
+<a name='L1020'>1020                   (<b>int</b>) (<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>-&gt;<a href='../Y/4904.html' title='Multiple used in 5 places.'>nlmsg_pid</a> &gt;&gt; <a href='../S/826.html#L938' title='Defined at 938 in cbench/openflow/lib/netlink.c.'>PROCESS_BITS</a>));
+<a name='L1021'>1021 <font color='red'>}</font>
+<a name='L1022'>1022 
+<a name='L1023'>1023 <b>static</b> <b>char</b> *
+<a name='L1024'>1024 <a href='../S/826.html#L1076' title='Refered from 1076 in cbench/openflow/lib/netlink.c.'>nlmsg_to_string</a>(<b>const</b> <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>)
+<a name='L1025'>1025 <font color='red'>{</font>
+<a name='L1026'>1026     <b>struct</b> <a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a> <a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a> = <a href='../S/908.html#L52' title='Defined at 52 in cbench/openflow/lib/dynamic-string.h.'>DS_EMPTY_INITIALIZER</a>;
+<a name='L1027'>1027     <b>const</b> <b>struct</b> <a href='../S/867.html#L75' title='Defined at 75 in cbench/openflow/lib/netlink-protocol.h.'>nlmsghdr</a> *<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a> = <a href='../S/887.html#L236' title='Defined at 236 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_at</a>(<a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>, 0, <a href='../S/867.html#L86' title='Defined at 86 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_HDRLEN</a>);
+<a name='L1028'>1028     <b>if</b> (<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>) <font color='red'>{</font>
+<a name='L1029'>1029         <a href='../S/826.html#L972' title='Defined at 972 in cbench/openflow/lib/netlink.c.'>nlmsghdr_to_string</a>(<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>, &amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>);
+<a name='L1030'>1030         <b>if</b> (<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>-&gt;<a href='../Y/4907.html' title='Multiple used in 14 places.'>nlmsg_type</a> == <a href='../S/867.html#L69' title='Defined at 69 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_ERROR</a>) <font color='red'>{</font>
+<a name='L1031'>1031             <b>const</b> <b>struct</b> <a href='../S/867.html#L88' title='Defined at 88 in cbench/openflow/lib/netlink-protocol.h.'>nlmsgerr</a> *<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>;
+<a name='L1032'>1032             <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a> = <a href='../S/887.html#L236' title='Defined at 236 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_at</a>(<a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>, <a href='../S/867.html#L86' title='Defined at 86 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_HDRLEN</a>,
+<a name='L1033'>1033                           <a href='../S/867.html#L85' title='Defined at 85 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_ALIGN</a>(<b>sizeof</b>(<b>struct</b> <a href='../S/867.html#L88' title='Defined at 88 in cbench/openflow/lib/netlink-protocol.h.'>nlmsgerr</a>)));
+<a name='L1034'>1034             <b>if</b> (<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>) <font color='red'>{</font>
+<a name='L1035'>1035                 <a href='../S/907.html#L111' title='Defined at 111 in cbench/openflow/lib/dynamic-string.c.'>ds_put_format</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, " error(%d", <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>);
+<a name='L1036'>1036                 <b>if</b> (<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> &lt; 0) <font color='red'>{</font>
+<a name='L1037'>1037                     <a href='../S/907.html#L111' title='Defined at 111 in cbench/openflow/lib/dynamic-string.c.'>ds_put_format</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, "(%s)", <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(-<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>));
+<a name='L1038'>1038                 <font color='red'>}</font>
+<a name='L1039'>1039                 <a href='../S/907.html#L104' title='Defined at 104 in cbench/openflow/lib/dynamic-string.c.'>ds_put_cstr</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, ", in-reply-to(");
+<a name='L1040'>1040                 <a href='../S/826.html#L972' title='Defined at 972 in cbench/openflow/lib/netlink.c.'>nlmsghdr_to_string</a>(&amp;<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>-&gt;<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, &amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>);
+<a name='L1041'>1041                 <a href='../S/907.html#L104' title='Defined at 104 in cbench/openflow/lib/dynamic-string.c.'>ds_put_cstr</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, "))");
+<a name='L1042'>1042             <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L1043'>1043                 <a href='../S/907.html#L104' title='Defined at 104 in cbench/openflow/lib/dynamic-string.c.'>ds_put_cstr</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, " error(truncated)");
+<a name='L1044'>1044             <font color='red'>}</font>
+<a name='L1045'>1045         <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>-&gt;<a href='../Y/4907.html' title='Multiple used in 14 places.'>nlmsg_type</a> == <a href='../S/867.html#L70' title='Defined at 70 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_DONE</a>) <font color='red'>{</font>
+<a name='L1046'>1046             <b>int</b> *<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> = <a href='../S/887.html#L236' title='Defined at 236 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_at</a>(<a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>, <a href='../S/867.html#L86' title='Defined at 86 in cbench/openflow/lib/netlink-protocol.h.'>NLMSG_HDRLEN</a>, <b>sizeof</b> *<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>);
+<a name='L1047'>1047             <b>if</b> (<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>) <font color='red'>{</font>
+<a name='L1048'>1048                 <a href='../S/907.html#L111' title='Defined at 111 in cbench/openflow/lib/dynamic-string.c.'>ds_put_format</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, " done(%d", *<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>);
+<a name='L1049'>1049                 <b>if</b> (*<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> &lt; 0) <font color='red'>{</font>
+<a name='L1050'>1050                     <a href='../S/907.html#L111' title='Defined at 111 in cbench/openflow/lib/dynamic-string.c.'>ds_put_format</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, "(%s)", <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(-*<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>));
+<a name='L1051'>1051                 <font color='red'>}</font>
+<a name='L1052'>1052                 <a href='../S/907.html#L104' title='Defined at 104 in cbench/openflow/lib/dynamic-string.c.'>ds_put_cstr</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, ")");
+<a name='L1053'>1053             <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L1054'>1054                 <a href='../S/907.html#L104' title='Defined at 104 in cbench/openflow/lib/dynamic-string.c.'>ds_put_cstr</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, " done(truncated)");
+<a name='L1055'>1055             <font color='red'>}</font>
+<a name='L1056'>1056         <font color='red'>}</font>
+<a name='L1057'>1057     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L1058'>1058         <a href='../S/907.html#L104' title='Defined at 104 in cbench/openflow/lib/dynamic-string.c.'>ds_put_cstr</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>, "nl(truncated)");
+<a name='L1059'>1059     <font color='red'>}</font>
+<a name='L1060'>1060     <b>return</b> <a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>.<a href='../Y/7093.html' title='Multiple used in 347 places.'>string</a>;
+<a name='L1061'>1061 <font color='red'>}</font>
+<a name='L1062'>1062 
+<a name='L1063'>1063 <b>static</b> <b>void</b>
+<a name='L1064'>1064 <a href='../R/3424.html' title='Multiple refered from 4 places.'>log_nlmsg</a>(<b>const</b> <b>char</b> *<a href='../Y/3277.html' title='Multiple used in 38 places.'>function</a>, <b>int</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>,
+<a name='L1065'>1065           <b>const</b> <b>void</b> *<a href='../Y/4426.html' title='Multiple used in 32 places.'>message</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>)
+<a name='L1066'>1066 <font color='red'>{</font>
+<a name='L1067'>1067     <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> <a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>;
+<a name='L1068'>1068     <b>char</b> *<a href='../Y/4899.html' title='Multiple used in 4 places.'>nlmsg</a>;
+<a name='L1069'>1069 
+<a name='L1070'>1070     <b>if</b> (!<a href='../S/859.html#L162' title='Defined at 162 in cbench/openflow/lib/vlog.h.'>VLOG_IS_DBG_ENABLED</a>()) <font color='red'>{</font>
+<a name='L1071'>1071         <b>return</b>;
+<a name='L1072'>1072     <font color='red'>}</font>
+<a name='L1073'>1073 
+<a name='L1074'>1074     <a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>.<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>void</b> *) <a href='../Y/4426.html' title='Multiple used in 32 places.'>message</a>;
+<a name='L1075'>1075     <a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>.<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> = <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a>;
+<a name='L1076'>1076     <a href='../Y/4899.html' title='Multiple used in 4 places.'>nlmsg</a> = <a href='../S/826.html#L1024' title='Defined at 1024 in cbench/openflow/lib/netlink.c.'>nlmsg_to_string</a>(&amp;<a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>);
+<a name='L1077'>1077     <a href='../S/859.html#L173' title='Defined at 173 in cbench/openflow/lib/vlog.h.'>VLOG_DBG_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "%s (%s): %s", <a href='../Y/3277.html' title='Multiple used in 38 places.'>function</a>, <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>), <a href='../Y/4899.html' title='Multiple used in 4 places.'>nlmsg</a>);
+<a name='L1078'>1078     <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/4899.html' title='Multiple used in 4 places.'>nlmsg</a>);
+<a name='L1079'>1079 <font color='red'>}</font>
+<a name='L1080'>1080 
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L100'>[^]</a><a href='#L1064'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/conditions.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/conditions.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* conditions.h</font></i>
+<a name='L2'>   2 <i><font color='green'> * Header for condition handler.</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * $Id: conditions.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L5'>   5 <i><font color='green'> *</font></i>
+<a name='L6'>   6 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L7'>   7 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L8'>   8 <i><font color='green'> * Copyright 1998 Gerald Combs</font></i>
+<a name='L9'>   9 <i><font color='green'> *</font></i>
+<a name='L10'>  10 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L11'>  11 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L12'>  12 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L13'>  13 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L14'>  14 <i><font color='green'> *</font></i>
+<a name='L15'>  15 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L16'>  16 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L17'>  17 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L18'>  18 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L21'>  21 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L22'>  22 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L23'>  23 <i><font color='green'> */</font></i>
+<a name='L24'>  24 
+<a name='L25'>  25 <font color='darkred'>#ifndef</font> <a href='../S/558.html#L26' title='Defined at 26 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/conditions.h.'>CONDITIONS_H</a>
+<a name='L26'>  26 <font color='darkred'>#define</font> <a href='../S/558.html#L25' title='Refered from 25 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/conditions.h.'>CONDITIONS_H</a>
+<a name='L27'>  27 
+<a name='L28'>  28 <font color='darkred'>#include</font> &lt;stdarg.h&gt;
+<a name='L29'>  29 
+<a name='L30'>  30 <font color='darkred'>#include</font> &lt;glib.h&gt;
+<a name='L31'>  31 
+<a name='L32'>  32 <i><font color='green'>/* forward declaration for type 'condition' */</font></i>
+<a name='L33'>  33 <b>typedef</b> <b>struct</b> <a href='../R/2495.html' title='Multiple refered from 13 places.'>condition</a> <a href='../S/558.html#L33' title='Defined at 33 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/conditions.h.'>condition</a>;
+<a name='L34'>  34 
+<a name='L35'>  35 <i><font color='green'>/* condition evaluation handler type */</font></i>
+<a name='L36'>  36 <b>typedef</b> <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> (*<a href='../Y/1196.html' title='Multiple used in 2 places.'>_cnd_eval</a>)(<a href='../Y/2049.html' title='Multiple used in 10 places.'>condition</a>*, <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a>);
+<a name='L37'>  37 
+<a name='L38'>  38 <i><font color='green'>/* condition reset handler type */</font></i>
+<a name='L39'>  39 <b>typedef</b> <b>void</b> (*<a href='../Y/1197.html' title='Multiple used in 2 places.'>_cnd_reset</a>)(<a href='../Y/2049.html' title='Multiple used in 10 places.'>condition</a>*);
+<a name='L40'>  40 
+<a name='L41'>  41 <i><font color='green'>/* condition class constructor type */</font></i>
+<a name='L42'>  42 <b>typedef</b> <a href='../S/558.html#L33' title='Defined at 33 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/conditions.h.'>condition</a>* (*<a href='../Y/1194.html' title='Multiple used in 2 places.'>_cnd_constr</a>)(<a href='../Y/2049.html' title='Multiple used in 10 places.'>condition</a>*, <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a>);
+<a name='L43'>  43 
+<a name='L44'>  44 <i><font color='green'>/* condition class destructor type */</font></i>
+<a name='L45'>  45 <b>typedef</b> <b>void</b> (*<a href='../Y/1195.html' title='Multiple used in 2 places.'>_cnd_destr</a>)(<a href='../Y/2049.html' title='Multiple used in 10 places.'>condition</a>*);
+<a name='L46'>  46 
+<a name='L47'>  47 <i><font color='green'>/*</font></i>
+<a name='L48'>  48 <i><font color='green'> * Conditions must be created with this function. They can be created for</font></i>
+<a name='L49'>  49 <i><font color='green'> * registered classes only.</font></i>
+<a name='L50'>  50 <i><font color='green'> *</font></i>
+<a name='L51'>  51 <i><font color='green'> * parameter: const char* - Identification of a registered condition class.</font></i>
+<a name='L52'>  52 <i><font color='green'> *            ...         - Any number of class specific initial values.</font></i>
+<a name='L53'>  53 <i><font color='green'> * returns:   Pointer to a initialized condition of the particular class on</font></i>
+<a name='L54'>  54 <i><font color='green'> *            success or NULL on failure.</font></i>
+<a name='L55'>  55 <i><font color='green'> */</font></i>
+<a name='L56'>  56 <a href='../S/558.html#L33' title='Defined at 33 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/conditions.h.'>condition</a>* cnd_new(<b>const</b> <b>char</b>*, ...);
+<a name='L57'>  57 
+<a name='L58'>  58 <i><font color='green'>/*</font></i>
+<a name='L59'>  59 <i><font color='green'> * Conditions must be deleted with this function when not used anymore.</font></i>
+<a name='L60'>  60 <i><font color='green'> *</font></i>
+<a name='L61'>  61 <i><font color='green'> * parameter: condition* - Pointer to a condition created with 'cnd_new()'.</font></i>
+<a name='L62'>  62 <i><font color='green'> * returns:   -</font></i>
+<a name='L63'>  63 <i><font color='green'> */</font></i>
+<a name='L64'>  64 <b>void</b> cnd_delete(<a href='../Y/2049.html' title='Multiple used in 10 places.'>condition</a>*);
+<a name='L65'>  65 
+<a name='L66'>  66 <i><font color='green'>/*</font></i>
+<a name='L67'>  67 <i><font color='green'> * Call this function to check whether or not a particular condition is true.</font></i>
+<a name='L68'>  68 <i><font color='green'> *</font></i>
+<a name='L69'>  69 <i><font color='green'> * parameter: condition* - Pointer to an initialized condition.</font></i>
+<a name='L70'>  70 <i><font color='green'> *            ...        - Any number of condition specific arguments.</font></i>
+<a name='L71'>  71 <i><font color='green'> * returns:   TRUE  - Condition is true.</font></i>
+<a name='L72'>  72 <i><font color='green'> *            FALSE - Condition is false.</font></i>
+<a name='L73'>  73 <i><font color='green'> */</font></i>
+<a name='L74'>  74 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> cnd_eval(<a href='../Y/2049.html' title='Multiple used in 10 places.'>condition</a>*, ...);
+<a name='L75'>  75 
+<a name='L76'>  76 <i><font color='green'>/*</font></i>
+<a name='L77'>  77 <i><font color='green'> * Call this function to reset this condition to its initial state, i.e. the</font></i>
+<a name='L78'>  78 <i><font color='green'> * state it was in right after creation.</font></i>
+<a name='L79'>  79 <i><font color='green'> *</font></i>
+<a name='L80'>  80 <i><font color='green'> * parameter: condition* - Pointer to an initialized condition.</font></i>
+<a name='L81'>  81 <i><font color='green'> * returns:   -</font></i>
+<a name='L82'>  82 <i><font color='green'> */</font></i>
+<a name='L83'>  83 <b>void</b> cnd_reset(<a href='../Y/2049.html' title='Multiple used in 10 places.'>condition</a>*);
+<a name='L84'>  84 
+<a name='L85'>  85 <i><font color='green'>/*</font></i>
+<a name='L86'>  86 <i><font color='green'> * Register a new conditon class.</font></i>
+<a name='L87'>  87 <i><font color='green'> * New conditions of this class can be created by calling 'cnd_new()' and</font></i>
+<a name='L88'>  88 <i><font color='green'> * supplying the appropriate class id.</font></i>
+<a name='L89'>  89 <i><font color='green'> *</font></i>
+<a name='L90'>  90 <i><font color='green'> * parameter: const char*  - The class id.</font></i>
+<a name='L91'>  91 <i><font color='green'> *            _cnd_constr  - User supplied constructor function for this</font></i>
+<a name='L92'>  92 <i><font color='green'> *                           class.</font></i>
+<a name='L93'>  93 <i><font color='green'> *            _cnd_destr   - User supplied destructor function for this</font></i>
+<a name='L94'>  94 <i><font color='green'> *                           class.</font></i>
+<a name='L95'>  95 <i><font color='green'> *            _cnd_eval    - User supplied evaluation handler function for this</font></i>
+<a name='L96'>  96 <i><font color='green'>                             class.</font></i>
+<a name='L97'>  97 <i><font color='green'> *            _cnd_reset   - User supplied reset handler for this class.</font></i>
+<a name='L98'>  98 <i><font color='green'> * returns:   TRUE  - Success.</font></i>
+<a name='L99'>  99 <i><font color='green'> *            FALSE - Failure.</font></i>
+<a name='L100'> 100 <i><font color='green'> */</font></i>
+<a name='L101'> 101 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> cnd_register_class(<b>const</b> <b>char</b>*,
+<a name='L102'> 102                             <a href='../Y/1194.html' title='Multiple used in 2 places.'>_cnd_constr</a>,
+<a name='L103'> 103                             <a href='../Y/1195.html' title='Multiple used in 2 places.'>_cnd_destr</a>,
+<a name='L104'> 104                             <a href='../Y/1196.html' title='Multiple used in 2 places.'>_cnd_eval</a>,
+<a name='L105'> 105                             <a href='../Y/1197.html' title='Multiple used in 2 places.'>_cnd_reset</a>);
+<a name='L106'> 106 
+<a name='L107'> 107 <i><font color='green'>/*</font></i>
+<a name='L108'> 108 <i><font color='green'> * Unregister a previously registered conditon class. After unregistration</font></i>
+<a name='L109'> 109 <i><font color='green'> * of a class it is no longer possible to create conditions of this kind by</font></i>
+<a name='L110'> 110 <i><font color='green'> * calling 'cnd_new()'.</font></i>
+<a name='L111'> 111 <i><font color='green'> *</font></i>
+<a name='L112'> 112 <i><font color='green'> * parameter: const char* - An identification for this condition class.</font></i>
+<a name='L113'> 113 <i><font color='green'> * returns:   -</font></i>
+<a name='L114'> 114 <i><font color='green'> */</font></i>
+<a name='L115'> 115 <b>void</b> cnd_unregister_class(<b>const</b> <b>char</b>*);
+<a name='L116'> 116 
+<a name='L117'> 117 <i><font color='green'>/*</font></i>
+<a name='L118'> 118 <i><font color='green'> * This function returns the user data of the condition.</font></i>
+<a name='L119'> 119 <i><font color='green'> *</font></i>
+<a name='L120'> 120 <i><font color='green'> * parameter: condition* - Pointer to an initialized condition.</font></i>
+<a name='L121'> 121 <i><font color='green'> * returns:   void*      - Pointer to user data of this condition.</font></i>
+<a name='L122'> 122 <i><font color='green'> */</font></i>
+<a name='L123'> 123 <b>void</b>* cnd_get_user_data(<a href='../Y/2049.html' title='Multiple used in 10 places.'>condition</a>*);
+<a name='L124'> 124 
+<a name='L125'> 125 <i><font color='green'>/*</font></i>
+<a name='L126'> 126 <i><font color='green'> * This function sets the user data of the condition.</font></i>
+<a name='L127'> 127 <i><font color='green'> *</font></i>
+<a name='L128'> 128 <i><font color='green'> * parameter: condition* - Pointer to an initialized condition.</font></i>
+<a name='L129'> 129 <i><font color='green'> *            void*      - Pointer to user specified data structure.</font></i>
+<a name='L130'> 130 <i><font color='green'> * returns:   -</font></i>
+<a name='L131'> 131 <i><font color='green'> */</font></i>
+<a name='L132'> 132 <b>void</b> cnd_set_user_data(<a href='../Y/2049.html' title='Multiple used in 10 places.'>condition</a>*, <b>void</b>*);
+<a name='L133'> 133 
+<a name='L134'> 134 <font color='darkred'>#endif</font> <i><font color='green'>/* CONDITIONS_H */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

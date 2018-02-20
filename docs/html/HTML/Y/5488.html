@@ -1,0 +1,59 @@
+<html>
+<head>
+<title>opm</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/293.html#L956'>opm</a>               956 cbench/openflow/datapath/datapath.c dp_update_port_flags(struct datapath *dp, const struct ofp_port_mod *opm)
+<a href='../S/293.html#L959'>opm</a>               959 cbench/openflow/datapath/datapath.c 	int port_no = ntohs(opm-&gt;port_no);
+<a href='../S/293.html#L966'>opm</a>               966 cbench/openflow/datapath/datapath.c 	if (!p || memcmp(opm-&gt;hw_addr, p-&gt;dev-&gt;dev_addr, ETH_ALEN))
+<a href='../S/293.html#L970'>opm</a>               970 cbench/openflow/datapath/datapath.c 	if (opm-&gt;mask) {
+<a href='../S/293.html#L971'>opm</a>               971 cbench/openflow/datapath/datapath.c 		uint32_t config_mask = ntohl(opm-&gt;mask);
+<a href='../S/293.html#L973'>opm</a>               973 cbench/openflow/datapath/datapath.c 		p-&gt;config |= ntohl(opm-&gt;config) &amp; config_mask;
+<a href='../S/291.html#L102'>opm</a>               102 cbench/openflow/datapath/datapath.h int dp_update_port_flags(struct datapath *dp, const struct ofp_port_mod *opm);
+<a href='../S/282.html#L190'>opm</a>               190 cbench/openflow/datapath/forward.c 	const struct ofp_port_mod *opm = msg;
+<a href='../S/282.html#L192'>opm</a>               192 cbench/openflow/datapath/forward.c 	dp_update_port_flags(chain-&gt;dp, opm);
+<a href='../S/825.html#L814'>opm</a>               814 cbench/openflow/lib/ofp-print.c     const struct ofp_port_mod *opm = oh;
+<a href='../S/825.html#L817'>opm</a>               817 cbench/openflow/lib/ofp-print.c             ntohs(opm-&gt;port_no), ETH_ADDR_ARGS(opm-&gt;hw_addr), 
+<a href='../S/825.html#L818'>opm</a>               818 cbench/openflow/lib/ofp-print.c             ntohl(opm-&gt;config), ntohl(opm-&gt;mask));
+<a href='../S/825.html#L820'>opm</a>               820 cbench/openflow/lib/ofp-print.c     if (opm-&gt;advertise) {
+<a href='../S/825.html#L821'>opm</a>               821 cbench/openflow/lib/ofp-print.c         ofp_print_port_features(string, ntohl(opm-&gt;advertise));
+<a href='../S/810.html#L320'>opm</a>               320 cbench/openflow/secchan/port-watcher.c         struct ofp_port_mod *opm = msg-&gt;data;
+<a href='../S/810.html#L321'>opm</a>               321 cbench/openflow/secchan/port-watcher.c         uint16_t port_no = ntohs(opm-&gt;port_no);
+<a href='../S/810.html#L325'>opm</a>               325 cbench/openflow/secchan/port-watcher.c             pw_opp-&gt;config = ((pw_opp-&gt;config &amp; ~opm-&gt;mask)
+<a href='../S/810.html#L326'>opm</a>               326 cbench/openflow/secchan/port-watcher.c                               | (opm-&gt;config &amp; opm-&gt;mask));
+<a href='../S/810.html#L332'>opm</a>               332 cbench/openflow/secchan/port-watcher.c             if (opm-&gt;mask &amp; htonl(OFPPC_PORT_DOWN)) {
+<a href='../S/810.html#L334'>opm</a>               334 cbench/openflow/secchan/port-watcher.c                                         opm-&gt;config &amp; htonl(OFPPC_PORT_DOWN));
+<a href='../S/810.html#L549'>opm</a>               549 cbench/openflow/secchan/port-watcher.c     struct ofp_port_mod *opm;
+<a href='../S/810.html#L570'>opm</a>               570 cbench/openflow/secchan/port-watcher.c     opm = make_openflow(sizeof *opm, OFPT_PORT_MOD, &amp;b);
+<a href='../S/810.html#L571'>opm</a>               571 cbench/openflow/secchan/port-watcher.c     opm-&gt;port_no = p-&gt;port_no;
+<a href='../S/810.html#L572'>opm</a>               572 cbench/openflow/secchan/port-watcher.c     memcpy(opm-&gt;hw_addr, p-&gt;hw_addr, OFP_ETH_ALEN);
+<a href='../S/810.html#L573'>opm</a>               573 cbench/openflow/secchan/port-watcher.c     opm-&gt;config = p-&gt;config;
+<a href='../S/810.html#L574'>opm</a>               574 cbench/openflow/secchan/port-watcher.c     opm-&gt;mask = htonl(c_mask);
+<a href='../S/810.html#L575'>opm</a>               575 cbench/openflow/secchan/port-watcher.c     opm-&gt;advertise = htonl(0);
+<a href='../S/204.html#L1057'>opm</a>              1057 cbench/openflow/udatapath/datapath.c update_port_flags(struct datapath *dp, const struct ofp_port_mod *opm)
+<a href='../S/204.html#L1059'>opm</a>              1059 cbench/openflow/udatapath/datapath.c     struct sw_port *p = dp_lookup_port(dp, ntohs(opm-&gt;port_no));
+<a href='../S/204.html#L1062'>opm</a>              1062 cbench/openflow/udatapath/datapath.c     if (!p || memcmp(opm-&gt;hw_addr, netdev_get_etheraddr(p-&gt;netdev),
+<a href='../S/204.html#L1068'>opm</a>              1068 cbench/openflow/udatapath/datapath.c     if (opm-&gt;mask) {
+<a href='../S/204.html#L1069'>opm</a>              1069 cbench/openflow/udatapath/datapath.c         uint32_t config_mask = ntohl(opm-&gt;mask);
+<a href='../S/204.html#L1071'>opm</a>              1071 cbench/openflow/udatapath/datapath.c         p-&gt;config |= ntohl(opm-&gt;config) &amp; config_mask;
+<a href='../S/204.html#L1333'>opm</a>              1333 cbench/openflow/udatapath/datapath.c     const struct ofp_port_mod *opm = msg;
+<a href='../S/204.html#L1335'>opm</a>              1335 cbench/openflow/udatapath/datapath.c     update_port_flags(dp, opm);
+<a href='../S/333.html#L1378'>opm</a>              1378 cbench/openflow/utilities/dpctl.c     struct ofp_port_mod *opm;
+<a href='../S/333.html#L1421'>opm</a>              1421 cbench/openflow/utilities/dpctl.c     opm = make_openflow(sizeof(struct ofp_port_mod), OFPT_PORT_MOD, &amp;request);
+<a href='../S/333.html#L1422'>opm</a>              1422 cbench/openflow/utilities/dpctl.c     opm-&gt;port_no = osf-&gt;ports[port_idx].port_no;
+<a href='../S/333.html#L1423'>opm</a>              1423 cbench/openflow/utilities/dpctl.c     memcpy(opm-&gt;hw_addr, osf-&gt;ports[port_idx].hw_addr, sizeof opm-&gt;hw_addr);
+<a href='../S/333.html#L1424'>opm</a>              1424 cbench/openflow/utilities/dpctl.c     opm-&gt;config = htonl(0);
+<a href='../S/333.html#L1425'>opm</a>              1425 cbench/openflow/utilities/dpctl.c     opm-&gt;mask = htonl(0);
+<a href='../S/333.html#L1426'>opm</a>              1426 cbench/openflow/utilities/dpctl.c     opm-&gt;advertise = htonl(0);
+<a href='../S/333.html#L1431'>opm</a>              1431 cbench/openflow/utilities/dpctl.c         opm-&gt;mask |= htonl(OFPPC_PORT_DOWN);
+<a href='../S/333.html#L1434'>opm</a>              1434 cbench/openflow/utilities/dpctl.c         opm-&gt;mask |= htonl(OFPPC_PORT_DOWN);
+<a href='../S/333.html#L1435'>opm</a>              1435 cbench/openflow/utilities/dpctl.c         opm-&gt;config |= htonl(OFPPC_PORT_DOWN);
+<a href='../S/333.html#L1438'>opm</a>              1438 cbench/openflow/utilities/dpctl.c         opm-&gt;mask |= htonl(OFPPC_NO_FLOOD);
+<a href='../S/333.html#L1441'>opm</a>              1441 cbench/openflow/utilities/dpctl.c         opm-&gt;mask |= htonl(OFPPC_NO_FLOOD);
+<a href='../S/333.html#L1442'>opm</a>              1442 cbench/openflow/utilities/dpctl.c         opm-&gt;config |= htonl(OFPPC_NO_FLOOD);
+</pre>
+</body>
+</html>

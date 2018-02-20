@@ -1,0 +1,125 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfvm.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/<a href='../files/1150.html'>dfilter</a>/dfvm.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * $Id: dfvm.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L5'>   5 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L6'>   6 <i><font color='green'> * Copyright 2001 Gerald Combs</font></i>
+<a name='L7'>   7 <i><font color='green'> *</font></i>
+<a name='L8'>   8 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L9'>   9 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L10'>  10 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L11'>  11 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L12'>  12 <i><font color='green'> *</font></i>
+<a name='L13'>  13 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L14'>  14 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L15'>  15 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L16'>  16 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L17'>  17 <i><font color='green'> *</font></i>
+<a name='L18'>  18 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L19'>  19 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L20'>  20 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L21'>  21 <i><font color='green'> */</font></i>
+<a name='L22'>  22 
+<a name='L23'>  23 <font color='darkred'>#ifndef</font> <a href='../S/464.html#L24' title='Defined at 24 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfvm.h.'>DFVM_H</a>
+<a name='L24'>  24 <font color='darkred'>#define</font> <a href='../S/464.html#L23' title='Refered from 23 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfvm.h.'>DFVM_H</a>
+<a name='L25'>  25 
+<a name='L26'>  26 <font color='darkred'>#include</font> &lt;stdio.h&gt;
+<a name='L27'>  27 <font color='darkred'>#include</font> &lt;<a href='488.html'>epan/proto.h</a>&gt;
+<a name='L28'>  28 <font color='darkred'>#include</font> "<a href='458.html'>dfilter-int.h</a>"
+<a name='L29'>  29 <font color='darkred'>#include</font> "<a href='468.html'>syntax-tree.h</a>"
+<a name='L30'>  30 <font color='darkred'>#include</font> "<a href='459.html'>drange.h</a>"
+<a name='L31'>  31 <font color='darkred'>#include</font> "<a href='462.html'>dfunctions.h</a>"
+<a name='L32'>  32 
+<a name='L33'>  33 <b>typedef</b> <b>enum</b> <font color='red'>{</font>
+<a name='L34'>  34         EMPTY,
+<a name='L35'>  35         FVALUE,
+<a name='L36'>  36         HFINFO,
+<a name='L37'>  37         INSN_NUMBER,
+<a name='L38'>  38         REGISTER,
+<a name='L39'>  39         INTEGER,
+<a name='L40'>  40         DRANGE,
+<a name='L41'>  41         FUNCTION_DEF
+<a name='L42'>  42 <font color='red'>}</font> <a href='../R/2592.html' title='Multiple refered from 2 places.'>dfvm_value_type_t</a>;
+<a name='L43'>  43 
+<a name='L44'>  44 <b>typedef</b> <b>struct</b> <font color='red'>{</font>
+<a name='L45'>  45         <a href='../S/464.html#L42' title='Defined at 42 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfvm.h.'>dfvm_value_type_t</a>       <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;
+<a name='L46'>  46 
+<a name='L47'>  47         <b>union</b> <font color='red'>{</font>
+<a name='L48'>  48                 <a href='../S/493.html#L174' title='Defined at 174 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/ftypes/ftypes.h.'>fvalue_t</a>                *fvalue;
+<a name='L49'>  49                 <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a>                 numeric;
+<a name='L50'>  50                 <a href='../S/459.html#L59' title='Defined at 59 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/drange.h.'>drange</a>                  *<a href='../S/459.html#L59' title='Defined at 59 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/drange.h.'>drange</a>;
+<a name='L51'>  51                 <a href='../S/488.html#L162' title='Defined at 162 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>header_field_info</a>       *<a href='../Y/3636.html' title='Multiple used in 9 places.'>hfinfo</a>;
+<a name='L52'>  52         <a href='../S/462.html#L51' title='Defined at 51 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfunctions.h.'>df_func_def_t</a>   *funcdef;
+<a name='L53'>  53         <font color='red'>}</font> <a href='../Y/7726.html' title='Multiple used in 339 places.'>value</a>;
+<a name='L54'>  54 
+<a name='L55'>  55 <font color='red'>}</font> <a href='../R/2591.html' title='Multiple refered from 5 places.'>dfvm_value_t</a>;
+<a name='L56'>  56 
+<a name='L57'>  57 
+<a name='L58'>  58 <b>typedef</b> <b>enum</b> <font color='red'>{</font>
+<a name='L59'>  59 
+<a name='L60'>  60         IF_TRUE_GOTO,
+<a name='L61'>  61         IF_FALSE_GOTO,
+<a name='L62'>  62         CHECK_EXISTS,
+<a name='L63'>  63         NOT,
+<a name='L64'>  64         RETURN,
+<a name='L65'>  65         READ_TREE,
+<a name='L66'>  66         PUT_FVALUE,
+<a name='L67'>  67         ANY_EQ,
+<a name='L68'>  68         ANY_NE,
+<a name='L69'>  69         ANY_GT,
+<a name='L70'>  70         ANY_GE,
+<a name='L71'>  71         ANY_LT,
+<a name='L72'>  72         ANY_LE,
+<a name='L73'>  73         ANY_BITWISE_AND,
+<a name='L74'>  74         ANY_CONTAINS,
+<a name='L75'>  75         ANY_MATCHES,
+<a name='L76'>  76         MK_RANGE,
+<a name='L77'>  77     CALL_FUNCTION
+<a name='L78'>  78 
+<a name='L79'>  79 <font color='red'>}</font> <a href='../R/2590.html' title='Multiple refered from 2 places.'>dfvm_opcode_t</a>;
+<a name='L80'>  80 
+<a name='L81'>  81 <b>typedef</b> <b>struct</b> <font color='red'>{</font>
+<a name='L82'>  82         <b>int</b>             <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>;
+<a name='L83'>  83         <a href='../S/464.html#L79' title='Defined at 79 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfvm.h.'>dfvm_opcode_t</a>   <a href='../Y/5460.html' title='Multiple used in 44 places.'>op</a>;
+<a name='L84'>  84         <a href='../S/464.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfvm.h.'>dfvm_value_t</a>    *arg1;
+<a name='L85'>  85         <a href='../S/464.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfvm.h.'>dfvm_value_t</a>    *<a href='../Y/1458.html' title='Multiple used in 7 places.'>arg2</a>;
+<a name='L86'>  86         <a href='../S/464.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfvm.h.'>dfvm_value_t</a>    *arg3;
+<a name='L87'>  87         <a href='../S/464.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfvm.h.'>dfvm_value_t</a>    *arg4;
+<a name='L88'>  88 <font color='red'>}</font> <a href='../R/2589.html' title='Multiple refered from 2 places.'>dfvm_insn_t</a>;
+<a name='L89'>  89 
+<a name='L90'>  90 <a href='../S/464.html#L88' title='Defined at 88 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfvm.h.'>dfvm_insn_t</a>*
+<a name='L91'>  91 dfvm_insn_new(<a href='../S/464.html#L79' title='Defined at 79 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfvm.h.'>dfvm_opcode_t</a> <a href='../Y/5460.html' title='Multiple used in 44 places.'>op</a>);
+<a name='L92'>  92 
+<a name='L93'>  93 <b>void</b>
+<a name='L94'>  94 dfvm_insn_free(<a href='../S/464.html#L88' title='Defined at 88 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfvm.h.'>dfvm_insn_t</a> *insn);
+<a name='L95'>  95 
+<a name='L96'>  96 <a href='../S/464.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfvm.h.'>dfvm_value_t</a>*
+<a name='L97'>  97 dfvm_value_new(<a href='../S/464.html#L42' title='Defined at 42 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfvm.h.'>dfvm_value_type_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>);
+<a name='L98'>  98 
+<a name='L99'>  99 <b>void</b>
+<a name='L100'> 100 dfvm_dump(<a href='../Y/328.html' title='Multiple used in 113 places.'>FILE</a> *<a href='../Y/2979.html' title='Multiple used in 135 places.'>f</a>, <a href='../Y/390.html' title='Multiple used in 15 places.'>GPtrArray</a> *<a href='../Y/3848.html' title='Multiple used in 3 places.'>insns</a>);
+<a name='L101'> 101 
+<a name='L102'> 102 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a>
+<a name='L103'> 103 dfvm_apply(<a href='../S/456.html#L29' title='Defined at 29 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfilter.h.'>dfilter_t</a> *<a href='../Y/2376.html' title='Multiple used in 8 places.'>df</a>, <a href='../Y/6018.html' title='Multiple used in 61 places.'>proto_tree</a> *<a href='../Y/7472.html' title='Multiple used in 55 places.'>tree</a>);
+<a name='L104'> 104 
+<a name='L105'> 105 <b>void</b>
+<a name='L106'> 106 dfvm_init_const(<a href='../S/456.html#L29' title='Defined at 29 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/dfilter/dfilter.h.'>dfilter_t</a> *<a href='../Y/2376.html' title='Multiple used in 8 places.'>df</a>);
+<a name='L107'> 107 
+<a name='L108'> 108 <font color='darkred'>#endif</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<html>
+<head>
+<title>mon</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/851.html#L1366'>mon</a>              1366 cbench/openflow/lib/netdev.c     struct netdev_monitor *mon;
+<a href='../S/851.html#L1379'>mon</a>              1379 cbench/openflow/lib/netdev.c     mon = *monp = xmalloc(sizeof *mon);
+<a href='../S/851.html#L1380'>mon</a>              1380 cbench/openflow/lib/netdev.c     mon-&gt;sock = sock;
+<a href='../S/851.html#L1381'>mon</a>              1381 cbench/openflow/lib/netdev.c     svec_init(&amp;mon-&gt;netdevs);
+<a href='../S/851.html#L1382'>mon</a>              1382 cbench/openflow/lib/netdev.c     svec_init(&amp;mon-&gt;changed);
+<a href='../S/851.html#L1387'>mon</a>              1387 cbench/openflow/lib/netdev.c netdev_monitor_destroy(struct netdev_monitor *mon)
+<a href='../S/851.html#L1389'>mon</a>              1389 cbench/openflow/lib/netdev.c     if (mon) {
+<a href='../S/851.html#L1390'>mon</a>              1390 cbench/openflow/lib/netdev.c         nl_sock_destroy(mon-&gt;sock);
+<a href='../S/851.html#L1391'>mon</a>              1391 cbench/openflow/lib/netdev.c         svec_destroy(&amp;mon-&gt;netdevs);
+<a href='../S/851.html#L1392'>mon</a>              1392 cbench/openflow/lib/netdev.c         svec_destroy(&amp;mon-&gt;changed);
+<a href='../S/851.html#L1393'>mon</a>              1393 cbench/openflow/lib/netdev.c         free(mon);
+<a href='../S/851.html#L1401'>mon</a>              1401 cbench/openflow/lib/netdev.c netdev_monitor_set_devices(struct netdev_monitor *mon,
+<a href='../S/851.html#L1406'>mon</a>              1406 cbench/openflow/lib/netdev.c     svec_clear(&amp;mon-&gt;netdevs);
+<a href='../S/851.html#L1408'>mon</a>              1408 cbench/openflow/lib/netdev.c         svec_add(&amp;mon-&gt;netdevs, netdevs[i]);
+<a href='../S/851.html#L1410'>mon</a>              1410 cbench/openflow/lib/netdev.c     svec_sort(&amp;mon-&gt;netdevs);
+<a href='../S/851.html#L1421'>mon</a>              1421 cbench/openflow/lib/netdev.c netdev_monitor_poll(struct netdev_monitor *mon)
+<a href='../S/851.html#L1426'>mon</a>              1426 cbench/openflow/lib/netdev.c     changed_name = pop_changed(mon);
+<a href='../S/851.html#L1435'>mon</a>              1435 cbench/openflow/lib/netdev.c         retval = nl_sock_recv(mon-&gt;sock, &amp;buf, false);
+<a href='../S/851.html#L1440'>mon</a>              1440 cbench/openflow/lib/netdev.c             return all_netdevs_changed(mon);
+<a href='../S/851.html#L1453'>mon</a>              1453 cbench/openflow/lib/netdev.c                 return all_netdevs_changed(mon);
+<a href='../S/851.html#L1455'>mon</a>              1455 cbench/openflow/lib/netdev.c             name = lookup_netdev(mon, nl_attr_get_string(attrs[IFLA_IFNAME]));
+<a href='../S/851.html#L1467'>mon</a>              1467 cbench/openflow/lib/netdev.c netdev_monitor_run(struct netdev_monitor *mon UNUSED)
+<a href='../S/851.html#L1473'>mon</a>              1473 cbench/openflow/lib/netdev.c netdev_monitor_wait(struct netdev_monitor *mon)
+<a href='../S/851.html#L1475'>mon</a>              1475 cbench/openflow/lib/netdev.c     nl_sock_wait(mon-&gt;sock, POLLIN);
+<a href='../S/851.html#L1479'>mon</a>              1479 cbench/openflow/lib/netdev.c lookup_netdev(const struct netdev_monitor *mon, const char *name)
+<a href='../S/851.html#L1481'>mon</a>              1481 cbench/openflow/lib/netdev.c     size_t idx = svec_find(&amp;mon-&gt;netdevs, name);
+<a href='../S/851.html#L1482'>mon</a>              1482 cbench/openflow/lib/netdev.c     return idx != SIZE_MAX ? mon-&gt;netdevs.names[idx] : NULL;
+<a href='../S/851.html#L1486'>mon</a>              1486 cbench/openflow/lib/netdev.c pop_changed(struct netdev_monitor *mon)
+<a href='../S/851.html#L1488'>mon</a>              1488 cbench/openflow/lib/netdev.c     while (mon-&gt;changed.n) {
+<a href='../S/851.html#L1489'>mon</a>              1489 cbench/openflow/lib/netdev.c         const char *name = lookup_netdev(mon, svec_back(&amp;mon-&gt;changed));
+<a href='../S/851.html#L1490'>mon</a>              1490 cbench/openflow/lib/netdev.c         svec_pop_back(&amp;mon-&gt;changed);
+<a href='../S/851.html#L1499'>mon</a>              1499 cbench/openflow/lib/netdev.c all_netdevs_changed(struct netdev_monitor *mon)
+<a href='../S/851.html#L1501'>mon</a>              1501 cbench/openflow/lib/netdev.c     svec_clear(&amp;mon-&gt;changed);
+<a href='../S/851.html#L1502'>mon</a>              1502 cbench/openflow/lib/netdev.c     svec_append(&amp;mon-&gt;changed, &amp;mon-&gt;netdevs);
+<a href='../S/851.html#L1503'>mon</a>              1503 cbench/openflow/lib/netdev.c     return pop_changed(mon);
+<a href='../S/810.html#L79'>mon</a>                79 cbench/openflow/secchan/port-watcher.c     struct netdev_monitor *mon;
+<a href='../S/810.html#L225'>mon</a>               225 cbench/openflow/secchan/port-watcher.c     netdev_monitor_set_devices(pw-&gt;mon, netdevs.names, netdevs.n);
+<a href='../S/810.html#L367'>mon</a>               367 cbench/openflow/secchan/port-watcher.c     netdev_monitor_run(pw-&gt;mon);
+<a href='../S/810.html#L368'>mon</a>               368 cbench/openflow/secchan/port-watcher.c     while ((name = netdev_monitor_poll(pw-&gt;mon)) != NULL) {
+<a href='../S/810.html#L420'>mon</a>               420 cbench/openflow/secchan/port-watcher.c     netdev_monitor_wait(pw-&gt;mon);
+<a href='../S/810.html#L613'>mon</a>               613 cbench/openflow/secchan/port-watcher.c     retval = netdev_monitor_create(&amp;pw-&gt;mon);
+</pre>
+</body>
+</html>

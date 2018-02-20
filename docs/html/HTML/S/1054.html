@@ -1,0 +1,530 @@
+<html>
+<head>
+<title>ext_applications/l2_shortest/shim/app_event.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1159.html'>ext_applications</a>/<a href='../files/1165.html'>l2_shortest</a>/<a href='../files/1166.html'>shim</a>/app_event.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L89'>[^]</a><a href='#L424'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L89' title='Defined at 89.'>av_dp_send_packet</a>
+<li><a href='#L91' title='Defined at 91.'>av_dp_insert_flow</a>
+<li><a href='#L93' title='Defined at 93.'>av_dp_modify_flow</a>
+<li><a href='#L95' title='Defined at 95.'>av_dp_delete_flow</a>
+<li><a href='#L100' title='Defined at 100.'>av_sw_get_info</a>
+<li><a href='#L102' title='Defined at 102.'>av_sw_get_all_info</a>
+<li><a href='#L104' title='Defined at 104.'>av_host_get_info</a>
+<li><a href='#L106' title='Defined at 106.'>av_host_get_all_info</a>
+<li><a href='#L108' title='Defined at 108.'>av_link_get_info</a>
+<li><a href='#L110' title='Defined at 110.'>av_link_get_all_info</a>
+<li><a href='#L112' title='Defined at 112.'>av_flow_get_info</a>
+<li><a href='#L114' title='Defined at 114.'>av_flow_get_all_info</a>
+<li><a href='#L119' title='Defined at 119.'>av_log_debug</a>
+<li><a href='#L130' title='Defined at 130.'>av_log_info</a>
+<li><a href='#L141' title='Defined at 141.'>av_log_warn</a>
+<li><a href='#L152' title='Defined at 152.'>av_log_error</a>
+<li><a href='#L163' title='Defined at 163.'>av_log_fatal</a>
+<li><a href='#L180' title='Defined at 180.'>reply_app_events</a>
+<li><a href='#L293' title='Defined at 293.'>deliver_app_events</a>
+<li><a href='#L401' title='Defined at 401.'>destroy_av_workers</a>
+<li><a href='#L424' title='Defined at 424.'>app_event_init</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright 2015-2018 NSSLab, KAIST</font></i>
+<a name='L3'>   3 <i><font color='green'> */</font></i>
+<a name='L4'>   4 
+<a name='L5'>   5 <i><font color='green'>/**</font></i>
+<a name='L6'>   6 <i><font color='green'> * \ingroup app_shim</font></i>
+<a name='L7'>   7 <i><font color='green'> * @{</font></i>
+<a name='L8'>   8 <i><font color='green'> * \defgroup app_event Application Event Handler</font></i>
+<a name='L9'>   9 <i><font color='green'> * \brief Functions to manage app events for external applications</font></i>
+<a name='L10'>  10 <i><font color='green'> * @{</font></i>
+<a name='L11'>  11 <i><font color='green'> */</font></i>
+<a name='L12'>  12 
+<a name='L13'>  13 <i><font color='green'>/**</font></i>
+<a name='L14'>  14 <i><font color='green'> * \file</font></i>
+<a name='L15'>  15 <i><font color='green'> * \author Jaehyun Nam &lt;namjh@kaist.ac.kr&gt;</font></i>
+<a name='L16'>  16 <i><font color='green'> */</font></i>
+<a name='L17'>  17 
+<a name='L18'>  18 <font color='darkred'>#include</font> "<a href='../I/2.html'>app_event.h</a>"
+<a name='L19'>  19 <font color='darkred'>#include</font> "<a href='../I/649.html'>application.h</a>"
+<a name='L20'>  20 <font color='darkred'>#include</font> "<a href='../I/655.html'>application_info.h</a>"
+<a name='L21'>  21 
+<a name='L22'>  22 <font color='darkred'>#include</font> &lt;zmq.h&gt;
+<a name='L23'>  23 
+<a name='L24'>  24 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L25'>  25 
+<a name='L26'>  26 <i><font color='green'>/** \brief The configuration of a target application */</font></i>
+<a name='L27'>  27 <b>extern</b> <a href='../D/6871.html' title='Multiple defined in 6 places.'>app_t</a> <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>;
+<a name='L28'>  28 
+<a name='L29'>  29 <i><font color='green'>/** \brief The running flag for app event workers */</font></i>
+<a name='L30'>  30 <b>int</b> <a href='../Y/1557.html' title='Multiple used in 20 places.'>av_worker_on</a>;
+<a name='L31'>  31 
+<a name='L32'>  32 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <i><font color='green'>/** \brief The context to push events */</font></i>
+<a name='L35'>  35 <b>void</b> *<a href='../Y/1549.html' title='Multiple used in 9 places.'>av_push_ctx</a>;
+<a name='L36'>  36 
+<a name='L37'>  37 <i><font color='green'>/** \biref The socket to push events */</font></i>
+<a name='L38'>  38 <b>void</b> *<a href='../Y/1550.html' title='Multiple used in 15 places.'>av_push_sock</a>;
+<a name='L39'>  39 
+<a name='L40'>  40  <i><font color='green'>/** \brief The context to request events */</font></i>
+<a name='L41'>  41 <b>void</b> *<a href='../Y/1555.html' title='Multiple used in 15 places.'>av_req_ctx</a>;
+<a name='L42'>  42 
+<a name='L43'>  43 <i><font color='green'>/** \brief The socket to request events */</font></i>
+<a name='L44'>  44 <b>void</b> *<a href='../Y/1556.html' title='Multiple used in 18 places.'>av_req_sock</a>;
+<a name='L45'>  45 
+<a name='L46'>  46 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L47'>  47 
+<a name='L48'>  48 <i><font color='green'>/** \brief The context to pull events */</font></i>
+<a name='L49'>  49 <b>void</b> *<a href='../Y/1547.html' title='Multiple used in 19 places.'>av_pull_ctx</a>;
+<a name='L50'>  50 
+<a name='L51'>  51 <i><font color='green'>/** \brief The socket to pull events */</font></i>
+<a name='L52'>  52 <b>void</b> *<a href='../Y/1548.html' title='Multiple used in 20 places.'>av_pull_sock</a>;
+<a name='L53'>  53 
+<a name='L54'>  54 <i><font color='green'>/** \brief The path to pull event */</font></i>
+<a name='L55'>  55 <b>char</b> <a href='../Y/1418.html' title='Multiple used in 9 places.'>app_pull_path</a>[<a href='../D/6476.html' title='Multiple defined in 6 places.'>__CONF_WORD_LEN</a>];
+<a name='L56'>  56 
+<a name='L57'>  57 <i><font color='green'>/** \brief The context to reply events */</font></i>
+<a name='L58'>  58 <b>void</b> *<a href='../Y/1552.html' title='Multiple used in 15 places.'>av_rep_ctx</a>;
+<a name='L59'>  59 
+<a name='L60'>  60 <i><font color='green'>/** \brief The socket to reply events */</font></i>
+<a name='L61'>  61 <b>void</b> *<a href='../Y/1553.html' title='Multiple used in 18 places.'>av_rep_sock</a>;
+<a name='L62'>  62 
+<a name='L63'>  63 <i><font color='green'>/** \brief The path to reply event */</font></i>
+<a name='L64'>  64 <b>char</b> <a href='../Y/1420.html' title='Multiple used in 9 places.'>app_rep_path</a>[<a href='../D/6476.html' title='Multiple defined in 6 places.'>__CONF_WORD_LEN</a>];
+<a name='L65'>  65 
+<a name='L66'>  66 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L67'>  67 
+<a name='L68'>  68 <font color='darkred'>#define</font> <a href='../R/127.html' title='Multiple refered from 27 places.'>AV_PUSH_MSG</a>(<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>, <a href='../Y/7216.html' title='Multiple used in 183 places.'>t</a>, <a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>, <a href='../Y/2240.html' title='Multiple used in 89 places.'>d</a>) <font color='red'>{</font> \
+<a name='L69'>  69     <a href='../D/8383.html' title='Multiple defined in 6 places.'>msg_t</a> <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a> = <font color='red'>{</font>0<font color='red'>}</font>; \
+<a name='L70'>  70     <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a> = <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>; \
+<a name='L71'>  71     <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> = <a href='../Y/7216.html' title='Multiple used in 183 places.'>t</a>; \
+<a name='L72'>  72     <a href='../Y/4418.html' title='Multiple used in 102 places.'>memmove</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/2240.html' title='Multiple used in 89 places.'>d</a>, <a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>); \
+<a name='L73'>  73     <a href='../Y/8051.html' title='Multiple used in 12 places.'>zmq_send</a>(<a href='../Y/1550.html' title='Multiple used in 15 places.'>av_push_sock</a>, &amp;<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <b>sizeof</b>(<a href='../D/8383.html' title='Multiple defined in 6 places.'>msg_t</a>), 0); \
+<a name='L74'>  74 <font color='red'>}</font>
+<a name='L75'>  75 
+<a name='L76'>  76 <font color='darkred'>#define</font> <a href='../R/133.html' title='Multiple refered from 24 places.'>AV_WRITE_MSG</a>(<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>, <a href='../Y/7216.html' title='Multiple used in 183 places.'>t</a>, <a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>, <a href='../Y/2240.html' title='Multiple used in 89 places.'>d</a>) <font color='red'>{</font> \
+<a name='L77'>  77     <a href='../D/8383.html' title='Multiple defined in 6 places.'>msg_t</a> <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a> = <font color='red'>{</font>0<font color='red'>}</font>; \
+<a name='L78'>  78     <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a> = <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>; \
+<a name='L79'>  79     <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> = <a href='../Y/7216.html' title='Multiple used in 183 places.'>t</a>; \
+<a name='L80'>  80     <a href='../Y/4418.html' title='Multiple used in 102 places.'>memmove</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/2240.html' title='Multiple used in 89 places.'>d</a>, <a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>); \
+<a name='L81'>  81     <a href='../Y/8051.html' title='Multiple used in 12 places.'>zmq_send</a>(<a href='../Y/1556.html' title='Multiple used in 18 places.'>av_req_sock</a>, &amp;<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <b>sizeof</b>(<a href='../D/8383.html' title='Multiple defined in 6 places.'>msg_t</a>), 0); \
+<a name='L82'>  82     <a href='../Y/8050.html' title='Multiple used in 12 places.'>zmq_recv</a>(<a href='../Y/1556.html' title='Multiple used in 18 places.'>av_req_sock</a>, &amp;<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <b>sizeof</b>(<a href='../D/8383.html' title='Multiple defined in 6 places.'>msg_t</a>), 0); \
+<a name='L83'>  83     <a href='../Y/4418.html' title='Multiple used in 102 places.'>memmove</a>(<a href='../Y/2240.html' title='Multiple used in 89 places.'>d</a>, <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/6552.html' title='Multiple used in 565 places.'>s</a>); \
+<a name='L84'>  84 <font color='red'>}</font>
+<a name='L85'>  85 
+<a name='L86'>  86 <i><font color='green'>// Downstream events ////////////////////////////////////////////////</font></i>
+<a name='L87'>  87 
+<a name='L88'>  88 <i><font color='green'>/** \brief AV_DP_SEND_PACKET */</font></i>
+<a name='L89'>  89 <b>void</b> <a href='../R/2251.html' title='Multiple refered from 16 places.'>av_dp_send_packet</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9045.html' title='Multiple defined in 6 places.'>pktout_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../D/382.html' title='Multiple defined in 3 places.'>AV_PUSH_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/361.html' title='Multiple defined in 4 places.'>AV_DP_SEND_PACKET</a>, <b>sizeof</b>(<a href='../D/9045.html' title='Multiple defined in 6 places.'>pktout_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L90'>  90 <i><font color='green'>/** \brief AV_DP_INSERT_FLOW */</font></i>
+<a name='L91'>  91 <b>void</b> <a href='../R/2245.html' title='Multiple refered from 10 places.'>av_dp_insert_flow</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../D/382.html' title='Multiple defined in 3 places.'>AV_PUSH_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/355.html' title='Multiple defined in 4 places.'>AV_DP_INSERT_FLOW</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L92'>  92 <i><font color='green'>/** \brief AV_DP_MODIFY_FLOW */</font></i>
+<a name='L93'>  93 <b>void</b> <a href='../R/2246.html' title='Multiple refered from 4 places.'>av_dp_modify_flow</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../D/382.html' title='Multiple defined in 3 places.'>AV_PUSH_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/356.html' title='Multiple defined in 4 places.'>AV_DP_MODIFY_FLOW</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L94'>  94 <i><font color='green'>/** \brief AV_DP_DELETE_FLOW */</font></i>
+<a name='L95'>  95 <b>void</b> <a href='../R/2242.html' title='Multiple refered from 4 places.'>av_dp_delete_flow</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../D/382.html' title='Multiple defined in 3 places.'>AV_PUSH_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/352.html' title='Multiple defined in 4 places.'>AV_DP_DELETE_FLOW</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L96'>  96 
+<a name='L97'>  97 <i><font color='green'>// Internal events (request-response) ///////////////////////////////</font></i>
+<a name='L98'>  98 
+<a name='L99'>  99 <i><font color='green'>/** \brief AV_SW_GET_INFO (dpid) */</font></i>
+<a name='L100'> 100 <b>void</b> <a href='../R/2272.html' title='Multiple refered from 4 places.'>av_sw_get_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../D/388.html' title='Multiple defined in 3 places.'>AV_WRITE_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/386.html' title='Multiple defined in 4 places.'>AV_SW_GET_INFO</a>, <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L101'> 101 <i><font color='green'>/** \brief AV_SW_GET_ALL_INFO (none) */</font></i>
+<a name='L102'> 102 <b>void</b> <a href='../R/2271.html' title='Multiple refered from 4 places.'>av_sw_get_all_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../D/388.html' title='Multiple defined in 3 places.'>AV_WRITE_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/385.html' title='Multiple defined in 4 places.'>AV_SW_GET_ALL_INFO</a>, <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L103'> 103 <i><font color='green'>/** \brief AV_HOST_GET_INFO (MAC address or IP address) */</font></i>
+<a name='L104'> 104 <b>void</b> <a href='../R/2259.html' title='Multiple refered from 4 places.'>av_host_get_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../D/388.html' title='Multiple defined in 3 places.'>AV_WRITE_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/369.html' title='Multiple defined in 4 places.'>AV_HOST_GET_INFO</a>, <b>sizeof</b>(<a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L105'> 105 <i><font color='green'>/** \brief AV_HOST_GET_ALL_INFO (none) */</font></i>
+<a name='L106'> 106 <b>void</b> <a href='../R/2258.html' title='Multiple refered from 4 places.'>av_host_get_all_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../D/388.html' title='Multiple defined in 3 places.'>AV_WRITE_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/368.html' title='Multiple defined in 4 places.'>AV_HOST_GET_ALL_INFO</a>, <b>sizeof</b>(<a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L107'> 107 <i><font color='green'>/** \brief AV_LINK_GET_INFO (dpid) */</font></i>
+<a name='L108'> 108 <b>void</b> <a href='../R/2263.html' title='Multiple refered from 4 places.'>av_link_get_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../D/388.html' title='Multiple defined in 3 places.'>AV_WRITE_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/373.html' title='Multiple defined in 4 places.'>AV_LINK_GET_INFO</a>, <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L109'> 109 <i><font color='green'>/** \brief AV_LINK_GET_ALL_INFO (none) */</font></i>
+<a name='L110'> 110 <b>void</b> <a href='../R/2262.html' title='Multiple refered from 4 places.'>av_link_get_all_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../D/388.html' title='Multiple defined in 3 places.'>AV_WRITE_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/372.html' title='Multiple defined in 4 places.'>AV_LINK_GET_ALL_INFO</a>, <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L111'> 111 <i><font color='green'>/** \brief AV_FLOW_GET_INFO (dpid) */</font></i>
+<a name='L112'> 112 <b>void</b> <a href='../R/2255.html' title='Multiple refered from 4 places.'>av_flow_get_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../D/388.html' title='Multiple defined in 3 places.'>AV_WRITE_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/365.html' title='Multiple defined in 4 places.'>AV_FLOW_GET_INFO</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L113'> 113 <i><font color='green'>/** \brief AV_FLOW_GET_ALL_INFO (none) */</font></i>
+<a name='L114'> 114 <b>void</b> <a href='../R/2254.html' title='Multiple refered from 4 places.'>av_flow_get_all_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>) <font color='red'>{</font> <a href='../D/388.html' title='Multiple defined in 3 places.'>AV_WRITE_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/364.html' title='Multiple defined in 4 places.'>AV_FLOW_GET_ALL_INFO</a>, <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>), <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>); <font color='red'>}</font>
+<a name='L115'> 115 
+<a name='L116'> 116 <i><font color='green'>// Log events ///////////////////////////////////////////////////////</font></i>
+<a name='L117'> 117 
+<a name='L118'> 118 <i><font color='green'>/** \brief AV_LOG_DEBUG */</font></i>
+<a name='L119'> 119 <b>void</b> <a href='../R/2264.html' title='Multiple refered from 10 places.'>av_log_debug</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>char</b> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...) <font color='red'>{</font>
+<a name='L120'> 120     <b>char</b> <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>[<a href='../D/6475.html' title='Multiple defined in 6 places.'>__CONF_STR_LEN</a>] = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L121'> 121     <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a> <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>;
+<a name='L122'> 122 
+<a name='L123'> 123     <a href='../Y/7712.html' title='Multiple used in 43 places.'>va_start</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>);
+<a name='L124'> 124     <a href='../Y/7826.html' title='Multiple used in 25 places.'>vsprintf</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L125'> 125     <a href='../Y/7710.html' title='Multiple used in 47 places.'>va_end</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L126'> 126 
+<a name='L127'> 127     <a href='../D/382.html' title='Multiple defined in 3 places.'>AV_PUSH_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/374.html' title='Multiple defined in 4 places.'>AV_LOG_DEBUG</a>, <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>), <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>);
+<a name='L128'> 128 <font color='red'>}</font>
+<a name='L129'> 129 <i><font color='green'>/** \brief AV_LOG_INFO */</font></i>
+<a name='L130'> 130 <b>void</b> <a href='../R/2267.html' title='Multiple refered from 10 places.'>av_log_info</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>char</b> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...) <font color='red'>{</font>
+<a name='L131'> 131     <b>char</b> <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>[<a href='../D/6475.html' title='Multiple defined in 6 places.'>__CONF_STR_LEN</a>] = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L132'> 132     <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a> <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>;
+<a name='L133'> 133 
+<a name='L134'> 134     <a href='../Y/7712.html' title='Multiple used in 43 places.'>va_start</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>);
+<a name='L135'> 135     <a href='../Y/7826.html' title='Multiple used in 25 places.'>vsprintf</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L136'> 136     <a href='../Y/7710.html' title='Multiple used in 47 places.'>va_end</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L137'> 137 
+<a name='L138'> 138     <a href='../D/382.html' title='Multiple defined in 3 places.'>AV_PUSH_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/377.html' title='Multiple defined in 4 places.'>AV_LOG_INFO</a>, <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>), <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>);
+<a name='L139'> 139 <font color='red'>}</font>
+<a name='L140'> 140 <i><font color='green'>/** \brief AV_LOG_WARN */</font></i>
+<a name='L141'> 141 <b>void</b> <a href='../R/2268.html' title='Multiple refered from 10 places.'>av_log_warn</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>char</b> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...) <font color='red'>{</font>
+<a name='L142'> 142     <b>char</b> <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>[<a href='../D/6475.html' title='Multiple defined in 6 places.'>__CONF_STR_LEN</a>] = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L143'> 143     <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a> <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>;
+<a name='L144'> 144 
+<a name='L145'> 145     <a href='../Y/7712.html' title='Multiple used in 43 places.'>va_start</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>);
+<a name='L146'> 146     <a href='../Y/7826.html' title='Multiple used in 25 places.'>vsprintf</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L147'> 147     <a href='../Y/7710.html' title='Multiple used in 47 places.'>va_end</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L148'> 148 
+<a name='L149'> 149     <a href='../D/382.html' title='Multiple defined in 3 places.'>AV_PUSH_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/378.html' title='Multiple defined in 4 places.'>AV_LOG_WARN</a>, <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>), <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>);
+<a name='L150'> 150 <font color='red'>}</font>
+<a name='L151'> 151 <i><font color='green'>/** \brief AV_LOG_ERROR */</font></i>
+<a name='L152'> 152 <b>void</b> <a href='../R/2265.html' title='Multiple refered from 10 places.'>av_log_error</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>char</b> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...) <font color='red'>{</font>
+<a name='L153'> 153     <b>char</b> <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>[<a href='../D/6475.html' title='Multiple defined in 6 places.'>__CONF_STR_LEN</a>] = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L154'> 154     <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a> <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>;
+<a name='L155'> 155 
+<a name='L156'> 156     <a href='../Y/7712.html' title='Multiple used in 43 places.'>va_start</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>);
+<a name='L157'> 157     <a href='../Y/7826.html' title='Multiple used in 25 places.'>vsprintf</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L158'> 158     <a href='../Y/7710.html' title='Multiple used in 47 places.'>va_end</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L159'> 159 
+<a name='L160'> 160     <a href='../D/382.html' title='Multiple defined in 3 places.'>AV_PUSH_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/375.html' title='Multiple defined in 4 places.'>AV_LOG_ERROR</a>, <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>), <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>);
+<a name='L161'> 161 <font color='red'>}</font>
+<a name='L162'> 162 <i><font color='green'>/** \brief AV_LOG_FATAL */</font></i>
+<a name='L163'> 163 <b>void</b> <a href='../R/2266.html' title='Multiple refered from 10 places.'>av_log_fatal</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>char</b> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...) <font color='red'>{</font>
+<a name='L164'> 164     <b>char</b> <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>[<a href='../D/6475.html' title='Multiple defined in 6 places.'>__CONF_STR_LEN</a>] = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L165'> 165     <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a> <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>;
+<a name='L166'> 166 
+<a name='L167'> 167     <a href='../Y/7712.html' title='Multiple used in 43 places.'>va_start</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>);
+<a name='L168'> 168     <a href='../Y/7826.html' title='Multiple used in 25 places.'>vsprintf</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L169'> 169     <a href='../Y/7710.html' title='Multiple used in 47 places.'>va_end</a>(<a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L170'> 170 
+<a name='L171'> 171     <a href='../D/382.html' title='Multiple defined in 3 places.'>AV_PUSH_MSG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../D/376.html' title='Multiple defined in 4 places.'>AV_LOG_FATAL</a>, <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>), <a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>);
+<a name='L172'> 172 <font color='red'>}</font>
+<a name='L173'> 173 
+<a name='L174'> 174 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L175'> 175 
+<a name='L176'> 176 <i><font color='green'>/**</font></i>
+<a name='L177'> 177 <i><font color='green'> * \brief Function to process app events in an app event queue and reply outputs</font></i>
+<a name='L178'> 178 <i><font color='green'> * \return NULL</font></i>
+<a name='L179'> 179 <i><font color='green'> */</font></i>
+<a name='L180'> 180 <b>static</b> <b>void</b> *<a href='../R/4361.html' title='Multiple refered from 4 places.'>reply_app_events</a>(<b>void</b> *<a href='../Y/4954.html' title='Multiple used in 18 places.'>null</a>)
+<a name='L181'> 181 <font color='red'>{</font>
+<a name='L182'> 182     <b>while</b> (<a href='../Y/1557.html' title='Multiple used in 20 places.'>av_worker_on</a>) <font color='red'>{</font>
+<a name='L183'> 183         <a href='../D/8383.html' title='Multiple defined in 6 places.'>msg_t</a> <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a> = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L184'> 184 
+<a name='L185'> 185         <a href='../Y/8050.html' title='Multiple used in 12 places.'>zmq_recv</a>(<a href='../Y/1553.html' title='Multiple used in 18 places.'>av_rep_sock</a>, &amp;<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <b>sizeof</b>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>), 0);
+<a name='L186'> 186 
+<a name='L187'> 187         <a href='../D/6865.html' title='Multiple defined in 10 places.'>app_event_out_t</a> <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a> = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L188'> 188 
+<a name='L189'> 189         <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a> = <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>;
+<a name='L190'> 190         <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> = <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;
+<a name='L191'> 191         <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>char</b> *)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L192'> 192 
+<a name='L193'> 193         <b>const</b> <a href='../D/6868.html' title='Multiple defined in 10 places.'>app_event_t</a> *<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a> = (<b>const</b> <a href='../D/6868.html' title='Multiple defined in 10 places.'>app_event_t</a> *)&amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>;
+<a name='L194'> 194 
+<a name='L195'> 195         <b>int</b> <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = 0;
+<a name='L196'> 196 
+<a name='L197'> 197         <b>switch</b> (<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) <font color='red'>{</font>
+<a name='L198'> 198 
+<a name='L199'> 199         <i><font color='green'>// upstream events</font></i>
+<a name='L200'> 200 
+<a name='L201'> 201         <b>case</b> <a href='../D/360.html' title='Multiple defined in 4 places.'>AV_DP_RECEIVE_PACKET</a>:
+<a name='L202'> 202             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9044.html' title='Multiple defined in 6 places.'>pktin_t</a>);
+<a name='L203'> 203             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L204'> 204             <b>break</b>;
+<a name='L205'> 205         <b>case</b> <a href='../D/354.html' title='Multiple defined in 4 places.'>AV_DP_FLOW_EXPIRED</a>:
+<a name='L206'> 206             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>);
+<a name='L207'> 207             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L208'> 208             <b>break</b>;
+<a name='L209'> 209         <b>case</b> <a href='../D/353.html' title='Multiple defined in 4 places.'>AV_DP_FLOW_DELETED</a>:
+<a name='L210'> 210             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>);
+<a name='L211'> 211             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L212'> 212             <b>break</b>;
+<a name='L213'> 213         <b>case</b> <a href='../D/357.html' title='Multiple defined in 4 places.'>AV_DP_PORT_ADDED</a>:
+<a name='L214'> 214             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>);
+<a name='L215'> 215             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L216'> 216             <b>break</b>;
+<a name='L217'> 217         <b>case</b> <a href='../D/359.html' title='Multiple defined in 4 places.'>AV_DP_PORT_MODIFIED</a>:
+<a name='L218'> 218             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>);
+<a name='L219'> 219             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L220'> 220             <b>break</b>;
+<a name='L221'> 221         <b>case</b> <a href='../D/358.html' title='Multiple defined in 4 places.'>AV_DP_PORT_DELETED</a>:
+<a name='L222'> 222             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>);
+<a name='L223'> 223             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L224'> 224             <b>break</b>;
+<a name='L225'> 225 
+<a name='L226'> 226         <i><font color='green'>// downstream events</font></i>
+<a name='L227'> 227         <b>case</b> <a href='../D/361.html' title='Multiple defined in 4 places.'>AV_DP_SEND_PACKET</a>:
+<a name='L228'> 228             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9045.html' title='Multiple defined in 6 places.'>pktout_t</a>);
+<a name='L229'> 229             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L230'> 230             <b>break</b>;
+<a name='L231'> 231         <b>case</b> <a href='../D/355.html' title='Multiple defined in 4 places.'>AV_DP_INSERT_FLOW</a>:
+<a name='L232'> 232             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>);
+<a name='L233'> 233             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L234'> 234             <b>break</b>;
+<a name='L235'> 235         <b>case</b> <a href='../D/356.html' title='Multiple defined in 4 places.'>AV_DP_MODIFY_FLOW</a>:
+<a name='L236'> 236             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>);
+<a name='L237'> 237             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L238'> 238             <b>break</b>;
+<a name='L239'> 239         <b>case</b> <a href='../D/352.html' title='Multiple defined in 4 places.'>AV_DP_DELETE_FLOW</a>:
+<a name='L240'> 240             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>);
+<a name='L241'> 241             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L242'> 242             <b>break</b>;
+<a name='L243'> 243 
+<a name='L244'> 244         <i><font color='green'>// internal events</font></i>
+<a name='L245'> 245 
+<a name='L246'> 246         <b>case</b> <a href='../D/383.html' title='Multiple defined in 4 places.'>AV_SW_CONNECTED</a>:
+<a name='L247'> 247             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>);
+<a name='L248'> 248             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L249'> 249             <b>break</b>;
+<a name='L250'> 250         <b>case</b> <a href='../D/384.html' title='Multiple defined in 4 places.'>AV_SW_DISCONNECTED</a>:
+<a name='L251'> 251             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>);
+<a name='L252'> 252             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L253'> 253             <b>break</b>;
+<a name='L254'> 254         <b>case</b> <a href='../D/366.html' title='Multiple defined in 4 places.'>AV_HOST_ADDED</a>:
+<a name='L255'> 255             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a>);
+<a name='L256'> 256             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L257'> 257             <b>break</b>;
+<a name='L258'> 258         <b>case</b> <a href='../D/367.html' title='Multiple defined in 4 places.'>AV_HOST_DELETED</a>:
+<a name='L259'> 259             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a>);
+<a name='L260'> 260             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L261'> 261             <b>break</b>;
+<a name='L262'> 262         <b>case</b> <a href='../D/370.html' title='Multiple defined in 4 places.'>AV_LINK_ADDED</a>:
+<a name='L263'> 263             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>);
+<a name='L264'> 264             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L265'> 265             <b>break</b>;
+<a name='L266'> 266         <b>case</b> <a href='../D/371.html' title='Multiple defined in 4 places.'>AV_LINK_DELETED</a>:
+<a name='L267'> 267             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>);
+<a name='L268'> 268             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L269'> 269             <b>break</b>;
+<a name='L270'> 270         <b>case</b> <a href='../D/362.html' title='Multiple defined in 4 places.'>AV_FLOW_ADDED</a>:
+<a name='L271'> 271             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>);
+<a name='L272'> 272             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L273'> 273             <b>break</b>;
+<a name='L274'> 274         <b>case</b> <a href='../D/363.html' title='Multiple defined in 4 places.'>AV_FLOW_DELETED</a>:
+<a name='L275'> 275             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>);
+<a name='L276'> 276             <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L277'> 277             <b>break</b>;
+<a name='L278'> 278 
+<a name='L279'> 279         <font color='red'>}</font>
+<a name='L280'> 280 
+<a name='L281'> 281         <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a>;
+<a name='L282'> 282 
+<a name='L283'> 283         <a href='../Y/8051.html' title='Multiple used in 12 places.'>zmq_send</a>(<a href='../Y/1553.html' title='Multiple used in 18 places.'>av_rep_sock</a>, &amp;<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <b>sizeof</b>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>), 0);
+<a name='L284'> 284     <font color='red'>}</font>
+<a name='L285'> 285 
+<a name='L286'> 286     <b>return</b> <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L287'> 287 <font color='red'>}</font>
+<a name='L288'> 288 
+<a name='L289'> 289 <i><font color='green'>/**</font></i>
+<a name='L290'> 290 <i><font color='green'> * \brief Function to process app events in an app event queue</font></i>
+<a name='L291'> 291 <i><font color='green'> * \return NULL</font></i>
+<a name='L292'> 292 <i><font color='green'> */</font></i>
+<a name='L293'> 293 <b>static</b> <b>void</b> *<a href='../R/2579.html' title='Multiple refered from 3 places.'>deliver_app_events</a>(<b>void</b> *<a href='../Y/4954.html' title='Multiple used in 18 places.'>null</a>)
+<a name='L294'> 294 <font color='red'>{</font>
+<a name='L295'> 295     <b>while</b> (<a href='../Y/1557.html' title='Multiple used in 20 places.'>av_worker_on</a>) <font color='red'>{</font>
+<a name='L296'> 296         <a href='../D/8383.html' title='Multiple defined in 6 places.'>msg_t</a> <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a> = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L297'> 297 
+<a name='L298'> 298         <a href='../Y/8050.html' title='Multiple used in 12 places.'>zmq_recv</a>(<a href='../Y/1548.html' title='Multiple used in 20 places.'>av_pull_sock</a>, &amp;<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <b>sizeof</b>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>), 0);
+<a name='L299'> 299 
+<a name='L300'> 300         <a href='../D/6865.html' title='Multiple defined in 10 places.'>app_event_out_t</a> <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a> = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L301'> 301 
+<a name='L302'> 302         <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a> = <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>;
+<a name='L303'> 303         <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> = <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;
+<a name='L304'> 304         <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>char</b> *)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L305'> 305 
+<a name='L306'> 306         <b>const</b> <a href='../D/6868.html' title='Multiple defined in 10 places.'>app_event_t</a> *<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a> = (<b>const</b> <a href='../D/6868.html' title='Multiple defined in 10 places.'>app_event_t</a> *)&amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>;
+<a name='L307'> 307 
+<a name='L308'> 308         <b>switch</b> (<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>.<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) <font color='red'>{</font>
+<a name='L309'> 309 
+<a name='L310'> 310         <i><font color='green'>// upstream events</font></i>
+<a name='L311'> 311 
+<a name='L312'> 312         <b>case</b> <a href='../D/360.html' title='Multiple defined in 4 places.'>AV_DP_RECEIVE_PACKET</a>:
+<a name='L313'> 313             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9044.html' title='Multiple defined in 6 places.'>pktin_t</a>);
+<a name='L314'> 314             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L315'> 315             <b>break</b>;
+<a name='L316'> 316         <b>case</b> <a href='../D/354.html' title='Multiple defined in 4 places.'>AV_DP_FLOW_EXPIRED</a>:
+<a name='L317'> 317             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>);
+<a name='L318'> 318             <b>break</b>;
+<a name='L319'> 319         <b>case</b> <a href='../D/353.html' title='Multiple defined in 4 places.'>AV_DP_FLOW_DELETED</a>:
+<a name='L320'> 320             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>);
+<a name='L321'> 321             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L322'> 322             <b>break</b>;
+<a name='L323'> 323         <b>case</b> <a href='../D/357.html' title='Multiple defined in 4 places.'>AV_DP_PORT_ADDED</a>:
+<a name='L324'> 324             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>);
+<a name='L325'> 325             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L326'> 326             <b>break</b>;
+<a name='L327'> 327         <b>case</b> <a href='../D/359.html' title='Multiple defined in 4 places.'>AV_DP_PORT_MODIFIED</a>:
+<a name='L328'> 328             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>);
+<a name='L329'> 329             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L330'> 330             <b>break</b>;
+<a name='L331'> 331         <b>case</b> <a href='../D/358.html' title='Multiple defined in 4 places.'>AV_DP_PORT_DELETED</a>:
+<a name='L332'> 332             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>);
+<a name='L333'> 333             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L334'> 334             <b>break</b>;
+<a name='L335'> 335 
+<a name='L336'> 336         <i><font color='green'>// downstream events</font></i>
+<a name='L337'> 337         <b>case</b> <a href='../D/361.html' title='Multiple defined in 4 places.'>AV_DP_SEND_PACKET</a>:
+<a name='L338'> 338             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9045.html' title='Multiple defined in 6 places.'>pktout_t</a>);
+<a name='L339'> 339             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L340'> 340             <b>break</b>;
+<a name='L341'> 341         <b>case</b> <a href='../D/355.html' title='Multiple defined in 4 places.'>AV_DP_INSERT_FLOW</a>:
+<a name='L342'> 342             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>);
+<a name='L343'> 343             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L344'> 344             <b>break</b>;
+<a name='L345'> 345         <b>case</b> <a href='../D/356.html' title='Multiple defined in 4 places.'>AV_DP_MODIFY_FLOW</a>:
+<a name='L346'> 346             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>);
+<a name='L347'> 347             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L348'> 348             <b>break</b>;
+<a name='L349'> 349         <b>case</b> <a href='../D/352.html' title='Multiple defined in 4 places.'>AV_DP_DELETE_FLOW</a>:
+<a name='L350'> 350             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>);
+<a name='L351'> 351             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L352'> 352             <b>break</b>;
+<a name='L353'> 353 
+<a name='L354'> 354         <i><font color='green'>// internal events</font></i>
+<a name='L355'> 355 
+<a name='L356'> 356         <b>case</b> <a href='../D/383.html' title='Multiple defined in 4 places.'>AV_SW_CONNECTED</a>:
+<a name='L357'> 357             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>);
+<a name='L358'> 358             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L359'> 359             <b>break</b>;
+<a name='L360'> 360         <b>case</b> <a href='../D/384.html' title='Multiple defined in 4 places.'>AV_SW_DISCONNECTED</a>:
+<a name='L361'> 361             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9797.html' title='Multiple defined in 6 places.'>switch_t</a>);
+<a name='L362'> 362             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L363'> 363             <b>break</b>;
+<a name='L364'> 364         <b>case</b> <a href='../D/366.html' title='Multiple defined in 4 places.'>AV_HOST_ADDED</a>:
+<a name='L365'> 365             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a>);
+<a name='L366'> 366             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L367'> 367             <b>break</b>;
+<a name='L368'> 368         <b>case</b> <a href='../D/367.html' title='Multiple defined in 4 places.'>AV_HOST_DELETED</a>:
+<a name='L369'> 369             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/8053.html' title='Multiple defined in 6 places.'>host_t</a>);
+<a name='L370'> 370             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L371'> 371             <b>break</b>;
+<a name='L372'> 372         <b>case</b> <a href='../D/370.html' title='Multiple defined in 4 places.'>AV_LINK_ADDED</a>:
+<a name='L373'> 373             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>);
+<a name='L374'> 374             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L375'> 375             <b>break</b>;
+<a name='L376'> 376         <b>case</b> <a href='../D/371.html' title='Multiple defined in 4 places.'>AV_LINK_DELETED</a>:
+<a name='L377'> 377             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/9107.html' title='Multiple defined in 6 places.'>port_t</a>);
+<a name='L378'> 378             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L379'> 379             <b>break</b>;
+<a name='L380'> 380         <b>case</b> <a href='../D/362.html' title='Multiple defined in 4 places.'>AV_FLOW_ADDED</a>:
+<a name='L381'> 381             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>);
+<a name='L382'> 382             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L383'> 383             <b>break</b>;
+<a name='L384'> 384         <b>case</b> <a href='../D/363.html' title='Multiple defined in 4 places.'>AV_FLOW_DELETED</a>:
+<a name='L385'> 385             <a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <b>sizeof</b>(<a href='../D/7878.html' title='Multiple defined in 6 places.'>flow_t</a>);
+<a name='L386'> 386             <a href='../Y/1398.html' title='Multiple used in 162 places.'>app</a>.<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(<a href='../Y/3759.html' title='Multiple used in 129 places.'>in</a>, &amp;<a href='../Y/5531.html' title='Multiple used in 554 places.'>out</a>);
+<a name='L387'> 387             <b>break</b>;
+<a name='L388'> 388 
+<a name='L389'> 389         <b>default</b>:
+<a name='L390'> 390             <b>break</b>;
+<a name='L391'> 391         <font color='red'>}</font>
+<a name='L392'> 392     <font color='red'>}</font>
+<a name='L393'> 393 
+<a name='L394'> 394     <b>return</b> <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L395'> 395 <font color='red'>}</font>
+<a name='L396'> 396 
+<a name='L397'> 397 <i><font color='green'>/**</font></i>
+<a name='L398'> 398 <i><font color='green'> * \brief Function to destroy an app event queue</font></i>
+<a name='L399'> 399 <i><font color='green'> * \param ctx Context (NULL)</font></i>
+<a name='L400'> 400 <i><font color='green'> */</font></i>
+<a name='L401'> 401 <b>int</b> <a href='../R/2584.html' title='Multiple refered from 13 places.'>destroy_av_workers</a>(<a href='../D/7263.html' title='Multiple defined in 6 places.'>ctx_t</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>)
+<a name='L402'> 402 <font color='red'>{</font>
+<a name='L403'> 403     <a href='../Y/1557.html' title='Multiple used in 20 places.'>av_worker_on</a> = <a href='../D/1780.html' title='Multiple defined in 7 places.'>FALSE</a>;
+<a name='L404'> 404 
+<a name='L405'> 405     <a href='../Y/8045.html' title='Multiple used in 22 places.'>zmq_close</a>(<a href='../Y/1550.html' title='Multiple used in 15 places.'>av_push_sock</a>);
+<a name='L406'> 406     <a href='../Y/8047.html' title='Multiple used in 20 places.'>zmq_ctx_destroy</a>(<a href='../Y/1547.html' title='Multiple used in 19 places.'>av_pull_ctx</a>);
+<a name='L407'> 407 
+<a name='L408'> 408     <a href='../Y/8045.html' title='Multiple used in 22 places.'>zmq_close</a>(<a href='../Y/1548.html' title='Multiple used in 20 places.'>av_pull_sock</a>);
+<a name='L409'> 409     <a href='../Y/8047.html' title='Multiple used in 20 places.'>zmq_ctx_destroy</a>(<a href='../Y/1547.html' title='Multiple used in 19 places.'>av_pull_ctx</a>);
+<a name='L410'> 410 
+<a name='L411'> 411     <a href='../Y/8045.html' title='Multiple used in 22 places.'>zmq_close</a>(<a href='../Y/1556.html' title='Multiple used in 18 places.'>av_req_sock</a>);
+<a name='L412'> 412     <a href='../Y/8047.html' title='Multiple used in 20 places.'>zmq_ctx_destroy</a>(<a href='../Y/1555.html' title='Multiple used in 15 places.'>av_req_ctx</a>);
+<a name='L413'> 413 
+<a name='L414'> 414     <a href='../Y/8045.html' title='Multiple used in 22 places.'>zmq_close</a>(<a href='../Y/1553.html' title='Multiple used in 18 places.'>av_rep_sock</a>);
+<a name='L415'> 415     <a href='../Y/8047.html' title='Multiple used in 20 places.'>zmq_ctx_destroy</a>(<a href='../Y/1552.html' title='Multiple used in 15 places.'>av_rep_ctx</a>);
+<a name='L416'> 416 
+<a name='L417'> 417     <b>return</b> 0;
+<a name='L418'> 418 <font color='red'>}</font>
+<a name='L419'> 419 
+<a name='L420'> 420 <i><font color='green'>/**</font></i>
+<a name='L421'> 421 <i><font color='green'> * \brief Function to initialize the app event handler</font></i>
+<a name='L422'> 422 <i><font color='green'> * \param ctx Context (NULL)</font></i>
+<a name='L423'> 423 <i><font color='green'> */</font></i>
+<a name='L424'> 424 <b>int</b> <a href='../R/2187.html' title='Multiple refered from 8 places.'>app_event_init</a>(<a href='../D/7263.html' title='Multiple defined in 6 places.'>ctx_t</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>)
+<a name='L425'> 425 <font color='red'>{</font>
+<a name='L426'> 426     <a href='../Y/1557.html' title='Multiple used in 20 places.'>av_worker_on</a> = <a href='../D/5695.html' title='Multiple defined in 7 places.'>TRUE</a>;
+<a name='L427'> 427 
+<a name='L428'> 428     <i><font color='green'>// Push (downstream)</font></i>
+<a name='L429'> 429 
+<a name='L430'> 430     <a href='../Y/1549.html' title='Multiple used in 9 places.'>av_push_ctx</a> = <a href='../Y/8048.html' title='Multiple used in 20 places.'>zmq_ctx_new</a>();
+<a name='L431'> 431     <a href='../Y/1550.html' title='Multiple used in 15 places.'>av_push_sock</a> = <a href='../Y/8052.html' title='Multiple used in 22 places.'>zmq_socket</a>(<a href='../Y/1549.html' title='Multiple used in 9 places.'>av_push_ctx</a>, <a href='../Y/1102.html' title='Multiple used in 6 places.'>ZMQ_PUSH</a>);
+<a name='L432'> 432     <b>if</b> (<a href='../Y/8046.html' title='Multiple used in 13 places.'>zmq_connect</a>(<a href='../Y/1550.html' title='Multiple used in 15 places.'>av_push_sock</a>, "ipc://../tmp/ext_app_event_handler")) <font color='red'>{</font>
+<a name='L433'> 433         <a href='../D/4593.html' title='Multiple defined in 6 places.'>PERROR</a>("zmq_connect");
+<a name='L434'> 434         <b>return</b> -1;
+<a name='L435'> 435     <font color='red'>}</font>
+<a name='L436'> 436 
+<a name='L437'> 437     <i><font color='green'>// Pull (upstream, intstream)</font></i>
+<a name='L438'> 438 
+<a name='L439'> 439     <a href='../Y/6924.html' title='Multiple used in 107 places.'>sprintf</a>(<a href='../Y/1418.html' title='Multiple used in 9 places.'>app_pull_path</a>, "ipc://../tmp/%s_push_pull", <a href='../D/5543.html' title='Multiple defined in 2 places.'>TARGET_APP</a>);
+<a name='L440'> 440 
+<a name='L441'> 441     <a href='../Y/1547.html' title='Multiple used in 19 places.'>av_pull_ctx</a> = <a href='../Y/8048.html' title='Multiple used in 20 places.'>zmq_ctx_new</a>();
+<a name='L442'> 442     <a href='../Y/1548.html' title='Multiple used in 20 places.'>av_pull_sock</a> = <a href='../Y/8052.html' title='Multiple used in 22 places.'>zmq_socket</a>(<a href='../Y/1547.html' title='Multiple used in 19 places.'>av_pull_ctx</a>, <a href='../Y/1101.html' title='Multiple used in 4 places.'>ZMQ_PULL</a>);
+<a name='L443'> 443     <b>if</b> (<a href='../Y/8046.html' title='Multiple used in 13 places.'>zmq_connect</a>(<a href='../Y/1548.html' title='Multiple used in 20 places.'>av_pull_sock</a>, <a href='../Y/1418.html' title='Multiple used in 9 places.'>app_pull_path</a>)) <font color='red'>{</font>
+<a name='L444'> 444         <a href='../D/4593.html' title='Multiple defined in 6 places.'>PERROR</a>("zmq_connect");
+<a name='L445'> 445         <b>return</b> -1;
+<a name='L446'> 446     <font color='red'>}</font>
+<a name='L447'> 447 
+<a name='L448'> 448     <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L449'> 449     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>=0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>&lt;<a href='../Y/1146.html' title='Multiple used in 16 places.'>__NUM_THREADS</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L450'> 450         <a href='../Y/6150.html' title='Multiple used in 27 places.'>pthread_t</a> <a href='../Y/7357.html' title='Multiple used in 58 places.'>thread</a>;
+<a name='L451'> 451         <b>if</b> (<a href='../Y/6132.html' title='Multiple used in 31 places.'>pthread_create</a>(&amp;<a href='../Y/7357.html' title='Multiple used in 58 places.'>thread</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, &amp;<a href='../D/7304.html' title='Multiple defined in 3 places.'>deliver_app_events</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) &lt; 0) <font color='red'>{</font>
+<a name='L452'> 452             <a href='../D/4593.html' title='Multiple defined in 6 places.'>PERROR</a>("pthread_create");
+<a name='L453'> 453             <b>return</b> -1;
+<a name='L454'> 454         <font color='red'>}</font>
+<a name='L455'> 455     <font color='red'>}</font>
+<a name='L456'> 456 
+<a name='L457'> 457     <i><font color='green'>// Request (intsteam)</font></i>
+<a name='L458'> 458 
+<a name='L459'> 459     <a href='../Y/1555.html' title='Multiple used in 15 places.'>av_req_ctx</a> = <a href='../Y/8048.html' title='Multiple used in 20 places.'>zmq_ctx_new</a>();
+<a name='L460'> 460     <a href='../Y/1556.html' title='Multiple used in 18 places.'>av_req_sock</a> = <a href='../Y/8052.html' title='Multiple used in 22 places.'>zmq_socket</a>(<a href='../Y/1555.html' title='Multiple used in 15 places.'>av_req_ctx</a>, <a href='../Y/1104.html' title='Multiple used in 6 places.'>ZMQ_REQ</a>);
+<a name='L461'> 461     <b>if</b> (<a href='../Y/8046.html' title='Multiple used in 13 places.'>zmq_connect</a>(<a href='../Y/1556.html' title='Multiple used in 18 places.'>av_req_sock</a>, "ipc://../tmp/app_req_handler")) <font color='red'>{</font>
+<a name='L462'> 462         <a href='../D/4593.html' title='Multiple defined in 6 places.'>PERROR</a>("zmq_connect");
+<a name='L463'> 463         <b>return</b> -1;
+<a name='L464'> 464     <font color='red'>}</font>
+<a name='L465'> 465 
+<a name='L466'> 466     <i><font color='green'>// Reply (upstream, intstream)</font></i>
+<a name='L467'> 467 
+<a name='L468'> 468     <a href='../Y/6924.html' title='Multiple used in 107 places.'>sprintf</a>(<a href='../Y/1420.html' title='Multiple used in 9 places.'>app_rep_path</a>, "ipc://../tmp/%s_req_rep", <a href='../D/5543.html' title='Multiple defined in 2 places.'>TARGET_APP</a>);
+<a name='L469'> 469 
+<a name='L470'> 470     <a href='../Y/1552.html' title='Multiple used in 15 places.'>av_rep_ctx</a> = <a href='../Y/8048.html' title='Multiple used in 20 places.'>zmq_ctx_new</a>();
+<a name='L471'> 471     <a href='../Y/1553.html' title='Multiple used in 18 places.'>av_rep_sock</a> = <a href='../Y/8052.html' title='Multiple used in 22 places.'>zmq_socket</a>(<a href='../Y/1555.html' title='Multiple used in 15 places.'>av_req_ctx</a>, <a href='../Y/1103.html' title='Multiple used in 4 places.'>ZMQ_REP</a>);
+<a name='L472'> 472     <b>if</b> (<a href='../Y/8046.html' title='Multiple used in 13 places.'>zmq_connect</a>(<a href='../Y/1553.html' title='Multiple used in 18 places.'>av_rep_sock</a>, <a href='../Y/1420.html' title='Multiple used in 9 places.'>app_rep_path</a>)) <font color='red'>{</font>
+<a name='L473'> 473         <a href='../D/4593.html' title='Multiple defined in 6 places.'>PERROR</a>("zmq_connect");
+<a name='L474'> 474         <b>return</b> -1;
+<a name='L475'> 475     <font color='red'>}</font>
+<a name='L476'> 476 
+<a name='L477'> 477     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>=0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>&lt;<a href='../Y/1146.html' title='Multiple used in 16 places.'>__NUM_THREADS</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L478'> 478         <a href='../Y/6150.html' title='Multiple used in 27 places.'>pthread_t</a> <a href='../Y/7357.html' title='Multiple used in 58 places.'>thread</a>;
+<a name='L479'> 479         <b>if</b> (<a href='../Y/6132.html' title='Multiple used in 31 places.'>pthread_create</a>(&amp;<a href='../Y/7357.html' title='Multiple used in 58 places.'>thread</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, &amp;<a href='../D/9404.html' title='Multiple defined in 4 places.'>reply_app_events</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) &lt; 0) <font color='red'>{</font>
+<a name='L480'> 480             <a href='../D/4593.html' title='Multiple defined in 6 places.'>PERROR</a>("pthread_create");
+<a name='L481'> 481             <b>return</b> -1;
+<a name='L482'> 482         <font color='red'>}</font>
+<a name='L483'> 483     <font color='red'>}</font>
+<a name='L484'> 484 
+<a name='L485'> 485     <b>return</b> 0;
+<a name='L486'> 486 <font color='red'>}</font>
+<a name='L487'> 487 
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L89'>[^]</a><a href='#L424'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

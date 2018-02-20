@@ -1,0 +1,623 @@
+<html>
+<head>
+<title>dp</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/331.html#L29'>dp</a>                 29 cbench/openflow/datapath/chain.c 		       chain-&gt;dp-&gt;netdev-&gt;name);
+<a href='../S/331.html#L42'>dp</a>                 42 cbench/openflow/datapath/chain.c struct sw_chain *chain_create(struct datapath *dp)
+<a href='../S/331.html#L47'>dp</a>                 47 cbench/openflow/datapath/chain.c 	chain-&gt;dp = dp;
+<a href='../S/331.html#L196'>dp</a>                196 cbench/openflow/datapath/chain.c 		count += t-&gt;delete(chain-&gt;dp, t, key,
+<a href='../S/331.html#L201'>dp</a>                201 cbench/openflow/datapath/chain.c 			count += t-&gt;delete(chain-&gt;dp, t, key,
+<a href='../S/331.html#L224'>dp</a>                224 cbench/openflow/datapath/chain.c 		count += t-&gt;timeout(chain-&gt;dp, t);
+<a href='../S/284.html#L22'>dp</a>                 22 cbench/openflow/datapath/chain.h 	struct datapath *dp;
+<a href='../S/293.html#L66'>dp</a>                 66 cbench/openflow/datapath/datapath.c int (*dp_add_dp_hook)(struct datapath *dp);
+<a href='../S/293.html#L69'>dp</a>                 69 cbench/openflow/datapath/datapath.c int (*dp_del_dp_hook)(struct datapath *dp);
+<a href='../S/293.html#L153'>dp</a>                153 cbench/openflow/datapath/datapath.c put_openflow_headers(struct datapath *dp, struct sk_buff *skb, uint8_t type,
+<a href='../S/293.html#L166'>dp</a>                166 cbench/openflow/datapath/datapath.c 	if (nla_put_u32(skb, DP_GENL_A_DP_IDX, dp-&gt;dp_idx) &lt; 0)
+<a href='../S/293.html#L205'>dp</a>                205 cbench/openflow/datapath/datapath.c alloc_openflow_skb(struct datapath *dp, size_t openflow_len, uint8_t type,
+<a href='../S/293.html#L217'>dp</a>                217 cbench/openflow/datapath/datapath.c 			       dp-&gt;netdev-&gt;name, openflow_len);
+<a href='../S/293.html#L229'>dp</a>                229 cbench/openflow/datapath/datapath.c 	oh = put_openflow_headers(dp, skb, type, sender, &amp;max_openflow_len);
+<a href='../S/293.html#L238'>dp</a>                238 cbench/openflow/datapath/datapath.c dp_mc_group(const struct datapath *dp)
+<a href='../S/293.html#L240'>dp</a>                240 cbench/openflow/datapath/datapath.c 	return mc_groups[dp-&gt;dp_idx &amp; (N_MC_GROUPS - 1)].id;
+<a href='../S/293.html#L246'>dp</a>                246 cbench/openflow/datapath/datapath.c send_openflow_skb(const struct datapath *dp,
+<a href='../S/293.html#L251'>dp</a>                251 cbench/openflow/datapath/datapath.c 		: genlmsg_multicast(skb, 0, dp_mc_group(dp), GFP_ATOMIC));
+<a href='../S/293.html#L287'>dp</a>                287 cbench/openflow/datapath/datapath.c 	struct datapath *dp;
+<a href='../S/293.html#L310'>dp</a>                310 cbench/openflow/datapath/datapath.c 	dp = kzalloc(sizeof *dp, GFP_KERNEL);
+<a href='../S/293.html#L311'>dp</a>                311 cbench/openflow/datapath/datapath.c 	if (dp == NULL)
+<a href='../S/293.html#L314'>dp</a>                314 cbench/openflow/datapath/datapath.c 	dp-&gt;dp_idx = dp_idx;
+<a href='../S/293.html#L318'>dp</a>                318 cbench/openflow/datapath/datapath.c 	snprintf(dp-&gt;dp_desc, sizeof dp-&gt;dp_desc, "%s idx=%d", u-&gt;nodename, dp_idx);
+<a href='../S/293.html#L321'>dp</a>                321 cbench/openflow/datapath/datapath.c 	err = dp_dev_setup(dp, dp_name);
+<a href='../S/293.html#L325'>dp</a>                325 cbench/openflow/datapath/datapath.c 	dp-&gt;chain = chain_create(dp);
+<a href='../S/293.html#L326'>dp</a>                326 cbench/openflow/datapath/datapath.c 	if (dp-&gt;chain == NULL)
+<a href='../S/293.html#L328'>dp</a>                328 cbench/openflow/datapath/datapath.c 	INIT_LIST_HEAD(&amp;dp-&gt;port_list);
+<a href='../S/293.html#L330'>dp</a>                330 cbench/openflow/datapath/datapath.c 	dp-&gt;local_port = new_nbp(dp, dp-&gt;netdev, OFPP_LOCAL);
+<a href='../S/293.html#L331'>dp</a>                331 cbench/openflow/datapath/datapath.c 	if (IS_ERR(dp-&gt;local_port)) {
+<a href='../S/293.html#L332'>dp</a>                332 cbench/openflow/datapath/datapath.c 		err = PTR_ERR(dp-&gt;local_port);
+<a href='../S/293.html#L336'>dp</a>                336 cbench/openflow/datapath/datapath.c 	dp-&gt;flags = 0;
+<a href='../S/293.html#L337'>dp</a>                337 cbench/openflow/datapath/datapath.c 	dp-&gt;miss_send_len = OFP_DEFAULT_MISS_SEND_LEN;
+<a href='../S/293.html#L339'>dp</a>                339 cbench/openflow/datapath/datapath.c 	dp-&gt;dp_task = kthread_run(dp_maint_func, dp, "dp%d", dp_idx);
+<a href='../S/293.html#L340'>dp</a>                340 cbench/openflow/datapath/datapath.c 	if (IS_ERR(dp-&gt;dp_task))
+<a href='../S/293.html#L343'>dp</a>                343 cbench/openflow/datapath/datapath.c 	dps[dp_idx] = dp;
+<a href='../S/293.html#L348'>dp</a>                348 cbench/openflow/datapath/datapath.c 		dp_add_dp_hook(dp);
+<a href='../S/293.html#L353'>dp</a>                353 cbench/openflow/datapath/datapath.c 	dp_del_switch_port(dp-&gt;local_port);
+<a href='../S/293.html#L355'>dp</a>                355 cbench/openflow/datapath/datapath.c 	chain_destroy(dp-&gt;chain);
+<a href='../S/293.html#L357'>dp</a>                357 cbench/openflow/datapath/datapath.c 	dp_dev_destroy(dp);
+<a href='../S/293.html#L359'>dp</a>                359 cbench/openflow/datapath/datapath.c 	kfree(dp);
+<a href='../S/293.html#L369'>dp</a>                369 cbench/openflow/datapath/datapath.c static int find_portno(struct datapath *dp)
+<a href='../S/293.html#L373'>dp</a>                373 cbench/openflow/datapath/datapath.c 		if (dp-&gt;ports[i] == NULL)
+<a href='../S/293.html#L379'>dp</a>                379 cbench/openflow/datapath/datapath.c static struct net_bridge_port *new_nbp(struct datapath *dp,
+<a href='../S/293.html#L393'>dp</a>                393 cbench/openflow/datapath/datapath.c 	p-&gt;dp = dp;
+<a href='../S/293.html#L400'>dp</a>                400 cbench/openflow/datapath/datapath.c 		rcu_assign_pointer(dp-&gt;ports[port_no], p); 
+<a href='../S/293.html#L401'>dp</a>                401 cbench/openflow/datapath/datapath.c 	list_add_rcu(&amp;p-&gt;node, &amp;dp-&gt;port_list);
+<a href='../S/293.html#L407'>dp</a>                407 cbench/openflow/datapath/datapath.c int add_switch_port(struct datapath *dp, struct net_device *dev)
+<a href='../S/293.html#L416'>dp</a>                416 cbench/openflow/datapath/datapath.c 	port_no = find_portno(dp);
+<a href='../S/293.html#L420'>dp</a>                420 cbench/openflow/datapath/datapath.c 	p = new_nbp(dp, dev, port_no);
+<a href='../S/293.html#L442'>dp</a>                442 cbench/openflow/datapath/datapath.c 		sysfs_remove_link(&amp;p-&gt;dp-&gt;ifobj, p-&gt;dev-&gt;name);
+<a href='../S/293.html#L449'>dp</a>                449 cbench/openflow/datapath/datapath.c 		rcu_assign_pointer(p-&gt;dp-&gt;ports[p-&gt;port_no], NULL);
+<a href='../S/293.html#L468'>dp</a>                468 cbench/openflow/datapath/datapath.c static void del_dp(struct datapath *dp)
+<a href='../S/293.html#L472'>dp</a>                472 cbench/openflow/datapath/datapath.c 	send_sig(SIGKILL, dp-&gt;dp_task, 0);
+<a href='../S/293.html#L473'>dp</a>                473 cbench/openflow/datapath/datapath.c 	kthread_stop(dp-&gt;dp_task);
+<a href='../S/293.html#L476'>dp</a>                476 cbench/openflow/datapath/datapath.c 	list_for_each_entry_safe (p, n, &amp;dp-&gt;port_list, node)
+<a href='../S/293.html#L480'>dp</a>                480 cbench/openflow/datapath/datapath.c 		dp_del_dp_hook(dp);
+<a href='../S/293.html#L482'>dp</a>                482 cbench/openflow/datapath/datapath.c 	rcu_assign_pointer(dps[dp-&gt;dp_idx], NULL);
+<a href='../S/293.html#L491'>dp</a>                491 cbench/openflow/datapath/datapath.c 	dp_dev_destroy(dp);
+<a href='../S/293.html#L495'>dp</a>                495 cbench/openflow/datapath/datapath.c 	chain_destroy(dp-&gt;chain);
+<a href='../S/293.html#L496'>dp</a>                496 cbench/openflow/datapath/datapath.c 	kfree(dp);
+<a href='../S/293.html#L502'>dp</a>                502 cbench/openflow/datapath/datapath.c 	struct datapath *dp = (struct datapath *) data;
+<a href='../S/293.html#L507'>dp</a>                507 cbench/openflow/datapath/datapath.c 		chain_timeout(dp-&gt;chain);
+<a href='../S/293.html#L531'>dp</a>                531 cbench/openflow/datapath/datapath.c 	fwd_port_input(p-&gt;dp-&gt;chain, skb, p);
+<a href='../S/293.html#L569'>dp</a>                569 cbench/openflow/datapath/datapath.c output_all(struct datapath *dp, struct sk_buff *skb, int flood)
+<a href='../S/293.html#L575'>dp</a>                575 cbench/openflow/datapath/datapath.c 	list_for_each_entry_rcu (p, &amp;dp-&gt;port_list, node) {
+<a href='../S/293.html#L584'>dp</a>                584 cbench/openflow/datapath/datapath.c 			dp_output_port(dp, clone, prev_port, 0); 
+<a href='../S/293.html#L589'>dp</a>                589 cbench/openflow/datapath/datapath.c 		dp_output_port(dp, skb, prev_port, 0);
+<a href='../S/293.html#L598'>dp</a>                598 cbench/openflow/datapath/datapath.c void dp_set_origin(struct datapath *dp, uint16_t in_port,
+<a href='../S/293.html#L602'>dp</a>                602 cbench/openflow/datapath/datapath.c 	p = (in_port &lt; DP_MAX_PORTS ? dp-&gt;ports[in_port]
+<a href='../S/293.html#L603'>dp</a>                603 cbench/openflow/datapath/datapath.c 	     : in_port == OFPP_LOCAL ? dp-&gt;local_port
+<a href='../S/293.html#L614'>dp</a>                614 cbench/openflow/datapath/datapath.c 	struct datapath *dp = skb-&gt;dev-&gt;br_port-&gt;dp;
+<a href='../S/293.html#L619'>dp</a>                619 cbench/openflow/datapath/datapath.c 		       dp-&gt;netdev-&gt;name, packet_length(skb), skb-&gt;dev-&gt;mtu);
+<a href='../S/293.html#L631'>dp</a>                631 cbench/openflow/datapath/datapath.c int dp_output_port(struct datapath *dp, struct sk_buff *skb, int out_port,
+<a href='../S/293.html#L643'>dp</a>                643 cbench/openflow/datapath/datapath.c 				       dp-&gt;netdev-&gt;name);
+<a href='../S/293.html#L650'>dp</a>                650 cbench/openflow/datapath/datapath.c 		int retval = run_flow_through_tables(dp-&gt;chain, skb,
+<a href='../S/293.html#L658'>dp</a>                658 cbench/openflow/datapath/datapath.c 		return output_all(dp, skb, 1);
+<a href='../S/293.html#L661'>dp</a>                661 cbench/openflow/datapath/datapath.c 		return output_all(dp, skb, 0);
+<a href='../S/293.html#L664'>dp</a>                664 cbench/openflow/datapath/datapath.c 		return dp_output_control(dp, skb, UINT16_MAX, OFPR_ACTION);
+<a href='../S/293.html#L667'>dp</a>                667 cbench/openflow/datapath/datapath.c 		struct net_device *dev = dp-&gt;netdev;
+<a href='../S/293.html#L672'>dp</a>                672 cbench/openflow/datapath/datapath.c 		struct net_bridge_port *p = dp-&gt;ports[out_port];
+<a href='../S/293.html#L681'>dp</a>                681 cbench/openflow/datapath/datapath.c 				       dp-&gt;netdev-&gt;name);
+<a href='../S/293.html#L700'>dp</a>                700 cbench/openflow/datapath/datapath.c 		       dp-&gt;netdev-&gt;name, out_port);
+<a href='../S/293.html#L709'>dp</a>                709 cbench/openflow/datapath/datapath.c dp_output_control(struct datapath *dp, struct sk_buff *skb,
+<a href='../S/293.html#L729'>dp</a>                729 cbench/openflow/datapath/datapath.c 	opi = alloc_openflow_skb(dp, opi_len, OFPT_PACKET_IN, NULL, &amp;f_skb);
+<a href='../S/293.html#L742'>dp</a>                742 cbench/openflow/datapath/datapath.c 	err = send_openflow_skb(dp, f_skb, NULL);
+<a href='../S/293.html#L854'>dp</a>                854 cbench/openflow/datapath/datapath.c fill_features_reply(struct datapath *dp, struct ofp_switch_features *ofr)
+<a href='../S/293.html#L857'>dp</a>                857 cbench/openflow/datapath/datapath.c 	uint64_t dpid = get_datapath_id(dp-&gt;netdev);
+<a href='../S/293.html#L863'>dp</a>                863 cbench/openflow/datapath/datapath.c 	ofr-&gt;n_tables     = dp-&gt;chain-&gt;n_tables;
+<a href='../S/293.html#L868'>dp</a>                868 cbench/openflow/datapath/datapath.c 	list_for_each_entry_rcu (p, &amp;dp-&gt;port_list, node) {
+<a href='../S/293.html#L877'>dp</a>                877 cbench/openflow/datapath/datapath.c dp_send_features_reply(struct datapath *dp, const struct sender *sender)
+<a href='../S/293.html#L886'>dp</a>                886 cbench/openflow/datapath/datapath.c 	ofr = alloc_openflow_skb(dp, sizeof(*ofr) + port_max_len,
+<a href='../S/293.html#L892'>dp</a>                892 cbench/openflow/datapath/datapath.c 	port_count = fill_features_reply(dp, ofr);
+<a href='../S/293.html#L897'>dp</a>                897 cbench/openflow/datapath/datapath.c 	return send_openflow_skb(dp, skb, sender);
+<a href='../S/293.html#L901'>dp</a>                901 cbench/openflow/datapath/datapath.c dp_send_config_reply(struct datapath *dp, const struct sender *sender)
+<a href='../S/293.html#L906'>dp</a>                906 cbench/openflow/datapath/datapath.c 	osc = alloc_openflow_skb(dp, sizeof *osc, OFPT_GET_CONFIG_REPLY, sender,
+<a href='../S/293.html#L911'>dp</a>                911 cbench/openflow/datapath/datapath.c 	osc-&gt;flags = htons(dp-&gt;flags);
+<a href='../S/293.html#L912'>dp</a>                912 cbench/openflow/datapath/datapath.c 	osc-&gt;miss_send_len = htons(dp-&gt;miss_send_len);
+<a href='../S/293.html#L914'>dp</a>                914 cbench/openflow/datapath/datapath.c 	return send_openflow_skb(dp, skb, sender);
+<a href='../S/293.html#L918'>dp</a>                918 cbench/openflow/datapath/datapath.c dp_send_hello(struct datapath *dp, const struct sender *sender,
+<a href='../S/293.html#L924'>dp</a>                924 cbench/openflow/datapath/datapath.c 		dp_send_error_msg(dp, sender, OFPET_HELLO_FAILED,
+<a href='../S/293.html#L931'>dp</a>                931 cbench/openflow/datapath/datapath.c 		reply = alloc_openflow_skb(dp, sizeof *reply,
+<a href='../S/293.html#L936'>dp</a>                936 cbench/openflow/datapath/datapath.c 		return send_openflow_skb(dp, skb, sender);
+<a href='../S/293.html#L941'>dp</a>                941 cbench/openflow/datapath/datapath.c dp_send_barrier_reply(struct datapath *dp, const struct sender *sender,
+<a href='../S/293.html#L947'>dp</a>                947 cbench/openflow/datapath/datapath.c 	reply = alloc_openflow_skb(dp, sizeof *reply,
+<a href='../S/293.html#L952'>dp</a>                952 cbench/openflow/datapath/datapath.c 	return send_openflow_skb(dp, skb, sender);
+<a href='../S/293.html#L956'>dp</a>                956 cbench/openflow/datapath/datapath.c dp_update_port_flags(struct datapath *dp, const struct ofp_port_mod *opm)
+<a href='../S/293.html#L961'>dp</a>                961 cbench/openflow/datapath/datapath.c 	p = (port_no &lt; DP_MAX_PORTS ? dp-&gt;ports[port_no]
+<a href='../S/293.html#L962'>dp</a>                962 cbench/openflow/datapath/datapath.c 	     : port_no == OFPP_LOCAL ? dp-&gt;local_port
+<a href='../S/293.html#L1007'>dp</a>               1007 cbench/openflow/datapath/datapath.c 	ops = alloc_openflow_skb(p-&gt;dp, sizeof *ops, OFPT_PORT_STATUS, NULL,
+<a href='../S/293.html#L1015'>dp</a>               1015 cbench/openflow/datapath/datapath.c 	return send_openflow_skb(p-&gt;dp, skb, NULL);
+<a href='../S/293.html#L1036'>dp</a>               1036 cbench/openflow/datapath/datapath.c dp_send_flow_end(struct datapath *dp, struct sw_flow *flow,
+<a href='../S/293.html#L1048'>dp</a>               1048 cbench/openflow/datapath/datapath.c 	ofr = alloc_openflow_skb(dp, sizeof *ofr, OFPT_FLOW_REMOVED, 0, &amp;skb);
+<a href='../S/293.html#L1064'>dp</a>               1064 cbench/openflow/datapath/datapath.c 	return send_openflow_skb(dp, skb, NULL);
+<a href='../S/293.html#L1069'>dp</a>               1069 cbench/openflow/datapath/datapath.c dp_send_error_msg(struct datapath *dp, const struct sender *sender, 
+<a href='../S/293.html#L1076'>dp</a>               1076 cbench/openflow/datapath/datapath.c 	oem = alloc_openflow_skb(dp, sizeof(*oem)+len, OFPT_ERROR, 
+<a href='../S/293.html#L1085'>dp</a>               1085 cbench/openflow/datapath/datapath.c 	return send_openflow_skb(dp, skb, sender);
+<a href='../S/293.html#L1089'>dp</a>               1089 cbench/openflow/datapath/datapath.c dp_send_echo_reply(struct datapath *dp, const struct sender *sender,
+<a href='../S/293.html#L1095'>dp</a>               1095 cbench/openflow/datapath/datapath.c 	reply = alloc_openflow_skb(dp, ntohs(rq-&gt;length), OFPT_ECHO_REPLY,
+<a href='../S/293.html#L1101'>dp</a>               1101 cbench/openflow/datapath/datapath.c 	return send_openflow_skb(dp, skb, sender);
+<a href='../S/293.html#L1165'>dp</a>               1165 cbench/openflow/datapath/datapath.c 		struct datapath *dp = rcu_dereference(dps[i]);
+<a href='../S/293.html#L1166'>dp</a>               1166 cbench/openflow/datapath/datapath.c 		if (dp &amp;&amp; !strcmp(dp-&gt;netdev-&gt;name, dp_name))
+<a href='../S/293.html#L1167'>dp</a>               1167 cbench/openflow/datapath/datapath.c 			return dp;
+<a href='../S/293.html#L1185'>dp</a>               1185 cbench/openflow/datapath/datapath.c 		struct datapath *dp = dp_get_by_idx(dp_idx);
+<a href='../S/293.html#L1186'>dp</a>               1186 cbench/openflow/datapath/datapath.c 		if (!dp)
+<a href='../S/293.html#L1188'>dp</a>               1188 cbench/openflow/datapath/datapath.c 		else if (dp_name &amp;&amp; strcmp(dp-&gt;netdev-&gt;name, dp_name))
+<a href='../S/293.html#L1191'>dp</a>               1191 cbench/openflow/datapath/datapath.c 			return dp;
+<a href='../S/293.html#L1193'>dp</a>               1193 cbench/openflow/datapath/datapath.c 		struct datapath *dp = dp_get_by_name(dp_name);
+<a href='../S/293.html#L1194'>dp</a>               1194 cbench/openflow/datapath/datapath.c 		return dp ? dp : ERR_PTR(-ENOENT);
+<a href='../S/293.html#L1203'>dp</a>               1203 cbench/openflow/datapath/datapath.c 	struct datapath *dp;
+<a href='../S/293.html#L1208'>dp</a>               1208 cbench/openflow/datapath/datapath.c 	dp = lookup_dp(info);
+<a href='../S/293.html#L1209'>dp</a>               1209 cbench/openflow/datapath/datapath.c 	if (IS_ERR(dp))
+<a href='../S/293.html#L1210'>dp</a>               1210 cbench/openflow/datapath/datapath.c 		err = PTR_ERR(dp);
+<a href='../S/293.html#L1212'>dp</a>               1212 cbench/openflow/datapath/datapath.c 		dev = dp-&gt;netdev;
+<a href='../S/293.html#L1213'>dp</a>               1213 cbench/openflow/datapath/datapath.c 		del_dp(dp);
+<a href='../S/293.html#L1236'>dp</a>               1236 cbench/openflow/datapath/datapath.c 	struct datapath *dp;
+<a href='../S/293.html#L1241'>dp</a>               1241 cbench/openflow/datapath/datapath.c 	dp = lookup_dp(info);
+<a href='../S/293.html#L1242'>dp</a>               1242 cbench/openflow/datapath/datapath.c 	if (IS_ERR(dp))
+<a href='../S/293.html#L1243'>dp</a>               1243 cbench/openflow/datapath/datapath.c 		err = PTR_ERR(dp);
+<a href='../S/293.html#L1256'>dp</a>               1256 cbench/openflow/datapath/datapath.c 		NLA_PUT_U32(ans_skb, DP_GENL_A_DP_IDX, dp-&gt;dp_idx);
+<a href='../S/293.html#L1257'>dp</a>               1257 cbench/openflow/datapath/datapath.c 		NLA_PUT_STRING(ans_skb, DP_GENL_A_DP_NAME, dp-&gt;netdev-&gt;name);
+<a href='../S/293.html#L1258'>dp</a>               1258 cbench/openflow/datapath/datapath.c 		NLA_PUT_U32(ans_skb, DP_GENL_A_MC_GROUP, dp_mc_group(dp));
+<a href='../S/293.html#L1281'>dp</a>               1281 cbench/openflow/datapath/datapath.c 	struct datapath *dp;
+<a href='../S/293.html#L1293'>dp</a>               1293 cbench/openflow/datapath/datapath.c 	dp = lookup_dp(info);
+<a href='../S/293.html#L1294'>dp</a>               1294 cbench/openflow/datapath/datapath.c 	if (IS_ERR(dp)) {
+<a href='../S/293.html#L1295'>dp</a>               1295 cbench/openflow/datapath/datapath.c 		err = PTR_ERR(dp);
+<a href='../S/293.html#L1309'>dp</a>               1309 cbench/openflow/datapath/datapath.c 		err = add_switch_port(dp, port);
+<a href='../S/293.html#L1311'>dp</a>               1311 cbench/openflow/datapath/datapath.c 		if (port-&gt;br_port == NULL || port-&gt;br_port-&gt;dp != dp) {
+<a href='../S/293.html#L1345'>dp</a>               1345 cbench/openflow/datapath/datapath.c 	struct datapath *dp;
+<a href='../S/293.html#L1353'>dp</a>               1353 cbench/openflow/datapath/datapath.c 	dp = dp_get_by_idx(nla_get_u32(info-&gt;attrs[DP_GENL_A_DP_IDX]));
+<a href='../S/293.html#L1354'>dp</a>               1354 cbench/openflow/datapath/datapath.c 	if (!dp)
+<a href='../S/293.html#L1366'>dp</a>               1366 cbench/openflow/datapath/datapath.c 	err = fwd_control_input(dp-&gt;chain, &amp;sender,
+<a href='../S/293.html#L1376'>dp</a>               1376 cbench/openflow/datapath/datapath.c static int desc_stats_dump(struct datapath *dp, void *state,
+<a href='../S/293.html#L1390'>dp</a>               1390 cbench/openflow/datapath/datapath.c 	strncpy(ods-&gt;dp_desc, dp-&gt;dp_desc, sizeof ods-&gt;dp_desc);
+<a href='../S/293.html#L1407'>dp</a>               1407 cbench/openflow/datapath/datapath.c static int flow_stats_init(struct datapath *dp, const void *body, int body_len,
+<a href='../S/293.html#L1471'>dp</a>               1471 cbench/openflow/datapath/datapath.c static int flow_stats_dump(struct datapath *dp, void *state,
+<a href='../S/293.html#L1484'>dp</a>               1484 cbench/openflow/datapath/datapath.c 		struct sw_table *table = dp-&gt;chain-&gt;emerg_table;
+<a href='../S/293.html#L1490'>dp</a>               1490 cbench/openflow/datapath/datapath.c 		while (s-&gt;table_idx &lt; dp-&gt;chain-&gt;n_tables
+<a href='../S/293.html#L1493'>dp</a>               1493 cbench/openflow/datapath/datapath.c 			struct sw_table *table = dp-&gt;chain-&gt;tables[s-&gt;table_idx];
+<a href='../S/293.html#L1520'>dp</a>               1520 cbench/openflow/datapath/datapath.c static int aggregate_stats_init(struct datapath *dp,
+<a href='../S/293.html#L1537'>dp</a>               1537 cbench/openflow/datapath/datapath.c static int aggregate_stats_dump(struct datapath *dp, void *state,
+<a href='../S/293.html#L1559'>dp</a>               1559 cbench/openflow/datapath/datapath.c 		struct sw_table *table = dp-&gt;chain-&gt;emerg_table;
+<a href='../S/293.html#L1567'>dp</a>               1567 cbench/openflow/datapath/datapath.c 		while (table_idx &lt; dp-&gt;chain-&gt;n_tables
+<a href='../S/293.html#L1569'>dp</a>               1569 cbench/openflow/datapath/datapath.c 			struct sw_table *table = dp-&gt;chain-&gt;tables[table_idx];
+<a href='../S/293.html#L1589'>dp</a>               1589 cbench/openflow/datapath/datapath.c static int table_stats_dump(struct datapath *dp, void *state,
+<a href='../S/293.html#L1593'>dp</a>               1593 cbench/openflow/datapath/datapath.c 	int n_bytes = dp-&gt;chain-&gt;n_tables * sizeof *ots;
+<a href='../S/293.html#L1598'>dp</a>               1598 cbench/openflow/datapath/datapath.c 	for (i = 0, ots = body; i &lt; dp-&gt;chain-&gt;n_tables; i++, ots++) {
+<a href='../S/293.html#L1600'>dp</a>               1600 cbench/openflow/datapath/datapath.c 		dp-&gt;chain-&gt;tables[i]-&gt;stats(dp-&gt;chain-&gt;tables[i], &amp;stats);
+<a href='../S/293.html#L1618'>dp</a>               1618 cbench/openflow/datapath/datapath.c static int port_stats_init(struct datapath *dp, const void *body, int body_len,
+<a href='../S/293.html#L1660'>dp</a>               1660 cbench/openflow/datapath/datapath.c lookup_port(struct datapath *dp, uint16_t port_no)
+<a href='../S/293.html#L1662'>dp</a>               1662 cbench/openflow/datapath/datapath.c 	return (port_no &lt; DP_MAX_PORTS ? dp-&gt;ports[port_no]
+<a href='../S/293.html#L1663'>dp</a>               1663 cbench/openflow/datapath/datapath.c 		: port_no == OFPP_LOCAL ? dp-&gt;local_port
+<a href='../S/293.html#L1668'>dp</a>               1668 cbench/openflow/datapath/datapath.c static int port_stats_dump(struct datapath *dp, void *state,
+<a href='../S/293.html#L1686'>dp</a>               1686 cbench/openflow/datapath/datapath.c 			p = dp-&gt;ports[i];
+<a href='../S/293.html#L1694'>dp</a>               1694 cbench/openflow/datapath/datapath.c 		if (dp-&gt;local_port) {
+<a href='../S/293.html#L1695'>dp</a>               1695 cbench/openflow/datapath/datapath.c 			dump_port_stats(ops, dp-&gt;local_port);
+<a href='../S/293.html#L1701'>dp</a>               1701 cbench/openflow/datapath/datapath.c 		p = lookup_port(dp, s-&gt;port_no);
+<a href='../S/293.html#L1731'>dp</a>               1731 cbench/openflow/datapath/datapath.c static int vendor_stats_init(struct datapath *dp, const void *body,
+<a href='../S/293.html#L1746'>dp</a>               1746 cbench/openflow/datapath/datapath.c static int vendor_stats_dump(struct datapath *dp, void *state, void *body,
+<a href='../S/293.html#L1784'>dp</a>               1784 cbench/openflow/datapath/datapath.c 	int (*init)(struct datapath *dp, const void *body, int body_len,
+<a href='../S/293.html#L1791'>dp</a>               1791 cbench/openflow/datapath/datapath.c 	int (*dump)(struct datapath *dp, void *state,
+<a href='../S/293.html#L1849'>dp</a>               1849 cbench/openflow/datapath/datapath.c 	struct datapath *dp;
+<a href='../S/293.html#L1880'>dp</a>               1880 cbench/openflow/datapath/datapath.c 		dp = dp_get_by_idx(dp_idx);
+<a href='../S/293.html#L1881'>dp</a>               1881 cbench/openflow/datapath/datapath.c 		if (!dp)
+<a href='../S/293.html#L1893'>dp</a>               1893 cbench/openflow/datapath/datapath.c 			dp_send_error_msg(dp, &amp;sender, OFPET_BAD_REQUEST,
+<a href='../S/293.html#L1906'>dp</a>               1906 cbench/openflow/datapath/datapath.c 				dp_send_error_msg(dp, &amp;sender,
+<a href='../S/293.html#L1923'>dp</a>               1923 cbench/openflow/datapath/datapath.c 			err = s-&gt;init(dp, rq-&gt;body, body_len, &amp;state);
+<a href='../S/293.html#L1938'>dp</a>               1938 cbench/openflow/datapath/datapath.c 		dp = dp_get_by_idx(dp_idx);
+<a href='../S/293.html#L1939'>dp</a>               1939 cbench/openflow/datapath/datapath.c 		if (!dp)
+<a href='../S/293.html#L1945'>dp</a>               1945 cbench/openflow/datapath/datapath.c 	osr = put_openflow_headers(dp, skb, OFPT_STATS_REPLY, &amp;sender,
+<a href='../S/293.html#L1955'>dp</a>               1955 cbench/openflow/datapath/datapath.c 	err = s-&gt;dump(dp, (void *) cb-&gt;args[4], body, &amp;body_len);
+<a href='../S/291.html#L75'>dp</a>                 75 cbench/openflow/datapath/datapath.h 	struct datapath	*dp;
+<a href='../S/291.html#L84'>dp</a>                 84 cbench/openflow/datapath/datapath.h extern int (*dp_add_dp_hook)(struct datapath *dp);
+<a href='../S/291.html#L85'>dp</a>                 85 cbench/openflow/datapath/datapath.h extern int (*dp_del_dp_hook)(struct datapath *dp);
+<a href='../S/291.html#L102'>dp</a>                102 cbench/openflow/datapath/datapath.h int dp_update_port_flags(struct datapath *dp, const struct ofp_port_mod *opm);
+<a href='../S/261.html#L24'>dp</a>                 24 cbench/openflow/datapath/dp_act.c validate_output(struct datapath *dp, const struct sw_flow_key *key, 
+<a href='../S/261.html#L37'>dp</a>                 37 cbench/openflow/datapath/dp_act.c do_output(struct datapath *dp, struct sk_buff *skb, size_t max_len,
+<a href='../S/261.html#L43'>dp</a>                 43 cbench/openflow/datapath/dp_act.c 		? dp_output_port(dp, skb, out_port, ignore_no_fwd)
+<a href='../S/261.html#L44'>dp</a>                 44 cbench/openflow/datapath/dp_act.c 		: dp_output_control(dp, skb, max_len, OFPR_ACTION));
+<a href='../S/261.html#L266'>dp</a>                266 cbench/openflow/datapath/dp_act.c 	uint16_t (*validate)(struct datapath *dp, 
+<a href='../S/261.html#L347'>dp</a>                347 cbench/openflow/datapath/dp_act.c validate_ofpat(struct datapath *dp, const struct sw_flow_key *key, 
+<a href='../S/261.html#L357'>dp</a>                357 cbench/openflow/datapath/dp_act.c 		ret = act-&gt;validate(dp, key, ah);
+<a href='../S/261.html#L365'>dp</a>                365 cbench/openflow/datapath/dp_act.c validate_vendor(struct datapath *dp, const struct sw_flow_key *key, 
+<a href='../S/261.html#L388'>dp</a>                388 cbench/openflow/datapath/dp_act.c validate_actions(struct datapath *dp, const struct sw_flow_key *key,
+<a href='../S/261.html#L406'>dp</a>                406 cbench/openflow/datapath/dp_act.c 			err = validate_ofpat(dp, key, ah, type, len);
+<a href='../S/261.html#L410'>dp</a>                410 cbench/openflow/datapath/dp_act.c 			err = validate_vendor(dp, key, ah, len);
+<a href='../S/261.html#L445'>dp</a>                445 cbench/openflow/datapath/dp_act.c 	struct datapath *dp = skb-&gt;dev-&gt;br_port-&gt;dp;
+<a href='../S/261.html#L456'>dp</a>                456 cbench/openflow/datapath/dp_act.c 			       dp-&gt;netdev-&gt;name, ntohl(avh-&gt;vendor));
+<a href='../S/261.html#L464'>dp</a>                464 cbench/openflow/datapath/dp_act.c void execute_actions(struct datapath *dp, struct sk_buff *skb,
+<a href='../S/261.html#L487'>dp</a>                487 cbench/openflow/datapath/dp_act.c 			do_output(dp, skb_clone(skb, GFP_ATOMIC),
+<a href='../S/261.html#L508'>dp</a>                508 cbench/openflow/datapath/dp_act.c 					       dp-&gt;netdev-&gt;name);
+<a href='../S/261.html#L517'>dp</a>                517 cbench/openflow/datapath/dp_act.c 		do_output(dp, skb, max_len, prev_port, ignore_no_fwd);
+<a href='../S/281.html#L21'>dp</a>                 21 cbench/openflow/datapath/dp_dev.c 	return dp_dev_priv(netdev)-&gt;dp;
+<a href='../S/281.html#L63'>dp</a>                 63 cbench/openflow/datapath/dp_dev.c 	struct datapath *dp = dp_dev-&gt;dp;
+<a href='../S/281.html#L82'>dp</a>                 82 cbench/openflow/datapath/dp_dev.c 	if (skb_queue_len(&amp;dp_dev-&gt;xmit_queue) &gt;= dp-&gt;netdev-&gt;tx_queue_len) {
+<a href='../S/281.html#L84'>dp</a>                 84 cbench/openflow/datapath/dp_dev.c 		netif_stop_queue(dp-&gt;netdev);
+<a href='../S/281.html#L91'>dp</a>                 91 cbench/openflow/datapath/dp_dev.c 	dp-&gt;netdev-&gt;trans_start = jiffies;
+<a href='../S/281.html#L101'>dp</a>                101 cbench/openflow/datapath/dp_dev.c 	struct datapath *dp = dp_dev-&gt;dp;
+<a href='../S/281.html#L107'>dp</a>                107 cbench/openflow/datapath/dp_dev.c 		fwd_port_input(dp-&gt;chain, skb, dp-&gt;local_port);
+<a href='../S/281.html#L110'>dp</a>                110 cbench/openflow/datapath/dp_dev.c 	netif_wake_queue(dp-&gt;netdev);
+<a href='../S/281.html#L201'>dp</a>                201 cbench/openflow/datapath/dp_dev.c int dp_dev_setup(struct datapath *dp, const char *dp_name)
+<a href='../S/281.html#L213'>dp</a>                213 cbench/openflow/datapath/dp_dev.c 		snprintf(dev_name, sizeof dev_name, "of%d", dp-&gt;dp_idx);
+<a href='../S/281.html#L226'>dp</a>                226 cbench/openflow/datapath/dp_dev.c 	dp_dev-&gt;dp = dp;
+<a href='../S/281.html#L229'>dp</a>                229 cbench/openflow/datapath/dp_dev.c 	dp-&gt;netdev = netdev;
+<a href='../S/281.html#L234'>dp</a>                234 cbench/openflow/datapath/dp_dev.c void dp_dev_destroy(struct datapath *dp)
+<a href='../S/281.html#L236'>dp</a>                236 cbench/openflow/datapath/dp_dev.c 	struct dp_dev *dp_dev = dp_dev_priv(dp-&gt;netdev);
+<a href='../S/281.html#L238'>dp</a>                238 cbench/openflow/datapath/dp_dev.c 	netif_tx_disable(dp-&gt;netdev);
+<a href='../S/281.html#L241'>dp</a>                241 cbench/openflow/datapath/dp_dev.c 	unregister_netdevice(dp-&gt;netdev);
+<a href='../S/296.html#L6'>dp</a>                  6 cbench/openflow/datapath/dp_dev.h 	struct datapath *dp;
+<a href='../S/282.html#L43'>dp</a>                 43 cbench/openflow/datapath/forward.c 	    &amp;&amp; (chain-&gt;dp-&gt;flags &amp; OFPC_FRAG_MASK) == OFPC_FRAG_DROP) {
+<a href='../S/282.html#L59'>dp</a>                 59 cbench/openflow/datapath/forward.c 		execute_actions(chain-&gt;dp, skb, &amp;key,
+<a href='../S/282.html#L76'>dp</a>                 76 cbench/openflow/datapath/forward.c 		dp_output_control(chain-&gt;dp, skb, chain-&gt;dp-&gt;miss_send_len,
+<a href='../S/282.html#L84'>dp</a>                 84 cbench/openflow/datapath/forward.c 	return dp_send_hello(chain-&gt;dp, sender, msg);
+<a href='../S/282.html#L91'>dp</a>                 91 cbench/openflow/datapath/forward.c 	return dp_send_barrier_reply(chain-&gt;dp, sender, msg);
+<a href='../S/282.html#L98'>dp</a>                 98 cbench/openflow/datapath/forward.c 	return dp_send_features_reply(chain-&gt;dp, sender);
+<a href='../S/282.html#L105'>dp</a>                105 cbench/openflow/datapath/forward.c 	return dp_send_config_reply(chain-&gt;dp, sender);
+<a href='../S/282.html#L120'>dp</a>                120 cbench/openflow/datapath/forward.c 	chain-&gt;dp-&gt;flags = flags;
+<a href='../S/282.html#L122'>dp</a>                122 cbench/openflow/datapath/forward.c 	chain-&gt;dp-&gt;miss_send_len = ntohs(osc-&gt;miss_send_len);
+<a href='../S/282.html#L140'>dp</a>                140 cbench/openflow/datapath/forward.c 			       "of actions\n", chain-&gt;dp-&gt;netdev-&gt;name);
+<a href='../S/282.html#L166'>dp</a>                166 cbench/openflow/datapath/forward.c 	dp_set_origin(chain-&gt;dp, ntohs(opo-&gt;in_port), skb);
+<a href='../S/282.html#L170'>dp</a>                170 cbench/openflow/datapath/forward.c 	v_code = validate_actions(chain-&gt;dp, &amp;key, opo-&gt;actions, actions_len);
+<a href='../S/282.html#L172'>dp</a>                172 cbench/openflow/datapath/forward.c 		dp_send_error_msg(chain-&gt;dp, sender, OFPET_BAD_ACTION, v_code,
+<a href='../S/282.html#L177'>dp</a>                177 cbench/openflow/datapath/forward.c 	execute_actions(chain-&gt;dp, skb, &amp;key, opo-&gt;actions, actions_len, 1);
+<a href='../S/282.html#L192'>dp</a>                192 cbench/openflow/datapath/forward.c 	dp_update_port_flags(chain-&gt;dp, opm);
+<a href='../S/282.html#L201'>dp</a>                201 cbench/openflow/datapath/forward.c 	return dp_send_echo_reply(chain-&gt;dp, sender, msg);
+<a href='../S/282.html#L228'>dp</a>                228 cbench/openflow/datapath/forward.c 	v_code = validate_actions(chain-&gt;dp, &amp;flow-&gt;key, ofm-&gt;actions, actions_len);
+<a href='../S/282.html#L230'>dp</a>                230 cbench/openflow/datapath/forward.c 		dp_send_error_msg(chain-&gt;dp, sender, OFPET_BAD_ACTION, v_code,
+<a href='../S/282.html#L242'>dp</a>                242 cbench/openflow/datapath/forward.c 			dp_send_error_msg(chain-&gt;dp, sender,
+<a href='../S/282.html#L253'>dp</a>                253 cbench/openflow/datapath/forward.c 			dp_send_error_msg(chain-&gt;dp, sender,
+<a href='../S/282.html#L272'>dp</a>                272 cbench/openflow/datapath/forward.c 		dp_send_error_msg(chain-&gt;dp, sender, OFPET_FLOW_MOD_FAILED, 
+<a href='../S/282.html#L284'>dp</a>                284 cbench/openflow/datapath/forward.c 			dp_set_origin(chain-&gt;dp, ntohs(ofm-&gt;match.in_port), skb);
+<a href='../S/282.html#L286'>dp</a>                286 cbench/openflow/datapath/forward.c 			execute_actions(chain-&gt;dp, skb, &amp;key, ofm-&gt;actions, actions_len, 0);
+<a href='../S/282.html#L318'>dp</a>                318 cbench/openflow/datapath/forward.c 	v_code = validate_actions(chain-&gt;dp, &amp;flow-&gt;key, ofm-&gt;actions, actions_len);
+<a href='../S/282.html#L320'>dp</a>                320 cbench/openflow/datapath/forward.c 		dp_send_error_msg(chain-&gt;dp, sender, OFPET_BAD_ACTION, v_code,
+<a href='../S/282.html#L343'>dp</a>                343 cbench/openflow/datapath/forward.c 			dp_send_error_msg(chain-&gt;dp, sender,
+<a href='../S/282.html#L359'>dp</a>                359 cbench/openflow/datapath/forward.c 			execute_actions(chain-&gt;dp, skb, &amp;skb_key, 
+<a href='../S/282.html#L419'>dp</a>                419 cbench/openflow/datapath/forward.c 			       chain-&gt;dp-&gt;netdev-&gt;name, ntohl(ovh-&gt;vendor));
+<a href='../S/282.html#L420'>dp</a>                420 cbench/openflow/datapath/forward.c 		dp_send_error_msg(chain-&gt;dp, sender, OFPET_BAD_REQUEST,
+<a href='../S/282.html#L496'>dp</a>                496 cbench/openflow/datapath/forward.c 		dp_send_error_msg(chain-&gt;dp, sender, OFPET_BAD_REQUEST,
+<a href='../S/282.html#L503'>dp</a>                503 cbench/openflow/datapath/forward.c 			       "wrong: %d/%d\n", chain-&gt;dp-&gt;netdev-&gt;name,
+<a href='../S/282.html#L516'>dp</a>                516 cbench/openflow/datapath/forward.c 	dp_send_error_msg(chain-&gt;dp, sender, OFPET_BAD_REQUEST,
+<a href='../S/262.html#L45'>dp</a>                 45 cbench/openflow/datapath/openflow-ext.c recv_of_set_dp_desc(struct datapath *dp, const struct sender * sender,
+<a href='../S/262.html#L50'>dp</a>                 50 cbench/openflow/datapath/openflow-ext.c     memcpy(dp-&gt;dp_desc, set_dp_desc-&gt;dp_desc, DESC_STR_LEN);
+<a href='../S/262.html#L51'>dp</a>                 51 cbench/openflow/datapath/openflow-ext.c     dp-&gt;dp_desc[DESC_STR_LEN-1] = 0;        // force null for safety
+<a href='../S/262.html#L75'>dp</a>                 75 cbench/openflow/datapath/openflow-ext.c             return recv_of_set_dp_desc(chain-&gt;dp,sender,ofexth);
+<a href='../S/295.html#L133'>dp</a>                133 cbench/openflow/datapath/table-hash.c static int do_delete(struct datapath *dp, struct sw_flow **bucket, 
+<a href='../S/295.html#L136'>dp</a>                136 cbench/openflow/datapath/table-hash.c 	dp_send_flow_end(dp, flow, reason);
+<a href='../S/295.html#L145'>dp</a>                145 cbench/openflow/datapath/table-hash.c static int table_hash_delete(struct datapath *dp, struct sw_table *swt,
+<a href='../S/295.html#L157'>dp</a>                157 cbench/openflow/datapath/table-hash.c 			count = do_delete(dp, bucket, flow, OFPRR_DELETE);
+<a href='../S/295.html#L166'>dp</a>                166 cbench/openflow/datapath/table-hash.c 				count += do_delete(dp, bucket, flow, OFPRR_DELETE);
+<a href='../S/295.html#L173'>dp</a>                173 cbench/openflow/datapath/table-hash.c static int table_hash_timeout(struct datapath *dp, struct sw_table *swt)
+<a href='../S/295.html#L187'>dp</a>                187 cbench/openflow/datapath/table-hash.c 				count += do_delete(dp, bucket, flow, reason); 
+<a href='../S/295.html#L346'>dp</a>                346 cbench/openflow/datapath/table-hash.c static int table_hash2_delete(struct datapath *dp, struct sw_table *swt,
+<a href='../S/295.html#L352'>dp</a>                352 cbench/openflow/datapath/table-hash.c 	return (table_hash_delete(dp, t2-&gt;subtable[0], key, out_port, 
+<a href='../S/295.html#L354'>dp</a>                354 cbench/openflow/datapath/table-hash.c 			+ table_hash_delete(dp, t2-&gt;subtable[1], key, out_port, 
+<a href='../S/295.html#L358'>dp</a>                358 cbench/openflow/datapath/table-hash.c static int table_hash2_timeout(struct datapath *dp, struct sw_table *swt)
+<a href='../S/295.html#L361'>dp</a>                361 cbench/openflow/datapath/table-hash.c 	return (table_hash_timeout(dp, t2-&gt;subtable[0])
+<a href='../S/295.html#L362'>dp</a>                362 cbench/openflow/datapath/table-hash.c 			+ table_hash_timeout(dp, t2-&gt;subtable[1]));
+<a href='../S/263.html#L108'>dp</a>                108 cbench/openflow/datapath/table-linear.c static int do_delete(struct datapath *dp, struct sw_table *swt, 
+<a href='../S/263.html#L111'>dp</a>                111 cbench/openflow/datapath/table-linear.c 	dp_send_flow_end(dp, flow, reason);
+<a href='../S/263.html#L118'>dp</a>                118 cbench/openflow/datapath/table-linear.c static int table_linear_delete(struct datapath *dp, struct sw_table *swt,
+<a href='../S/263.html#L130'>dp</a>                130 cbench/openflow/datapath/table-linear.c 			count += do_delete(dp, swt, flow, OFPRR_DELETE);
+<a href='../S/263.html#L136'>dp</a>                136 cbench/openflow/datapath/table-linear.c static int table_linear_timeout(struct datapath *dp, struct sw_table *swt)
+<a href='../S/263.html#L147'>dp</a>                147 cbench/openflow/datapath/table-linear.c 			count += do_delete(dp, swt, flow, reason);
+<a href='../S/292.html#L78'>dp</a>                 78 cbench/openflow/datapath/table.h 	int (*delete)(struct datapath *dp, struct sw_table *table, 
+<a href='../S/292.html#L84'>dp</a>                 84 cbench/openflow/datapath/table.h 	int (*timeout)(struct datapath *dp, struct sw_table *table);
+<a href='../S/226.html#L432'>dp</a>                432 cbench/openflow/hw-lib/nf2/hw_flow.c new_of_hw_driver(struct datapath *dp)
+<a href='../S/211.html#L61'>dp</a>                 61 cbench/openflow/hw-lib/skeleton/hw_drv.c hw_drv_int_init(of_hw_driver_int_t *hw_int, struct datapath *dp)
+<a href='../S/211.html#L67'>dp</a>                 67 cbench/openflow/hw-lib/skeleton/hw_drv.c     hw_int-&gt;dp = dp;
+<a href='../S/211.html#L136'>dp</a>                136 cbench/openflow/hw-lib/skeleton/hw_drv.c     if (hw_int != NULL &amp;&amp; hw_int-&gt;dp != NULL) {
+<a href='../S/211.html#L218'>dp</a>                218 cbench/openflow/hw-lib/skeleton/hw_drv.c new_of_hw_driver(struct datapath *dp)
+<a href='../S/211.html#L237'>dp</a>                237 cbench/openflow/hw-lib/skeleton/hw_drv.c     if (hw_drv_int_init(hw_int, dp) &lt; 0) {
+<a href='../S/222.html#L51'>dp</a>                 51 cbench/openflow/hw-lib/skeleton/hw_drv.h     struct datapath *dp; /* Owning datapath */
+<a href='../S/215.html#L546'>dp</a>                546 cbench/openflow/hw-lib/skeleton/hw_flow.c of_hw_flow_delete(struct datapath *dp, struct sw_table *sw_tab,
+<a href='../S/215.html#L556'>dp</a>                556 cbench/openflow/hw-lib/skeleton/hw_flow.c                 dp, hw_int-&gt;dp_idx, key, out_port, priority, strict);
+<a href='../S/215.html#L576'>dp</a>                576 cbench/openflow/hw-lib/skeleton/hw_flow.c         dp_send_flow_end(dp, flow, flow-&gt;reason);
+<a href='../S/212.html#L56'>dp</a>                 56 cbench/openflow/hw-lib/skeleton/hw_flow.h extern int of_hw_flow_delete(struct datapath *dp, struct sw_table *flowtab,
+<a href='../S/183.html#L134'>dp</a>                134 cbench/openflow/include/openflow/of_hw_api.h extern of_hw_driver_t *new_of_hw_driver(struct datapath *dp);
+<a href='../S/885.html#L72'>dp</a>                 72 cbench/openflow/lib/dpif.c dpif_open(int subscribe_dp_idx, struct dpif *dp)
+<a href='../S/885.html#L99'>dp</a>                 99 cbench/openflow/lib/dpif.c     dp-&gt;sock = sock;
+<a href='../S/885.html#L105'>dp</a>                105 cbench/openflow/lib/dpif.c dpif_close(struct dpif *dp) 
+<a href='../S/885.html#L107'>dp</a>                107 cbench/openflow/lib/dpif.c     if (dp) {
+<a href='../S/885.html#L108'>dp</a>                108 cbench/openflow/lib/dpif.c         nl_sock_destroy(dp-&gt;sock);
+<a href='../S/885.html#L133'>dp</a>                133 cbench/openflow/lib/dpif.c dpif_recv_openflow(struct dpif *dp, int dp_idx, struct ofpbuf **bufferp,
+<a href='../S/885.html#L147'>dp</a>                147 cbench/openflow/lib/dpif.c             retval = nl_sock_recv(dp-&gt;sock, &amp;buffer, wait);
+<a href='../S/885.html#L206'>dp</a>                206 cbench/openflow/lib/dpif.c dpif_send_openflow(struct dpif *dp, int dp_idx, struct ofpbuf *buffer)
+<a href='../S/885.html#L224'>dp</a>                224 cbench/openflow/lib/dpif.c     nl_msg_put_genlmsghdr(&amp;hdr, dp-&gt;sock, 32, openflow_family,
+<a href='../S/885.html#L243'>dp</a>                243 cbench/openflow/lib/dpif.c     retval = nl_sock_sendv(dp-&gt;sock, iov, n_iov, false);
+<a href='../S/885.html#L256'>dp</a>                256 cbench/openflow/lib/dpif.c dpif_add_dp(struct dpif *dp, int dp_idx, const char *dp_name)
+<a href='../S/885.html#L258'>dp</a>                258 cbench/openflow/lib/dpif.c     return send_mgmt_command(dp, dp_idx, DP_GENL_C_ADD_DP, dp_name);
+<a href='../S/885.html#L266'>dp</a>                266 cbench/openflow/lib/dpif.c dpif_del_dp(struct dpif *dp, int dp_idx, const char *dp_name)
+<a href='../S/885.html#L268'>dp</a>                268 cbench/openflow/lib/dpif.c     return send_mgmt_command(dp, dp_idx, DP_GENL_C_DEL_DP, dp_name);
+<a href='../S/885.html#L274'>dp</a>                274 cbench/openflow/lib/dpif.c dpif_add_port(struct dpif *dp, int dp_idx, const char *netdev)
+<a href='../S/885.html#L276'>dp</a>                276 cbench/openflow/lib/dpif.c     return send_mgmt_command(dp, dp_idx, DP_GENL_C_ADD_PORT, netdev);
+<a href='../S/885.html#L282'>dp</a>                282 cbench/openflow/lib/dpif.c dpif_del_port(struct dpif *dp, int dp_idx, const char *netdev)
+<a href='../S/885.html#L284'>dp</a>                284 cbench/openflow/lib/dpif.c     return send_mgmt_command(dp, dp_idx, DP_GENL_C_DEL_PORT, netdev);
+<a href='../S/885.html#L369'>dp</a>                369 cbench/openflow/lib/dpif.c send_mgmt_command(struct dpif *dp, int dp_idx, int command, const char *arg)
+<a href='../S/885.html#L375'>dp</a>                375 cbench/openflow/lib/dpif.c     nl_msg_put_genlmsghdr(&amp;request, dp-&gt;sock, 32, openflow_family,
+<a href='../S/885.html#L387'>dp</a>                387 cbench/openflow/lib/dpif.c     retval = nl_sock_transact(dp-&gt;sock, &amp;request, &amp;reply);
+<a href='../S/896.html#L62'>dp</a>                 62 cbench/openflow/lib/vconn-netlink.c     struct dpif dp;
+<a href='../S/896.html#L89'>dp</a>                 89 cbench/openflow/lib/vconn-netlink.c     retval = dpif_open(subscribe ? dp_idx : -1, &amp;netlink-&gt;dp);
+<a href='../S/896.html#L104'>dp</a>                104 cbench/openflow/lib/vconn-netlink.c     dpif_close(&amp;netlink-&gt;dp);
+<a href='../S/896.html#L112'>dp</a>                112 cbench/openflow/lib/vconn-netlink.c     return dpif_recv_openflow(&amp;netlink-&gt;dp, netlink-&gt;dp_idx, bufferp, false);
+<a href='../S/896.html#L119'>dp</a>                119 cbench/openflow/lib/vconn-netlink.c     int retval = dpif_send_openflow(&amp;netlink-&gt;dp, netlink-&gt;dp_idx, buffer);
+<a href='../S/896.html#L146'>dp</a>                146 cbench/openflow/lib/vconn-netlink.c     nl_sock_wait(netlink-&gt;dp.sock, events);
+<a href='../S/206.html#L71'>dp</a>                 71 cbench/openflow/udatapath/chain.c struct sw_chain *chain_create(struct datapath *dp)
+<a href='../S/206.html#L77'>dp</a>                 77 cbench/openflow/udatapath/chain.c     chain-&gt;dp = dp;
+<a href='../S/206.html#L79'>dp</a>                 79 cbench/openflow/udatapath/chain.c     if (dp &amp;&amp; dp-&gt;hw_drv) {
+<a href='../S/206.html#L80'>dp</a>                 80 cbench/openflow/udatapath/chain.c         if (add_table(chain, (struct sw_table *)dp-&gt;hw_drv, 0) != 0) {
+<a href='../S/206.html#L220'>dp</a>                220 cbench/openflow/udatapath/chain.c         count += t-&gt;delete(chain-&gt;dp, t, key, out_port, priority, strict);
+<a href='../S/206.html#L224'>dp</a>                224 cbench/openflow/udatapath/chain.c             count += t-&gt;delete(chain-&gt;dp, t, key, out_port, priority, strict);
+<a href='../S/196.html#L59'>dp</a>                 59 cbench/openflow/udatapath/chain.h     struct datapath *dp;
+<a href='../S/204.html#L78'>dp</a>                 78 cbench/openflow/udatapath/datapath.c enqueue_pkt(struct datapath *dp, struct ofpbuf *buffer, of_port_t port_no,
+<a href='../S/204.html#L93'>dp</a>                 93 cbench/openflow/udatapath/datapath.c     if (dp-&gt;hw_pkt_list_head == NULL) {
+<a href='../S/204.html#L94'>dp</a>                 94 cbench/openflow/udatapath/datapath.c         dp-&gt;hw_pkt_list_head = q_entry;
+<a href='../S/204.html#L96'>dp</a>                 96 cbench/openflow/udatapath/datapath.c         dp-&gt;hw_pkt_list_tail-&gt;next = q_entry;
+<a href='../S/204.html#L98'>dp</a>                 98 cbench/openflow/udatapath/datapath.c     dp-&gt;hw_pkt_list_tail = q_entry;
+<a href='../S/204.html#L104'>dp</a>                104 cbench/openflow/udatapath/datapath.c dequeue_pkt(struct datapath *dp, struct ofpbuf **buffer, of_port_t *port_no,
+<a href='../S/204.html#L111'>dp</a>                111 cbench/openflow/udatapath/datapath.c     q_entry = dp-&gt;hw_pkt_list_head;
+<a href='../S/204.html#L112'>dp</a>                112 cbench/openflow/udatapath/datapath.c     if (dp-&gt;hw_pkt_list_head != NULL) {
+<a href='../S/204.html#L113'>dp</a>                113 cbench/openflow/udatapath/datapath.c         dp-&gt;hw_pkt_list_head = dp-&gt;hw_pkt_list_head-&gt;next;
+<a href='../S/204.html#L114'>dp</a>                114 cbench/openflow/udatapath/datapath.c         if (dp-&gt;hw_pkt_list_head == NULL) {
+<a href='../S/204.html#L115'>dp</a>                115 cbench/openflow/udatapath/datapath.c             dp-&gt;hw_pkt_list_tail = NULL;
+<a href='../S/204.html#L213'>dp</a>                213 cbench/openflow/udatapath/datapath.c dp_lookup_port(struct datapath *dp, uint16_t port_no)
+<a href='../S/204.html#L215'>dp</a>                215 cbench/openflow/udatapath/datapath.c     return (port_no &lt; DP_MAX_PORTS ? &amp;dp-&gt;ports[port_no]
+<a href='../S/204.html#L216'>dp</a>                216 cbench/openflow/udatapath/datapath.c             : port_no == OFPP_LOCAL ? dp-&gt;local_port
+<a href='../S/204.html#L260'>dp</a>                260 cbench/openflow/udatapath/datapath.c     struct datapath *dp = (struct datapath *)cookie;
+<a href='../S/204.html#L272'>dp</a>                272 cbench/openflow/udatapath/datapath.c     port = &amp;dp-&gt;ports[port_no];
+<a href='../S/204.html#L296'>dp</a>                296 cbench/openflow/udatapath/datapath.c         enqueue_pkt(dp, buffer, port_no, reason);
+<a href='../S/204.html#L306'>dp</a>                306 cbench/openflow/udatapath/datapath.c dp_hw_drv_init(struct datapath *dp)
+<a href='../S/204.html#L308'>dp</a>                308 cbench/openflow/udatapath/datapath.c     dp-&gt;hw_pkt_list_head = NULL;
+<a href='../S/204.html#L309'>dp</a>                309 cbench/openflow/udatapath/datapath.c     dp-&gt;hw_pkt_list_tail = NULL;
+<a href='../S/204.html#L311'>dp</a>                311 cbench/openflow/udatapath/datapath.c     dp-&gt;hw_drv = new_of_hw_driver(dp);
+<a href='../S/204.html#L312'>dp</a>                312 cbench/openflow/udatapath/datapath.c     if (dp-&gt;hw_drv == NULL) {
+<a href='../S/204.html#L317'>dp</a>                317 cbench/openflow/udatapath/datapath.c     if (dp-&gt;hw_drv-&gt;packet_receive_register(dp-&gt;hw_drv,
+<a href='../S/204.html#L318'>dp</a>                318 cbench/openflow/udatapath/datapath.c                                             hw_packet_in, dp) &lt; 0) {
+<a href='../S/204.html#L331'>dp</a>                331 cbench/openflow/udatapath/datapath.c     struct datapath *dp;
+<a href='../S/204.html#L333'>dp</a>                333 cbench/openflow/udatapath/datapath.c     dp = calloc(1, sizeof *dp);
+<a href='../S/204.html#L334'>dp</a>                334 cbench/openflow/udatapath/datapath.c     if (!dp) {
+<a href='../S/204.html#L338'>dp</a>                338 cbench/openflow/udatapath/datapath.c     dp-&gt;last_timeout = time_now();
+<a href='../S/204.html#L339'>dp</a>                339 cbench/openflow/udatapath/datapath.c     list_init(&amp;dp-&gt;remotes);
+<a href='../S/204.html#L340'>dp</a>                340 cbench/openflow/udatapath/datapath.c     dp-&gt;listeners = NULL;
+<a href='../S/204.html#L341'>dp</a>                341 cbench/openflow/udatapath/datapath.c     dp-&gt;n_listeners = 0;
+<a href='../S/204.html#L342'>dp</a>                342 cbench/openflow/udatapath/datapath.c     dp-&gt;id = dpid &lt;= UINT64_C(0xffffffffffff) ? dpid : gen_datapath_id();
+<a href='../S/204.html#L345'>dp</a>                345 cbench/openflow/udatapath/datapath.c     dp_hw_drv_init(dp);
+<a href='../S/204.html#L347'>dp</a>                347 cbench/openflow/udatapath/datapath.c     dp-&gt;chain = chain_create(dp);
+<a href='../S/204.html#L348'>dp</a>                348 cbench/openflow/udatapath/datapath.c     if (!dp-&gt;chain) {
+<a href='../S/204.html#L350'>dp</a>                350 cbench/openflow/udatapath/datapath.c         free(dp);
+<a href='../S/204.html#L354'>dp</a>                354 cbench/openflow/udatapath/datapath.c     list_init(&amp;dp-&gt;port_list);
+<a href='../S/204.html#L355'>dp</a>                355 cbench/openflow/udatapath/datapath.c     dp-&gt;flags = 0;
+<a href='../S/204.html#L356'>dp</a>                356 cbench/openflow/udatapath/datapath.c     dp-&gt;miss_send_len = OFP_DEFAULT_MISS_SEND_LEN;
+<a href='../S/204.html#L359'>dp</a>                359 cbench/openflow/udatapath/datapath.c 	    strncpy(dp-&gt;dp_desc, &amp;dp_desc, sizeof dp-&gt;dp_desc);
+<a href='../S/204.html#L364'>dp</a>                364 cbench/openflow/udatapath/datapath.c         snprintf(dp-&gt;dp_desc, sizeof dp-&gt;dp_desc,"%s pid=%u",hostnametmp, getpid());
+<a href='../S/204.html#L367'>dp</a>                367 cbench/openflow/udatapath/datapath.c     *dp_ = dp;
+<a href='../S/204.html#L372'>dp</a>                372 cbench/openflow/udatapath/datapath.c new_port(struct datapath *dp, struct sw_port *port, uint16_t port_no,
+<a href='../S/204.html#L428'>dp</a>                428 cbench/openflow/udatapath/datapath.c     port-&gt;dp = dp;
+<a href='../S/204.html#L433'>dp</a>                433 cbench/openflow/udatapath/datapath.c     list_push_back(&amp;dp-&gt;port_list, &amp;port-&gt;node);
+<a href='../S/204.html#L443'>dp</a>                443 cbench/openflow/udatapath/datapath.c dp_add_port(struct datapath *dp, const char *port_name, uint16_t num_queues)
+<a href='../S/204.html#L449'>dp</a>                449 cbench/openflow/udatapath/datapath.c     fprintf(stderr, "Adding port %s. hw_drv is %p\n", port_name, dp-&gt;hw_drv);
+<a href='../S/204.html#L450'>dp</a>                450 cbench/openflow/udatapath/datapath.c     if (dp-&gt;hw_drv &amp;&amp; dp-&gt;hw_drv-&gt;port_add) {
+<a href='../S/204.html#L451'>dp</a>                451 cbench/openflow/udatapath/datapath.c         port_no = dp-&gt;hw_drv-&gt;port_add(dp-&gt;hw_drv, -1, port_name);
+<a href='../S/204.html#L453'>dp</a>                453 cbench/openflow/udatapath/datapath.c             port = &amp;dp-&gt;ports[port_no];
+<a href='../S/204.html#L463'>dp</a>                463 cbench/openflow/udatapath/datapath.c                 port-&gt;dp = dp;
+<a href='../S/204.html#L468'>dp</a>                468 cbench/openflow/udatapath/datapath.c                 list_push_back(&amp;dp-&gt;port_list, &amp;port-&gt;node);
+<a href='../S/204.html#L484'>dp</a>                484 cbench/openflow/udatapath/datapath.c dp_add_port(struct datapath *dp, const char *netdev, uint16_t num_queues)
+<a href='../S/204.html#L488'>dp</a>                488 cbench/openflow/udatapath/datapath.c         struct sw_port *port = &amp;dp-&gt;ports[port_no];
+<a href='../S/204.html#L490'>dp</a>                490 cbench/openflow/udatapath/datapath.c             return new_port(dp, port, port_no, netdev, NULL, num_queues);
+<a href='../S/204.html#L498'>dp</a>                498 cbench/openflow/udatapath/datapath.c dp_add_local_port(struct datapath *dp, const char *netdev, uint16_t num_queues)
+<a href='../S/204.html#L500'>dp</a>                500 cbench/openflow/udatapath/datapath.c     if (!dp-&gt;local_port) {
+<a href='../S/204.html#L506'>dp</a>                506 cbench/openflow/udatapath/datapath.c         eth_addr_from_uint64(dp-&gt;id, ea);
+<a href='../S/204.html#L507'>dp</a>                507 cbench/openflow/udatapath/datapath.c         error = new_port(dp, port, OFPP_LOCAL, netdev, ea, num_queues);
+<a href='../S/204.html#L509'>dp</a>                509 cbench/openflow/udatapath/datapath.c             dp-&gt;local_port = port;
+<a href='../S/204.html#L520'>dp</a>                520 cbench/openflow/udatapath/datapath.c dp_add_pvconn(struct datapath *dp, struct pvconn *pvconn)
+<a href='../S/204.html#L522'>dp</a>                522 cbench/openflow/udatapath/datapath.c     dp-&gt;listeners = xrealloc(dp-&gt;listeners,
+<a href='../S/204.html#L523'>dp</a>                523 cbench/openflow/udatapath/datapath.c                              sizeof *dp-&gt;listeners * (dp-&gt;n_listeners + 1));
+<a href='../S/204.html#L524'>dp</a>                524 cbench/openflow/udatapath/datapath.c     dp-&gt;listeners[dp-&gt;n_listeners++] = pvconn;
+<a href='../S/204.html#L528'>dp</a>                528 cbench/openflow/udatapath/datapath.c dp_run(struct datapath *dp)
+<a href='../S/204.html#L536'>dp</a>                536 cbench/openflow/udatapath/datapath.c     if (now != dp-&gt;last_timeout) {
+<a href='../S/204.html#L540'>dp</a>                540 cbench/openflow/udatapath/datapath.c         chain_timeout(dp-&gt;chain, &amp;deleted);
+<a href='../S/204.html#L542'>dp</a>                542 cbench/openflow/udatapath/datapath.c             dp_send_flow_end(dp, f, f-&gt;reason);
+<a href='../S/204.html#L546'>dp</a>                546 cbench/openflow/udatapath/datapath.c         dp-&gt;last_timeout = now;
+<a href='../S/204.html#L557'>dp</a>                557 cbench/openflow/udatapath/datapath.c         while (dequeue_pkt(dp, &amp;buffer, &amp;port_no, &amp;reason)) {
+<a href='../S/204.html#L558'>dp</a>                558 cbench/openflow/udatapath/datapath.c             p = dp_lookup_port(dp, port_no);
+<a href='../S/204.html#L560'>dp</a>                560 cbench/openflow/udatapath/datapath.c             fwd_port_input(dp, buffer, p);
+<a href='../S/204.html#L565'>dp</a>                565 cbench/openflow/udatapath/datapath.c     LIST_FOR_EACH_SAFE (p, pn, struct sw_port, node, &amp;dp-&gt;port_list) {
+<a href='../S/204.html#L585'>dp</a>                585 cbench/openflow/udatapath/datapath.c             fwd_port_input(dp, buffer, p);
+<a href='../S/204.html#L595'>dp</a>                595 cbench/openflow/udatapath/datapath.c     LIST_FOR_EACH_SAFE (r, rn, struct remote, node, &amp;dp-&gt;remotes) {
+<a href='../S/204.html#L596'>dp</a>                596 cbench/openflow/udatapath/datapath.c         remote_run(dp, r);
+<a href='../S/204.html#L599'>dp</a>                599 cbench/openflow/udatapath/datapath.c     for (i = 0; i &lt; dp-&gt;n_listeners; ) {
+<a href='../S/204.html#L600'>dp</a>                600 cbench/openflow/udatapath/datapath.c         struct pvconn *pvconn = dp-&gt;listeners[i];
+<a href='../S/204.html#L604'>dp</a>                604 cbench/openflow/udatapath/datapath.c             remote_create(dp, rconn_new_from_vconn("passive", new_vconn));
+<a href='../S/204.html#L607'>dp</a>                607 cbench/openflow/udatapath/datapath.c             dp-&gt;listeners[i] = dp-&gt;listeners[--dp-&gt;n_listeners];
+<a href='../S/204.html#L615'>dp</a>                615 cbench/openflow/udatapath/datapath.c remote_run(struct datapath *dp, struct remote *r)
+<a href='../S/204.html#L639'>dp</a>                639 cbench/openflow/udatapath/datapath.c                 fwd_control_input(dp, &amp;sender, buffer-&gt;data, buffer-&gt;size);
+<a href='../S/204.html#L646'>dp</a>                646 cbench/openflow/udatapath/datapath.c                 int error = r-&gt;cb_dump(dp, r-&gt;cb_aux);
+<a href='../S/204.html#L687'>dp</a>                687 cbench/openflow/udatapath/datapath.c remote_create(struct datapath *dp, struct rconn *rconn)
+<a href='../S/204.html#L690'>dp</a>                690 cbench/openflow/udatapath/datapath.c     list_push_back(&amp;dp-&gt;remotes, &amp;remote-&gt;node);
+<a href='../S/204.html#L724'>dp</a>                724 cbench/openflow/udatapath/datapath.c dp_wait(struct datapath *dp)
+<a href='../S/204.html#L730'>dp</a>                730 cbench/openflow/udatapath/datapath.c     LIST_FOR_EACH (p, struct sw_port, node, &amp;dp-&gt;port_list) {
+<a href='../S/204.html#L736'>dp</a>                736 cbench/openflow/udatapath/datapath.c     LIST_FOR_EACH (r, struct remote, node, &amp;dp-&gt;remotes) {
+<a href='../S/204.html#L739'>dp</a>                739 cbench/openflow/udatapath/datapath.c     for (i = 0; i &lt; dp-&gt;n_listeners; i++) {
+<a href='../S/204.html#L740'>dp</a>                740 cbench/openflow/udatapath/datapath.c         pvconn_wait(dp-&gt;listeners[i]);
+<a href='../S/204.html#L748'>dp</a>                748 cbench/openflow/udatapath/datapath.c output_all(struct datapath *dp, struct ofpbuf *buffer, int in_port, int flood)
+<a href='../S/204.html#L754'>dp</a>                754 cbench/openflow/udatapath/datapath.c     LIST_FOR_EACH (p, struct sw_port, node, &amp;dp-&gt;port_list) {
+<a href='../S/204.html#L762'>dp</a>                762 cbench/openflow/udatapath/datapath.c             dp_output_port(dp, ofpbuf_clone(buffer), in_port, prev_port,
+<a href='../S/204.html#L768'>dp</a>                768 cbench/openflow/udatapath/datapath.c         dp_output_port(dp, buffer, in_port, prev_port, 0, false);
+<a href='../S/204.html#L776'>dp</a>                776 cbench/openflow/udatapath/datapath.c output_packet(struct datapath *dp, struct ofpbuf *buffer, uint16_t out_port,
+<a href='../S/204.html#L784'>dp</a>                784 cbench/openflow/udatapath/datapath.c     p = dp_lookup_port(dp, out_port);
+<a href='../S/204.html#L789'>dp</a>                789 cbench/openflow/udatapath/datapath.c         if (dp &amp;&amp; dp-&gt;hw_drv) {
+<a href='../S/204.html#L790'>dp</a>                790 cbench/openflow/udatapath/datapath.c             if (dp-&gt;hw_drv-&gt;port_link_get(dp-&gt;hw_drv, p-&gt;port_no)) {
+<a href='../S/204.html#L796'>dp</a>                796 cbench/openflow/udatapath/datapath.c                 rv = dp-&gt;hw_drv-&gt;packet_send(dp-&gt;hw_drv, out_port, pkt, 0);
+<a href='../S/204.html#L852'>dp</a>                852 cbench/openflow/udatapath/datapath.c dp_output_port(struct datapath *dp, struct ofpbuf *buffer,
+<a href='../S/204.html#L860'>dp</a>                860 cbench/openflow/udatapath/datapath.c         output_packet(dp, buffer, in_port, queue_id);
+<a href='../S/204.html#L864'>dp</a>                864 cbench/openflow/udatapath/datapath.c         struct sw_port *p = dp_lookup_port(dp, in_port);
+<a href='../S/204.html#L865'>dp</a>                865 cbench/openflow/udatapath/datapath.c         if (run_flow_through_tables(dp, buffer, p)) {
+<a href='../S/204.html#L872'>dp</a>                872 cbench/openflow/udatapath/datapath.c         output_all(dp, buffer, in_port, 1);
+<a href='../S/204.html#L876'>dp</a>                876 cbench/openflow/udatapath/datapath.c         output_all(dp, buffer, in_port, 0);
+<a href='../S/204.html#L880'>dp</a>                880 cbench/openflow/udatapath/datapath.c         dp_output_control(dp, buffer, in_port, UINT16_MAX, OFPR_ACTION);
+<a href='../S/204.html#L889'>dp</a>                889 cbench/openflow/udatapath/datapath.c         output_packet(dp, buffer, out_port, queue_id);
+<a href='../S/204.html#L915'>dp</a>                915 cbench/openflow/udatapath/datapath.c send_openflow_buffer(struct datapath *dp, struct ofpbuf *buffer,
+<a href='../S/204.html#L925'>dp</a>                925 cbench/openflow/udatapath/datapath.c         LIST_FOR_EACH (r, struct remote, node, &amp;dp-&gt;remotes) {
+<a href='../S/204.html#L946'>dp</a>                946 cbench/openflow/udatapath/datapath.c dp_output_control(struct datapath *dp, struct ofpbuf *buffer, int in_port,
+<a href='../S/204.html#L969'>dp</a>                969 cbench/openflow/udatapath/datapath.c     send_openflow_buffer(dp, buffer, NULL);
+<a href='../S/204.html#L1001'>dp</a>               1001 cbench/openflow/udatapath/datapath.c         hw_drv = p-&gt;dp-&gt;hw_drv;
+<a href='../S/204.html#L1035'>dp</a>               1035 cbench/openflow/udatapath/datapath.c dp_send_features_reply(struct datapath *dp, const struct sender *sender)
+<a href='../S/204.html#L1043'>dp</a>               1043 cbench/openflow/udatapath/datapath.c     ofr-&gt;datapath_id  = htonll(dp-&gt;id);
+<a href='../S/204.html#L1044'>dp</a>               1044 cbench/openflow/udatapath/datapath.c     ofr-&gt;n_tables     = dp-&gt;chain-&gt;n_tables;
+<a href='../S/204.html#L1048'>dp</a>               1048 cbench/openflow/udatapath/datapath.c     LIST_FOR_EACH (p, struct sw_port, node, &amp;dp-&gt;port_list) {
+<a href='../S/204.html#L1053'>dp</a>               1053 cbench/openflow/udatapath/datapath.c     send_openflow_buffer(dp, buffer, sender);
+<a href='../S/204.html#L1057'>dp</a>               1057 cbench/openflow/udatapath/datapath.c update_port_flags(struct datapath *dp, const struct ofp_port_mod *opm)
+<a href='../S/204.html#L1059'>dp</a>               1059 cbench/openflow/udatapath/datapath.c     struct sw_port *p = dp_lookup_port(dp, ntohs(opm-&gt;port_no));
+<a href='../S/204.html#L1085'>dp</a>               1085 cbench/openflow/udatapath/datapath.c     send_openflow_buffer(p-&gt;dp, buffer, NULL);
+<a href='../S/204.html#L1089'>dp</a>               1089 cbench/openflow/udatapath/datapath.c dp_send_flow_end(struct datapath *dp, struct sw_flow *flow,
+<a href='../S/204.html#L1123'>dp</a>               1123 cbench/openflow/udatapath/datapath.c     send_openflow_buffer(dp, buffer, NULL);
+<a href='../S/204.html#L1127'>dp</a>               1127 cbench/openflow/udatapath/datapath.c dp_send_error_msg(struct datapath *dp, const struct sender *sender,
+<a href='../S/204.html#L1136'>dp</a>               1136 cbench/openflow/udatapath/datapath.c     send_openflow_buffer(dp, buffer, sender);
+<a href='../S/204.html#L1181'>dp</a>               1181 cbench/openflow/udatapath/datapath.c int run_flow_through_tables(struct datapath *dp, struct ofpbuf *buffer,
+<a href='../S/204.html#L1189'>dp</a>               1189 cbench/openflow/udatapath/datapath.c         &amp;&amp; (dp-&gt;flags &amp; OFPC_FRAG_MASK) == OFPC_FRAG_DROP) {
+<a href='../S/204.html#L1202'>dp</a>               1202 cbench/openflow/udatapath/datapath.c     flow = chain_lookup(dp-&gt;chain, &amp;key, 0);
+<a href='../S/204.html#L1205'>dp</a>               1205 cbench/openflow/udatapath/datapath.c         execute_actions(dp, buffer, &amp;key, flow-&gt;sf_acts-&gt;actions,
+<a href='../S/204.html#L1216'>dp</a>               1216 cbench/openflow/udatapath/datapath.c void fwd_port_input(struct datapath *dp, struct ofpbuf *buffer,
+<a href='../S/204.html#L1219'>dp</a>               1219 cbench/openflow/udatapath/datapath.c     if (run_flow_through_tables(dp, buffer, p)) {
+<a href='../S/204.html#L1220'>dp</a>               1220 cbench/openflow/udatapath/datapath.c         dp_output_control(dp, buffer, p-&gt;port_no,
+<a href='../S/204.html#L1221'>dp</a>               1221 cbench/openflow/udatapath/datapath.c                           dp-&gt;miss_send_len, OFPR_NO_MATCH);
+<a href='../S/204.html#L1237'>dp</a>               1237 cbench/openflow/udatapath/datapath.c recv_barrier_request(struct datapath *dp, const struct sender *sender,
+<a href='../S/204.html#L1240'>dp</a>               1240 cbench/openflow/udatapath/datapath.c     return send_openflow_buffer(dp, make_barrier_reply(ofph), sender);
+<a href='../S/204.html#L1244'>dp</a>               1244 cbench/openflow/udatapath/datapath.c recv_features_request(struct datapath *dp, const struct sender *sender,
+<a href='../S/204.html#L1247'>dp</a>               1247 cbench/openflow/udatapath/datapath.c     dp_send_features_reply(dp, sender);
+<a href='../S/204.html#L1252'>dp</a>               1252 cbench/openflow/udatapath/datapath.c recv_get_config_request(struct datapath *dp, const struct sender *sender,
+<a href='../S/204.html#L1261'>dp</a>               1261 cbench/openflow/udatapath/datapath.c     osc-&gt;flags = htons(dp-&gt;flags);
+<a href='../S/204.html#L1262'>dp</a>               1262 cbench/openflow/udatapath/datapath.c     osc-&gt;miss_send_len = htons(dp-&gt;miss_send_len);
+<a href='../S/204.html#L1264'>dp</a>               1264 cbench/openflow/udatapath/datapath.c     return send_openflow_buffer(dp, buffer, sender);
+<a href='../S/204.html#L1268'>dp</a>               1268 cbench/openflow/udatapath/datapath.c recv_set_config(struct datapath *dp, const struct sender *sender UNUSED,
+<a href='../S/204.html#L1279'>dp</a>               1279 cbench/openflow/udatapath/datapath.c     dp-&gt;flags = flags;
+<a href='../S/204.html#L1280'>dp</a>               1280 cbench/openflow/udatapath/datapath.c     dp-&gt;miss_send_len = ntohs(osc-&gt;miss_send_len);
+<a href='../S/204.html#L1285'>dp</a>               1285 cbench/openflow/udatapath/datapath.c recv_packet_out(struct datapath *dp, const struct sender *sender,
+<a href='../S/204.html#L1313'>dp</a>               1313 cbench/openflow/udatapath/datapath.c     v_code = validate_actions(dp, &amp;key, opo-&gt;actions, actions_len);
+<a href='../S/204.html#L1315'>dp</a>               1315 cbench/openflow/udatapath/datapath.c         dp_send_error_msg(dp, sender, OFPET_BAD_ACTION, v_code,
+<a href='../S/204.html#L1320'>dp</a>               1320 cbench/openflow/udatapath/datapath.c     execute_actions(dp, buffer, &amp;key, opo-&gt;actions, actions_len, true);
+<a href='../S/204.html#L1330'>dp</a>               1330 cbench/openflow/udatapath/datapath.c recv_port_mod(struct datapath *dp, const struct sender *sender UNUSED,
+<a href='../S/204.html#L1335'>dp</a>               1335 cbench/openflow/udatapath/datapath.c     update_port_flags(dp, opm);
+<a href='../S/204.html#L1341'>dp</a>               1341 cbench/openflow/udatapath/datapath.c add_flow(struct datapath *dp, const struct sender *sender,
+<a href='../S/204.html#L1357'>dp</a>               1357 cbench/openflow/udatapath/datapath.c     v_code = validate_actions(dp, &amp;flow-&gt;key, ofm-&gt;actions, actions_len);
+<a href='../S/204.html#L1359'>dp</a>               1359 cbench/openflow/udatapath/datapath.c         dp_send_error_msg(dp, sender, OFPET_BAD_ACTION, v_code,
+<a href='../S/204.html#L1368'>dp</a>               1368 cbench/openflow/udatapath/datapath.c         overlap = chain_has_conflict(dp-&gt;chain, &amp;flow-&gt;key, flow-&gt;priority,
+<a href='../S/204.html#L1371'>dp</a>               1371 cbench/openflow/udatapath/datapath.c             dp_send_error_msg(dp, sender, OFPET_FLOW_MOD_FAILED,
+<a href='../S/204.html#L1380'>dp</a>               1380 cbench/openflow/udatapath/datapath.c             dp_send_error_msg(dp, sender, OFPET_FLOW_MOD_FAILED,
+<a href='../S/204.html#L1396'>dp</a>               1396 cbench/openflow/udatapath/datapath.c     error = chain_insert(dp-&gt;chain, flow,
+<a href='../S/204.html#L1399'>dp</a>               1399 cbench/openflow/udatapath/datapath.c         dp_send_error_msg(dp, sender, OFPET_FLOW_MOD_FAILED,
+<a href='../S/204.html#L1414'>dp</a>               1414 cbench/openflow/udatapath/datapath.c             execute_actions(dp, buffer, &amp;key,
+<a href='../S/204.html#L1431'>dp</a>               1431 cbench/openflow/udatapath/datapath.c mod_flow(struct datapath *dp, const struct sender *sender,
+<a href='../S/204.html#L1447'>dp</a>               1447 cbench/openflow/udatapath/datapath.c     v_code = validate_actions(dp, &amp;flow-&gt;key, ofm-&gt;actions, actions_len);
+<a href='../S/204.html#L1449'>dp</a>               1449 cbench/openflow/udatapath/datapath.c         dp_send_error_msg(dp, sender, OFPET_BAD_ACTION, v_code,
+<a href='../S/204.html#L1459'>dp</a>               1459 cbench/openflow/udatapath/datapath.c     if (!chain_modify(dp-&gt;chain, &amp;flow-&gt;key, flow-&gt;priority,
+<a href='../S/204.html#L1469'>dp</a>               1469 cbench/openflow/udatapath/datapath.c         error = chain_insert(dp-&gt;chain, flow,
+<a href='../S/204.html#L1472'>dp</a>               1472 cbench/openflow/udatapath/datapath.c             dp_send_error_msg(dp, sender, OFPET_FLOW_MOD_FAILED,
+<a href='../S/204.html#L1488'>dp</a>               1488 cbench/openflow/udatapath/datapath.c             execute_actions(dp, buffer, &amp;skb_key,
+<a href='../S/204.html#L1505'>dp</a>               1505 cbench/openflow/udatapath/datapath.c recv_flow(struct datapath *dp, const struct sender *sender,
+<a href='../S/204.html#L1512'>dp</a>               1512 cbench/openflow/udatapath/datapath.c         return add_flow(dp, sender, ofm);
+<a href='../S/204.html#L1514'>dp</a>               1514 cbench/openflow/udatapath/datapath.c         return mod_flow(dp, sender, ofm);
+<a href='../S/204.html#L1518'>dp</a>               1518 cbench/openflow/udatapath/datapath.c         return chain_delete(dp-&gt;chain, &amp;key, ofm-&gt;out_port, 0, 0,
+<a href='../S/204.html#L1526'>dp</a>               1526 cbench/openflow/udatapath/datapath.c         return chain_delete(dp-&gt;chain, &amp;key, ofm-&gt;out_port, priority, 1,
+<a href='../S/204.html#L1535'>dp</a>               1535 cbench/openflow/udatapath/datapath.c desc_stats_dump(struct datapath *dp UNUSED, void *state UNUSED,
+<a href='../S/204.html#L1543'>dp</a>               1543 cbench/openflow/udatapath/datapath.c     strncpy(ods-&gt;dp_desc, dp-&gt;dp_desc, sizeof ods-&gt;dp_desc);
+<a href='../S/204.html#L1580'>dp</a>               1580 cbench/openflow/udatapath/datapath.c static int flow_stats_dump(struct datapath *dp, void *state,
+<a href='../S/204.html#L1591'>dp</a>               1591 cbench/openflow/udatapath/datapath.c         struct sw_table *table = dp-&gt;chain-&gt;emerg_table;
+<a href='../S/204.html#L1596'>dp</a>               1596 cbench/openflow/udatapath/datapath.c         while (s-&gt;table_idx &lt; dp-&gt;chain-&gt;n_tables
+<a href='../S/204.html#L1599'>dp</a>               1599 cbench/openflow/udatapath/datapath.c             struct sw_table *table = dp-&gt;chain-&gt;tables[s-&gt;table_idx];
+<a href='../S/204.html#L1640'>dp</a>               1640 cbench/openflow/udatapath/datapath.c static int aggregate_stats_dump(struct datapath *dp, void *state,
+<a href='../S/204.html#L1659'>dp</a>               1659 cbench/openflow/udatapath/datapath.c         struct sw_table *table = dp-&gt;chain-&gt;emerg_table;
+<a href='../S/204.html#L1666'>dp</a>               1666 cbench/openflow/udatapath/datapath.c         while (table_idx &lt; dp-&gt;chain-&gt;n_tables
+<a href='../S/204.html#L1669'>dp</a>               1669 cbench/openflow/udatapath/datapath.c             struct sw_table *table = dp-&gt;chain-&gt;tables[table_idx];
+<a href='../S/204.html#L1693'>dp</a>               1693 cbench/openflow/udatapath/datapath.c table_stats_dump(struct datapath *dp, void *state UNUSED,
+<a href='../S/204.html#L1697'>dp</a>               1697 cbench/openflow/udatapath/datapath.c     for (i = 0; i &lt; dp-&gt;chain-&gt;n_tables; i++) {
+<a href='../S/204.html#L1700'>dp</a>               1700 cbench/openflow/udatapath/datapath.c         dp-&gt;chain-&gt;tables[i]-&gt;stats(dp-&gt;chain-&gt;tables[i], &amp;stats);
+<a href='../S/204.html#L1736'>dp</a>               1736 cbench/openflow/udatapath/datapath.c dump_port_stats(struct datapath *dp, struct sw_port *port,
+<a href='../S/204.html#L1747'>dp</a>               1747 cbench/openflow/udatapath/datapath.c         if (dp-&gt;hw_drv-&gt;port_stats_get) {
+<a href='../S/204.html#L1748'>dp</a>               1748 cbench/openflow/udatapath/datapath.c             if (dp-&gt;hw_drv-&gt;port_stats_get(dp-&gt;hw_drv, port-&gt;port_no,
+<a href='../S/204.html#L1787'>dp</a>               1787 cbench/openflow/udatapath/datapath.c static int port_stats_dump(struct datapath *dp, void *state,
+<a href='../S/204.html#L1797'>dp</a>               1797 cbench/openflow/udatapath/datapath.c             p = dp_lookup_port(dp, i);
+<a href='../S/204.html#L1799'>dp</a>               1799 cbench/openflow/udatapath/datapath.c                 dump_port_stats(dp, p, buffer);
+<a href='../S/204.html#L1802'>dp</a>               1802 cbench/openflow/udatapath/datapath.c         if (dp-&gt;local_port) {
+<a href='../S/204.html#L1803'>dp</a>               1803 cbench/openflow/udatapath/datapath.c             dump_port_stats(dp, dp-&gt;local_port, buffer);
+<a href='../S/204.html#L1807'>dp</a>               1807 cbench/openflow/udatapath/datapath.c         p = dp_lookup_port(dp, s-&gt;port_no);
+<a href='../S/204.html#L1809'>dp</a>               1809 cbench/openflow/udatapath/datapath.c             dump_port_stats(dp, p, buffer);
+<a href='../S/204.html#L1844'>dp</a>               1844 cbench/openflow/udatapath/datapath.c queue_stats_dump(struct datapath *dp, void *state,
+<a href='../S/204.html#L1853'>dp</a>               1853 cbench/openflow/udatapath/datapath.c         LIST_FOR_EACH(p, struct sw_port, node, &amp;dp-&gt;port_list) {
+<a href='../S/204.html#L1870'>dp</a>               1870 cbench/openflow/udatapath/datapath.c         p = dp_lookup_port(dp, s-&gt;port);
+<a href='../S/204.html#L1924'>dp</a>               1924 cbench/openflow/udatapath/datapath.c vendor_stats_dump(struct datapath *dp UNUSED, void *state,
+<a href='../S/204.html#L1972'>dp</a>               1972 cbench/openflow/udatapath/datapath.c     int (*dump)(struct datapath *dp, void *state, struct ofpbuf *buffer);
+<a href='../S/204.html#L2047'>dp</a>               2047 cbench/openflow/udatapath/datapath.c stats_dump(struct datapath *dp, void *cb_)
+<a href='../S/204.html#L2063'>dp</a>               2063 cbench/openflow/udatapath/datapath.c     err = cb-&gt;s-&gt;dump(dp, cb-&gt;state, buffer);
+<a href='../S/204.html#L2073'>dp</a>               2073 cbench/openflow/udatapath/datapath.c         err2 = send_openflow_buffer(dp, buffer, &amp;cb-&gt;sender);
+<a href='../S/204.html#L2098'>dp</a>               2098 cbench/openflow/udatapath/datapath.c recv_stats_request(struct datapath *dp UNUSED, const struct sender *sender,
+<a href='../S/204.html#L2154'>dp</a>               2154 cbench/openflow/udatapath/datapath.c recv_echo_request(struct datapath *dp, const struct sender *sender,
+<a href='../S/204.html#L2157'>dp</a>               2157 cbench/openflow/udatapath/datapath.c     return send_openflow_buffer(dp, make_echo_reply(oh), sender);
+<a href='../S/204.html#L2161'>dp</a>               2161 cbench/openflow/udatapath/datapath.c recv_echo_reply(struct datapath *dp UNUSED, const struct sender *sender UNUSED,
+<a href='../S/204.html#L2168'>dp</a>               2168 cbench/openflow/udatapath/datapath.c recv_queue_get_config_request(struct datapath *dp, const struct sender *sender,
+<a href='../S/204.html#L2183'>dp</a>               2183 cbench/openflow/udatapath/datapath.c         p = dp_lookup_port(dp,port_no);
+<a href='../S/204.html#L2187'>dp</a>               2187 cbench/openflow/udatapath/datapath.c             dp_send_error_msg(dp, sender, OFPET_QUEUE_OP_FAILED, OFPQOFC_BAD_PORT,
+<a href='../S/204.html#L2198'>dp</a>               2198 cbench/openflow/udatapath/datapath.c         send_openflow_buffer(dp, buffer, sender);
+<a href='../S/204.html#L2201'>dp</a>               2201 cbench/openflow/udatapath/datapath.c         dp_send_error_msg(dp, sender, OFPET_QUEUE_OP_FAILED, OFPQOFC_BAD_PORT,
+<a href='../S/204.html#L2209'>dp</a>               2209 cbench/openflow/udatapath/datapath.c recv_vendor(struct datapath *dp, const struct sender *sender,
+<a href='../S/204.html#L2217'>dp</a>               2217 cbench/openflow/udatapath/datapath.c         return private_recv_msg(dp, sender, oh);
+<a href='../S/204.html#L2220'>dp</a>               2220 cbench/openflow/udatapath/datapath.c         return of_ext_recv_msg(dp, sender, oh);
+<a href='../S/204.html#L2224'>dp</a>               2224 cbench/openflow/udatapath/datapath.c         dp_send_error_msg(dp, sender, OFPET_BAD_REQUEST,
+<a href='../S/204.html#L2233'>dp</a>               2233 cbench/openflow/udatapath/datapath.c fwd_control_input(struct datapath *dp, const struct sender *sender,
+<a href='../S/204.html#L2298'>dp</a>               2298 cbench/openflow/udatapath/datapath.c         dp_send_error_msg(dp, sender, OFPET_BAD_REQUEST, OFPBRC_BAD_TYPE,
+<a href='../S/204.html#L2306'>dp</a>               2306 cbench/openflow/udatapath/datapath.c     return handler(dp, sender, msg);
+<a href='../S/201.html#L87'>dp</a>                 87 cbench/openflow/udatapath/datapath.h     struct datapath *dp;
+<a href='../S/187.html#L43'>dp</a>                 43 cbench/openflow/udatapath/dp_act.c validate_output(struct datapath *dp UNUSED, const struct sw_flow_key *key, 
+<a href='../S/187.html#L60'>dp</a>                 60 cbench/openflow/udatapath/dp_act.c validate_queue(struct datapath *dp UNUSED, const struct sw_flow_key *key UNUSED,
+<a href='../S/187.html#L73'>dp</a>                 73 cbench/openflow/udatapath/dp_act.c do_output(struct datapath *dp, struct ofpbuf *buffer, int in_port,
+<a href='../S/187.html#L78'>dp</a>                 78 cbench/openflow/udatapath/dp_act.c         dp_output_port(dp, buffer, in_port, out_port, queue_id, ignore_no_fwd);
+<a href='../S/187.html#L80'>dp</a>                 80 cbench/openflow/udatapath/dp_act.c         dp_output_control(dp, buffer, in_port, max_len, OFPR_ACTION);
+<a href='../S/187.html#L268'>dp</a>                268 cbench/openflow/udatapath/dp_act.c     uint16_t (*validate)(struct datapath *dp, 
+<a href='../S/187.html#L355'>dp</a>                355 cbench/openflow/udatapath/dp_act.c validate_ofpat(struct datapath *dp, const struct sw_flow_key *key, 
+<a href='../S/187.html#L366'>dp</a>                366 cbench/openflow/udatapath/dp_act.c         ret = act-&gt;validate(dp, key, ah);
+<a href='../S/187.html#L375'>dp</a>                375 cbench/openflow/udatapath/dp_act.c validate_vendor(struct datapath *dp UNUSED, const struct sw_flow_key *key UNUSED, 
+<a href='../S/187.html#L399'>dp</a>                399 cbench/openflow/udatapath/dp_act.c validate_actions(struct datapath *dp, const struct sw_flow_key *key,
+<a href='../S/187.html#L418'>dp</a>                418 cbench/openflow/udatapath/dp_act.c             err = validate_ofpat(dp, key, ah, type, len);
+<a href='../S/187.html#L423'>dp</a>                423 cbench/openflow/udatapath/dp_act.c             err = validate_vendor(dp, key, ah, len);
+<a href='../S/187.html#L473'>dp</a>                473 cbench/openflow/udatapath/dp_act.c void execute_actions(struct datapath *dp, struct ofpbuf *buffer,
+<a href='../S/187.html#L498'>dp</a>                498 cbench/openflow/udatapath/dp_act.c             do_output(dp, ofpbuf_clone(buffer), in_port, max_len,
+<a href='../S/187.html#L527'>dp</a>                527 cbench/openflow/udatapath/dp_act.c         do_output(dp, buffer, in_port, max_len, prev_port, prev_queue, ignore_no_fwd);
+<a href='../S/203.html#L89'>dp</a>                 89 cbench/openflow/udatapath/of_ext_msg.c recv_of_exp_queue_delete(struct datapath *dp,
+<a href='../S/203.html#L106'>dp</a>                106 cbench/openflow/udatapath/of_ext_msg.c     p = dp_lookup_port(dp,port_no);
+<a href='../S/203.html#L114'>dp</a>                114 cbench/openflow/udatapath/of_ext_msg.c             dp_send_error_msg(dp, sender, OFPET_QUEUE_OP_FAILED,
+<a href='../S/203.html#L120'>dp</a>                120 cbench/openflow/udatapath/of_ext_msg.c         dp_send_error_msg(dp, sender, OFPET_QUEUE_OP_FAILED,
+<a href='../S/203.html#L135'>dp</a>                135 cbench/openflow/udatapath/of_ext_msg.c recv_of_exp_queue_modify(struct datapath *dp,
+<a href='../S/203.html#L158'>dp</a>                158 cbench/openflow/udatapath/of_ext_msg.c         dp_send_error_msg(dp, sender, OFPET_QUEUE_OP_FAILED,
+<a href='../S/203.html#L169'>dp</a>                169 cbench/openflow/udatapath/of_ext_msg.c     p = dp_lookup_port(dp, port_no);
+<a href='../S/203.html#L177'>dp</a>                177 cbench/openflow/udatapath/of_ext_msg.c                 dp_send_error_msg(dp, sender, OFPET_QUEUE_OP_FAILED,
+<a href='../S/203.html#L190'>dp</a>                190 cbench/openflow/udatapath/of_ext_msg.c                 dp_send_error_msg(dp, sender, OFPET_QUEUE_OP_FAILED,
+<a href='../S/203.html#L199'>dp</a>                199 cbench/openflow/udatapath/of_ext_msg.c                 dp_send_error_msg(dp, sender, OFPET_QUEUE_OP_FAILED,
+<a href='../S/203.html#L206'>dp</a>                206 cbench/openflow/udatapath/of_ext_msg.c         dp_send_error_msg(dp, sender, OFPET_QUEUE_OP_FAILED, OFPQOFC_BAD_PORT,
+<a href='../S/203.html#L214'>dp</a>                214 cbench/openflow/udatapath/of_ext_msg.c             error = dp-&gt;hw_drv-&gt;port_queue_config(dp-&gt;hw_drv, port_no,
+<a href='../S/203.html#L229'>dp</a>                229 cbench/openflow/udatapath/of_ext_msg.c recv_of_set_dp_desc(struct datapath *dp,
+<a href='../S/203.html#L235'>dp</a>                235 cbench/openflow/udatapath/of_ext_msg.c     strncpy(dp-&gt;dp_desc, set_dp_desc-&gt;dp_desc, DESC_STR_LEN);
+<a href='../S/203.html#L236'>dp</a>                236 cbench/openflow/udatapath/of_ext_msg.c     dp-&gt;dp_desc[DESC_STR_LEN-1] = 0;        // force null for safety
+<a href='../S/203.html#L243'>dp</a>                243 cbench/openflow/udatapath/of_ext_msg.c int of_ext_recv_msg(struct datapath *dp, const struct sender *sender,
+<a href='../S/203.html#L250'>dp</a>                250 cbench/openflow/udatapath/of_ext_msg.c         recv_of_exp_queue_modify(dp,sender,oh);
+<a href='../S/203.html#L254'>dp</a>                254 cbench/openflow/udatapath/of_ext_msg.c         recv_of_exp_queue_delete(dp,sender,oh);
+<a href='../S/203.html#L258'>dp</a>                258 cbench/openflow/udatapath/of_ext_msg.c         recv_of_set_dp_desc(dp,sender,ofexth);
+<a href='../S/195.html#L45'>dp</a>                 45 cbench/openflow/udatapath/private-msg.c 	struct datapath *dp;
+<a href='../S/195.html#L53'>dp</a>                 53 cbench/openflow/udatapath/private-msg.c flush_working(struct datapath *dp)
+<a href='../S/195.html#L60'>dp</a>                 60 cbench/openflow/udatapath/private-msg.c 	num_deleted = chain_delete(dp-&gt;chain, &amp;key, OFPP_NONE, 0, 0, 0);
+<a href='../S/195.html#L89'>dp</a>                 89 cbench/openflow/udatapath/private-msg.c 	error = chain_insert(private-&gt;dp-&gt;chain, tgtflow, 0);
+<a href='../S/195.html#L97'>dp</a>                 97 cbench/openflow/udatapath/private-msg.c do_protection(struct datapath *dp)
+<a href='../S/195.html#L102'>dp</a>                102 cbench/openflow/udatapath/private-msg.c 	struct sw_table *table = dp-&gt;chain-&gt;emerg_table;
+<a href='../S/195.html#L106'>dp</a>                106 cbench/openflow/udatapath/private-msg.c 	private.dp = dp;
+<a href='../S/195.html#L116'>dp</a>                116 cbench/openflow/udatapath/private-msg.c private_recv_msg(struct datapath *dp, const struct sender *sender UNUSED,
+<a href='../S/195.html#L128'>dp</a>                128 cbench/openflow/udatapath/private-msg.c 		flush_working(dp);
+<a href='../S/195.html#L129'>dp</a>                129 cbench/openflow/udatapath/private-msg.c 		do_protection(dp);
+<a href='../S/205.html#L166'>dp</a>                166 cbench/openflow/udatapath/table-hash.c static int table_hash_delete(struct datapath *dp, struct sw_table *swt,
+<a href='../S/205.html#L179'>dp</a>                179 cbench/openflow/udatapath/table-hash.c             dp_send_flow_end(dp, flow, OFPRR_DELETE);
+<a href='../S/205.html#L191'>dp</a>                191 cbench/openflow/udatapath/table-hash.c                 dp_send_flow_end(dp, flow, OFPRR_DELETE);
+<a href='../S/205.html#L365'>dp</a>                365 cbench/openflow/udatapath/table-hash.c static int table_hash2_delete(struct datapath *dp, struct sw_table *swt,
+<a href='../S/205.html#L371'>dp</a>                371 cbench/openflow/udatapath/table-hash.c     return (table_hash_delete(dp, t2-&gt;subtable[0], key, out_port, 
+<a href='../S/205.html#L373'>dp</a>                373 cbench/openflow/udatapath/table-hash.c             + table_hash_delete(dp, t2-&gt;subtable[1], key, out_port, 
+<a href='../S/189.html#L146'>dp</a>                146 cbench/openflow/udatapath/table-linear.c static int table_linear_delete(struct datapath *dp, struct sw_table *swt,
+<a href='../S/189.html#L159'>dp</a>                159 cbench/openflow/udatapath/table-linear.c             dp_send_flow_end(dp, flow, OFPRR_DELETE);
+<a href='../S/202.html#L109'>dp</a>                109 cbench/openflow/udatapath/table.h     int (*delete)(struct datapath *dp, struct sw_table *table, 
+<a href='../S/188.html#L76'>dp</a>                 76 cbench/openflow/udatapath/udatapath.c static struct datapath *dp;
+<a href='../S/188.html#L82'>dp</a>                 82 cbench/openflow/udatapath/udatapath.c static void add_ports(struct datapath *dp, char *port_list);
+<a href='../S/188.html#L121'>dp</a>                121 cbench/openflow/udatapath/udatapath.c     error = dp_new(&amp;dp, dpid);
+<a href='../S/188.html#L131'>dp</a>                131 cbench/openflow/udatapath/udatapath.c             dp_add_pvconn(dp, pvconn);
+<a href='../S/188.html#L142'>dp</a>                142 cbench/openflow/udatapath/udatapath.c         add_ports(dp, port_list);
+<a href='../S/188.html#L145'>dp</a>                145 cbench/openflow/udatapath/udatapath.c         error = dp_add_local_port(dp, local_port, 0);
+<a href='../S/188.html#L160'>dp</a>                160 cbench/openflow/udatapath/udatapath.c         dp_run(dp);
+<a href='../S/188.html#L161'>dp</a>                161 cbench/openflow/udatapath/udatapath.c         dp_wait(dp);
+<a href='../S/188.html#L169'>dp</a>                169 cbench/openflow/udatapath/udatapath.c add_ports(struct datapath *dp, char *port_list)
+<a href='../S/188.html#L179'>dp</a>                179 cbench/openflow/udatapath/udatapath.c         int error = dp_add_port(dp, port, num_queues);
+</pre>
+</body>
+</html>

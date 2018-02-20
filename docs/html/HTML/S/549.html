@@ -1,0 +1,141 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/nettl.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1154.html'>wiretap</a>/nettl.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* nettl.h</font></i>
+<a name='L2'>   2 <i><font color='green'> *</font></i>
+<a name='L3'>   3 <i><font color='green'> * $Id: nettl.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L4'>   4 <i><font color='green'> *</font></i>
+<a name='L5'>   5 <i><font color='green'> * Wiretap Library</font></i>
+<a name='L6'>   6 <i><font color='green'> * Copyright (c) 1998 by Gilbert Ramirez &lt;gram@alumni.rice.edu&gt;</font></i>
+<a name='L7'>   7 <i><font color='green'> *</font></i>
+<a name='L8'>   8 <i><font color='green'> * Enhancements by Mark C. Brown &lt;mbrown@hp.com&gt;</font></i>
+<a name='L9'>   9 <i><font color='green'> * Copyright (C) 2003, 2005 Hewlett-Packard Development Company, L.P.</font></i>
+<a name='L10'>  10 <i><font color='green'> *</font></i>
+<a name='L11'>  11 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L12'>  12 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L13'>  13 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L14'>  14 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L15'>  15 <i><font color='green'> *</font></i>
+<a name='L16'>  16 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L17'>  17 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L18'>  18 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L19'>  19 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L20'>  20 <i><font color='green'> *</font></i>
+<a name='L21'>  21 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L22'>  22 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L23'>  23 <i><font color='green'> * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</font></i>
+<a name='L24'>  24 <i><font color='green'> */</font></i>
+<a name='L25'>  25 
+<a name='L26'>  26 <font color='darkred'>#ifndef</font> <a href='../S/549.html#L27' title='Defined at 27 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/nettl.h.'>__NETTL_H__</a>
+<a name='L27'>  27 <font color='darkred'>#define</font> <a href='../S/549.html#L26' title='Refered from 26 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/nettl.h.'>__NETTL_H__</a>
+<a name='L28'>  28 
+<a name='L29'>  29 <i><font color='green'>/* nettl subsystems are defined in /etc/nettlgen.conf */</font></i>
+<a name='L30'>  30 
+<a name='L31'>  31 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_LOGGING      0
+<a name='L32'>  32 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_NFT          1
+<a name='L33'>  33 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_LOOPBACK     2
+<a name='L34'>  34 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_NI           3
+<a name='L35'>  35 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_IPC          4
+<a name='L36'>  36 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_SOCKREGD     5
+<a name='L37'>  37 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_TCP          6
+<a name='L38'>  38 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_PXP          7
+<a name='L39'>  39 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_UDP          8
+<a name='L40'>  40 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_IP           9
+<a name='L41'>  41 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_PROBE        10
+<a name='L42'>  42 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_DRIVER       11
+<a name='L43'>  43 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_RLBD         12
+<a name='L44'>  44 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_BUFS         13
+<a name='L45'>  45 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_CASE21       14
+<a name='L46'>  46 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_ROUTER21     15
+<a name='L47'>  47 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_NFS          16
+<a name='L48'>  48 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_NETISR       17
+<a name='L49'>  49 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_NSE          18
+<a name='L50'>  50 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_STRLOG       19
+<a name='L51'>  51 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_TIRDWR       21
+<a name='L52'>  52 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_TIMOD        22
+<a name='L53'>  53 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_ICMP         23
+<a name='L54'>  54 <font color='darkred'>#define</font> NETTL_SUBSYS_FILTER             26
+<a name='L55'>  55 <font color='darkred'>#define</font> NETTL_SUBSYS_NAME               27
+<a name='L56'>  56 <font color='darkred'>#define</font> NETTL_SUBSYS_IGMP               29
+<a name='L57'>  57 <font color='darkred'>#define</font> NETTL_SUBSYS_SX25L2             34
+<a name='L58'>  58 <font color='darkred'>#define</font> NETTL_SUBSYS_SX25L3             35
+<a name='L59'>  59 <font color='darkred'>#define</font> NETTL_SUBSYS_FTAM_INIT          64
+<a name='L60'>  60 <font color='darkred'>#define</font> NETTL_SUBSYS_FTAM_RESP          65
+<a name='L61'>  61 <font color='darkred'>#define</font> NETTL_SUBSYS_FTAM_VFS           70
+<a name='L62'>  62 <font color='darkred'>#define</font> NETTL_SUBSYS_FTAM_USER          72
+<a name='L63'>  63 <font color='darkred'>#define</font> NETTL_SUBSYS_OTS                90
+<a name='L64'>  64 <font color='darkred'>#define</font> NETTL_SUBSYS_NETWORK            91
+<a name='L65'>  65 <font color='darkred'>#define</font> NETTL_SUBSYS_TRANSPORT          92
+<a name='L66'>  66 <font color='darkred'>#define</font> NETTL_SUBSYS_SESSION            93
+<a name='L67'>  67 <font color='darkred'>#define</font> NETTL_SUBSYS_ACSE_PRES          94
+<a name='L68'>  68 <font color='darkred'>#define</font> NETTL_SUBSYS_SHM                116
+<a name='L69'>  69 <font color='darkred'>#define</font> NETTL_SUBSYS_ACSE_US            119
+<a name='L70'>  70 <font color='darkred'>#define</font> NETTL_SUBSYS_HPS                121
+<a name='L71'>  71 <font color='darkred'>#define</font> NETTL_SUBSYS_CM                 122
+<a name='L72'>  72 <font color='darkred'>#define</font> NETTL_SUBSYS_ULA_UTILS          123
+<a name='L73'>  73 <font color='darkred'>#define</font> NETTL_SUBSYS_EM                 124
+<a name='L74'>  74 <font color='darkred'>#define</font> NETTL_SUBSYS_HP_APAPORT         189
+<a name='L75'>  75 <font color='darkred'>#define</font> NETTL_SUBSYS_HP_APALACP         190
+<a name='L76'>  76 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_IPV6         244
+<a name='L77'>  77 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_ICMPV6       245
+<a name='L78'>  78 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_TELNET       267
+<a name='L79'>  79 <font color='darkred'>#define</font> NETTL_SUBSYS_NS_LS_SCTP         268
+<a name='L80'>  80 
+<a name='L81'>  81 <i><font color='green'>/* Ethernet cards */</font></i>
+<a name='L82'>  82 <font color='darkred'>#define</font> NETTL_SUBSYS_100VG              37
+<a name='L83'>  83 <font color='darkred'>#define</font> NETTL_SUBSYS_LAN100             164
+<a name='L84'>  84 <font color='darkred'>#define</font> NETTL_SUBSYS_EISA100BT          172
+<a name='L85'>  85 <font color='darkred'>#define</font> NETTL_SUBSYS_BASE100            173
+<a name='L86'>  86 <font color='darkred'>#define</font> NETTL_SUBSYS_GSC100BT           178
+<a name='L87'>  87 <font color='darkred'>#define</font> NETTL_SUBSYS_PCI100BT           179
+<a name='L88'>  88 <font color='darkred'>#define</font> NETTL_SUBSYS_SPP100BT           180
+<a name='L89'>  89 <font color='darkred'>#define</font> NETTL_SUBSYS_GELAN              185
+<a name='L90'>  90 <font color='darkred'>#define</font> NETTL_SUBSYS_BTLAN              210
+<a name='L91'>  91 <font color='darkred'>#define</font> NETTL_SUBSYS_INTL100            233
+<a name='L92'>  92 <font color='darkred'>#define</font> NETTL_SUBSYS_IGELAN             252
+<a name='L93'>  93 <font color='darkred'>#define</font> NETTL_SUBSYS_IETHER             253
+<a name='L94'>  94 <font color='darkred'>#define</font> NETTL_SUBSYS_IXGBE              265
+<a name='L95'>  95 
+<a name='L96'>  96 <i><font color='green'>/* FDDI cards */</font></i>
+<a name='L97'>  97 <font color='darkred'>#define</font> NETTL_SUBSYS_HPPB_FDDI          95
+<a name='L98'>  98 <font color='darkred'>#define</font> NETTL_SUBSYS_EISA_FDDI          174
+<a name='L99'>  99 <font color='darkred'>#define</font> NETTL_SUBSYS_PCI_FDDI           176
+<a name='L100'> 100 <font color='darkred'>#define</font> NETTL_SUBSYS_HSC_FDDI           177
+<a name='L101'> 101 
+<a name='L102'> 102 <i><font color='green'>/* Token Ring cards */</font></i>
+<a name='L103'> 103 <font color='darkred'>#define</font> NETTL_SUBSYS_TOKEN              31
+<a name='L104'> 104 <font color='darkred'>#define</font> NETTL_SUBSYS_PCI_TR             187
+<a name='L105'> 105 
+<a name='L106'> 106 <i><font color='green'>/* from /usr/include/sys/subsys_id.h */</font></i>
+<a name='L107'> 107 
+<a name='L108'> 108 <font color='darkred'>#define</font> NETTL_HDR_HDRIN                 0x80000000
+<a name='L109'> 109 <font color='darkred'>#define</font> NETTL_HDR_HDROUT                0x40000000
+<a name='L110'> 110 <font color='darkred'>#define</font> NETTL_HDR_PDUIN                 0x20000000
+<a name='L111'> 111 <font color='darkred'>#define</font> NETTL_HDR_PDUOUT                0x10000000
+<a name='L112'> 112 <font color='darkred'>#define</font> NETTL_HDR_PROCEDURE_TRACE       0x08000000
+<a name='L113'> 113 <font color='darkred'>#define</font> NETTL_HDR_STATE_TRACE           0x04000000
+<a name='L114'> 114 <font color='darkred'>#define</font> NETTL_HDR_ERROR_TRACE           0x02000000
+<a name='L115'> 115 <font color='darkred'>#define</font> NETTL_HDR_LOG_TRACE             0x01000000
+<a name='L116'> 116 <font color='darkred'>#define</font> NETTL_HDR_LOOPBACK              0x00800000
+<a name='L117'> 117 <font color='darkred'>#define</font> NETTL_HDR_PTOP                  0x00400000
+<a name='L118'> 118 <font color='darkred'>#define</font> NETTL_HDR_SUBSYSTEM_BITS_MASK   0x000fffff
+<a name='L119'> 119 
+<a name='L120'> 120 <b>int</b> nettl_open(<a href='../Y/7945.html' title='Multiple used in 38 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>, <b>int</b> *<a href='../Y/2737.html' title='Multiple used in 82 places.'>err</a>, <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> **<a href='../Y/2747.html' title='Multiple used in 42 places.'>err_info</a>);
+<a name='L121'> 121 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> nettl_dump_open(<a href='../Y/7956.html' title='Multiple used in 21 places.'>wtap_dumper</a> *<a href='../Y/7861.html' title='Multiple used in 20 places.'>wdh</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/1789.html' title='Multiple used in 17 places.'>cant_seek</a> <a href='../Y/1120.html' title='Multiple used in 27 places.'>_U_</a>, <b>int</b> *<a href='../Y/2737.html' title='Multiple used in 82 places.'>err</a>);
+<a name='L122'> 122 <b>int</b> nettl_dump_can_write_encap(<b>int</b> <a href='../Y/2669.html' title='Multiple used in 26 places.'>encap</a>);
+<a name='L123'> 123 
+<a name='L124'> 124 <font color='darkred'>#endif</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<html>
+<head>
+<title>cbench/openflow/include/openflow/openflow-netlink.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1138.html'>include</a>/<a href='../files/1139.html'>openflow</a>/openflow-netlink.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/176.html' title='Multiple included from 4 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> * </font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> * </font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> * </font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> * </font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#ifndef</font> <a href='../S/184.html#L35' title='Defined at 35 in cbench/openflow/include/openflow/openflow-netlink.h.'>OPENFLOW_OPENFLOW_NETLINK_H</a>
+<a name='L35'>  35 <font color='darkred'>#define</font> <a href='../S/184.html#L34' title='Refered from 34 in cbench/openflow/include/openflow/openflow-netlink.h.'>OPENFLOW_OPENFLOW_NETLINK_H</a> 1
+<a name='L36'>  36 
+<a name='L37'>  37 <font color='darkred'>#define</font> <a href='../R/387.html' title='Multiple refered from 2 places.'>DP_GENL_FAMILY_NAME</a> "OpenFlow"
+<a name='L38'>  38 
+<a name='L39'>  39 <i><font color='green'>/* Attributes that can be attached to the datapath's netlink messages. */</font></i>
+<a name='L40'>  40 <b>enum</b> <font color='red'>{</font>
+<a name='L41'>  41         DP_GENL_A_UNSPEC,
+<a name='L42'>  42         <a href='../R/375.html' title='Multiple refered from 19 places.'>DP_GENL_A_DP_IDX</a>,        <i><font color='green'>/* Datapath device index. */</font></i>
+<a name='L43'>  43         <a href='../R/380.html' title='Multiple refered from 5 places.'>DP_GENL_A_PORTNAME</a>,      <i><font color='green'>/* Device name for datapath port. */</font></i>
+<a name='L44'>  44         <a href='../R/378.html' title='Multiple refered from 4 places.'>DP_GENL_A_MC_GROUP</a>,      <i><font color='green'>/* Generic netlink multicast group. */</font></i>
+<a name='L45'>  45         <a href='../R/379.html' title='Multiple refered from 7 places.'>DP_GENL_A_OPENFLOW</a>,  <i><font color='green'>/* OpenFlow packet. */</font></i>
+<a name='L46'>  46         <a href='../R/376.html' title='Multiple refered from 11 places.'>DP_GENL_A_DP_NAME</a>,       <i><font color='green'>/* Datapath device name. */</font></i>
+<a name='L47'>  47 
+<a name='L48'>  48         __DP_GENL_A_MAX,
+<a name='L49'>  49         <a href='../R/377.html' title='Multiple refered from 5 places.'>DP_GENL_A_MAX</a> = __DP_GENL_A_MAX - 1
+<a name='L50'>  50 <font color='red'>}</font>;
+<a name='L51'>  51 
+<a name='L52'>  52 <i><font color='green'>/* Commands that can be executed on the datapath's netlink interface. */</font></i>
+<a name='L53'>  53 <b>enum</b> dp_genl_command <font color='red'>{</font>
+<a name='L54'>  54         DP_GENL_C_UNSPEC,
+<a name='L55'>  55         <a href='../R/381.html' title='Multiple refered from 3 places.'>DP_GENL_C_ADD_DP</a>,        <i><font color='green'>/* Create datapath. */</font></i>
+<a name='L56'>  56         <a href='../R/383.html' title='Multiple refered from 3 places.'>DP_GENL_C_DEL_DP</a>,        <i><font color='green'>/* Destroy datapath. */</font></i>
+<a name='L57'>  57         <a href='../R/386.html' title='Multiple refered from 3 places.'>DP_GENL_C_QUERY_DP</a>,      <i><font color='green'>/* Get multicast group for datapath. */</font></i>
+<a name='L58'>  58         <a href='../R/382.html' title='Multiple refered from 3 places.'>DP_GENL_C_ADD_PORT</a>,      <i><font color='green'>/* Add port to datapath. */</font></i>
+<a name='L59'>  59         <a href='../R/384.html' title='Multiple refered from 2 places.'>DP_GENL_C_DEL_PORT</a>,      <i><font color='green'>/* Remove port from datapath. */</font></i>
+<a name='L60'>  60         <a href='../R/385.html' title='Multiple refered from 3 places.'>DP_GENL_C_OPENFLOW</a>,  <i><font color='green'>/* Encapsulated OpenFlow protocol. */</font></i>
+<a name='L61'>  61 
+<a name='L62'>  62         __DP_GENL_C_MAX,
+<a name='L63'>  63         DP_GENL_C_MAX = __DP_GENL_C_MAX - 1
+<a name='L64'>  64 <font color='red'>}</font>;
+<a name='L65'>  65 
+<a name='L66'>  66 <i><font color='green'>/* Maximum number of datapaths. */</font></i>
+<a name='L67'>  67 <font color='darkred'>#define</font> <a href='../R/388.html' title='Multiple refered from 5 places.'>DP_MAX</a> 256
+<a name='L68'>  68 
+<a name='L69'>  69 <font color='darkred'>#endif</font> <i><font color='green'>/* openflow/openflow-netlink.h */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<html>
+<head>
+<title>host_table</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/1010.html#L37'>host_table</a>         37 components/host_mgmt.c host_table_t *host_table;
+<a href='../S/1010.html#L138'>host_table</a>        138 components/host_mgmt.c     pthread_rwlock_rdlock(&amp;host_table[mkey].lock);
+<a href='../S/1010.html#L139'>host_table</a>        139 components/host_mgmt.c     ret = check_host(&amp;host_table[mkey], pktin-&gt;src_ip, mac);
+<a href='../S/1010.html#L140'>host_table</a>        140 components/host_mgmt.c     pthread_rwlock_unlock(&amp;host_table[mkey].lock);
+<a href='../S/1010.html#L156'>host_table</a>        156 components/host_mgmt.c         pthread_rwlock_wrlock(&amp;host_table[mkey].lock);
+<a href='../S/1010.html#L158'>host_table</a>        158 components/host_mgmt.c         if (host_table[mkey].head == NULL) {
+<a href='../S/1010.html#L159'>host_table</a>        159 components/host_mgmt.c             host_table[mkey].head = new;
+<a href='../S/1010.html#L160'>host_table</a>        160 components/host_mgmt.c             host_table[mkey].tail = new;
+<a href='../S/1010.html#L162'>host_table</a>        162 components/host_mgmt.c             new-&gt;prev = host_table[mkey].tail;
+<a href='../S/1010.html#L163'>host_table</a>        163 components/host_mgmt.c             host_table[mkey].tail-&gt;next = new;
+<a href='../S/1010.html#L164'>host_table</a>        164 components/host_mgmt.c             host_table[mkey].tail = new;
+<a href='../S/1010.html#L169'>host_table</a>        169 components/host_mgmt.c         pthread_rwlock_unlock(&amp;host_table[mkey].lock);
+<a href='../S/1010.html#L198'>host_table</a>        198 components/host_mgmt.c     host_table = (host_table_t *)MALLOC(sizeof(host_table_t) * __DEFAULT_TABLE_SIZE);
+<a href='../S/1010.html#L199'>host_table</a>        199 components/host_mgmt.c     if (host_table == NULL) {
+<a href='../S/1010.html#L204'>host_table</a>        204 components/host_mgmt.c     memset(host_table, 0, sizeof(host_table_t) * __DEFAULT_TABLE_SIZE);
+<a href='../S/1010.html#L208'>host_table</a>        208 components/host_mgmt.c         pthread_rwlock_init(&amp;host_table[i].lock, NULL);
+<a href='../S/1010.html#L230'>host_table</a>        230 components/host_mgmt.c         pthread_rwlock_wrlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L232'>host_table</a>        232 components/host_mgmt.c         host_t *curr = host_table[i].head;
+<a href='../S/1010.html#L239'>host_table</a>        239 components/host_mgmt.c         pthread_rwlock_unlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L240'>host_table</a>        240 components/host_mgmt.c         pthread_rwlock_destroy(&amp;host_table[i].lock);
+<a href='../S/1010.html#L245'>host_table</a>        245 components/host_mgmt.c     FREE(host_table);
+<a href='../S/1010.html#L262'>host_table</a>        262 components/host_mgmt.c         pthread_rwlock_rdlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L264'>host_table</a>        264 components/host_mgmt.c         host_t *curr = host_table[i].head;
+<a href='../S/1010.html#L279'>host_table</a>        279 components/host_mgmt.c         pthread_rwlock_unlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L298'>host_table</a>        298 components/host_mgmt.c         pthread_rwlock_rdlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L300'>host_table</a>        300 components/host_mgmt.c         host_t *curr = host_table[i].head;
+<a href='../S/1010.html#L317'>host_table</a>        317 components/host_mgmt.c         pthread_rwlock_unlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L338'>host_table</a>        338 components/host_mgmt.c         pthread_rwlock_rdlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L340'>host_table</a>        340 components/host_mgmt.c         host_t *curr = host_table[i].head;
+<a href='../S/1010.html#L357'>host_table</a>        357 components/host_mgmt.c         pthread_rwlock_unlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L381'>host_table</a>        381 components/host_mgmt.c         pthread_rwlock_rdlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L383'>host_table</a>        383 components/host_mgmt.c         host_t *curr = host_table[i].head;
+<a href='../S/1010.html#L397'>host_table</a>        397 components/host_mgmt.c         pthread_rwlock_unlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L467'>host_table</a>        467 components/host_mgmt.c                 pthread_rwlock_wrlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L469'>host_table</a>        469 components/host_mgmt.c                 host_t *curr = host_table[i].head;
+<a href='../S/1010.html#L498'>host_table</a>        498 components/host_mgmt.c                         host_table[i].head = tmp-&gt;next;
+<a href='../S/1010.html#L501'>host_table</a>        501 components/host_mgmt.c                         host_table[i].tail = tmp-&gt;prev;
+<a href='../S/1010.html#L504'>host_table</a>        504 components/host_mgmt.c                         host_table[i].head = NULL;
+<a href='../S/1010.html#L505'>host_table</a>        505 components/host_mgmt.c                         host_table[i].tail = NULL;
+<a href='../S/1010.html#L533'>host_table</a>        533 components/host_mgmt.c                 pthread_rwlock_unlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L546'>host_table</a>        546 components/host_mgmt.c                 pthread_rwlock_wrlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L548'>host_table</a>        548 components/host_mgmt.c                 host_t *curr = host_table[i].head;
+<a href='../S/1010.html#L577'>host_table</a>        577 components/host_mgmt.c                         host_table[i].head = tmp-&gt;next;
+<a href='../S/1010.html#L580'>host_table</a>        580 components/host_mgmt.c                         host_table[i].tail = tmp-&gt;prev;
+<a href='../S/1010.html#L583'>host_table</a>        583 components/host_mgmt.c                         host_table[i].head = NULL;
+<a href='../S/1010.html#L584'>host_table</a>        584 components/host_mgmt.c                         host_table[i].tail = NULL;
+<a href='../S/1010.html#L614'>host_table</a>        614 components/host_mgmt.c                 pthread_rwlock_unlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L629'>host_table</a>        629 components/host_mgmt.c             pthread_rwlock_rdlock(&amp;host_table[mkey].lock);
+<a href='../S/1010.html#L630'>host_table</a>        630 components/host_mgmt.c             res = check_host(&amp;host_table[mkey], host-&gt;ip, host-&gt;mac);
+<a href='../S/1010.html#L631'>host_table</a>        631 components/host_mgmt.c             pthread_rwlock_unlock(&amp;host_table[mkey].lock);
+<a href='../S/1010.html#L649'>host_table</a>        649 components/host_mgmt.c                 pthread_rwlock_wrlock(&amp;host_table[mkey].lock);
+<a href='../S/1010.html#L651'>host_table</a>        651 components/host_mgmt.c                 if (host_table[mkey].head == NULL) {
+<a href='../S/1010.html#L652'>host_table</a>        652 components/host_mgmt.c                     host_table[mkey].head = new;
+<a href='../S/1010.html#L653'>host_table</a>        653 components/host_mgmt.c                     host_table[mkey].tail = new;
+<a href='../S/1010.html#L655'>host_table</a>        655 components/host_mgmt.c                     new-&gt;prev = host_table[mkey].tail;
+<a href='../S/1010.html#L656'>host_table</a>        656 components/host_mgmt.c                     host_table[mkey].tail-&gt;next = new;
+<a href='../S/1010.html#L657'>host_table</a>        657 components/host_mgmt.c                     host_table[mkey].tail = new;
+<a href='../S/1010.html#L662'>host_table</a>        662 components/host_mgmt.c                 pthread_rwlock_unlock(&amp;host_table[mkey].lock);
+<a href='../S/1010.html#L690'>host_table</a>        690 components/host_mgmt.c                 pthread_rwlock_wrlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L692'>host_table</a>        692 components/host_mgmt.c                 host_t *curr = host_table[i].head;
+<a href='../S/1010.html#L721'>host_table</a>        721 components/host_mgmt.c                         host_table[i].head = tmp-&gt;next;
+<a href='../S/1010.html#L724'>host_table</a>        724 components/host_mgmt.c                         host_table[i].tail = tmp-&gt;prev;
+<a href='../S/1010.html#L727'>host_table</a>        727 components/host_mgmt.c                         host_table[i].head = NULL;
+<a href='../S/1010.html#L728'>host_table</a>        728 components/host_mgmt.c                         host_table[i].tail = NULL;
+<a href='../S/1010.html#L746'>host_table</a>        746 components/host_mgmt.c                 pthread_rwlock_unlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L757'>host_table</a>        757 components/host_mgmt.c                 pthread_rwlock_rdlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L759'>host_table</a>        759 components/host_mgmt.c                 host_t *curr = host_table[i].head;
+<a href='../S/1010.html#L771'>host_table</a>        771 components/host_mgmt.c                 pthread_rwlock_unlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L790'>host_table</a>        790 components/host_mgmt.c                 pthread_rwlock_rdlock(&amp;host_table[i].lock);
+<a href='../S/1010.html#L792'>host_table</a>        792 components/host_mgmt.c                 host_t *curr = host_table[i].head;
+<a href='../S/1010.html#L819'>host_table</a>        819 components/host_mgmt.c                 pthread_rwlock_unlock(&amp;host_table[i].lock);
+</pre>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<html>
+<head>
+<title>cbench/openflow/include/openflow/openflow-ext.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1138.html'>include</a>/<a href='../files/1139.html'>openflow</a>/openflow-ext.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/143.html' title='Multiple included from 5 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright (c) 2009 The Board of Trustees of The Leland</font></i>
+<a name='L3'>   3 <i><font color='green'> * Stanford Junior University</font></i>
+<a name='L4'>   4 <i><font color='green'> */</font></i>
+<a name='L5'>   5 
+<a name='L6'>   6 <font color='darkred'>#ifndef</font> <a href='../S/182.html#L7' title='Defined at 7 in cbench/openflow/include/openflow/openflow-ext.h.'>OPENFLOW_OPENFLOW_EXT_H</a>
+<a name='L7'>   7 <font color='darkred'>#define</font> <a href='../S/182.html#L6' title='Refered from 6 in cbench/openflow/include/openflow/openflow-ext.h.'>OPENFLOW_OPENFLOW_EXT_H</a> 1
+<a name='L8'>   8 
+<a name='L9'>   9 <font color='darkred'>#include</font> "<a href='181.html'>openflow/openflow.h</a>"
+<a name='L10'>  10 
+<a name='L11'>  11 <i><font color='green'>/*</font></i>
+<a name='L12'>  12 <i><font color='green'> * The following are vendor extensions from OpenFlow.  This is a</font></i>
+<a name='L13'>  13 <i><font color='green'> * means of allowing the introduction of non-standardized</font></i>
+<a name='L14'>  14 <i><font color='green'> * proposed code.</font></i>
+<a name='L15'>  15 <i><font color='green'> *</font></i>
+<a name='L16'>  16 <i><font color='green'> * Structures in this file are 64-bit aligned in size.</font></i>
+<a name='L17'>  17 <i><font color='green'> */</font></i>
+<a name='L18'>  18 
+<a name='L19'>  19 <font color='darkred'>#define</font> <a href='../R/1327.html' title='Multiple refered from 4 places.'>OPENFLOW_VENDOR_ID</a> 0x000026e1
+<a name='L20'>  20 
+<a name='L21'>  21 <b>enum</b> ofp_extension_commands <font color='red'>{</font> <i><font color='green'>/* Queue configuration commands */</font></i>
+<a name='L22'>  22     <i><font color='green'>/* Queue Commands */</font></i>
+<a name='L23'>  23     <a href='../R/1285.html' title='Multiple refered from 2 places.'>OFP_EXT_QUEUE_MODIFY</a>,  <i><font color='green'>/* Add and/or modify */</font></i>
+<a name='L24'>  24     <a href='../R/1284.html' title='Multiple refered from 2 places.'>OFP_EXT_QUEUE_DELETE</a>,  <i><font color='green'>/* Remove a queue */</font></i>
+<a name='L25'>  25     <a href='../R/1286.html' title='Multiple refered from 3 places.'>OFP_EXT_SET_DESC</a>,      <i><font color='green'>/* Set ofp_desc_stat-&gt;dp_desc */</font></i>
+<a name='L26'>  26 
+<a name='L27'>  27     OFP_EXT_COUNT
+<a name='L28'>  28 <font color='red'>}</font>;
+<a name='L29'>  29 
+<a name='L30'>  30 <b>struct</b> <a href='../R/3865.html' title='Multiple refered from 3 places.'>ofp_extension_header</a> <font color='red'>{</font>
+<a name='L31'>  31     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L32'>  32     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7757.html' title='Multiple used in 43 places.'>vendor</a>;            <i><font color='green'>/* OPENFLOW_VENDOR_ID. */</font></i>
+<a name='L33'>  33     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7146.html' title='Multiple used in 20 places.'>subtype</a>;           <i><font color='green'>/* One of ofp_extension_commands */</font></i>
+<a name='L34'>  34 <font color='red'>}</font>;
+<a name='L35'>  35 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5138.html' title='Multiple used in 2 places.'>ofp_extension_header</a>) == 16);
+<a name='L36'>  36 
+<a name='L37'>  37 <i><font color='green'>/****************************************************************</font></i>
+<a name='L38'>  38 <i><font color='green'> *</font></i>
+<a name='L39'>  39 <i><font color='green'> * OpenFlow Queue Configuration Operations</font></i>
+<a name='L40'>  40 <i><font color='green'> *</font></i>
+<a name='L41'>  41 <i><font color='green'> ****************************************************************/</font></i>
+<a name='L42'>  42 
+<a name='L43'>  43 <b>struct</b> <a href='../R/3985.html' title='Multiple refered from 9 places.'>openflow_queue_command_header</a> <font color='red'>{</font>
+<a name='L44'>  44     <b>struct</b> <a href='../S/182.html#L30' title='Defined at 30 in cbench/openflow/include/openflow/openflow-ext.h.'>ofp_extension_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L45'>  45     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a>;              <i><font color='green'>/* Port for operations */</font></i>
+<a name='L46'>  46     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[6];             <i><font color='green'>/* Align to 64-bits */</font></i>
+<a name='L47'>  47     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/1642.html' title='Multiple used in 85 places.'>body</a>[0];            <i><font color='green'>/* Body of ofp_queue objects for op. */</font></i>
+<a name='L48'>  48 <font color='red'>}</font>;
+<a name='L49'>  49 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> openflow_queue_command_header) == 24);
+<a name='L50'>  50 
+<a name='L51'>  51 <i><font color='green'>/* NOTE</font></i>
+<a name='L52'>  52 <i><font color='green'> * Bug number: TBD.</font></i>
+<a name='L53'>  53 <i><font color='green'> * The definitions for openflow_queue_error_code conflict with</font></i>
+<a name='L54'>  54 <i><font color='green'> * those for ofp_queue_op_failed_code defined in openflow.h.</font></i>
+<a name='L55'>  55 <i><font color='green'> * This will be addressed after the release of OpenFlow 1.0.</font></i>
+<a name='L56'>  56 <i><font color='green'> * The error codes below for openflow_queue_error_code may be</font></i>
+<a name='L57'>  57 <i><font color='green'> * removed at that time.</font></i>
+<a name='L58'>  58 <i><font color='green'> */</font></i>
+<a name='L59'>  59 <i><font color='green'>/*</font></i>
+<a name='L60'>  60 <i><font color='green'> * Entries for 'code' in ofp_error_msg with error 'type'</font></i>
+<a name='L61'>  61 <i><font color='green'> * OFPET_QUEUE_OP_FAILED</font></i>
+<a name='L62'>  62 <i><font color='green'> */</font></i>
+<a name='L63'>  63 <b>enum</b> openflow_queue_error_code <font color='red'>{</font>
+<a name='L64'>  64     OFQ_ERR_NONE,               <i><font color='green'>/* Success */</font></i>
+<a name='L65'>  65     OFQ_ERR_FAIL,               <i><font color='green'>/* Unspecified failure */</font></i>
+<a name='L66'>  66     OFQ_ERR_NOT_FOUND,          <i><font color='green'>/* Queue not found */</font></i>
+<a name='L67'>  67     <a href='../S/203.html#L159' title='Refered from 159 in cbench/openflow/udatapath/of_ext_msg.c.'>OFQ_ERR_DISCIPLINE</a>,         <i><font color='green'>/* Discipline not supported */</font></i>
+<a name='L68'>  68     OFQ_ERR_BW_UNAVAIL,         <i><font color='green'>/* Bandwidth unavailable */</font></i>
+<a name='L69'>  69     OFQ_ERR_QUEUE_UNAVAIL,      <i><font color='green'>/* Queue unavailable */</font></i>
+<a name='L70'>  70     <a href='../S/182.html#L90' title='Refered from 90 in cbench/openflow/include/openflow/openflow-ext.h.'>OFQ_ERR_COUNT</a>               <i><font color='green'>/* Last please */</font></i>
+<a name='L71'>  71 <font color='red'>}</font>;
+<a name='L72'>  72 
+<a name='L73'>  73 <font color='darkred'>#define</font> <a href='../S/333.html#L1658' title='Refered from 1658 in cbench/openflow/utilities/dpctl.c.'>OPENFLOW_QUEUE_ERROR_STRINGS_DEF</a> <font color='red'>{</font>                      \
+<a name='L74'>  74     "Success",                  <i><font color='green'>/* OFQ_ERR_NONE */</font></i>              \
+<a name='L75'>  75     "Unspecified failure",      <i><font color='green'>/* OFQ_ERR_FAIL */</font></i>              \
+<a name='L76'>  76     "Queue not found",          <i><font color='green'>/* OFQ_ERR_NOT_FOUND */</font></i>         \
+<a name='L77'>  77     "Discipline not supported", <i><font color='green'>/* OFQ_ERR_DISCIPLINE */</font></i>        \
+<a name='L78'>  78     "Bandwidth unavailable",    <i><font color='green'>/* OFQ_ERR_BW_UNAVAIL */</font></i>        \
+<a name='L79'>  79     "Queue unavailable"         <i><font color='green'>/* OFQ_ERR_QUEUE_UNAVAIL */</font></i>     \
+<a name='L80'>  80 <font color='red'>}</font>
+<a name='L81'>  81 
+<a name='L82'>  82 <b>extern</b> <b>char</b> *<a href='../Y/5479.html' title='Multiple used in 3 places.'>openflow_queue_error_strings</a>[];
+<a name='L83'>  83 
+<a name='L84'>  84 <b>struct</b> <a href='../R/3983.html' title='Multiple refered from 3 places.'>openflow_ext_set_dp_desc</a> <font color='red'>{</font>
+<a name='L85'>  85     <b>struct</b> <a href='../S/182.html#L30' title='Defined at 30 in cbench/openflow/include/openflow/openflow-ext.h.'>ofp_extension_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L86'>  86     <b>char</b> <a href='../Y/2506.html' title='Multiple used in 33 places.'>dp_desc</a>[<a href='../D/1200.html' title='Multiple defined in 3 places.'>DESC_STR_LEN</a>];
+<a name='L87'>  87 <font color='red'>}</font>;
+<a name='L88'>  88 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> openflow_ext_set_dp_desc) == 272);
+<a name='L89'>  89 
+<a name='L90'>  90 <font color='darkred'>#define</font> ofq_error_string(<a href='../Y/6512.html' title='Multiple used in 34 places.'>rv</a>) (((<a href='../Y/6512.html' title='Multiple used in 34 places.'>rv</a>) &lt; <a href='../S/182.html#L70' title='Defined at 70 in cbench/openflow/include/openflow/openflow-ext.h.'>OFQ_ERR_COUNT</a>) &amp;&amp; ((<a href='../Y/6512.html' title='Multiple used in 34 places.'>rv</a>) &gt;= 0) ? \
+<a name='L91'>  91     <a href='../Y/5479.html' title='Multiple used in 3 places.'>openflow_queue_error_strings</a>[<a href='../Y/6512.html' title='Multiple used in 34 places.'>rv</a>] : "Unknown error code")
+<a name='L92'>  92 
+<a name='L93'>  93 <i><font color='green'>/****************************************************************</font></i>
+<a name='L94'>  94 <i><font color='green'> *</font></i>
+<a name='L95'>  95 <i><font color='green'> * Unsupported, but potential extended queue properties</font></i>
+<a name='L96'>  96 <i><font color='green'> *</font></i>
+<a name='L97'>  97 <i><font color='green'> ****************************************************************/</font></i>
+<a name='L98'>  98 
+<a name='L99'>  99 <font color='darkred'>#if</font> 0
+<a name='L100'> 100 
+<a name='L101'> 101 <b>enum</b> ofp_queue_prop_ext <font color='red'>{</font>
+<a name='L102'> 102     OFPQT_EXT_MAX_RATE = OFPQT_MIN + 1,  <i><font color='green'>/* maximum rate limit */</font></i>
+<a name='L103'> 103     OFPQT_EXT_BUF_ALLOC,                 <i><font color='green'>/* buffer alloc config */</font></i>
+<a name='L104'> 104     OFPQT_EXT_SCHED_WEIGHT               <i><font color='green'>/* schedule weight config */</font></i>
+<a name='L105'> 105     <a href='../S/182.html#L117' title='Refered from 117 in cbench/openflow/include/openflow/openflow-ext.h.'>OFPQT_EXT_COUNT</a>                      <i><font color='green'>/* Last please */</font></i>
+<a name='L106'> 106 <font color='red'>}</font>;
+<a name='L107'> 107 
+<a name='L108'> 108 <font color='darkred'>#define</font> OPENFLOW_QUEUE_PROP_STRINGS_DEF <font color='red'>{</font>                        \
+<a name='L109'> 109     "No property specified"     <i><font color='green'>/* OFPQT_NONE */</font></i>                 \
+<a name='L110'> 110     "Minimum Rate",             <i><font color='green'>/* OFPQT_MIN */</font></i>                  \
+<a name='L111'> 111     "Maximum Rate",             <i><font color='green'>/* OFQ_PROP_MAX_RATE */</font></i>          \
+<a name='L112'> 112     "Buffer alloc weight",      <i><font color='green'>/* OFQ_PROP_BUF_ALLOC */</font></i>         \
+<a name='L113'> 113     "Scheduling weight"         <i><font color='green'>/* OFQ_PROP_SCHED_WEIGHT */</font></i>      \
+<a name='L114'> 114 <font color='red'>}</font>
+<a name='L115'> 115 <b>extern</b> <b>char</b> *<a href='../Y/5480.html' title='Multiple used in 2 places.'>openflow_queue_prop_strings</a>[];
+<a name='L116'> 116 
+<a name='L117'> 117 <font color='darkred'>#define</font> ofq_prop_string(<a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>) (((<a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>) &lt; <a href='../S/182.html#L105' title='Defined at 105 in cbench/openflow/include/openflow/openflow-ext.h.'>OFPQT_EXT_COUNT</a>) &amp;&amp; ((<a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>) &gt;= 0) ? \
+<a name='L118'> 118     <a href='../Y/5480.html' title='Multiple used in 2 places.'>openflow_queue_prop_strings</a>[<a href='../Y/7713.html' title='Multiple used in 192 places.'>val</a>] : "Unknown property value")
+<a name='L119'> 119 
+<a name='L120'> 120 <i><font color='green'>/* These are all the same a min-rate queue property description */</font></i>
+<a name='L121'> 121 <i><font color='green'>/* Max-Rate queue property description */</font></i>
+<a name='L122'> 122 <b>struct</b> ofp_queue_prop_max_rate <font color='red'>{</font>
+<a name='L123'> 123     <b>struct</b> <a href='../D/8886.html' title='Multiple defined in 3 places.'>ofp_queue_prop_header</a> <a href='../Y/5950.html' title='Multiple used in 15 places.'>prop_header</a>; <i><font color='green'>/* prop: OFPQT_MIN, len: 16 */</font></i>
+<a name='L124'> 124     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/6242.html' title='Multiple used in 26 places.'>rate</a>;            <i><font color='green'>/* in 1/10 of a percent of port BW */</font></i>
+<a name='L125'> 125     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[6];           <i><font color='green'>/* 64-bit alignment */</font></i>
+<a name='L126'> 126 <font color='red'>}</font>;
+<a name='L127'> 127 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5312.html' title='Multiple used in 2 places.'>ofp_queue_prop_max_rate</a>) == 16);
+<a name='L128'> 128 
+<a name='L129'> 129 <i><font color='green'>/* Buffer alloc weight queue property description */</font></i>
+<a name='L130'> 130 <b>struct</b> ofp_queue_prop_buf_alloc <font color='red'>{</font>
+<a name='L131'> 131     <b>struct</b> <a href='../D/8886.html' title='Multiple defined in 3 places.'>ofp_queue_prop_header</a> <a href='../Y/5950.html' title='Multiple used in 15 places.'>prop_header</a>; <i><font color='green'>/* prop: OFPQT_MIN, len: 16 */</font></i>
+<a name='L132'> 132     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> alloc_val;       <i><font color='green'>/* 0 disabled; 1 min; 0xffff max */</font></i>
+<a name='L133'> 133     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[6];           <i><font color='green'>/* 64-bit alignment */</font></i>
+<a name='L134'> 134 <font color='red'>}</font>;
+<a name='L135'> 135 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> ofp_queue_prop_buf_alloc) == 16);
+<a name='L136'> 136 
+<a name='L137'> 137 <i><font color='green'>/* Max-Rate queue property description */</font></i>
+<a name='L138'> 138 <b>struct</b> ofp_queue_prop_sched_weight <font color='red'>{</font>
+<a name='L139'> 139     <b>struct</b> <a href='../D/8886.html' title='Multiple defined in 3 places.'>ofp_queue_prop_header</a> <a href='../Y/5950.html' title='Multiple used in 15 places.'>prop_header</a>; <i><font color='green'>/* prop: OFPQT_MIN, len: 16 */</font></i>
+<a name='L140'> 140     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7863.html' title='Multiple used in 2 places.'>weight</a>;   <i><font color='green'>/* discipline specific; 0 disabled; 1 min; 0xffff max */</font></i>
+<a name='L141'> 141     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[6];    <i><font color='green'>/* 64-bit alignment */</font></i>
+<a name='L142'> 142 <font color='red'>}</font>;
+<a name='L143'> 143 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> ofp_queue_prop_sched_weight) == 16);
+<a name='L144'> 144 
+<a name='L145'> 145 <font color='darkred'>#endif</font>
+<a name='L146'> 146 
+<a name='L147'> 147 
+<a name='L148'> 148 
+<a name='L149'> 149 <font color='darkred'>#endif</font> <i><font color='green'>/* OPENFLOW_OPENFLOW_EXT_H */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

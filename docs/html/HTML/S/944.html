@@ -1,0 +1,92 @@
+<html>
+<head>
+<title>util/search.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1182.html'>util</a>/search.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L31'>[^]</a>[v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L31' title='Defined at 31.'>get_external_configurations</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright 2015-2018 NSSLab, KAIST</font></i>
+<a name='L3'>   3 <i><font color='green'> */</font></i>
+<a name='L4'>   4 
+<a name='L5'>   5 <i><font color='green'>/**</font></i>
+<a name='L6'>   6 <i><font color='green'> * \ingroup util</font></i>
+<a name='L7'>   7 <i><font color='green'> * @{</font></i>
+<a name='L8'>   8 <i><font color='green'> *</font></i>
+<a name='L9'>   9 <i><font color='green'> * \defgroup str Search Function</font></i>
+<a name='L10'>  10 <i><font color='green'> * \brief Function to find configuration files</font></i>
+<a name='L11'>  11 <i><font color='green'> * @{</font></i>
+<a name='L12'>  12 <i><font color='green'> */</font></i>
+<a name='L13'>  13 
+<a name='L14'>  14 <i><font color='green'>/**</font></i>
+<a name='L15'>  15 <i><font color='green'> * \file</font></i>
+<a name='L16'>  16 <i><font color='green'> * \author Hyeonseong Jo &lt;hsjjo@kaist.ac.kr&gt;</font></i>
+<a name='L17'>  17 <i><font color='green'> */</font></i>
+<a name='L18'>  18 
+<a name='L19'>  19 <font color='darkred'>#include</font> "<a href='939.html'>search.h</a>"
+<a name='L20'>  20 
+<a name='L21'>  21 <font color='darkred'>#include</font> &lt;dirent.h&gt;
+<a name='L22'>  22 
+<a name='L23'>  23 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L24'>  24 
+<a name='L25'>  25 <i><font color='green'>/**</font></i>
+<a name='L26'>  26 <i><font color='green'> * \brief Function to find configuration files</font></i>
+<a name='L27'>  27 <i><font color='green'> * \param temp The paths of the files that will be discovered</font></i>
+<a name='L28'>  28 <i><font color='green'> * \param cnt The number of the files that will be discovered</font></i>
+<a name='L29'>  29 <i><font color='green'> * \param curr The current directory</font></i>
+<a name='L30'>  30 <i><font color='green'> */</font></i>
+<a name='L31'>  31 <b>int</b> <a href='../R/3160.html' title='Multiple refered from 4 places.'>get_external_configurations</a>(<b>char</b> (*<a href='../Y/7297.html' title='Multiple used in 40 places.'>temp</a>)[<a href='../D/6476.html' title='Multiple defined in 6 places.'>__CONF_WORD_LEN</a>], <b>int</b> *<a href='../Y/1955.html' title='Multiple used in 143 places.'>cnt</a>, <b>char</b> *<a href='../Y/2219.html' title='Multiple used in 811 places.'>curr</a>)
+<a name='L32'>  32 <font color='red'>{</font>
+<a name='L33'>  33     <a href='../Y/241.html' title='Multiple used in 4 places.'>DIR</a> *<a href='../Y/2401.html' title='Multiple used in 88 places.'>dir</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L34'>  34     <b>struct</b> <a href='../Y/2406.html' title='Multiple used in 6 places.'>dirent</a> *<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L35'>  35 
+<a name='L36'>  36     <b>if</b> (!(<a href='../Y/2401.html' title='Multiple used in 88 places.'>dir</a> = <a href='../Y/5470.html' title='Multiple used in 4 places.'>opendir</a>(<a href='../Y/2219.html' title='Multiple used in 811 places.'>curr</a>))) <font color='red'>{</font>
+<a name='L37'>  37         <b>return</b> -1;
+<a name='L38'>  38     <font color='red'>}</font> <b>else</b> <b>if</b> (!(<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a> = <a href='../Y/6286.html' title='Multiple used in 5 places.'>readdir</a>(<a href='../Y/2401.html' title='Multiple used in 88 places.'>dir</a>))) <font color='red'>{</font>
+<a name='L39'>  39         <a href='../Y/1922.html' title='Multiple used in 5 places.'>closedir</a>(<a href='../Y/2401.html' title='Multiple used in 88 places.'>dir</a>);
+<a name='L40'>  40         <b>return</b> -1;
+<a name='L41'>  41     <font color='red'>}</font>
+<a name='L42'>  42 
+<a name='L43'>  43     <b>do</b> <font color='red'>{</font>
+<a name='L44'>  44         <b>char</b> <a href='../Y/5656.html' title='Multiple used in 71 places.'>path</a>[<a href='../D/6476.html' title='Multiple defined in 6 places.'>__CONF_WORD_LEN</a>] = <font color='red'>{</font>0<font color='red'>}</font>;
+<a name='L45'>  45         <b>int</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a> = <a href='../Y/6891.html' title='Multiple used in 224 places.'>snprintf</a>(<a href='../Y/5656.html' title='Multiple used in 71 places.'>path</a>, <b>sizeof</b>(<a href='../Y/5656.html' title='Multiple used in 71 places.'>path</a>)-1, "%s/%s", <a href='../Y/2219.html' title='Multiple used in 811 places.'>curr</a>, <a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../Y/2242.html' title='Multiple used in 7 places.'>d_name</a>);
+<a name='L46'>  46         <a href='../Y/5656.html' title='Multiple used in 71 places.'>path</a>[<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>] = '\0';
+<a name='L47'>  47 
+<a name='L48'>  48         <b>if</b> (<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;d_type == DT_DIR) <font color='red'>{</font>
+<a name='L49'>  49             <b>if</b>(<a href='../Y/7101.html' title='Multiple used in 25 places.'>strncmp</a>(<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../Y/2242.html' title='Multiple used in 7 places.'>d_name</a>, ".", 1) == 0 || <a href='../Y/7101.html' title='Multiple used in 25 places.'>strncmp</a>(<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../Y/2242.html' title='Multiple used in 7 places.'>d_name</a>, "..", 2) == 0)
+<a name='L50'>  50                 <b>continue</b>;
+<a name='L51'>  51             <a href='../S/944.html#L31' title='Defined at 31 in util/search.c.'>get_external_configurations</a>(<a href='../Y/7297.html' title='Multiple used in 40 places.'>temp</a>, <a href='../Y/1955.html' title='Multiple used in 143 places.'>cnt</a>, <a href='../Y/5656.html' title='Multiple used in 71 places.'>path</a>);
+<a name='L52'>  52         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L53'>  53             <b>if</b> (<a href='../Y/7108.html' title='Multiple used in 6 places.'>strstr</a>(<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a>-&gt;<a href='../Y/2242.html' title='Multiple used in 7 places.'>d_name</a>, ".conf") != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L54'>  54                 <a href='../Y/7083.html' title='Multiple used in 242 places.'>strcpy</a>(<a href='../Y/7297.html' title='Multiple used in 40 places.'>temp</a>[(*<a href='../Y/1955.html' title='Multiple used in 143 places.'>cnt</a>)], <a href='../Y/5656.html' title='Multiple used in 71 places.'>path</a>);
+<a name='L55'>  55                 (*<a href='../Y/1955.html' title='Multiple used in 143 places.'>cnt</a>)++;
+<a name='L56'>  56             <font color='red'>}</font>
+<a name='L57'>  57         <font color='red'>}</font>
+<a name='L58'>  58     <font color='red'>}</font> <b>while</b> ((<a href='../D/7632.html' title='Multiple defined in 12 places.'>entry</a> = <a href='../Y/6286.html' title='Multiple used in 5 places.'>readdir</a>(<a href='../Y/2401.html' title='Multiple used in 88 places.'>dir</a>)) != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>);
+<a name='L59'>  59 
+<a name='L60'>  60     <a href='../Y/1922.html' title='Multiple used in 5 places.'>closedir</a>(<a href='../Y/2401.html' title='Multiple used in 88 places.'>dir</a>);
+<a name='L61'>  61 
+<a name='L62'>  62     <b>return</b> 0;
+<a name='L63'>  63 <font color='red'>}</font>
+<a name='L64'>  64 
+<a name='L65'>  65 <i><font color='green'>/**</font></i>
+<a name='L66'>  66 <i><font color='green'> * @}</font></i>
+<a name='L67'>  67 <i><font color='green'> *</font></i>
+<a name='L68'>  68 <i><font color='green'> * @}</font></i>
+<a name='L69'>  69 <i><font color='green'> */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^]<a href='#L31'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

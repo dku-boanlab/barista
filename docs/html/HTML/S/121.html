@@ -1,0 +1,231 @@
+<html>
+<head>
+<title>cbench/oflops/test_module.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1101.html'>oflops</a>/test_module.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L27'>[^]</a><a href='#L178'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L27' title='Defined at 27.'>oflops_end_test</a>
+<li><a href='#L39' title='Defined at 39.'>oflops_get_channel_raw_fd</a>
+<li><a href='#L70' title='Defined at 70.'>oflops_get_channel_fd</a>
+<li><a href='#L94' title='Defined at 94.'>oflops_schedule_timer_event</a>
+<li><a href='#L107' title='Defined at 107.'>oflops_send_of_mesgs</a>
+<li><a href='#L119' title='Defined at 119.'>oflops_send_of_mesg</a>
+<li><a href='#L132' title='Defined at 132.'>oflops_send_raw_mesg</a>
+<li><a href='#L170' title='Defined at 170.'>oflops_get_timestamp</a>
+<li><a href='#L178' title='Defined at 178.'>oflops_snmp_get</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <font color='darkred'>#include</font> "<a href='588.html'>config.h</a>"
+<a name='L2'>   2 <font color='darkred'>#include</font> &lt;assert.h&gt;
+<a name='L3'>   3 <font color='darkred'>#include</font> &lt;<a href='821.html'>pcap.h</a>&gt;
+<a name='L4'>   4 <font color='darkred'>#include</font> &lt;stdio.h&gt;
+<a name='L5'>   5 <font color='darkred'>#include</font> &lt;stdlib.h&gt;
+<a name='L6'>   6 <font color='darkred'>#include</font> &lt;string.h&gt;
+<a name='L7'>   7 <font color='darkred'>#include</font> &lt;unistd.h&gt;
+<a name='L8'>   8 
+<a name='L9'>   9 <font color='darkred'>#include</font> &lt;sys/ioctl.h&gt;
+<a name='L10'>  10 <font color='darkred'>#include</font> &lt;sys/socket.h&gt;
+<a name='L11'>  11 <font color='darkred'>#include</font> &lt;<a href='315.html'>sys/types.h</a>&gt;
+<a name='L12'>  12 
+<a name='L13'>  13 <font color='darkred'>#include</font> &lt;netinet/in.h&gt;
+<a name='L14'>  14 
+<a name='L15'>  15 <font color='darkred'>#include</font> &lt;<a href='312.html'>linux/if_arp.h</a>&gt;
+<a name='L16'>  16 <font color='darkred'>#include</font> &lt;linux/if_ether.h&gt;
+<a name='L17'>  17 <font color='darkred'>#include</font> &lt;linux/if_packet.h&gt;
+<a name='L18'>  18 
+<a name='L19'>  19 <font color='darkred'>#include</font> "<a href='55.html'>test_module.h</a>"
+<a name='L20'>  20 <font color='darkred'>#include</font> "<a href='17.html'>utils.h</a>"
+<a name='L21'>  21 
+<a name='L22'>  22 
+<a name='L23'>  23 <i><font color='green'>/***********************************************************************</font></i>
+<a name='L24'>  24 <i><font color='green'> * hook for the test module to signal that the test is done</font></i>
+<a name='L25'>  25 <i><font color='green'> **/</font></i>
+<a name='L26'>  26 
+<a name='L27'>  27 <b>int</b> <a href='../R/3810.html' title='Multiple refered from 17 places.'>oflops_end_test</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>,<b>int</b> <a href='../Y/6747.html' title='Multiple used in 4 places.'>should_continue</a>)
+<a name='L28'>  28 <font color='red'>{</font>
+<a name='L29'>  29         <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/6748.html' title='Multiple used in 5 places.'>should_end</a> = 1;
+<a name='L30'>  30         <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/6747.html' title='Multiple used in 4 places.'>should_continue</a> = <a href='../Y/6747.html' title='Multiple used in 4 places.'>should_continue</a>;
+<a name='L31'>  31         <b>return</b> 0;
+<a name='L32'>  32 <font color='red'>}</font>
+<a name='L33'>  33 
+<a name='L34'>  34 <i><font color='green'>/**********************************************************************</font></i>
+<a name='L35'>  35 <i><font color='green'> * hook for the test module to get access to a raw file descriptor bound</font></i>
+<a name='L36'>  36 <i><font color='green'> *      to the data channel's device</font></i>
+<a name='L37'>  37 <i><font color='green'> **/</font></i>
+<a name='L38'>  38 
+<a name='L39'>  39 <b>int</b> <a href='../R/3812.html' title='Multiple refered from 2 places.'>oflops_get_channel_raw_fd</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> * <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <a href='../Y/5076.html' title='Multiple used in 49 places.'>oflops_channel_name</a> <a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>)
+<a name='L40'>  40 <font color='red'>{</font>
+<a name='L41'>  41         <b>struct</b> <a href='../Y/3750.html' title='Multiple used in 47 places.'>ifreq</a> <a href='../Y/3740.html' title='Multiple used in 71 places.'>ifr</a>;
+<a name='L42'>  42         <b>struct</b> <a href='../Y/6897.html' title='Multiple used in 6 places.'>sockaddr_ll</a> <a href='../Y/6575.html' title='Multiple used in 6 places.'>saddrll</a>;
+<a name='L43'>  43         <b>struct</b> <a href='../D/7051.html' title='Multiple defined in 2 places.'>channel_info</a> * <a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>;
+<a name='L44'>  44         <b>if</b>(<a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a> &gt;= <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/4579.html' title='Multiple used in 53 places.'>n_channels</a>)
+<a name='L45'>  45                 <b>return</b> -1;      <i><font color='green'>// no such channel</font></i>
+<a name='L46'>  46         <a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a> = &amp;<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/1859.html' title='Multiple used in 259 places.'>channels</a>[<a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>];
+<a name='L47'>  47         <b>if</b>(<a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>-&gt;<a href='../Y/6251.html' title='Multiple used in 12 places.'>raw_sock</a> != -1)     <i><font color='green'>// already allocated?</font></i>
+<a name='L48'>  48                 <b>return</b> <a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>-&gt;<a href='../Y/6251.html' title='Multiple used in 12 places.'>raw_sock</a>;
+<a name='L49'>  49         <i><font color='green'>// else, setup raw socket</font></i>
+<a name='L50'>  50         <a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>-&gt;<a href='../Y/6251.html' title='Multiple used in 12 places.'>raw_sock</a> = <a href='../Y/6901.html' title='Multiple used in 21 places.'>socket</a>(<a href='../Y/20.html' title='Multiple used in 3 places.'>AF_PACKET</a>,<a href='../Y/829.html' title='Multiple used in 4 places.'>SOCK_RAW</a>, <a href='../Y/3678.html' title='Multiple used in 586 places.'>htons</a>(<a href='../Y/305.html' title='Multiple used in 4 places.'>ETH_P_ALL</a>));
+<a name='L51'>  51         <b>if</b>( <a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>-&gt;<a href='../Y/6251.html' title='Multiple used in 12 places.'>raw_sock</a> == -1)
+<a name='L52'>  52                 <a href='../S/122.html#L48' title='Defined at 48 in cbench/oflops/utils.c.'>perror_and_exit</a>("raw socket(AF_PACKET,SOCK_RAW,htons(ETH_P_ALL))",1);
+<a name='L53'>  53         <i><font color='green'>// bind to a specific port</font></i>
+<a name='L54'>  54         <a href='../Y/7102.html' title='Multiple used in 59 places.'>strncpy</a>(<a href='../Y/3740.html' title='Multiple used in 71 places.'>ifr</a>.<a href='../Y/3748.html' title='Multiple used in 16 places.'>ifr_name</a>,<a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>-&gt;<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>,<a href='../Y/452.html' title='Multiple used in 17 places.'>IFNAMSIZ</a>);
+<a name='L55'>  55         <b>if</b>( <a href='../Y/3867.html' title='Multiple used in 34 places.'>ioctl</a>( <a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>-&gt;<a href='../Y/6251.html' title='Multiple used in 12 places.'>raw_sock</a>, <a href='../Y/814.html' title='Multiple used in 5 places.'>SIOCGIFINDEX</a>, &amp;<a href='../Y/3740.html' title='Multiple used in 71 places.'>ifr</a>)  == -1 )
+<a name='L56'>  56                 <a href='../S/122.html#L48' title='Defined at 48 in cbench/oflops/utils.c.'>perror_and_exit</a>("ioctl()",1);
+<a name='L57'>  57         <a href='../Y/4419.html' title='Multiple used in 245 places.'>memset</a>(&amp;<a href='../Y/6575.html' title='Multiple used in 6 places.'>saddrll</a>, 0, <b>sizeof</b>(<a href='../Y/6575.html' title='Multiple used in 6 places.'>saddrll</a>));
+<a name='L58'>  58         <a href='../Y/6575.html' title='Multiple used in 6 places.'>saddrll</a>.<a href='../Y/6834.html' title='Multiple used in 4 places.'>sll_family</a> = <a href='../Y/20.html' title='Multiple used in 3 places.'>AF_PACKET</a>;
+<a name='L59'>  59         <a href='../Y/6575.html' title='Multiple used in 6 places.'>saddrll</a>.<a href='../Y/6840.html' title='Multiple used in 2 places.'>sll_protocol</a> = <a href='../Y/305.html' title='Multiple used in 4 places.'>ETH_P_ALL</a>;
+<a name='L60'>  60         <a href='../Y/6575.html' title='Multiple used in 6 places.'>saddrll</a>.<a href='../Y/6837.html' title='Multiple used in 4 places.'>sll_ifindex</a> = <a href='../Y/3740.html' title='Multiple used in 71 places.'>ifr</a>.<a href='../Y/3745.html' title='Multiple used in 5 places.'>ifr_ifindex</a>;
+<a name='L61'>  61         <b>if</b> ( <a href='../Y/1622.html' title='Multiple used in 14 places.'>bind</a>(<a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>-&gt;<a href='../Y/6251.html' title='Multiple used in 12 places.'>raw_sock</a>, (<b>struct</b> <a href='../Y/6895.html' title='Multiple used in 43 places.'>sockaddr</a> *) &amp;<a href='../Y/6575.html' title='Multiple used in 6 places.'>saddrll</a>, <b>sizeof</b>(<b>struct</b> <a href='../Y/6897.html' title='Multiple used in 6 places.'>sockaddr_ll</a>)) == -1 )
+<a name='L62'>  62                 <a href='../S/122.html#L48' title='Defined at 48 in cbench/oflops/utils.c.'>perror_and_exit</a>("bind()",1);
+<a name='L63'>  63         <b>return</b> <a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>-&gt;<a href='../Y/6251.html' title='Multiple used in 12 places.'>raw_sock</a>;
+<a name='L64'>  64 <font color='red'>}</font>
+<a name='L65'>  65 
+<a name='L66'>  66 <i><font color='green'>/**********************************************************************</font></i>
+<a name='L67'>  67 <i><font color='green'> * hook for the test module to get access to a udp file descriptor bound</font></i>
+<a name='L68'>  68 <i><font color='green'> *      to the data channel's device</font></i>
+<a name='L69'>  69 <i><font color='green'> **/</font></i>
+<a name='L70'>  70 <b>int</b> <a href='../S/55.html#L187' title='Refered from 187 in cbench/oflops/test_module.h.'>oflops_get_channel_fd</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> * <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <a href='../Y/5076.html' title='Multiple used in 49 places.'>oflops_channel_name</a> <a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>)
+<a name='L71'>  71 <font color='red'>{</font>
+<a name='L72'>  72         <b>struct</b> <a href='../Y/3750.html' title='Multiple used in 47 places.'>ifreq</a> <a href='../Y/3740.html' title='Multiple used in 71 places.'>ifr</a>;
+<a name='L73'>  73         <b>struct</b> <a href='../D/7051.html' title='Multiple defined in 2 places.'>channel_info</a> * <a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>;
+<a name='L74'>  74         <b>if</b>(<a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a> &gt;= <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/4579.html' title='Multiple used in 53 places.'>n_channels</a>)
+<a name='L75'>  75                 <b>return</b> -1;      <i><font color='green'>// no such channel</font></i>
+<a name='L76'>  76         <a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a> = &amp;<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/1859.html' title='Multiple used in 259 places.'>channels</a>[<a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>];
+<a name='L77'>  77         <b>if</b>(<a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>-&gt;<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a> != -1) <i><font color='green'>// already allocated?</font></i>
+<a name='L78'>  78                 <b>return</b> <a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>-&gt;<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>;
+<a name='L79'>  79         <i><font color='green'>// else, setup raw socket</font></i>
+<a name='L80'>  80         <a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>-&gt;<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a> = <a href='../Y/6901.html' title='Multiple used in 21 places.'>socket</a>(<a href='../Y/18.html' title='Multiple used in 29 places.'>AF_INET</a>,<a href='../Y/828.html' title='Multiple used in 6 places.'>SOCK_DGRAM</a>,0);   <i><font color='green'>// UDP socket</font></i>
+<a name='L81'>  81         <b>if</b>( <a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>-&gt;<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a> == -1)
+<a name='L82'>  82                 <a href='../S/122.html#L48' title='Defined at 48 in cbench/oflops/utils.c.'>perror_and_exit</a>("udp socket(AF_INET,SOCK_DGRAM,0)",1);
+<a name='L83'>  83         <i><font color='green'>// bind to a specific port</font></i>
+<a name='L84'>  84         <a href='../Y/7102.html' title='Multiple used in 59 places.'>strncpy</a>(<a href='../Y/3740.html' title='Multiple used in 71 places.'>ifr</a>.<a href='../Y/3748.html' title='Multiple used in 16 places.'>ifr_name</a>,<a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>-&gt;<a href='../Y/2359.html' title='Multiple used in 435 places.'>dev</a>,<a href='../Y/452.html' title='Multiple used in 17 places.'>IFNAMSIZ</a>);
+<a name='L85'>  85         <b>if</b>( <a href='../Y/3867.html' title='Multiple used in 34 places.'>ioctl</a>( <a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>-&gt;<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>, <a href='../Y/814.html' title='Multiple used in 5 places.'>SIOCGIFINDEX</a>, &amp;<a href='../Y/3740.html' title='Multiple used in 71 places.'>ifr</a>)  == -1 )
+<a name='L86'>  86                 <a href='../S/122.html#L48' title='Defined at 48 in cbench/oflops/utils.c.'>perror_and_exit</a>("ioctl() bind to dev",1);
+<a name='L87'>  87         <b>return</b> <a href='../Y/1845.html' title='Multiple used in 39 places.'>ch_info</a>-&gt;<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>;
+<a name='L88'>  88 <font color='red'>}</font>
+<a name='L89'>  89 
+<a name='L90'>  90 <i><font color='green'>/***************************************************************************</font></i>
+<a name='L91'>  91 <i><font color='green'> * hook for the test module to schedule an timer_event to be called back into the module</font></i>
+<a name='L92'>  92 <i><font color='green'> **/</font></i>
+<a name='L93'>  93 
+<a name='L94'>  94 <b>int</b> <a href='../R/3818.html' title='Multiple refered from 74 places.'>oflops_schedule_timer_event</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>struct</b> <a href='../Y/7388.html' title='Multiple used in 197 places.'>timeval</a> *<a href='../Y/7508.html' title='Multiple used in 13 places.'>tv</a>, <b>void</b> * <a href='../Y/1454.html' title='Multiple used in 77 places.'>arg</a>)
+<a name='L95'>  95 <font color='red'>{</font>
+<a name='L96'>  96         <b>return</b> <a href='../S/21.html#L140' title='Defined at 140 in cbench/oflops/wc_event.c.'>wc_event_add</a>(<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/7380.html' title='Multiple used in 7 places.'>timers</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, <a href='../Y/1454.html' title='Multiple used in 77 places.'>arg</a>, *<a href='../Y/7508.html' title='Multiple used in 13 places.'>tv</a>);
+<a name='L97'>  97 <font color='red'>}</font>
+<a name='L98'>  98 
+<a name='L99'>  99 
+<a name='L100'> 100 <i><font color='green'>/*****************************************************************************</font></i>
+<a name='L101'> 101 <i><font color='green'> * hook for the test module to send an openflow mesgs across the control channel </font></i>
+<a name='L102'> 102 <i><font color='green'> *      to the switch</font></i>
+<a name='L103'> 103 <i><font color='green'> *      FIXME: assert()'s that the message doesn't block -- if this is a problem</font></i>
+<a name='L104'> 104 <i><font color='green'> *      we need to implement some buffering and mod the select() call to open for</font></i>
+<a name='L105'> 105 <i><font color='green'> *      writing</font></i>
+<a name='L106'> 106 <i><font color='green'> **/</font></i>
+<a name='L107'> 107 <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../R/3820.html' title='Multiple refered from 25 places.'>oflops_send_of_mesgs</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>char</b> * <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/1713.html' title='Multiple used in 72 places.'>buflen</a>)
+<a name='L108'> 108 <font color='red'>{</font>
+<a name='L109'> 109         <a href='../S/13.html#L132' title='Defined at 132 in cbench/oflops/msgbuf.c.'>msgbuf_push</a>(<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/2114.html' title='Multiple used in 6 places.'>control_outgoing</a>, <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <a href='../Y/1713.html' title='Multiple used in 72 places.'>buflen</a>);
+<a name='L110'> 110     <b>return</b> <a href='../Y/1713.html' title='Multiple used in 72 places.'>buflen</a>;
+<a name='L111'> 111 <font color='red'>}</font>
+<a name='L112'> 112 <i><font color='green'>/*****************************************************************************</font></i>
+<a name='L113'> 113 <i><font color='green'> * hook for the test module to send an openflow mesg across the control channel </font></i>
+<a name='L114'> 114 <i><font color='green'> *      to the switch</font></i>
+<a name='L115'> 115 <i><font color='green'> *      FIXME: assert()'s that the message doesn't block -- if this is a problem</font></i>
+<a name='L116'> 116 <i><font color='green'> *      we need to implement some buffering and mod the select() call to open for</font></i>
+<a name='L117'> 117 <i><font color='green'> *      writing</font></i>
+<a name='L118'> 118 <i><font color='green'> **/</font></i>
+<a name='L119'> 119 <b>int</b> <a href='../R/3819.html' title='Multiple refered from 38 places.'>oflops_send_of_mesg</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>struct</b> <a href='../Y/5176.html' title='Multiple used in 54 places.'>ofp_header</a> * <a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>)
+<a name='L120'> 120 <font color='red'>{</font>
+<a name='L121'> 121         <b>int</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a> = <a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>-&gt;<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>);
+<a name='L122'> 122 
+<a name='L123'> 123         <a href='../S/13.html#L132' title='Defined at 132 in cbench/oflops/msgbuf.c.'>msgbuf_push</a>(<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/2114.html' title='Multiple used in 6 places.'>control_outgoing</a>, (<b>void</b> *) <a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>, <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>);
+<a name='L124'> 124         <b>return</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;
+<a name='L125'> 125 <font color='red'>}</font>
+<a name='L126'> 126 
+<a name='L127'> 127 <i><font color='green'>/********************************************************************************</font></i>
+<a name='L128'> 128 <i><font color='green'> * hook for the test module to send a raw message out a certain data channel</font></i>
+<a name='L129'> 129 <i><font color='green'> *      here, "raw" means with ethernet header</font></i>
+<a name='L130'> 130 <i><font color='green'> **/</font></i>
+<a name='L131'> 131 
+<a name='L132'> 132 <b>int</b> <a href='../R/3821.html' title='Multiple refered from 5 places.'>oflops_send_raw_mesg</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> *<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <a href='../Y/5076.html' title='Multiple used in 49 places.'>oflops_channel_name</a> <a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>, <b>void</b> * <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <b>int</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>)
+<a name='L133'> 133 <font color='red'>{</font>
+<a name='L134'> 134         <b>struct</b> <a href='../Y/6897.html' title='Multiple used in 6 places.'>sockaddr_ll</a> <a href='../Y/6902.html' title='Multiple used in 8 places.'>socket_address</a>;
+<a name='L135'> 135         <b>int</b> <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a>;
+<a name='L136'> 136         <a href='../S/121.html#L39' title='Defined at 39 in cbench/oflops/test_module.c.'>oflops_get_channel_raw_fd</a>(<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>,<a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>);  <i><font color='green'>// ensure that a raw sock is allocated</font></i>
+<a name='L137'> 137 
+<a name='L138'> 138         <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/1859.html' title='Multiple used in 259 places.'>channels</a>[<a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>].<a href='../Y/5600.html' title='Multiple used in 4 places.'>packet_len</a> = <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;
+<a name='L139'> 139 
+<a name='L140'> 140         <a href='../Y/1748.html' title='Multiple used in 31 places.'>bzero</a>(&amp;<a href='../Y/6902.html' title='Multiple used in 8 places.'>socket_address</a>,<b>sizeof</b>(<a href='../Y/6902.html' title='Multiple used in 8 places.'>socket_address</a>));
+<a name='L141'> 141         <a href='../Y/6902.html' title='Multiple used in 8 places.'>socket_address</a>.<a href='../Y/6834.html' title='Multiple used in 4 places.'>sll_family</a>   = <a href='../Y/673.html' title='Multiple used in 4 places.'>PF_PACKET</a>;
+<a name='L142'> 142         <a href='../Y/6902.html' title='Multiple used in 8 places.'>socket_address</a>.<a href='../Y/6840.html' title='Multiple used in 2 places.'>sll_protocol</a> = <a href='../Y/3678.html' title='Multiple used in 586 places.'>htons</a>(<a href='../Y/305.html' title='Multiple used in 4 places.'>ETH_P_ALL</a>);
+<a name='L143'> 143         <i><font color='green'>/*index of the network device</font></i>
+<a name='L144'> 144 <i><font color='green'>         *          * see full code later how to retrieve it*/</font></i>
+<a name='L145'> 145         <a href='../Y/6902.html' title='Multiple used in 8 places.'>socket_address</a>.<a href='../Y/6837.html' title='Multiple used in 4 places.'>sll_ifindex</a>  = <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/1859.html' title='Multiple used in 259 places.'>channels</a>[<a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>].<a href='../Y/3735.html' title='Multiple used in 13 places.'>ifindex</a>;
+<a name='L146'> 146         <i><font color='green'>/********************* do we need any of this? */</font></i>
+<a name='L147'> 147         <a href='../Y/6902.html' title='Multiple used in 8 places.'>socket_address</a>.sll_hatype   = <a href='../S/399.html#L40' title='Defined at 40 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/arptypes.h.'>ARPHRD_ETHER</a>; <i><font color='green'>//don't need?</font></i>
+<a name='L148'> 148         <a href='../Y/6902.html' title='Multiple used in 8 places.'>socket_address</a>.sll_halen    = <a href='../D/1677.html' title='Multiple defined in 6 places.'>ETH_ALEN</a>;
+<a name='L149'> 149         <a href='../Y/6902.html' title='Multiple used in 8 places.'>socket_address</a>.<a href='../Y/6839.html' title='Multiple used in 2 places.'>sll_pkttype</a>  = PACKET_OTHERHOST;
+<a name='L150'> 150         <i><font color='green'>//*/</font></i>
+<a name='L151'> 151         
+<a name='L152'> 152         <i><font color='green'>/*queue the packet*/</font></i>
+<a name='L153'> 153         <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/7898.html' title='Multiple used in 44 places.'>write</a>( <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/1859.html' title='Multiple used in 259 places.'>channels</a>[<a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>].<a href='../Y/6251.html' title='Multiple used in 12 places.'>raw_sock</a>, <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>);
+<a name='L154'> 154         <i><font color='green'>//msgbuf_push(ctx-&gt;channels[ch].outgoing, msg, len);</font></i>
+<a name='L155'> 155         <i><font color='green'>//send_result = sendto(sock, msg, len, 0,  ***** old code</font></i>
+<a name='L156'> 156         <i><font color='green'>//                   (struct sockaddr*)&amp;socket_address, sizeof(socket_address));</font></i>
+<a name='L157'> 157         <i><font color='green'>//      sendto(ctx-&gt;channels[ch].raw_sock, msg, len, 0, </font></i>
+<a name='L158'> 158         <i><font color='green'>//(struct sockaddr*)&amp;socket_address, sizeof(socket_address));</font></i>
+<a name='L159'> 159         <b>if</b> ( <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> &lt; 0 &amp;&amp; <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a> != <a href='../Y/273.html' title='Multiple used in 24 places.'>ENOBUFS</a> ) <font color='red'>{</font>
+<a name='L160'> 160           <a href='../Y/3207.html' title='Multiple used in 289 places.'>fprintf</a>(<a href='../Y/7049.html' title='Multiple used in 246 places.'>stderr</a>, "sending of data failed\n");
+<a name='L161'> 161         <font color='red'>}</font>
+<a name='L162'> 162         
+<a name='L163'> 163         <b>return</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;;
+<a name='L164'> 164 <font color='red'>}</font>
+<a name='L165'> 165 
+<a name='L166'> 166 <i><font color='green'>/**************************************************************************************</font></i>
+<a name='L167'> 167 <i><font color='green'> * hook to get high accuracy pcap timestamp for this data</font></i>
+<a name='L168'> 168 <i><font color='green'> * @return zero if not found, one if found</font></i>
+<a name='L169'> 169 <i><font color='green'> **/</font></i>
+<a name='L170'> 170 <b>int</b> <a href='../R/3813.html' title='Multiple refered from 2 places.'>oflops_get_timestamp</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> * <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <b>void</b> * <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <b>int</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>struct</b> <a href='../Y/5680.html' title='Multiple used in 17 places.'>pcap_pkthdr</a> * <a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>, <a href='../Y/5076.html' title='Multiple used in 49 places.'>oflops_channel_name</a> <a href='../Y/5060.html' title='Multiple used in 47 places.'>ofc</a>)
+<a name='L171'> 171 <font color='red'>{</font>
+<a name='L172'> 172         <a href='../D/7051.html' title='Multiple defined in 2 places.'>channel_info</a> * <a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>  = &amp;<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/1859.html' title='Multiple used in 259 places.'>channels</a>[<a href='../Y/5060.html' title='Multiple used in 47 places.'>ofc</a>];
+<a name='L173'> 173         <b>if</b>(<a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>-&gt;<a href='../Y/7386.html' title='Multiple used in 6 places.'>timestamps</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>)
+<a name='L174'> 174         <b>return</b> 0;       <i><font color='green'>// not requested</font></i>
+<a name='L175'> 175         <b>return</b> <a href='../S/115.html#L97' title='Defined at 97 in cbench/oflops/pcap_track.c.'>ptrack_lookup</a>(<a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>-&gt;<a href='../Y/7386.html' title='Multiple used in 6 places.'>timestamps</a>,<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>,<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>,<a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>);
+<a name='L176'> 176 <font color='red'>}</font>
+<a name='L177'> 177 
+<a name='L178'> 178 <b>int</b> <a href='../R/3822.html' title='Multiple refered from 35 places.'>oflops_snmp_get</a>(<b>struct</b> <a href='../Y/5077.html' title='Multiple used in 258 places.'>oflops_context</a> * <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>, <a href='../Y/5419.html' title='Multiple used in 48 places.'>oid</a> <a href='../Y/6198.html' title='Multiple used in 29 places.'>query</a>[], <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>)
+<a name='L179'> 179 <font color='red'>{</font>
+<a name='L180'> 180         <b>struct</b> <a href='../D/9566.html' title='Multiple defined in 2 places.'>snmp_channel</a>* <a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a> = <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>-&gt;<a href='../Y/6872.html' title='Multiple used in 26 places.'>snmp_channel_info</a>;
+<a name='L181'> 181         <b>struct</b> <a href='../Y/6886.html' title='Multiple used in 5 places.'>snmp_session</a>* <a href='../Y/6679.html' title='Multiple used in 4 places.'>sess</a>;
+<a name='L182'> 182 
+<a name='L183'> 183         <i><font color='green'>//Open session for async request</font></i>
+<a name='L184'> 184         <b>if</b>(!(<a href='../Y/6679.html' title='Multiple used in 4 places.'>sess</a> = <a href='../Y/6878.html' title='Multiple used in 2 places.'>snmp_open</a>(&amp;(<a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>-&gt;<a href='../Y/6680.html' title='Multiple used in 11 places.'>session</a>))))
+<a name='L185'> 185         <font color='red'>{</font>
+<a name='L186'> 186                 <a href='../Y/6881.html' title='Multiple used in 3 places.'>snmp_perror</a>("snmp_open");
+<a name='L187'> 187                 <b>return</b> 1;
+<a name='L188'> 188         <font color='red'>}</font>
+<a name='L189'> 189 
+<a name='L190'> 190         <i><font color='green'>//Build and send packet</font></i>
+<a name='L191'> 191         <b>if</b> (<a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>-&gt;<a href='../Y/6391.html' title='Multiple used in 52 places.'>req</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>)
+<a name='L192'> 192                 <a href='../Y/6877.html' title='Multiple used in 3 places.'>snmp_free_pdu</a>(<a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>-&gt;<a href='../Y/6391.html' title='Multiple used in 52 places.'>req</a>);
+<a name='L193'> 193         <a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>-&gt;<a href='../Y/6391.html' title='Multiple used in 52 places.'>req</a> = <a href='../Y/6880.html' title='Multiple used in 2 places.'>snmp_pdu_create</a>(<a href='../Y/826.html' title='Multiple used in 2 places.'>SNMP_MSG_GET</a>);
+<a name='L194'> 194         <a href='../Y/6869.html' title='Multiple used in 2 places.'>snmp_add_null_var</a>(<a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>-&gt;<a href='../Y/6391.html' title='Multiple used in 52 places.'>req</a>, <a href='../Y/6198.html' title='Multiple used in 29 places.'>query</a>, <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>);
+<a name='L195'> 195         <b>if</b> (!snmp_send(<a href='../Y/6679.html' title='Multiple used in 4 places.'>sess</a>, <a href='../Y/1844.html' title='Multiple used in 305 places.'>ch</a>-&gt;<a href='../Y/6391.html' title='Multiple used in 52 places.'>req</a>))
+<a name='L196'> 196                 <a href='../Y/6881.html' title='Multiple used in 3 places.'>snmp_perror</a>("snmp_send");
+<a name='L197'> 197 
+<a name='L198'> 198         <b>return</b> 0;
+<a name='L199'> 199 <font color='red'>}</font>
+<a name='L200'> 200 
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L27'>[^]</a><a href='#L178'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

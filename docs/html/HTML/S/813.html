@@ -1,0 +1,151 @@
+<html>
+<head>
+<title>cbench/openflow/lib/hash.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/hash.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L65'>[^]</a><a href='#L99'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L65' title='Defined at 65.'>hash_words</a>
+<li><a href='#L99' title='Defined at 99.'>hash_bytes</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008, 2009 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> * </font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> * </font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> * </font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> * </font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L34'>  34 <font color='darkred'>#include</font> "<a href='../I/207.html'>hash.h</a>"
+<a name='L35'>  35 <font color='darkred'>#include</font> &lt;string.h&gt;
+<a name='L36'>  36 
+<a name='L37'>  37 <i><font color='green'>/* This is the public domain lookup3 hash by Bob Jenkins from</font></i>
+<a name='L38'>  38 <i><font color='green'> * http://burtleburtle.net/bob/c/lookup3.c, modified for style. */</font></i>
+<a name='L39'>  39 <font color='darkred'>#define</font> <a href='../R/4384.html' title='Multiple refered from 26 places.'>rot</a>(<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>, <a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>) (((<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>) &lt;&lt; (<a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>)) | ((<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>) &gt;&gt; (32 - (<a href='../Y/3991.html' title='Multiple used in 104 places.'>k</a>))))
+<a name='L40'>  40 
+<a name='L41'>  41 <font color='darkred'>#define</font> <a href='../R/3518.html' title='Multiple refered from 3 places.'>mix</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>)                            \
+<a name='L42'>  42     <b>do</b> <font color='red'>{</font>                                        \
+<a name='L43'>  43       <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> -= <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>; <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> ^= <a href='../D/9428.html' title='Multiple defined in 2 places.'>rot</a>(<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>,  4); <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> += <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>;          \
+<a name='L44'>  44       <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> -= <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>; <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> ^= <a href='../D/9428.html' title='Multiple defined in 2 places.'>rot</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>,  6); <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> += <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>;          \
+<a name='L45'>  45       <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> -= <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>; <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> ^= <a href='../D/9428.html' title='Multiple defined in 2 places.'>rot</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>,  8); <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> += <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>;          \
+<a name='L46'>  46       <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> -= <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>; <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> ^= <a href='../D/9428.html' title='Multiple defined in 2 places.'>rot</a>(<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>, 16); <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> += <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>;          \
+<a name='L47'>  47       <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> -= <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>; <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> ^= <a href='../D/9428.html' title='Multiple defined in 2 places.'>rot</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, 19); <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> += <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>;          \
+<a name='L48'>  48       <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> -= <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>; <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> ^= <a href='../D/9428.html' title='Multiple defined in 2 places.'>rot</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>,  4); <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> += <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>;          \
+<a name='L49'>  49     <font color='red'>}</font> <b>while</b> (0)
+<a name='L50'>  50 
+<a name='L51'>  51 <font color='darkred'>#define</font> <a href='../R/3035.html' title='Multiple refered from 3 places.'>final</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>)                          \
+<a name='L52'>  52     <b>do</b> <font color='red'>{</font>                                        \
+<a name='L53'>  53       <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> ^= <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>; <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> -= <a href='../D/9428.html' title='Multiple defined in 2 places.'>rot</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, 14);                  \
+<a name='L54'>  54       <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> ^= <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>; <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> -= <a href='../D/9428.html' title='Multiple defined in 2 places.'>rot</a>(<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>, 11);                  \
+<a name='L55'>  55       <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> ^= <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>; <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> -= <a href='../D/9428.html' title='Multiple defined in 2 places.'>rot</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, 25);                  \
+<a name='L56'>  56       <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> ^= <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>; <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> -= <a href='../D/9428.html' title='Multiple defined in 2 places.'>rot</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, 16);                  \
+<a name='L57'>  57       <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> ^= <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>; <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> -= <a href='../D/9428.html' title='Multiple defined in 2 places.'>rot</a>(<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>,  4);                  \
+<a name='L58'>  58       <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> ^= <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>; <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> -= <a href='../D/9428.html' title='Multiple defined in 2 places.'>rot</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, 14);                  \
+<a name='L59'>  59       <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> ^= <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>; <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> -= <a href='../D/9428.html' title='Multiple defined in 2 places.'>rot</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, 24);                  \
+<a name='L60'>  60     <font color='red'>}</font> <b>while</b> (0)
+<a name='L61'>  61 
+<a name='L62'>  62 <i><font color='green'>/* Returns the hash of the 'n' 32-bit words at 'p', starting from 'basis'.</font></i>
+<a name='L63'>  63 <i><font color='green'> * 'p' must be properly aligned. */</font></i>
+<a name='L64'>  64 <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a>
+<a name='L65'>  65 <a href='../R/3198.html' title='Multiple refered from 3 places.'>hash_words</a>(<b>const</b> <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> *<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>, <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/1602.html' title='Multiple used in 9 places.'>basis</a>)
+<a name='L66'>  66 <font color='red'>{</font>
+<a name='L67'>  67     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>;
+<a name='L68'>  68 
+<a name='L69'>  69     <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> = <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> = <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> = 0xdeadbeef + (((<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a>) <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>) &lt;&lt; 2) + <a href='../Y/1602.html' title='Multiple used in 9 places.'>basis</a>;
+<a name='L70'>  70 
+<a name='L71'>  71     <b>while</b> (<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> &gt; 3) <font color='red'>{</font>
+<a name='L72'>  72         <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> += <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>[0];
+<a name='L73'>  73         <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> += <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>[1];
+<a name='L74'>  74         <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> += <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>[2];
+<a name='L75'>  75         <a href='../D/8371.html' title='Multiple defined in 2 places.'>mix</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>);
+<a name='L76'>  76         <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> -= 3;
+<a name='L77'>  77         <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> += 3;
+<a name='L78'>  78     <font color='red'>}</font>
+<a name='L79'>  79 
+<a name='L80'>  80     <b>switch</b> (<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>) <font color='red'>{</font>
+<a name='L81'>  81     <b>case</b> 3:
+<a name='L82'>  82         <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> += <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>[2];
+<a name='L83'>  83         <i><font color='green'>/* fall through */</font></i>
+<a name='L84'>  84     <b>case</b> 2:
+<a name='L85'>  85         <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> += <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>[1];
+<a name='L86'>  86         <i><font color='green'>/* fall through */</font></i>
+<a name='L87'>  87     <b>case</b> 1:
+<a name='L88'>  88         <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> += <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>[0];
+<a name='L89'>  89         <a href='../D/7823.html' title='Multiple defined in 2 places.'>final</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>);
+<a name='L90'>  90         <i><font color='green'>/* fall through */</font></i>
+<a name='L91'>  91     <b>case</b> 0:
+<a name='L92'>  92         <b>break</b>;
+<a name='L93'>  93     <font color='red'>}</font>
+<a name='L94'>  94     <b>return</b> <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>;
+<a name='L95'>  95 <font color='red'>}</font>
+<a name='L96'>  96 
+<a name='L97'>  97 <i><font color='green'>/* Returns the hash of the 'n' bytes at 'p', starting from 'basis'. */</font></i>
+<a name='L98'>  98 <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a>
+<a name='L99'>  99 <a href='../R/3195.html' title='Multiple refered from 4 places.'>hash_bytes</a>(<b>const</b> <b>void</b> *<a href='../Y/5575.html' title='Multiple used in 8 places.'>p_</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>, <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/1602.html' title='Multiple used in 9 places.'>basis</a>)
+<a name='L100'> 100 <font color='red'>{</font>
+<a name='L101'> 101     <b>const</b> <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> *<a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> = <a href='../Y/5575.html' title='Multiple used in 8 places.'>p_</a>;
+<a name='L102'> 102     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>;
+<a name='L103'> 103     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>[3];
+<a name='L104'> 104 
+<a name='L105'> 105     <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> = <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> = <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> = 0xdeadbeef + <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> + <a href='../Y/1602.html' title='Multiple used in 9 places.'>basis</a>;
+<a name='L106'> 106 
+<a name='L107'> 107     <b>while</b> (<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> &gt;= <b>sizeof</b> <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>) <font color='red'>{</font>
+<a name='L108'> 108         <a href='../Y/4417.html' title='Multiple used in 205 places.'>memcpy</a>(<a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>, <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>, <b>sizeof</b> <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>);
+<a name='L109'> 109         <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> += <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>[0];
+<a name='L110'> 110         <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> += <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>[1];
+<a name='L111'> 111         <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> += <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>[2];
+<a name='L112'> 112         <a href='../D/8371.html' title='Multiple defined in 2 places.'>mix</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>);
+<a name='L113'> 113         <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> -= <b>sizeof</b> <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>;
+<a name='L114'> 114         <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a> += <b>sizeof</b> <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>;
+<a name='L115'> 115     <font color='red'>}</font>
+<a name='L116'> 116 
+<a name='L117'> 117     <b>if</b> (<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>) <font color='red'>{</font>
+<a name='L118'> 118         <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>[0] = <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>[1] = <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>[2] = 0;
+<a name='L119'> 119         <a href='../Y/4417.html' title='Multiple used in 205 places.'>memcpy</a>(<a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>, <a href='../Y/5568.html' title='Multiple used in 1140 places.'>p</a>, <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>);
+<a name='L120'> 120         <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> += <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>[0];
+<a name='L121'> 121         <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a> += <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>[1];
+<a name='L122'> 122         <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> += <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>[2];
+<a name='L123'> 123         <a href='../D/7823.html' title='Multiple defined in 2 places.'>final</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>, <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>);
+<a name='L124'> 124     <font color='red'>}</font>
+<a name='L125'> 125 
+<a name='L126'> 126     <b>return</b> <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>;
+<a name='L127'> 127 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L65'>[^]</a><a href='#L99'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

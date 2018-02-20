@@ -1,0 +1,170 @@
+<html>
+<head>
+<title>cbench/oflops/msgbuf.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1101.html'>oflops</a>/msgbuf.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L17'>[^]</a><a href='#L132'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L17' title='Defined at 17.'>msgbuf_new</a>
+<li><a href='#L31' title='Defined at 31.'>msgbuf_read</a>
+<li><a href='#L41' title='Defined at 41.'>msgbuf_read_all</a>
+<li><a href='#L60' title='Defined at 60.'>msgbuf_write</a>
+<li><a href='#L78' title='Defined at 78.'>msgbuf_write_all</a>
+<li><a href='#L96' title='Defined at 96.'>msgbuf_clear</a>
+<li><a href='#L101' title='Defined at 101.'>msgbuf_grow</a>
+<li><a href='#L112' title='Defined at 112.'>msgbuf_peek</a>
+<li><a href='#L119' title='Defined at 119.'>msgbuf_pull</a>
+<li><a href='#L132' title='Defined at 132.'>msgbuf_push</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <font color='darkred'>#include</font> &lt;assert.h&gt;
+<a name='L2'>   2 <font color='darkred'>#include</font> &lt;errno.h&gt;
+<a name='L3'>   3 <font color='darkred'>#include</font> &lt;fcntl.h&gt;
+<a name='L4'>   4 <font color='darkred'>#include</font> &lt;stdio.h&gt;
+<a name='L5'>   5 <font color='darkred'>#include</font> &lt;stdlib.h&gt;
+<a name='L6'>   6 <font color='darkred'>#include</font> &lt;string.h&gt;
+<a name='L7'>   7 <font color='darkred'>#include</font> &lt;unistd.h&gt;
+<a name='L8'>   8 
+<a name='L9'>   9 <font color='darkred'>#include</font> "<a href='54.html'>msgbuf.h</a>"
+<a name='L10'>  10 
+<a name='L11'>  11 <font color='darkred'>#ifndef</font> <a href='../D/2852.html' title='Multiple defined in 9 places.'>MIN</a>
+<a name='L12'>  12 <font color='darkred'>#define</font> <a href='../R/902.html' title='Multiple refered from 25 places.'>MIN</a>(<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>,<a href='../Y/8037.html' title='Multiple used in 240 places.'>y</a>)  (((<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>) &lt; (<a href='../Y/8037.html' title='Multiple used in 240 places.'>y</a>))? (<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>) : (<a href='../Y/8037.html' title='Multiple used in 240 places.'>y</a>))
+<a name='L13'>  13 <font color='darkred'>#endif</font>
+<a name='L14'>  14 
+<a name='L15'>  15 
+<a name='L16'>  16 
+<a name='L17'>  17 <b>struct</b> <a href='../S/54.html#L4' title='Defined at 4 in cbench/oflops/msgbuf.h.'>msgbuf</a> *  <a href='../R/3535.html' title='Multiple refered from 5 places.'>msgbuf_new</a>(<b>int</b> <a href='../Y/1715.html' title='Multiple used in 17 places.'>bufsize</a>)
+<a name='L18'>  18 <font color='red'>{</font>
+<a name='L19'>  19     <b>struct</b> <a href='../S/54.html#L4' title='Defined at 4 in cbench/oflops/msgbuf.h.'>msgbuf</a> * <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>;
+<a name='L20'>  20     <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a> = <a href='../Y/4326.html' title='Multiple used in 68 places.'>malloc</a>(<b>sizeof</b>(*<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>));
+<a name='L21'>  21     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>);
+<a name='L22'>  22     <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a> = <a href='../Y/1715.html' title='Multiple used in 17 places.'>bufsize</a>;
+<a name='L23'>  23     <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a> = <a href='../Y/4326.html' title='Multiple used in 68 places.'>malloc</a>(<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>);
+<a name='L24'>  24     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>);
+<a name='L25'>  25     <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a> = <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a> = 0;
+<a name='L26'>  26 
+<a name='L27'>  27     <b>return</b> <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>;
+<a name='L28'>  28 <font color='red'>}</font>
+<a name='L29'>  29 
+<a name='L30'>  30 <i><font color='green'>/**********************************************************************/</font></i>
+<a name='L31'>  31 <b>int</b> <a href='../R/3539.html' title='Multiple refered from 4 places.'>msgbuf_read</a>(<b>struct</b> <a href='../Y/4528.html' title='Multiple used in 18 places.'>msgbuf</a> * <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>, <b>int</b> <a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>)
+<a name='L32'>  32 <font color='red'>{</font>
+<a name='L33'>  33     <b>int</b> <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a> = <a href='../Y/6277.html' title='Multiple used in 17 places.'>read</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>, &amp;<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>[<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a>], <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a> - <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a>);
+<a name='L34'>  34     <b>if</b>(<a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>&gt;0)
+<a name='L35'>  35         <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a>+=<a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>;
+<a name='L36'>  36     <b>if</b>( <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a> &gt;= <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>)     <i><font color='green'>// resize buffer if need be</font></i>
+<a name='L37'>  37         <a href='../S/13.html#L101' title='Defined at 101 in cbench/oflops/msgbuf.c.'>msgbuf_grow</a>(<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>);
+<a name='L38'>  38     <b>return</b> <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>;
+<a name='L39'>  39 <font color='red'>}</font>
+<a name='L40'>  40 <i><font color='green'>/**********************************************************************/</font></i>
+<a name='L41'>  41 <b>int</b> <a href='../S/54.html#L13' title='Refered from 13 in cbench/oflops/msgbuf.h.'>msgbuf_read_all</a>(<b>struct</b> <a href='../Y/4528.html' title='Multiple used in 18 places.'>msgbuf</a> * <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>, <b>int</b> <a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>, <b>int</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>)
+<a name='L42'>  42 <font color='red'>{</font>
+<a name='L43'>  43 
+<a name='L44'>  44     <b>int</b> <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a> = 0;
+<a name='L45'>  45     <b>int</b> <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>;
+<a name='L46'>  46     <b>while</b>(<a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a> &lt; <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>)
+<a name='L47'>  47     <font color='red'>{</font>
+<a name='L48'>  48         <i><font color='green'>/** fprintf(stderr, "in msgbuf_read_all... count = %d len = %d tmp = %d\n",</font></i>
+<a name='L49'>  49 <i><font color='green'>                count, len, tmp); **/</font></i>
+<a name='L50'>  50         <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a> =<a href='../S/13.html#L31' title='Defined at 31 in cbench/oflops/msgbuf.c.'>msgbuf_read</a>(<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>,<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>);
+<a name='L51'>  51         <b>if</b>((<a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a> == 0)  ||
+<a name='L52'>  52                 ((<a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>&lt;0) &amp;&amp; (<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a> != <a href='../Y/311.html' title='Multiple used in 8 places.'>EWOULDBLOCK</a> ) &amp;&amp; (<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a> != <a href='../Y/266.html' title='Multiple used in 24 places.'>EINTR</a>) &amp;&amp; (<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a> != <a href='../Y/259.html' title='Multiple used in 75 places.'>EAGAIN</a>)))
+<a name='L53'>  53             <b>return</b> <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>;
+<a name='L54'>  54         <b>if</b>(<a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>  &gt; 0)
+<a name='L55'>  55             <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>+=<a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>;
+<a name='L56'>  56     <font color='red'>}</font>
+<a name='L57'>  57     <b>return</b> <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>;
+<a name='L58'>  58 <font color='red'>}</font>
+<a name='L59'>  59 <i><font color='green'>/**********************************************************************/</font></i>
+<a name='L60'>  60 <b>int</b> <a href='../R/3541.html' title='Multiple refered from 5 places.'>msgbuf_write</a>(<b>struct</b> <a href='../Y/4528.html' title='Multiple used in 18 places.'>msgbuf</a> * <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>, <b>int</b> <a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>, <b>int</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>)
+<a name='L61'>  61 <font color='red'>{</font>
+<a name='L62'>  62         <b>int</b> <a href='../Y/6657.html' title='Multiple used in 5 places.'>send_len</a> = <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a> - <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a>;
+<a name='L63'>  63         <b>if</b> (<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a> &gt; 0)
+<a name='L64'>  64         <font color='red'>{</font>
+<a name='L65'>  65                 <b>if</b> (<a href='../Y/6657.html' title='Multiple used in 5 places.'>send_len</a> &lt; <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>)
+<a name='L66'>  66                         <b>return</b> -1;
+<a name='L67'>  67                 <b>if</b> (<a href='../Y/6657.html' title='Multiple used in 5 places.'>send_len</a> &gt; <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>)
+<a name='L68'>  68                         <a href='../Y/6657.html' title='Multiple used in 5 places.'>send_len</a> = <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;
+<a name='L69'>  69         <font color='red'>}</font>
+<a name='L70'>  70     <b>int</b> <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a> = <a href='../Y/7898.html' title='Multiple used in 44 places.'>write</a>(<a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>, &amp;<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>[<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a>], <a href='../Y/6657.html' title='Multiple used in 5 places.'>send_len</a>);
+<a name='L71'>  71     <b>if</b>(<a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>&gt;0)
+<a name='L72'>  72         <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a>+=<a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>;
+<a name='L73'>  73     <b>if</b>(<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a> &gt;= <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a>)
+<a name='L74'>  74         <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a> = <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a> = 0;
+<a name='L75'>  75     <b>return</b> <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>;
+<a name='L76'>  76 <font color='red'>}</font>
+<a name='L77'>  77 <i><font color='green'>/**********************************************************************/</font></i>
+<a name='L78'>  78 <b>int</b> <a href='../S/54.html#L15' title='Refered from 15 in cbench/oflops/msgbuf.h.'>msgbuf_write_all</a>(<b>struct</b> <a href='../Y/4528.html' title='Multiple used in 18 places.'>msgbuf</a> * <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>, <b>int</b> <a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>, <b>int</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>)
+<a name='L79'>  79 <font color='red'>{</font>
+<a name='L80'>  80     <b>int</b> <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>=0,<a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>=0;
+<a name='L81'>  81     <b>while</b>(<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a> &lt; <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a>)
+<a name='L82'>  82     <font color='red'>{</font>
+<a name='L83'>  83         <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>=<a href='../S/13.html#L60' title='Defined at 60 in cbench/oflops/msgbuf.c.'>msgbuf_write</a>(<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>, <a href='../Y/6894.html' title='Multiple used in 148 places.'>sock</a>, <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>);
+<a name='L84'>  84         <b>if</b>((<a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a> &lt; 0) &amp;&amp; 
+<a name='L85'>  85                 (<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a> != <a href='../Y/259.html' title='Multiple used in 75 places.'>EAGAIN</a>) &amp;&amp; 
+<a name='L86'>  86                 (<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a> != <a href='../Y/311.html' title='Multiple used in 8 places.'>EWOULDBLOCK</a>) &amp;&amp; 
+<a name='L87'>  87                 (<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a> != <a href='../Y/266.html' title='Multiple used in 24 places.'>EINTR</a>))
+<a name='L88'>  88                     
+<a name='L89'>  89             <b>return</b> <a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>;
+<a name='L90'>  90         <b>if</b>(<a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a> &gt; 0)
+<a name='L91'>  91             <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>+=<a href='../Y/7400.html' title='Multiple used in 360 places.'>tmp</a>;
+<a name='L92'>  92     <font color='red'>}</font>
+<a name='L93'>  93     <b>return</b> <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>;
+<a name='L94'>  94 <font color='red'>}</font>
+<a name='L95'>  95 <i><font color='green'>/**********************************************************************/</font></i>
+<a name='L96'>  96 <b>void</b> <a href='../S/54.html#L17' title='Refered from 17 in cbench/oflops/msgbuf.h.'>msgbuf_clear</a>(<b>struct</b> <a href='../Y/4528.html' title='Multiple used in 18 places.'>msgbuf</a> * <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>)
+<a name='L97'>  97 <font color='red'>{</font>
+<a name='L98'>  98     <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a> = <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a> = 0;
+<a name='L99'>  99 <font color='red'>}</font>
+<a name='L100'> 100 <i><font color='green'>/**********************************************************************/</font></i>
+<a name='L101'> 101 <b>void</b> <a href='../R/3534.html' title='Multiple refered from 3 places.'>msgbuf_grow</a>(<b>struct</b> <a href='../Y/4528.html' title='Multiple used in 18 places.'>msgbuf</a> * <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>)
+<a name='L102'> 102 <font color='red'>{</font>
+<a name='L103'> 103     <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a> *=2 ;
+<a name='L104'> 104     <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a> = <a href='../Y/6292.html' title='Multiple used in 34 places.'>realloc</a>(<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>);
+<a name='L105'> 105     <b>if</b>(<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L106'> 106       <a href='../Y/5716.html' title='Multiple used in 34 places.'>perror</a>("msgbuf_grow failed");
+<a name='L107'> 107       <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("buffer len: %d\n", <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>);
+<a name='L108'> 108     <font color='red'>}</font>
+<a name='L109'> 109     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>);
+<a name='L110'> 110 <font color='red'>}</font>
+<a name='L111'> 111 <i><font color='green'>/**********************************************************************/</font></i>
+<a name='L112'> 112 <b>void</b> * <a href='../R/3536.html' title='Multiple refered from 3 places.'>msgbuf_peek</a>(<b>struct</b> <a href='../Y/4528.html' title='Multiple used in 18 places.'>msgbuf</a> *<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>)
+<a name='L113'> 113 <font color='red'>{</font>
+<a name='L114'> 114    <b>if</b>(<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a> &gt;= <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a>)
+<a name='L115'> 115       <b>return</b> <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L116'> 116   <b>return</b> (<b>void</b> *) &amp;<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>[<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a>]; 
+<a name='L117'> 117 <font color='red'>}</font>
+<a name='L118'> 118 <i><font color='green'>/**********************************************************************/</font></i>
+<a name='L119'> 119 <b>int</b> <a href='../R/3537.html' title='Multiple refered from 3 places.'>msgbuf_pull</a>(<b>struct</b> <a href='../Y/4528.html' title='Multiple used in 18 places.'>msgbuf</a> *<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>, <b>char</b> * <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <b>int</b> <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>)
+<a name='L120'> 120 <font color='red'>{</font>
+<a name='L121'> 121     <b>int</b> <a href='../Y/4443.html' title='Multiple used in 21 places.'>min</a> = <a href='../D/2852.html' title='Multiple defined in 9 places.'>MIN</a>(<a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>, <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a> - <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a>);
+<a name='L122'> 122     <b>if</b>( <a href='../Y/4443.html' title='Multiple used in 21 places.'>min</a> &lt;= 0)
+<a name='L123'> 123         <b>return</b> -1;
+<a name='L124'> 124     <b>if</b>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>)     <i><font color='green'>// don't write if NULL</font></i>
+<a name='L125'> 125         <a href='../Y/4417.html' title='Multiple used in 205 places.'>memcpy</a>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, &amp;<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>[<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a>], <a href='../Y/4443.html' title='Multiple used in 21 places.'>min</a>);
+<a name='L126'> 126     <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a>+=<a href='../Y/4443.html' title='Multiple used in 21 places.'>min</a>;
+<a name='L127'> 127     <b>if</b>(<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a>&gt;= <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a>)
+<a name='L128'> 128         <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a> = <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a> = 0;
+<a name='L129'> 129     <b>return</b> <a href='../Y/4443.html' title='Multiple used in 21 places.'>min</a>;
+<a name='L130'> 130 <font color='red'>}</font>
+<a name='L131'> 131 <i><font color='green'>/**********************************************************************/</font></i>
+<a name='L132'> 132 <b>void</b> <a href='../R/3538.html' title='Multiple refered from 12 places.'>msgbuf_push</a>(<b>struct</b> <a href='../Y/4528.html' title='Multiple used in 18 places.'>msgbuf</a> *<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>, <b>char</b> * <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <b>int</b> <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>)
+<a name='L133'> 133 <font color='red'>{</font>
+<a name='L134'> 134     <b>while</b>((<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a> + <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>) &gt; <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>)
+<a name='L135'> 135         <a href='../S/13.html#L101' title='Defined at 101 in cbench/oflops/msgbuf.c.'>msgbuf_grow</a>(<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>);
+<a name='L136'> 136     <a href='../Y/4417.html' title='Multiple used in 205 places.'>memcpy</a>(&amp;<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>[<a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a>], <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>);
+<a name='L137'> 137     <a href='../Y/4400.html' title='Multiple used in 56 places.'>mbuf</a>-&gt;<a href='../Y/2677.html' title='Multiple used in 62 places.'>end</a> += <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>;
+<a name='L138'> 138 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L17'>[^]</a><a href='#L132'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

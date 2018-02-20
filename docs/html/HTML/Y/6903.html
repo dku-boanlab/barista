@@ -1,0 +1,70 @@
+<html>
+<head>
+<title>sockfd</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/1090.html#L1001'>sockfd</a>           1001 libraries/libcli/libcli.c static void cli_clear_line(int sockfd, char *cmd, int l, int cursor)
+<a href='../S/1090.html#L1007'>sockfd</a>           1007 libraries/libcli/libcli.c             _write(sockfd, " ", 1);
+<a href='../S/1090.html#L1015'>sockfd</a>           1015 libraries/libcli/libcli.c     _write(sockfd, cmd, i);
+<a href='../S/1090.html#L1056'>sockfd</a>           1056 libraries/libcli/libcli.c static int show_prompt(struct cli_def *cli, int sockfd)
+<a href='../S/1090.html#L1061'>sockfd</a>           1061 libraries/libcli/libcli.c         len += write(sockfd, cli-&gt;hostname, strlen(cli-&gt;hostname));
+<a href='../S/1090.html#L1064'>sockfd</a>           1064 libraries/libcli/libcli.c         len += write(sockfd, cli-&gt;modestring, strlen(cli-&gt;modestring));
+<a href='../S/1090.html#L1066'>sockfd</a>           1066 libraries/libcli/libcli.c     return len + write(sockfd, cli-&gt;promptchar, strlen(cli-&gt;promptchar));
+<a href='../S/1090.html#L1069'>sockfd</a>           1069 libraries/libcli/libcli.c int cli_loop(struct cli_def *cli, int sockfd)
+<a href='../S/1090.html#L1088'>sockfd</a>           1088 libraries/libcli/libcli.c         _write(sockfd, negotiate, strlen(negotiate));
+<a href='../S/1090.html#L1094'>sockfd</a>           1094 libraries/libcli/libcli.c     if (!(cli-&gt;client = fdopen(sockfd, "w+")))
+<a href='../S/1090.html#L1145'>sockfd</a>           1145 libraries/libcli/libcli.c                     _write(sockfd, "\r\n", 2);
+<a href='../S/1090.html#L1150'>sockfd</a>           1150 libraries/libcli/libcli.c                         _write(sockfd, "Username: ", strlen("Username: "));
+<a href='../S/1090.html#L1154'>sockfd</a>           1154 libraries/libcli/libcli.c                         _write(sockfd, "Password: ", strlen("Password: "));
+<a href='../S/1090.html#L1159'>sockfd</a>           1159 libraries/libcli/libcli.c                         show_prompt(cli, sockfd);
+<a href='../S/1090.html#L1160'>sockfd</a>           1160 libraries/libcli/libcli.c                         _write(sockfd, cmd, l);
+<a href='../S/1090.html#L1165'>sockfd</a>           1165 libraries/libcli/libcli.c                                 _write(sockfd, "\b", 1);
+<a href='../S/1090.html#L1170'>sockfd</a>           1170 libraries/libcli/libcli.c                         _write(sockfd, "Password: ", strlen("Password: "));
+<a href='../S/1090.html#L1179'>sockfd</a>           1179 libraries/libcli/libcli.c             FD_SET(sockfd, &amp;r);
+<a href='../S/1090.html#L1181'>sockfd</a>           1181 libraries/libcli/libcli.c             if ((sr = select(sockfd + 1, &amp;r, NULL, NULL, &amp;tm)) &lt; 0)
+<a href='../S/1090.html#L1225'>sockfd</a>           1225 libraries/libcli/libcli.c             if ((n = read(sockfd, &amp;c, 1)) &lt; 0)
+<a href='../S/1090.html#L1316'>sockfd</a>           1316 libraries/libcli/libcli.c                     _write(sockfd, "\r\n", 2);
+<a href='../S/1090.html#L1328'>sockfd</a>           1328 libraries/libcli/libcli.c                 _write(sockfd, "\a", 1);
+<a href='../S/1090.html#L1360'>sockfd</a>           1360 libraries/libcli/libcli.c                         _write(sockfd, "\a", 1);
+<a href='../S/1090.html#L1375'>sockfd</a>           1375 libraries/libcli/libcli.c                                 _write(sockfd, "\b \b", 3);
+<a href='../S/1090.html#L1384'>sockfd</a>           1384 libraries/libcli/libcli.c                                 _write(sockfd, "\b", 1);
+<a href='../S/1090.html#L1385'>sockfd</a>           1385 libraries/libcli/libcli.c                                 _write(sockfd, cmd + cursor, strlen(cmd + cursor));
+<a href='../S/1090.html#L1386'>sockfd</a>           1386 libraries/libcli/libcli.c                                 _write(sockfd, " ", 1);
+<a href='../S/1090.html#L1388'>sockfd</a>           1388 libraries/libcli/libcli.c                                     _write(sockfd, "\b", 1);
+<a href='../S/1090.html#L1407'>sockfd</a>           1407 libraries/libcli/libcli.c                 _write(sockfd, "\r\n", 2);
+<a href='../S/1090.html#L1408'>sockfd</a>           1408 libraries/libcli/libcli.c                 show_prompt(cli, sockfd);
+<a href='../S/1090.html#L1409'>sockfd</a>           1409 libraries/libcli/libcli.c                 _write(sockfd, cmd, l);
+<a href='../S/1090.html#L1412'>sockfd</a>           1412 libraries/libcli/libcli.c                     _write(sockfd, "\b", 1);
+<a href='../S/1090.html#L1423'>sockfd</a>           1423 libraries/libcli/libcli.c                     cli_clear_line(sockfd, cmd, l, cursor);
+<a href='../S/1090.html#L1439'>sockfd</a>           1439 libraries/libcli/libcli.c                         _write(sockfd, " ", 1);
+<a href='../S/1090.html#L1442'>sockfd</a>           1442 libraries/libcli/libcli.c                         _write(sockfd, "\b", 1);
+<a href='../S/1090.html#L1468'>sockfd</a>           1468 libraries/libcli/libcli.c                     cli_clear_line(sockfd, cmd, l, cursor);
+<a href='../S/1090.html#L1490'>sockfd</a>           1490 libraries/libcli/libcli.c                     _write(sockfd, "\a", 1);
+<a href='../S/1090.html#L1499'>sockfd</a>           1499 libraries/libcli/libcli.c                         _write(sockfd, "\b", 1);
+<a href='../S/1090.html#L1505'>sockfd</a>           1505 libraries/libcli/libcli.c                     _write(sockfd, completions[0], strlen(completions[0]));
+<a href='../S/1090.html#L1506'>sockfd</a>           1506 libraries/libcli/libcli.c                     _write(sockfd, " ", 1);
+<a href='../S/1090.html#L1512'>sockfd</a>           1512 libraries/libcli/libcli.c                     _write(sockfd, "\r\n", 2);
+<a href='../S/1090.html#L1515'>sockfd</a>           1515 libraries/libcli/libcli.c                         _write(sockfd, completions[i], strlen(completions[i]));
+<a href='../S/1090.html#L1517'>sockfd</a>           1517 libraries/libcli/libcli.c                             _write(sockfd, "\r\n", 2);
+<a href='../S/1090.html#L1519'>sockfd</a>           1519 libraries/libcli/libcli.c                             _write(sockfd, "     ", 1);
+<a href='../S/1090.html#L1521'>sockfd</a>           1521 libraries/libcli/libcli.c                     if (i % 4 != 3) _write(sockfd, "\r\n", 2);
+<a href='../S/1090.html#L1528'>sockfd</a>           1528 libraries/libcli/libcli.c                     _write(sockfd, "\a", 1);
+<a href='../S/1090.html#L1584'>sockfd</a>           1584 libraries/libcli/libcli.c                     cli_clear_line(sockfd, cmd, l, cursor);
+<a href='../S/1090.html#L1588'>sockfd</a>           1588 libraries/libcli/libcli.c                     _write(sockfd, cmd, l);
+<a href='../S/1090.html#L1602'>sockfd</a>           1602 libraries/libcli/libcli.c                             _write(sockfd, "\b", 1);
+<a href='../S/1090.html#L1612'>sockfd</a>           1612 libraries/libcli/libcli.c                             _write(sockfd, &amp;cmd[cursor], 1);
+<a href='../S/1090.html#L1628'>sockfd</a>           1628 libraries/libcli/libcli.c                         _write(sockfd, "\r", 1);
+<a href='../S/1090.html#L1629'>sockfd</a>           1629 libraries/libcli/libcli.c                         show_prompt(cli, sockfd);
+<a href='../S/1090.html#L1644'>sockfd</a>           1644 libraries/libcli/libcli.c                         _write(sockfd, &amp;cmd[cursor], l - cursor);
+<a href='../S/1090.html#L1664'>sockfd</a>           1664 libraries/libcli/libcli.c                     _write(sockfd, "\a", 1);
+<a href='../S/1090.html#L1681'>sockfd</a>           1681 libraries/libcli/libcli.c                     _write(sockfd, &amp;cmd[cursor], l - cursor + 1);
+<a href='../S/1090.html#L1683'>sockfd</a>           1683 libraries/libcli/libcli.c                         _write(sockfd, "\b", 1);
+<a href='../S/1090.html#L1697'>sockfd</a>           1697 libraries/libcli/libcli.c                     _write(sockfd, "\r\n", 2);
+<a href='../S/1090.html#L1702'>sockfd</a>           1702 libraries/libcli/libcli.c                 _write(sockfd, &amp;c, 1);
+<a href='../S/1091.html#L96'>sockfd</a>             96 libraries/libcli/libcli.h int cli_loop(struct cli_def *cli, int sockfd);
+</pre>
+</body>
+</html>

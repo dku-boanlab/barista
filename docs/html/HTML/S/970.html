@@ -1,0 +1,226 @@
+<html>
+<head>
+<title>components/include/appint.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1155.html'>components</a>/<a href='../files/1156.html'>include</a>/appint.h</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L35'>[^]</a><a href='#L72'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='1004.html#L27' title='Included from 27 in components/apphdlr.c.'>INCLUDED FROM</a></h2>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L35' title='Defined at 35.'>appint_main</a>
+<li><a href='#L48' title='Defined at 48.'>appint_cleanup</a>
+<li><a href='#L62' title='Defined at 62.'>appint_cli</a>
+<li><a href='#L72' title='Defined at 72.'>appint_handler</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright 2015-2018 NSSLab, KAIST</font></i>
+<a name='L3'>   3 <i><font color='green'> */</font></i>
+<a name='L4'>   4 
+<a name='L5'>   5 <i><font color='green'>/**</font></i>
+<a name='L6'>   6 <i><font color='green'> * \defgroup app Applications</font></i>
+<a name='L7'>   7 <i><font color='green'> * @{</font></i>
+<a name='L8'>   8 <i><font color='green'> * \defgroup appint Application Interface</font></i>
+<a name='L9'>   9 <i><font color='green'> * \brief (Base) application interface</font></i>
+<a name='L10'>  10 <i><font color='green'> * @{</font></i>
+<a name='L11'>  11 <i><font color='green'> */</font></i>
+<a name='L12'>  12 
+<a name='L13'>  13 <i><font color='green'>/**</font></i>
+<a name='L14'>  14 <i><font color='green'> * \file</font></i>
+<a name='L15'>  15 <i><font color='green'> * \author Jaehyun Nam &lt;namjh@kaist.ac.kr&gt;</font></i>
+<a name='L16'>  16 <i><font color='green'> */</font></i>
+<a name='L17'>  17 
+<a name='L18'>  18 <i><font color='green'>// inside of 'apphdlr.c'</font></i>
+<a name='L19'>  19 
+<a name='L20'>  20 <i><font color='green'>// Application side (Application layer)</font></i>
+<a name='L21'>  21 
+<a name='L22'>  22 <font color='darkred'>#include</font> "<a href='../I/2.html'>app_event.h</a>"
+<a name='L23'>  23 
+<a name='L24'>  24 <i><font color='green'>/** \brief Application interface ID */</font></i>
+<a name='L25'>  25 <font color='darkred'>#define</font> <a href='../R/55.html' title='Multiple refered from 16 places.'>APPINT_ID</a> 3685861783
+<a name='L26'>  26 
+<a name='L27'>  27 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L28'>  28 
+<a name='L29'>  29 <i><font color='green'>/**</font></i>
+<a name='L30'>  30 <i><font color='green'> * \brief The main function</font></i>
+<a name='L31'>  31 <i><font color='green'> * \param activated The activation flag of this application</font></i>
+<a name='L32'>  32 <i><font color='green'> * \param argc The number of arguments</font></i>
+<a name='L33'>  33 <i><font color='green'> * \param argv Arguments</font></i>
+<a name='L34'>  34 <i><font color='green'> */</font></i>
+<a name='L35'>  35 <b>int</b> <a href='../S/959.html#L53' title='Refered from 53 in applications/include/application_list.h.'>appint_main</a>(<b>int</b> *<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>, <b>int</b> <a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a>, <b>char</b> **<a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>)
+<a name='L36'>  36 <font color='red'>{</font>
+<a name='L37'>  37     <a href='../D/2419.html' title='Multiple defined in 6 places.'>LOG_INFO</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, "&lt;%010u&gt; Init - Application interface", <a href='../S/970.html#L25' title='Defined at 25 in components/include/appint.h.'>APPINT_ID</a>);
+<a name='L38'>  38 
+<a name='L39'>  39     <a href='../D/6825.html' title='Multiple defined in 6 places.'>activate</a>();
+<a name='L40'>  40 
+<a name='L41'>  41     <b>return</b> 0;
+<a name='L42'>  42 <font color='red'>}</font>
+<a name='L43'>  43 
+<a name='L44'>  44 <i><font color='green'>/**</font></i>
+<a name='L45'>  45 <i><font color='green'> * \brief The cleanup function</font></i>
+<a name='L46'>  46 <i><font color='green'> * \param activated The activation flag of this application</font></i>
+<a name='L47'>  47 <i><font color='green'> */</font></i>
+<a name='L48'>  48 <b>int</b> <a href='../S/959.html#L53' title='Refered from 53 in applications/include/application_list.h.'>appint_cleanup</a>(<b>int</b> *<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>)
+<a name='L49'>  49 <font color='red'>{</font>
+<a name='L50'>  50     <a href='../D/2419.html' title='Multiple defined in 6 places.'>LOG_INFO</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, "&lt;%010u&gt; Clean up - Application interface", <a href='../S/970.html#L25' title='Defined at 25 in components/include/appint.h.'>APPINT_ID</a>);
+<a name='L51'>  51 
+<a name='L52'>  52     <a href='../D/7280.html' title='Multiple defined in 6 places.'>deactivate</a>();
+<a name='L53'>  53 
+<a name='L54'>  54     <b>return</b> 0;
+<a name='L55'>  55 <font color='red'>}</font>
+<a name='L56'>  56 
+<a name='L57'>  57 <i><font color='green'>/**</font></i>
+<a name='L58'>  58 <i><font color='green'> * \brief The CLI function</font></i>
+<a name='L59'>  59 <i><font color='green'> * \param cli The CLI pointer</font></i>
+<a name='L60'>  60 <i><font color='green'> * \param args Arguments</font></i>
+<a name='L61'>  61 <i><font color='green'> */</font></i>
+<a name='L62'>  62 <b>int</b> <a href='../S/959.html#L53' title='Refered from 53 in applications/include/application_list.h.'>appint_cli</a>(<a href='../D/7177.html' title='Multiple defined in 6 places.'>cli_t</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>char</b> **<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L63'>  63 <font color='red'>{</font>
+<a name='L64'>  64     <b>return</b> 0;
+<a name='L65'>  65 <font color='red'>}</font>
+<a name='L66'>  66 
+<a name='L67'>  67 <i><font color='green'>/**</font></i>
+<a name='L68'>  68 <i><font color='green'> * \brief The handler function</font></i>
+<a name='L69'>  69 <i><font color='green'> * \param av Read-only app event</font></i>
+<a name='L70'>  70 <i><font color='green'> * \param av_out Read-write app event (if this application has the write permission)</font></i>
+<a name='L71'>  71 <i><font color='green'> */</font></i>
+<a name='L72'>  72 <b>int</b> <a href='../S/959.html#L53' title='Refered from 53 in applications/include/application_list.h.'>appint_handler</a>(<b>const</b> <a href='../D/6868.html' title='Multiple defined in 10 places.'>app_event_t</a> *<a href='../Y/1541.html' title='Multiple used in 59 places.'>av</a>, <a href='../D/6865.html' title='Multiple defined in 10 places.'>app_event_out_t</a> *<a href='../Y/1546.html' title='Multiple used in 29 places.'>av_out</a>)
+<a name='L73'>  73 <font color='red'>{</font>
+<a name='L74'>  74     <b>switch</b> (<a href='../Y/1541.html' title='Multiple used in 59 places.'>av</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) <font color='red'>{</font>
+<a name='L75'>  75 
+<a name='L76'>  76     <i><font color='green'>// downstream events</font></i>
+<a name='L77'>  77 
+<a name='L78'>  78     <b>case</b> <a href='../D/361.html' title='Multiple defined in 4 places.'>AV_DP_SEND_PACKET</a>:
+<a name='L79'>  79         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_DP_SEND_PACKET\n");
+<a name='L80'>  80         <font color='red'>{</font>
+<a name='L81'>  81             <a href='../S/1024.html#L92' title='Defined at 92 in events/event.c.'>ev_dp_send_packet</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, <a href='../Y/1541.html' title='Multiple used in 59 places.'>av</a>-&gt;<a href='../Y/5764.html' title='Multiple used in 49 places.'>pktout</a>);
+<a name='L82'>  82         <font color='red'>}</font>
+<a name='L83'>  83         <b>break</b>;
+<a name='L84'>  84     <b>case</b> <a href='../D/355.html' title='Multiple defined in 4 places.'>AV_DP_INSERT_FLOW</a>:
+<a name='L85'>  85         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_DP_INSERT_FLOW\n");
+<a name='L86'>  86         <font color='red'>{</font>
+<a name='L87'>  87             <a href='../S/1024.html#L94' title='Defined at 94 in events/event.c.'>ev_dp_insert_flow</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, <a href='../Y/1541.html' title='Multiple used in 59 places.'>av</a>-&gt;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>);
+<a name='L88'>  88         <font color='red'>}</font>
+<a name='L89'>  89         <b>break</b>;
+<a name='L90'>  90     <b>case</b> <a href='../D/356.html' title='Multiple defined in 4 places.'>AV_DP_MODIFY_FLOW</a>:
+<a name='L91'>  91         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_DP_MODIFY_FLOW\n");
+<a name='L92'>  92         <font color='red'>{</font>
+<a name='L93'>  93             <a href='../S/1024.html#L96' title='Defined at 96 in events/event.c.'>ev_dp_modify_flow</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, <a href='../Y/1541.html' title='Multiple used in 59 places.'>av</a>-&gt;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>);
+<a name='L94'>  94         <font color='red'>}</font>
+<a name='L95'>  95         <b>break</b>;
+<a name='L96'>  96     <b>case</b> <a href='../D/352.html' title='Multiple defined in 4 places.'>AV_DP_DELETE_FLOW</a>:
+<a name='L97'>  97         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_DP_DELETE_FLOW\n");
+<a name='L98'>  98         <font color='red'>{</font>
+<a name='L99'>  99             <a href='../S/1024.html#L98' title='Defined at 98 in events/event.c.'>ev_dp_delete_flow</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, <a href='../Y/1541.html' title='Multiple used in 59 places.'>av</a>-&gt;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>);
+<a name='L100'> 100         <font color='red'>}</font>
+<a name='L101'> 101         <b>break</b>;
+<a name='L102'> 102 
+<a name='L103'> 103     <i><font color='green'>// request-response events</font></i>
+<a name='L104'> 104 
+<a name='L105'> 105     <b>case</b> <a href='../D/386.html' title='Multiple defined in 4 places.'>AV_SW_GET_INFO</a>:
+<a name='L106'> 106         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_SW_GET_INFO\n");
+<a name='L107'> 107         <font color='red'>{</font>
+<a name='L108'> 108             <a href='../S/1024.html#L118' title='Defined at 118 in events/event.c.'>ev_sw_get_info</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, <a href='../Y/1546.html' title='Multiple used in 29 places.'>av_out</a>-&gt;<a href='../Y/7175.html' title='Multiple used in 15 places.'>sw_data</a>);
+<a name='L109'> 109         <font color='red'>}</font>
+<a name='L110'> 110         <b>break</b>;
+<a name='L111'> 111     <b>case</b> <a href='../D/385.html' title='Multiple defined in 4 places.'>AV_SW_GET_ALL_INFO</a>:
+<a name='L112'> 112         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_SW_GET_ALL_INFO\n");
+<a name='L113'> 113         <font color='red'>{</font>
+<a name='L114'> 114             <a href='../S/1024.html#L120' title='Defined at 120 in events/event.c.'>ev_sw_get_all_info</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, <a href='../Y/1546.html' title='Multiple used in 29 places.'>av_out</a>-&gt;<a href='../Y/7175.html' title='Multiple used in 15 places.'>sw_data</a>);
+<a name='L115'> 115         <font color='red'>}</font>
+<a name='L116'> 116         <b>break</b>;
+<a name='L117'> 117     <b>case</b> <a href='../D/369.html' title='Multiple defined in 4 places.'>AV_HOST_GET_INFO</a>:
+<a name='L118'> 118         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_HOST_GET_INFO\n");
+<a name='L119'> 119         <font color='red'>{</font>
+<a name='L120'> 120             <a href='../S/1024.html#L122' title='Defined at 122 in events/event.c.'>ev_host_get_info</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, <a href='../Y/1546.html' title='Multiple used in 29 places.'>av_out</a>-&gt;<a href='../Y/3656.html' title='Multiple used in 11 places.'>host_data</a>);
+<a name='L121'> 121         <font color='red'>}</font>
+<a name='L122'> 122         <b>break</b>;
+<a name='L123'> 123     <b>case</b> <a href='../D/368.html' title='Multiple defined in 4 places.'>AV_HOST_GET_ALL_INFO</a>:
+<a name='L124'> 124         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_HOST_GET_ALL_INFO\n");
+<a name='L125'> 125         <font color='red'>{</font>
+<a name='L126'> 126             <a href='../S/1024.html#L124' title='Defined at 124 in events/event.c.'>ev_host_get_all_info</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, <a href='../Y/1546.html' title='Multiple used in 29 places.'>av_out</a>-&gt;<a href='../Y/3656.html' title='Multiple used in 11 places.'>host_data</a>);
+<a name='L127'> 127         <font color='red'>}</font>
+<a name='L128'> 128         <b>break</b>;
+<a name='L129'> 129     <b>case</b> <a href='../D/373.html' title='Multiple defined in 4 places.'>AV_LINK_GET_INFO</a>:
+<a name='L130'> 130         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_LINK_GET_INFO\n");
+<a name='L131'> 131         <font color='red'>{</font>
+<a name='L132'> 132             <a href='../S/1024.html#L126' title='Defined at 126 in events/event.c.'>ev_link_get_info</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, <a href='../Y/1546.html' title='Multiple used in 29 places.'>av_out</a>-&gt;<a href='../Y/5808.html' title='Multiple used in 13 places.'>port_data</a>);
+<a name='L133'> 133         <font color='red'>}</font>
+<a name='L134'> 134         <b>break</b>;
+<a name='L135'> 135     <b>case</b> <a href='../D/372.html' title='Multiple defined in 4 places.'>AV_LINK_GET_ALL_INFO</a>:
+<a name='L136'> 136         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_LINK_GET_ALL_INFO\n");
+<a name='L137'> 137         <font color='red'>{</font>
+<a name='L138'> 138             <a href='../S/1024.html#L128' title='Defined at 128 in events/event.c.'>ev_link_get_all_info</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, <a href='../Y/1546.html' title='Multiple used in 29 places.'>av_out</a>-&gt;<a href='../Y/5808.html' title='Multiple used in 13 places.'>port_data</a>);
+<a name='L139'> 139         <font color='red'>}</font>
+<a name='L140'> 140         <b>break</b>;
+<a name='L141'> 141     <b>case</b> <a href='../D/365.html' title='Multiple defined in 4 places.'>AV_FLOW_GET_INFO</a>:
+<a name='L142'> 142         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_FLOW_GET_INFO\n");
+<a name='L143'> 143         <font color='red'>{</font>
+<a name='L144'> 144             <a href='../S/1024.html#L130' title='Defined at 130 in events/event.c.'>ev_flow_get_info</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, <a href='../Y/1546.html' title='Multiple used in 29 places.'>av_out</a>-&gt;<a href='../Y/3137.html' title='Multiple used in 11 places.'>flow_data</a>);
+<a name='L145'> 145         <font color='red'>}</font>
+<a name='L146'> 146         <b>break</b>;
+<a name='L147'> 147     <b>case</b> <a href='../D/364.html' title='Multiple defined in 4 places.'>AV_FLOW_GET_ALL_INFO</a>:
+<a name='L148'> 148         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_FLOW_GET_ALL_INFO\n");
+<a name='L149'> 149         <font color='red'>{</font>
+<a name='L150'> 150             <a href='../S/1024.html#L132' title='Defined at 132 in events/event.c.'>ev_flow_get_all_info</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, <a href='../Y/1546.html' title='Multiple used in 29 places.'>av_out</a>-&gt;<a href='../Y/3137.html' title='Multiple used in 11 places.'>flow_data</a>);
+<a name='L151'> 151         <font color='red'>}</font>
+<a name='L152'> 152         <b>break</b>;
+<a name='L153'> 153 
+<a name='L154'> 154     <i><font color='green'>// log events</font></i>
+<a name='L155'> 155 
+<a name='L156'> 156     <b>case</b> <a href='../D/374.html' title='Multiple defined in 4 places.'>AV_LOG_DEBUG</a>:
+<a name='L157'> 157         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_LOG_DEBUG\n");
+<a name='L158'> 158         <font color='red'>{</font>
+<a name='L159'> 159             <a href='../D/2409.html' title='Multiple defined in 6 places.'>LOG_DEBUG</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, "&lt;%010u&gt; %s", <a href='../Y/1541.html' title='Multiple used in 59 places.'>av</a>-&gt;<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/1541.html' title='Multiple used in 59 places.'>av</a>-&gt;<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>);
+<a name='L160'> 160         <font color='red'>}</font>
+<a name='L161'> 161         <b>break</b>;
+<a name='L162'> 162     <b>case</b> <a href='../D/377.html' title='Multiple defined in 4 places.'>AV_LOG_INFO</a>:
+<a name='L163'> 163         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_LOG_INFO\n");
+<a name='L164'> 164         <font color='red'>{</font>
+<a name='L165'> 165             <a href='../D/2419.html' title='Multiple defined in 6 places.'>LOG_INFO</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, "&lt;%010u&gt; %s", <a href='../Y/1541.html' title='Multiple used in 59 places.'>av</a>-&gt;<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/1541.html' title='Multiple used in 59 places.'>av</a>-&gt;<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>);
+<a name='L166'> 166         <font color='red'>}</font>
+<a name='L167'> 167         <b>break</b>;
+<a name='L168'> 168     <b>case</b> <a href='../D/378.html' title='Multiple defined in 4 places.'>AV_LOG_WARN</a>:
+<a name='L169'> 169         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_LOG_WARN\n");
+<a name='L170'> 170         <font color='red'>{</font>
+<a name='L171'> 171             <a href='../D/2421.html' title='Multiple defined in 6 places.'>LOG_WARN</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, "&lt;%010u&gt; %s", <a href='../Y/1541.html' title='Multiple used in 59 places.'>av</a>-&gt;<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/1541.html' title='Multiple used in 59 places.'>av</a>-&gt;<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>);
+<a name='L172'> 172         <font color='red'>}</font>
+<a name='L173'> 173         <b>break</b>;
+<a name='L174'> 174     <b>case</b> <a href='../D/375.html' title='Multiple defined in 4 places.'>AV_LOG_ERROR</a>:
+<a name='L175'> 175         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_LOG_ERROR\n");
+<a name='L176'> 176         <font color='red'>{</font>
+<a name='L177'> 177             <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, "&lt;%010u&gt; %s", <a href='../Y/1541.html' title='Multiple used in 59 places.'>av</a>-&gt;<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/1541.html' title='Multiple used in 59 places.'>av</a>-&gt;<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>);
+<a name='L178'> 178         <font color='red'>}</font>
+<a name='L179'> 179         <b>break</b>;
+<a name='L180'> 180     <b>case</b> <a href='../D/376.html' title='Multiple defined in 4 places.'>AV_LOG_FATAL</a>:
+<a name='L181'> 181         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("AV_LOG_FATAL\n");
+<a name='L182'> 182         <font color='red'>{</font>
+<a name='L183'> 183             <a href='../D/2415.html' title='Multiple defined in 6 places.'>LOG_FATAL</a>(<a href='../S/1004.html#L21' title='Defined at 21 in components/apphdlr.c.'>APPHDLR_ID</a>, "&lt;%010u&gt; %s", <a href='../Y/1541.html' title='Multiple used in 59 places.'>av</a>-&gt;<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/1541.html' title='Multiple used in 59 places.'>av</a>-&gt;<a href='../Y/4214.html' title='Multiple used in 173 places.'>log</a>);
+<a name='L184'> 184         <font color='red'>}</font>
+<a name='L185'> 185         <b>break</b>;
+<a name='L186'> 186 
+<a name='L187'> 187     <b>default</b>:
+<a name='L188'> 188         <b>break</b>;
+<a name='L189'> 189     <font color='red'>}</font>
+<a name='L190'> 190 
+<a name='L191'> 191     <b>return</b> 0;
+<a name='L192'> 192 <font color='red'>}</font>
+<a name='L193'> 193 
+<a name='L194'> 194 <i><font color='green'>/**</font></i>
+<a name='L195'> 195 <i><font color='green'> * @}</font></i>
+<a name='L196'> 196 <i><font color='green'> *</font></i>
+<a name='L197'> 197 <i><font color='green'> * @}</font></i>
+<a name='L198'> 198 <i><font color='green'> */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L35'>[^]</a><a href='#L72'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

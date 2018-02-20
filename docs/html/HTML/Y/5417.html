@@ -1,0 +1,194 @@
+<html>
+<head>
+<title>oh</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/10.html#L38'>oh</a>                 38 cbench/oflops/msg.c ofp_init(struct ofp_header *oh, int type, int len) {
+<a href='../S/10.html#L39'>oh</a>                 39 cbench/oflops/msg.c   oh-&gt;version = OFP_VERSION;
+<a href='../S/10.html#L40'>oh</a>                 40 cbench/oflops/msg.c   oh-&gt;type = type;
+<a href='../S/10.html#L41'>oh</a>                 41 cbench/oflops/msg.c   oh-&gt;length = htons(len);
+<a href='../S/10.html#L42'>oh</a>                 42 cbench/oflops/msg.c   oh-&gt;xid = 0;
+<a href='../S/293.html#L156'>oh</a>                156 cbench/openflow/datapath/datapath.c 	struct ofp_header *oh;
+<a href='../S/293.html#L169'>oh</a>                169 cbench/openflow/datapath/datapath.c 	if (openflow_len &lt; sizeof *oh)
+<a href='../S/293.html#L176'>oh</a>                176 cbench/openflow/datapath/datapath.c 	oh = nla_data(attr);
+<a href='../S/293.html#L177'>oh</a>                177 cbench/openflow/datapath/datapath.c 	oh-&gt;version = OFP_VERSION;
+<a href='../S/293.html#L178'>oh</a>                178 cbench/openflow/datapath/datapath.c 	oh-&gt;type = type;
+<a href='../S/293.html#L179'>oh</a>                179 cbench/openflow/datapath/datapath.c 	oh-&gt;xid = sender ? sender-&gt;xid : 0;
+<a href='../S/293.html#L181'>oh</a>                181 cbench/openflow/datapath/datapath.c 	return oh;
+<a href='../S/293.html#L189'>oh</a>                189 cbench/openflow/datapath/datapath.c 		    struct ofp_header *oh, size_t new_length)
+<a href='../S/293.html#L191'>oh</a>                191 cbench/openflow/datapath/datapath.c 	struct nlattr *attr = ((void *) oh) - NLA_HDRLEN;
+<a href='../S/293.html#L193'>oh</a>                193 cbench/openflow/datapath/datapath.c 	oh-&gt;length = htons(new_length);
+<a href='../S/293.html#L208'>oh</a>                208 cbench/openflow/datapath/datapath.c 	struct ofp_header *oh;
+<a href='../S/293.html#L229'>oh</a>                229 cbench/openflow/datapath/datapath.c 	oh = put_openflow_headers(dp, skb, type, sender, &amp;max_openflow_len);
+<a href='../S/293.html#L230'>oh</a>                230 cbench/openflow/datapath/datapath.c 	BUG_ON(!oh || IS_ERR(oh));
+<a href='../S/293.html#L231'>oh</a>                231 cbench/openflow/datapath/datapath.c 	resize_openflow_skb(skb, oh, openflow_len);
+<a href='../S/293.html#L233'>oh</a>                233 cbench/openflow/datapath/datapath.c 	return oh;
+<a href='../S/293.html#L1346'>oh</a>               1346 cbench/openflow/datapath/datapath.c 	struct ofp_header *oh;
+<a href='../S/293.html#L1359'>oh</a>               1359 cbench/openflow/datapath/datapath.c 	oh = nla_data(va);
+<a href='../S/293.html#L1361'>oh</a>               1361 cbench/openflow/datapath/datapath.c 	sender.xid = oh-&gt;xid;
+<a href='../S/282.html#L486'>oh</a>                486 cbench/openflow/datapath/forward.c 	struct ofp_header *oh;
+<a href='../S/282.html#L488'>oh</a>                488 cbench/openflow/datapath/forward.c 	oh = (struct ofp_header *) msg;
+<a href='../S/282.html#L489'>oh</a>                489 cbench/openflow/datapath/forward.c 	if (oh-&gt;version != OFP_VERSION
+<a href='../S/282.html#L490'>oh</a>                490 cbench/openflow/datapath/forward.c 	    &amp;&amp; oh-&gt;type != OFPT_HELLO
+<a href='../S/282.html#L491'>oh</a>                491 cbench/openflow/datapath/forward.c 	    &amp;&amp; oh-&gt;type != OFPT_ERROR
+<a href='../S/282.html#L492'>oh</a>                492 cbench/openflow/datapath/forward.c 	    &amp;&amp; oh-&gt;type != OFPT_ECHO_REQUEST
+<a href='../S/282.html#L493'>oh</a>                493 cbench/openflow/datapath/forward.c 	    &amp;&amp; oh-&gt;type != OFPT_ECHO_REPLY
+<a href='../S/282.html#L494'>oh</a>                494 cbench/openflow/datapath/forward.c 	    &amp;&amp; oh-&gt;type != OFPT_VENDOR)
+<a href='../S/282.html#L500'>oh</a>                500 cbench/openflow/datapath/forward.c 	if (ntohs(oh-&gt;length) != length) {
+<a href='../S/282.html#L504'>oh</a>                504 cbench/openflow/datapath/forward.c 			       ntohs(oh-&gt;length), length);
+<a href='../S/282.html#L508'>oh</a>                508 cbench/openflow/datapath/forward.c 	if (oh-&gt;type &lt; ARRAY_SIZE(packets)) {
+<a href='../S/282.html#L509'>oh</a>                509 cbench/openflow/datapath/forward.c 		const struct openflow_packet *pkt = &amp;packets[oh-&gt;type];
+<a href='../S/885.html#L138'>oh</a>                138 cbench/openflow/lib/dpif.c     struct ofp_header *oh;
+<a href='../S/885.html#L177'>oh</a>                177 cbench/openflow/lib/dpif.c     oh = buffer-&gt;data = (void *) nl_attr_get(attrs[DP_GENL_A_OPENFLOW]);
+<a href='../S/885.html#L179'>oh</a>                179 cbench/openflow/lib/dpif.c     ofp_len = ntohs(oh-&gt;length);
+<a href='../S/885.html#L208'>oh</a>                208 cbench/openflow/lib/dpif.c     struct ofp_header *oh;
+<a href='../S/885.html#L220'>oh</a>                220 cbench/openflow/lib/dpif.c     oh = ofpbuf_at_assert(buffer, 0, sizeof *oh);
+<a href='../S/885.html#L221'>oh</a>                221 cbench/openflow/lib/dpif.c     dump_flag = oh-&gt;type == OFPT_STATS_REQUEST ? NLM_F_DUMP : 0;
+<a href='../S/884.html#L303'>oh</a>                303 cbench/openflow/lib/learning-switch.c     struct ofp_header *oh;
+<a href='../S/884.html#L305'>oh</a>                305 cbench/openflow/lib/learning-switch.c     oh = msg-&gt;data;
+<a href='../S/884.html#L307'>oh</a>                307 cbench/openflow/lib/learning-switch.c         &amp;&amp; oh-&gt;type != OFPT_ECHO_REQUEST
+<a href='../S/884.html#L308'>oh</a>                308 cbench/openflow/lib/learning-switch.c         &amp;&amp; oh-&gt;type != OFPT_FEATURES_REPLY) {
+<a href='../S/884.html#L314'>oh</a>                314 cbench/openflow/lib/learning-switch.c         if (oh-&gt;type == p-&gt;type) {
+<a href='../S/884.html#L318'>oh</a>                318 cbench/openflow/lib/learning-switch.c                              rconn_get_name(rconn), msg-&gt;size, oh-&gt;type,
+<a href='../S/825.html#L122'>oh</a>                122 cbench/openflow/lib/ofp-print.c ofp_packet_in(struct ds *string, const void *oh, size_t len, int verbosity)
+<a href='../S/825.html#L124'>oh</a>                124 cbench/openflow/lib/ofp-print.c     const struct ofp_packet_in *op = oh;
+<a href='../S/825.html#L443'>oh</a>                443 cbench/openflow/lib/ofp-print.c static void ofp_packet_out(struct ds *string, const void *oh, size_t len,
+<a href='../S/825.html#L446'>oh</a>                446 cbench/openflow/lib/ofp-print.c     const struct ofp_packet_out *opo = oh;
+<a href='../S/825.html#L572'>oh</a>                572 cbench/openflow/lib/ofp-print.c ofp_print_switch_features(struct ds *string, const void *oh, size_t len,
+<a href='../S/825.html#L575'>oh</a>                575 cbench/openflow/lib/ofp-print.c     const struct ofp_switch_features *osf = oh;
+<a href='../S/825.html#L603'>oh</a>                603 cbench/openflow/lib/ofp-print.c ofp_print_switch_config(struct ds *string, const void *oh, size_t len UNUSED,
+<a href='../S/825.html#L606'>oh</a>                606 cbench/openflow/lib/ofp-print.c     const struct ofp_switch_config *osc = oh;
+<a href='../S/825.html#L740'>oh</a>                740 cbench/openflow/lib/ofp-print.c ofp_print_flow_mod(struct ds *string, const void *oh, size_t len, 
+<a href='../S/825.html#L743'>oh</a>                743 cbench/openflow/lib/ofp-print.c     const struct ofp_flow_mod *ofm = oh;
+<a href='../S/825.html#L778'>oh</a>                778 cbench/openflow/lib/ofp-print.c ofp_print_flow_removed(struct ds *string, const void *oh, size_t len UNUSED, 
+<a href='../S/825.html#L781'>oh</a>                781 cbench/openflow/lib/ofp-print.c     const struct ofp_flow_removed *ofe = oh;
+<a href='../S/825.html#L811'>oh</a>                811 cbench/openflow/lib/ofp-print.c ofp_print_port_mod(struct ds *string, const void *oh, size_t len UNUSED,
+<a href='../S/825.html#L814'>oh</a>                814 cbench/openflow/lib/ofp-print.c     const struct ofp_port_mod *opm = oh;
+<a href='../S/825.html#L894'>oh</a>                894 cbench/openflow/lib/ofp-print.c ofp_print_error_msg(struct ds *string, const void *oh, size_t len, 
+<a href='../S/825.html#L897'>oh</a>                897 cbench/openflow/lib/ofp-print.c     const struct ofp_error_msg *oem = oh;
+<a href='../S/825.html#L926'>oh</a>                926 cbench/openflow/lib/ofp-print.c ofp_print_port_status(struct ds *string, const void *oh, size_t len UNUSED,
+<a href='../S/825.html#L929'>oh</a>                929 cbench/openflow/lib/ofp-print.c     const struct ofp_port_status *ops = oh;
+<a href='../S/825.html#L956'>oh</a>                956 cbench/openflow/lib/ofp-print.c ofp_flow_stats_request(struct ds *string, const void *oh, size_t len UNUSED,
+<a href='../S/825.html#L959'>oh</a>                959 cbench/openflow/lib/ofp-print.c     const struct ofp_flow_stats_request *fsr = oh;
+<a href='../S/825.html#L1033'>oh</a>               1033 cbench/openflow/lib/ofp-print.c ofp_aggregate_stats_request(struct ds *string, const void *oh,
+<a href='../S/825.html#L1036'>oh</a>               1036 cbench/openflow/lib/ofp-print.c     const struct ofp_aggregate_stats_request *asr = oh;
+<a href='../S/825.html#L1275'>oh</a>               1275 cbench/openflow/lib/ofp-print.c ofp_stats_request(struct ds *string, const void *oh, size_t len, int verbosity)
+<a href='../S/825.html#L1277'>oh</a>               1277 cbench/openflow/lib/ofp-print.c     const struct ofp_stats_request *srq = oh;
+<a href='../S/825.html#L1290'>oh</a>               1290 cbench/openflow/lib/ofp-print.c ofp_stats_reply(struct ds *string, const void *oh, size_t len, int verbosity)
+<a href='../S/825.html#L1292'>oh</a>               1292 cbench/openflow/lib/ofp-print.c     const struct ofp_stats_reply *srp = oh;
+<a href='../S/825.html#L1314'>oh</a>               1314 cbench/openflow/lib/ofp-print.c ofp_echo(struct ds *string, const void *oh, size_t len, int verbosity)
+<a href='../S/825.html#L1316'>oh</a>               1316 cbench/openflow/lib/ofp-print.c     const struct ofp_header *hdr = oh;
+<a href='../S/825.html#L1325'>oh</a>               1325 cbench/openflow/lib/ofp-print.c ofp_vendor(struct ds *string UNUSED, const void *oh, size_t len UNUSED, int verbosity UNUSED)
+<a href='../S/825.html#L1327'>oh</a>               1327 cbench/openflow/lib/ofp-print.c     const struct ofp_vendor_header *vh = oh;
+<a href='../S/825.html#L1359'>oh</a>               1359 cbench/openflow/lib/ofp-print.c show_queue_get_config_reply(struct ds *string, const void *oh,
+<a href='../S/825.html#L1368'>oh</a>               1368 cbench/openflow/lib/ofp-print.c     reply = oh;
+<a href='../S/825.html#L1533'>oh</a>               1533 cbench/openflow/lib/ofp-print.c     const struct ofp_header *oh = oh_;
+<a href='../S/825.html#L1538'>oh</a>               1538 cbench/openflow/lib/ofp-print.c         ds_put_hex_dump(&amp;string, oh, len, 0, true);
+<a href='../S/825.html#L1540'>oh</a>               1540 cbench/openflow/lib/ofp-print.c     } else if (oh-&gt;version != OFP_VERSION) {
+<a href='../S/825.html#L1541'>oh</a>               1541 cbench/openflow/lib/ofp-print.c         ds_put_format(&amp;string, "Bad OpenFlow version %"PRIu8":\n", oh-&gt;version);
+<a href='../S/825.html#L1542'>oh</a>               1542 cbench/openflow/lib/ofp-print.c         ds_put_hex_dump(&amp;string, oh, len, 0, true);
+<a href='../S/825.html#L1549'>oh</a>               1549 cbench/openflow/lib/ofp-print.c                           oh-&gt;type);
+<a href='../S/825.html#L1550'>oh</a>               1550 cbench/openflow/lib/ofp-print.c             ds_put_hex_dump(&amp;string, oh, len, 0, true);
+<a href='../S/825.html#L1552'>oh</a>               1552 cbench/openflow/lib/ofp-print.c         } else if (oh-&gt;type == pkt-&gt;type) {
+<a href='../S/825.html#L1557'>oh</a>               1557 cbench/openflow/lib/ofp-print.c     ds_put_format(&amp;string, "%s (xid=0x%"PRIx32"):", pkt-&gt;name, ntohl(oh-&gt;xid));
+<a href='../S/825.html#L1559'>oh</a>               1559 cbench/openflow/lib/ofp-print.c     if (ntohs(oh-&gt;length) &gt; len)
+<a href='../S/825.html#L1561'>oh</a>               1561 cbench/openflow/lib/ofp-print.c                 len, ntohs(oh-&gt;length));
+<a href='../S/825.html#L1562'>oh</a>               1562 cbench/openflow/lib/ofp-print.c     else if (ntohs(oh-&gt;length) &lt; len) {
+<a href='../S/825.html#L1564'>oh</a>               1564 cbench/openflow/lib/ofp-print.c                 ntohs(oh-&gt;length), len);
+<a href='../S/825.html#L1565'>oh</a>               1565 cbench/openflow/lib/ofp-print.c         len = ntohs(oh-&gt;length);
+<a href='../S/825.html#L1572'>oh</a>               1572 cbench/openflow/lib/ofp-print.c         if (len &gt; sizeof *oh) {
+<a href='../S/825.html#L1574'>oh</a>               1574 cbench/openflow/lib/ofp-print.c                           ntohs(oh-&gt;length)); 
+<a href='../S/825.html#L1577'>oh</a>               1577 cbench/openflow/lib/ofp-print.c         pkt-&gt;printer(&amp;string, oh, len, verbosity);
+<a href='../S/825.html#L1580'>oh</a>               1580 cbench/openflow/lib/ofp-print.c         ds_put_hex_dump(&amp;string, oh, len, 0, true);
+<a href='../S/825.html#L1626'>oh</a>               1626 cbench/openflow/lib/ofp-print.c ofp_print(FILE *stream, const void *oh, size_t len, int verbosity)
+<a href='../S/825.html#L1628'>oh</a>               1628 cbench/openflow/lib/ofp-print.c     print_and_free(stream, ofp_to_string(oh, len, verbosity));
+<a href='../S/849.html#L948'>oh</a>                948 cbench/openflow/lib/rconn.c     struct ofp_header *oh = b-&gt;data;
+<a href='../S/849.html#L949'>oh</a>                949 cbench/openflow/lib/rconn.c     uint8_t type = oh-&gt;type;
+<a href='../S/827.html#L587'>oh</a>                587 cbench/openflow/lib/vconn-ssl.c         struct ofp_header *oh = rx-&gt;data;
+<a href='../S/827.html#L588'>oh</a>                588 cbench/openflow/lib/vconn-ssl.c         size_t length = ntohs(oh-&gt;length);
+<a href='../S/861.html#L131'>oh</a>                131 cbench/openflow/lib/vconn-stream.c         struct ofp_header *oh = rx-&gt;data;
+<a href='../S/861.html#L132'>oh</a>                132 cbench/openflow/lib/vconn-stream.c         size_t length = ntohs(oh-&gt;length);
+<a href='../S/881.html#L331'>oh</a>                331 cbench/openflow/lib/vconn.c         struct ofp_header *oh = b-&gt;data;
+<a href='../S/881.html#L333'>oh</a>                333 cbench/openflow/lib/vconn.c         if (oh-&gt;type == OFPT_HELLO) {
+<a href='../S/881.html#L334'>oh</a>                334 cbench/openflow/lib/vconn.c             if (b-&gt;size &gt; sizeof *oh) {
+<a href='../S/881.html#L342'>oh</a>                342 cbench/openflow/lib/vconn.c             vconn-&gt;version = MIN(OFP_VERSION, oh-&gt;version);
+<a href='../S/881.html#L348'>oh</a>                348 cbench/openflow/lib/vconn.c                              oh-&gt;version);
+<a href='../S/881.html#L355'>oh</a>                355 cbench/openflow/lib/vconn.c                          OFP_VERSION, oh-&gt;version);
+<a href='../S/881.html#L477'>oh</a>                477 cbench/openflow/lib/vconn.c         struct ofp_header *oh;
+<a href='../S/881.html#L485'>oh</a>                485 cbench/openflow/lib/vconn.c         oh = ofpbuf_at_assert(*msgp, 0, sizeof *oh);
+<a href='../S/881.html#L486'>oh</a>                486 cbench/openflow/lib/vconn.c         if (oh-&gt;version != vconn-&gt;version
+<a href='../S/881.html#L487'>oh</a>                487 cbench/openflow/lib/vconn.c             &amp;&amp; oh-&gt;type != OFPT_HELLO
+<a href='../S/881.html#L488'>oh</a>                488 cbench/openflow/lib/vconn.c             &amp;&amp; oh-&gt;type != OFPT_ERROR
+<a href='../S/881.html#L489'>oh</a>                489 cbench/openflow/lib/vconn.c             &amp;&amp; oh-&gt;type != OFPT_ECHO_REQUEST
+<a href='../S/881.html#L490'>oh</a>                490 cbench/openflow/lib/vconn.c             &amp;&amp; oh-&gt;type != OFPT_ECHO_REPLY
+<a href='../S/881.html#L491'>oh</a>                491 cbench/openflow/lib/vconn.c             &amp;&amp; oh-&gt;type != OFPT_VENDOR)
+<a href='../S/881.html#L494'>oh</a>                494 cbench/openflow/lib/vconn.c                 if (oh-&gt;type == OFPT_PACKET_IN
+<a href='../S/881.html#L495'>oh</a>                495 cbench/openflow/lib/vconn.c                     || oh-&gt;type == OFPT_FLOW_REMOVED
+<a href='../S/881.html#L496'>oh</a>                496 cbench/openflow/lib/vconn.c                     || oh-&gt;type == OFPT_PORT_STATUS) {
+<a href='../S/881.html#L510'>oh</a>                510 cbench/openflow/lib/vconn.c                             vconn-&gt;name, oh-&gt;type);
+<a href='../S/881.html#L514'>oh</a>                514 cbench/openflow/lib/vconn.c                             vconn-&gt;name, oh-&gt;version, vconn-&gt;version);
+<a href='../S/881.html#L845'>oh</a>                845 cbench/openflow/lib/vconn.c     struct ofp_header *oh;
+<a href='../S/881.html#L847'>oh</a>                847 cbench/openflow/lib/vconn.c     assert(openflow_len &gt;= sizeof *oh);
+<a href='../S/881.html#L850'>oh</a>                850 cbench/openflow/lib/vconn.c     oh = ofpbuf_put_uninit(buffer, openflow_len);
+<a href='../S/881.html#L851'>oh</a>                851 cbench/openflow/lib/vconn.c     oh-&gt;version = OFP_VERSION;
+<a href='../S/881.html#L852'>oh</a>                852 cbench/openflow/lib/vconn.c     oh-&gt;type = type;
+<a href='../S/881.html#L853'>oh</a>                853 cbench/openflow/lib/vconn.c     oh-&gt;length = htons(openflow_len);
+<a href='../S/881.html#L854'>oh</a>                854 cbench/openflow/lib/vconn.c     oh-&gt;xid = xid;
+<a href='../S/881.html#L855'>oh</a>                855 cbench/openflow/lib/vconn.c     memset(oh + 1, 0, openflow_len - sizeof *oh);
+<a href='../S/881.html#L856'>oh</a>                856 cbench/openflow/lib/vconn.c     return oh;
+<a href='../S/881.html#L864'>oh</a>                864 cbench/openflow/lib/vconn.c     struct ofp_header *oh = ofpbuf_at_assert(buffer, 0, sizeof *oh);
+<a href='../S/881.html#L865'>oh</a>                865 cbench/openflow/lib/vconn.c     oh-&gt;length = htons(buffer-&gt;size); 
+<a href='../S/810.html#L234'>oh</a>                234 cbench/openflow/secchan/port-watcher.c     struct ofp_header *oh = msg-&gt;data;
+<a href='../S/810.html#L236'>oh</a>                236 cbench/openflow/secchan/port-watcher.c     if (oh-&gt;type == OFPT_FEATURES_REPLY
+<a href='../S/810.html#L272'>oh</a>                272 cbench/openflow/secchan/port-watcher.c     } else if (oh-&gt;type == OFPT_PORT_STATUS
+<a href='../S/810.html#L316'>oh</a>                316 cbench/openflow/secchan/port-watcher.c     struct ofp_header *oh = msg-&gt;data;
+<a href='../S/810.html#L318'>oh</a>                318 cbench/openflow/secchan/port-watcher.c     if (oh-&gt;type == OFPT_PORT_MOD
+<a href='../S/801.html#L347'>oh</a>                347 cbench/openflow/secchan/secchan.c     struct ofp_header *oh = msg-&gt;data;
+<a href='../S/801.html#L348'>oh</a>                348 cbench/openflow/secchan/secchan.c     if (oh-&gt;type == OFPT_PACKET_IN) {
+<a href='../S/797.html#L67'>oh</a>                 67 cbench/openflow/secchan/stp-secchan.c     struct ofp_header *oh;
+<a href='../S/797.html#L76'>oh</a>                 76 cbench/openflow/secchan/stp-secchan.c     oh = msg-&gt;data;
+<a href='../S/797.html#L77'>oh</a>                 77 cbench/openflow/secchan/stp-secchan.c     if (oh-&gt;type == OFPT_FEATURES_REPLY
+<a href='../S/204.html#L626'>oh</a>                626 cbench/openflow/udatapath/datapath.c             struct ofp_header *oh;
+<a href='../S/204.html#L633'>oh</a>                633 cbench/openflow/udatapath/datapath.c             if (buffer-&gt;size &gt;= sizeof *oh) {
+<a href='../S/204.html#L636'>oh</a>                636 cbench/openflow/udatapath/datapath.c                 oh = (struct ofp_header *)buffer-&gt;data;
+<a href='../S/204.html#L638'>oh</a>                638 cbench/openflow/udatapath/datapath.c                 sender.xid = oh-&gt;xid;
+<a href='../S/204.html#L2099'>oh</a>               2099 cbench/openflow/udatapath/datapath.c                    const void *oh)
+<a href='../S/204.html#L2101'>oh</a>               2101 cbench/openflow/udatapath/datapath.c     const struct ofp_stats_request *rq = oh;
+<a href='../S/204.html#L2155'>oh</a>               2155 cbench/openflow/udatapath/datapath.c                   const void *oh)
+<a href='../S/204.html#L2157'>oh</a>               2157 cbench/openflow/udatapath/datapath.c     return send_openflow_buffer(dp, make_echo_reply(oh), sender);
+<a href='../S/204.html#L2162'>oh</a>               2162 cbench/openflow/udatapath/datapath.c                   const void *oh UNUSED)
+<a href='../S/204.html#L2169'>oh</a>               2169 cbench/openflow/udatapath/datapath.c                               const void *oh)
+<a href='../S/204.html#L2178'>oh</a>               2178 cbench/openflow/udatapath/datapath.c     ofq_request = (struct ofp_queue_get_config_request *)oh;
+<a href='../S/204.html#L2188'>oh</a>               2188 cbench/openflow/udatapath/datapath.c                               oh, ntohs(ofq_request-&gt;header.length));
+<a href='../S/204.html#L2202'>oh</a>               2202 cbench/openflow/udatapath/datapath.c                           oh, ntohs(ofq_request-&gt;header.length));
+<a href='../S/204.html#L2210'>oh</a>               2210 cbench/openflow/udatapath/datapath.c                   const void *oh)
+<a href='../S/204.html#L2212'>oh</a>               2212 cbench/openflow/udatapath/datapath.c     const struct ofp_vendor_header *ovh = oh;
+<a href='../S/204.html#L2217'>oh</a>               2217 cbench/openflow/udatapath/datapath.c         return private_recv_msg(dp, sender, oh);
+<a href='../S/204.html#L2220'>oh</a>               2220 cbench/openflow/udatapath/datapath.c         return of_ext_recv_msg(dp, sender, oh);
+<a href='../S/204.html#L2225'>oh</a>               2225 cbench/openflow/udatapath/datapath.c                 OFPBRC_BAD_VENDOR, oh, ntohs(ovh-&gt;header.length));
+<a href='../S/204.html#L2237'>oh</a>               2237 cbench/openflow/udatapath/datapath.c     struct ofp_header *oh;
+<a href='../S/204.html#L2241'>oh</a>               2241 cbench/openflow/udatapath/datapath.c     oh = (struct ofp_header *) msg;
+<a href='../S/204.html#L2242'>oh</a>               2242 cbench/openflow/udatapath/datapath.c     if (ntohs(oh-&gt;length) &gt; length) {
+<a href='../S/204.html#L2245'>oh</a>               2245 cbench/openflow/udatapath/datapath.c     assert(oh-&gt;version == OFP_VERSION);
+<a href='../S/204.html#L2248'>oh</a>               2248 cbench/openflow/udatapath/datapath.c     switch (oh-&gt;type) {
+<a href='../S/203.html#L91'>oh</a>                 91 cbench/openflow/udatapath/of_ext_msg.c                          const void *oh)
+<a href='../S/203.html#L101'>oh</a>                101 cbench/openflow/udatapath/of_ext_msg.c     ofq_delete = (struct openflow_queue_command_header *)oh;
+<a href='../S/203.html#L115'>oh</a>                115 cbench/openflow/udatapath/of_ext_msg.c                               OFPQOFC_BAD_PORT, oh,
+<a href='../S/203.html#L121'>oh</a>                121 cbench/openflow/udatapath/of_ext_msg.c                           OFPQOFC_BAD_PORT, oh,
+<a href='../S/203.html#L137'>oh</a>                137 cbench/openflow/udatapath/of_ext_msg.c                          const void *oh)
+<a href='../S/203.html#L150'>oh</a>                150 cbench/openflow/udatapath/of_ext_msg.c     ofq_modify = (struct openflow_queue_command_header *)oh;
+<a href='../S/203.html#L159'>oh</a>                159 cbench/openflow/udatapath/of_ext_msg.c                           OFQ_ERR_DISCIPLINE, oh,
+<a href='../S/203.html#L178'>oh</a>                178 cbench/openflow/udatapath/of_ext_msg.c                                   OFPQOFC_EPERM, oh,
+<a href='../S/203.html#L191'>oh</a>                191 cbench/openflow/udatapath/of_ext_msg.c                                   OFPQOFC_EPERM, oh,
+<a href='../S/203.html#L200'>oh</a>                200 cbench/openflow/udatapath/of_ext_msg.c                                   OFPQOFC_BAD_QUEUE, oh,
+<a href='../S/203.html#L207'>oh</a>                207 cbench/openflow/udatapath/of_ext_msg.c                           oh, ntohs(ofq_modify-&gt;header.header.length));
+<a href='../S/203.html#L244'>oh</a>                244 cbench/openflow/udatapath/of_ext_msg.c         const void *oh)
+<a href='../S/203.html#L246'>oh</a>                246 cbench/openflow/udatapath/of_ext_msg.c     const struct ofp_extension_header  *ofexth = oh;
+<a href='../S/203.html#L250'>oh</a>                250 cbench/openflow/udatapath/of_ext_msg.c         recv_of_exp_queue_modify(dp,sender,oh);
+<a href='../S/203.html#L254'>oh</a>                254 cbench/openflow/udatapath/of_ext_msg.c         recv_of_exp_queue_delete(dp,sender,oh);
+</pre>
+</body>
+</html>

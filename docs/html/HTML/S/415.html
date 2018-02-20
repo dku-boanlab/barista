@@ -1,0 +1,333 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reassemble.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/reassemble.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* reassemble.h</font></i>
+<a name='L2'>   2 <i><font color='green'> * Declarations of outines for {fragment,segment} reassembly</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * $Id: reassemble.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L5'>   5 <i><font color='green'> *</font></i>
+<a name='L6'>   6 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L7'>   7 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L8'>   8 <i><font color='green'> * Copyright 1998 Gerald Combs</font></i>
+<a name='L9'>   9 <i><font color='green'> *</font></i>
+<a name='L10'>  10 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L11'>  11 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L12'>  12 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L13'>  13 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L14'>  14 <i><font color='green'> *</font></i>
+<a name='L15'>  15 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L16'>  16 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L17'>  17 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L18'>  18 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L21'>  21 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L22'>  22 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L23'>  23 <i><font color='green'> */</font></i>
+<a name='L24'>  24 
+<a name='L25'>  25 <i><font color='green'>/* make sure that all flags that are set in a fragment entry is also set for</font></i>
+<a name='L26'>  26 <i><font color='green'> * the flags field of fd_head !!!</font></i>
+<a name='L27'>  27 <i><font color='green'> */</font></i>
+<a name='L28'>  28 
+<a name='L29'>  29 <i><font color='green'>/* only in fd_head: packet is defragmented */</font></i>
+<a name='L30'>  30 <font color='darkred'>#define</font> FD_DEFRAGMENTED         0x0001
+<a name='L31'>  31 
+<a name='L32'>  32 <i><font color='green'>/* there are overlapping fragments */</font></i>
+<a name='L33'>  33 <font color='darkred'>#define</font> FD_OVERLAP              0x0002
+<a name='L34'>  34 
+<a name='L35'>  35 <i><font color='green'>/* overlapping fragments contain different data */</font></i>
+<a name='L36'>  36 <font color='darkred'>#define</font> FD_OVERLAPCONFLICT      0x0004
+<a name='L37'>  37 
+<a name='L38'>  38 <i><font color='green'>/* more than one fragment which indicates end-of data */</font></i>
+<a name='L39'>  39 <font color='darkred'>#define</font> FD_MULTIPLETAILS        0x0008
+<a name='L40'>  40 
+<a name='L41'>  41 <i><font color='green'>/* fragment contains data past the end of the datagram */</font></i>
+<a name='L42'>  42 <font color='darkred'>#define</font> FD_TOOLONGFRAGMENT      0x0010
+<a name='L43'>  43 
+<a name='L44'>  44 <i><font color='green'>/* fragment data not alloced, fd-&gt;data pointing to fd_head-&gt;data+fd-&gt;offset */</font></i>
+<a name='L45'>  45 <font color='darkred'>#define</font> FD_NOT_MALLOCED         0x0020
+<a name='L46'>  46 
+<a name='L47'>  47 <i><font color='green'>/* this flag is used to request fragment_add to continue the reassembly process */</font></i>
+<a name='L48'>  48 <font color='darkred'>#define</font> FD_PARTIAL_REASSEMBLY   0x0040
+<a name='L49'>  49 
+<a name='L50'>  50 <i><font color='green'>/* fragment offset is indicated by sequence number and not byte offset</font></i>
+<a name='L51'>  51 <i><font color='green'>   into the defragmented packet */</font></i>
+<a name='L52'>  52 <font color='darkred'>#define</font> FD_BLOCKSEQUENCE        0x0100
+<a name='L53'>  53 
+<a name='L54'>  54 <i><font color='green'>/* if REASSEMBLE_FLAGS_CHECK_DATA_PRESENT is set, and the first fragment is</font></i>
+<a name='L55'>  55 <i><font color='green'> * incomplete, this flag is set in the flags word on the fd_head returned.</font></i>
+<a name='L56'>  56 <i><font color='green'> *</font></i>
+<a name='L57'>  57 <i><font color='green'> * It's all a fudge to preserve historical behaviour.</font></i>
+<a name='L58'>  58 <i><font color='green'> */</font></i>
+<a name='L59'>  59 <font color='darkred'>#define</font> FD_DATA_NOT_PRESENT     0x0200
+<a name='L60'>  60 
+<a name='L61'>  61 <i><font color='green'>/* This flag is set in the to denote that datalen has ben set to a valid value.</font></i>
+<a name='L62'>  62 <i><font color='green'> * It's implied by FD_DEFRAGMENTED (we must know the total length of the</font></i>
+<a name='L63'>  63 <i><font color='green'> * datagram if we have defragmented it...)</font></i>
+<a name='L64'>  64 <i><font color='green'> */</font></i>
+<a name='L65'>  65 <font color='darkred'>#define</font> FD_DATALEN_SET          0x0400
+<a name='L66'>  66 
+<a name='L67'>  67 <b>typedef</b> <b>struct</b> <a href='../R/2073.html' title='Multiple refered from 2 places.'>_fragment_data</a> <font color='red'>{</font>
+<a name='L68'>  68         <b>struct</b> <a href='../S/415.html#L67' title='Defined at 67 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reassemble.h.'>_fragment_data</a> *<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L69'>  69         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3219.html' title='Multiple used in 19 places.'>frame</a>;
+<a name='L70'>  70         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>;
+<a name='L71'>  71         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;
+<a name='L72'>  72         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> datalen; <i><font color='green'>/* Only valid in first item of list and when</font></i>
+<a name='L73'>  73 <i><font color='green'>                          * flags&amp;FD_DATALEN_SET is set;</font></i>
+<a name='L74'>  74 <i><font color='green'>                          * number of bytes or (if flags&amp;FD_BLOCKSEQUENCE set)</font></i>
+<a name='L75'>  75 <i><font color='green'>                          * segments in the datagram */</font></i>
+<a name='L76'>  76         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> reassembled_in; <i><font color='green'>/* frame where this PDU was reassembled,</font></i>
+<a name='L77'>  77 <i><font color='green'>                                   only valid in the first item of the list</font></i>
+<a name='L78'>  78 <i><font color='green'>                                   and when FD_DEFRAGMENTED is set*/</font></i>
+<a name='L79'>  79         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>;
+<a name='L80'>  80         <b>unsigned</b> <b>char</b> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L81'>  81 <font color='red'>}</font> <a href='../R/3097.html' title='Multiple refered from 13 places.'>fragment_data</a>;
+<a name='L82'>  82 
+<a name='L83'>  83 
+<a name='L84'>  84 <i><font color='green'>/*</font></i>
+<a name='L85'>  85 <i><font color='green'> * Flags for fragment_add_seq_*</font></i>
+<a name='L86'>  86 <i><font color='green'> */</font></i>
+<a name='L87'>  87 
+<a name='L88'>  88 <i><font color='green'>/* we don't have any sequence numbers - fragments are assumed to appear in</font></i>
+<a name='L89'>  89 <i><font color='green'> * order */</font></i>
+<a name='L90'>  90 <font color='darkred'>#define</font> REASSEMBLE_FLAGS_NO_FRAG_NUMBER         0x0001
+<a name='L91'>  91 
+<a name='L92'>  92 <i><font color='green'>/* a special fudge for the 802.11 dissector */</font></i>
+<a name='L93'>  93 <font color='darkred'>#define</font> REASSEMBLE_FLAGS_802_11_HACK            0x0002
+<a name='L94'>  94 
+<a name='L95'>  95 <i><font color='green'>/* causes fragment_add_seq_key to check that all the fragment data is present</font></i>
+<a name='L96'>  96 <i><font color='green'> * in the tvb, and if not, do something a bit odd. */</font></i>
+<a name='L97'>  97 <font color='darkred'>#define</font> REASSEMBLE_FLAGS_CHECK_DATA_PRESENT     0x0004
+<a name='L98'>  98 
+<a name='L99'>  99 <i><font color='green'>/* a function for copying hash keys */</font></i>
+<a name='L100'> 100 <b>typedef</b> <b>void</b> *(*<a href='../Y/3216.html' title='Multiple used in 2 places.'>fragment_key_copier</a>)(<b>const</b> <b>void</b> *<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>);
+<a name='L101'> 101 
+<a name='L102'> 102 
+<a name='L103'> 103 <i><font color='green'>/*</font></i>
+<a name='L104'> 104 <i><font color='green'> * Initialize a fragment table.</font></i>
+<a name='L105'> 105 <i><font color='green'> */</font></i>
+<a name='L106'> 106 <b>extern</b> <b>void</b> fragment_table_init(<a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> **<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>);
+<a name='L107'> 107 <b>extern</b> <b>void</b> dcerpc_fragment_table_init(<a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> **<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>);
+<a name='L108'> 108 
+<a name='L109'> 109 <i><font color='green'>/*</font></i>
+<a name='L110'> 110 <i><font color='green'> * Initialize a reassembled-packet table.</font></i>
+<a name='L111'> 111 <i><font color='green'> */</font></i>
+<a name='L112'> 112 <b>extern</b> <b>void</b> reassembled_table_init(<a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> **<a href='../Y/6296.html' title='Multiple used in 8 places.'>reassembled_table</a>);
+<a name='L113'> 113 
+<a name='L114'> 114 <i><font color='green'>/*</font></i>
+<a name='L115'> 115 <i><font color='green'> * Free up all space allocated for fragment keys and data.</font></i>
+<a name='L116'> 116 <i><font color='green'> */</font></i>
+<a name='L117'> 117 <b>void</b> reassemble_init(<b>void</b>);
+<a name='L118'> 118 
+<a name='L119'> 119 <i><font color='green'>/*</font></i>
+<a name='L120'> 120 <i><font color='green'> * This function adds a new fragment to the fragment hash table.</font></i>
+<a name='L121'> 121 <i><font color='green'> * If this is the first fragment seen for this datagram, a new entry</font></i>
+<a name='L122'> 122 <i><font color='green'> * is created in the hash table, otherwise this fragment is just added</font></i>
+<a name='L123'> 123 <i><font color='green'> * to the linked list of fragments for this packet.</font></i>
+<a name='L124'> 124 <i><font color='green'> * The list of fragments for a specific datagram is kept sorted for</font></i>
+<a name='L125'> 125 <i><font color='green'> * easier handling.</font></i>
+<a name='L126'> 126 <i><font color='green'> *</font></i>
+<a name='L127'> 127 <i><font color='green'> * Returns a pointer to the head of the fragment data list if we have all the</font></i>
+<a name='L128'> 128 <i><font color='green'> * fragments, NULL otherwise.</font></i>
+<a name='L129'> 129 <i><font color='green'> */</font></i>
+<a name='L130'> 130 <b>extern</b> <a href='../S/415.html#L81' title='Defined at 81 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reassemble.h.'>fragment_data</a> *fragment_add(<a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/7512.html' title='Multiple used in 508 places.'>tvb</a>, <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>,
+<a name='L131'> 131     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3213.html' title='Multiple used in 3 places.'>frag_offset</a>,
+<a name='L132'> 132     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3210.html' title='Multiple used in 9 places.'>frag_data_len</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/4503.html' title='Multiple used in 10 places.'>more_frags</a>);
+<a name='L133'> 133 <b>extern</b> <a href='../S/415.html#L81' title='Defined at 81 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reassemble.h.'>fragment_data</a> *fragment_add_multiple_ok(<a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/7512.html' title='Multiple used in 508 places.'>tvb</a>, <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>,
+<a name='L134'> 134     <a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>,
+<a name='L135'> 135     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3213.html' title='Multiple used in 3 places.'>frag_offset</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3210.html' title='Multiple used in 9 places.'>frag_data_len</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/4503.html' title='Multiple used in 10 places.'>more_frags</a>);
+<a name='L136'> 136 
+<a name='L137'> 137 <i><font color='green'>/*</font></i>
+<a name='L138'> 138 <i><font color='green'> * This routine extends fragment_add to use a "reassembled_table".</font></i>
+<a name='L139'> 139 <i><font color='green'> *</font></i>
+<a name='L140'> 140 <i><font color='green'> * If, after processing this fragment, we have all the fragments, they</font></i>
+<a name='L141'> 141 <i><font color='green'> * remove that from the fragment hash table if necessary and add it</font></i>
+<a name='L142'> 142 <i><font color='green'> * to the table of reassembled fragments, and return a pointer to the</font></i>
+<a name='L143'> 143 <i><font color='green'> * head of the fragment list.</font></i>
+<a name='L144'> 144 <i><font color='green'> */</font></i>
+<a name='L145'> 145 <b>extern</b> <a href='../S/415.html#L81' title='Defined at 81 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reassemble.h.'>fragment_data</a> *fragment_add_check(<a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/7512.html' title='Multiple used in 508 places.'>tvb</a>, <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>,
+<a name='L146'> 146     <a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>,
+<a name='L147'> 147     <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/6296.html' title='Multiple used in 8 places.'>reassembled_table</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3213.html' title='Multiple used in 3 places.'>frag_offset</a>,
+<a name='L148'> 148     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3210.html' title='Multiple used in 9 places.'>frag_data_len</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/4503.html' title='Multiple used in 10 places.'>more_frags</a>);
+<a name='L149'> 149 
+<a name='L150'> 150 <i><font color='green'>/* same as fragment_add() but this one assumes frag_number is a block</font></i>
+<a name='L151'> 151 <i><font color='green'>   sequence number. note that frag_number is 0 for the first fragment. */</font></i>
+<a name='L152'> 152 
+<a name='L153'> 153 <i><font color='green'>/*</font></i>
+<a name='L154'> 154 <i><font color='green'> * These functions add a new fragment to the fragment hash table,</font></i>
+<a name='L155'> 155 <i><font color='green'> * assuming that frag_number is a block sequence number (starting from zero for</font></i>
+<a name='L156'> 156 <i><font color='green'> * the first fragment of each datagram).</font></i>
+<a name='L157'> 157 <i><font color='green'> *</font></i>
+<a name='L158'> 158 <i><font color='green'> * If this is the first fragment seen for this datagram, a new</font></i>
+<a name='L159'> 159 <i><font color='green'> * "fragment_data" structure is allocated to refer to the reassembled</font></i>
+<a name='L160'> 160 <i><font color='green'> * packet, and:</font></i>
+<a name='L161'> 161 <i><font color='green'> *</font></i>
+<a name='L162'> 162 <i><font color='green'> *      if "more_frags" is false, and either we have no sequence numbers, or</font></i>
+<a name='L163'> 163 <i><font color='green'> *      are using the 802.11 hack, it is assumed that this is the only fragment</font></i>
+<a name='L164'> 164 <i><font color='green'> *      in the datagram. The structure is not added to the hash</font></i>
+<a name='L165'> 165 <i><font color='green'> *      table, and not given any fragments to refer to, but is just returned.</font></i>
+<a name='L166'> 166 <i><font color='green'> *</font></i>
+<a name='L167'> 167 <i><font color='green'> *      In this latter case reassembly wasn't done (since there was only one</font></i>
+<a name='L168'> 168 <i><font color='green'> *      fragment in the packet); dissectors can check the 'next' pointer on the</font></i>
+<a name='L169'> 169 <i><font color='green'> *      returned list to see if this case was hit or not.</font></i>
+<a name='L170'> 170 <i><font color='green'> *</font></i>
+<a name='L171'> 171 <i><font color='green'> * Otherwise, this fragment is just added to the linked list of fragments</font></i>
+<a name='L172'> 172 <i><font color='green'> * for this packet; the fragment_data is also added to the fragment hash if</font></i>
+<a name='L173'> 173 <i><font color='green'> * necessary.</font></i>
+<a name='L174'> 174 <i><font color='green'> *</font></i>
+<a name='L175'> 175 <i><font color='green'> * If this packet completes assembly, these functions return the head of the</font></i>
+<a name='L176'> 176 <i><font color='green'> * fragment data; otherwise, they return null.</font></i>
+<a name='L177'> 177 <i><font color='green'> */</font></i>
+<a name='L178'> 178 
+<a name='L179'> 179 <i><font color='green'>/* "key" should be an arbitrary key used for indexing the fragment hash;</font></i>
+<a name='L180'> 180 <i><font color='green'> * "key_copier" is called to copy the key to a more appropriate store before</font></i>
+<a name='L181'> 181 <i><font color='green'> * inserting a new entry to the hash.</font></i>
+<a name='L182'> 182 <i><font color='green'> */</font></i>
+<a name='L183'> 183 <b>extern</b> <a href='../S/415.html#L81' title='Defined at 81 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reassemble.h.'>fragment_data</a> *
+<a name='L184'> 184 fragment_add_seq_key(<a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/7512.html' title='Multiple used in 508 places.'>tvb</a>, <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>,
+<a name='L185'> 185                      <b>void</b> *<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>, <a href='../Y/3216.html' title='Multiple used in 2 places.'>fragment_key_copier</a> key_copier,
+<a name='L186'> 186                      <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3211.html' title='Multiple used in 5 places.'>frag_number</a>,
+<a name='L187'> 187                      <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3210.html' title='Multiple used in 9 places.'>frag_data_len</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/4503.html' title='Multiple used in 10 places.'>more_frags</a>,
+<a name='L188'> 188                      <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>);
+<a name='L189'> 189 
+<a name='L190'> 190 <i><font color='green'>/* a wrapper for fragment_add_seq_key - uses a key of source, dest and frame number */</font></i>
+<a name='L191'> 191 <b>extern</b> <a href='../S/415.html#L81' title='Defined at 81 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reassemble.h.'>fragment_data</a> *fragment_add_seq(<a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/7512.html' title='Multiple used in 508 places.'>tvb</a>, <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>,
+<a name='L192'> 192     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3211.html' title='Multiple used in 5 places.'>frag_number</a>,
+<a name='L193'> 193     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3210.html' title='Multiple used in 9 places.'>frag_data_len</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/4503.html' title='Multiple used in 10 places.'>more_frags</a>);
+<a name='L194'> 194 
+<a name='L195'> 195 <i><font color='green'>/* another wrapper for fragment_add_seq_key - uses a key of source, dest, frame</font></i>
+<a name='L196'> 196 <i><font color='green'> * number and act_id */</font></i>
+<a name='L197'> 197 <b>extern</b> <a href='../S/415.html#L81' title='Defined at 81 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reassemble.h.'>fragment_data</a> *
+<a name='L198'> 198 fragment_add_dcerpc_dg(<a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/7512.html' title='Multiple used in 508 places.'>tvb</a>, <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>,
+<a name='L199'> 199         <b>void</b> *act_id,
+<a name='L200'> 200         <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3211.html' title='Multiple used in 5 places.'>frag_number</a>,
+<a name='L201'> 201         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3210.html' title='Multiple used in 9 places.'>frag_data_len</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/4503.html' title='Multiple used in 10 places.'>more_frags</a>);
+<a name='L202'> 202 
+<a name='L203'> 203 <i><font color='green'>/*</font></i>
+<a name='L204'> 204 <i><font color='green'> * These routines extend fragment_add_seq_key to use a "reassembled_table".</font></i>
+<a name='L205'> 205 <i><font color='green'> *</font></i>
+<a name='L206'> 206 <i><font color='green'> * If, after processing this fragment, we have all the fragments, they</font></i>
+<a name='L207'> 207 <i><font color='green'> * remove that from the fragment hash table if necessary and add it</font></i>
+<a name='L208'> 208 <i><font color='green'> * to the table of reassembled fragments, and return a pointer to the</font></i>
+<a name='L209'> 209 <i><font color='green'> * head of the fragment list.</font></i>
+<a name='L210'> 210 <i><font color='green'> */</font></i>
+<a name='L211'> 211 <b>extern</b> <a href='../S/415.html#L81' title='Defined at 81 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reassemble.h.'>fragment_data</a> *
+<a name='L212'> 212 fragment_add_seq_check(<a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/7512.html' title='Multiple used in 508 places.'>tvb</a>, <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>,
+<a name='L213'> 213              <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>,
+<a name='L214'> 214              <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/6296.html' title='Multiple used in 8 places.'>reassembled_table</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3211.html' title='Multiple used in 5 places.'>frag_number</a>,
+<a name='L215'> 215              <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3210.html' title='Multiple used in 9 places.'>frag_data_len</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/4503.html' title='Multiple used in 10 places.'>more_frags</a>);
+<a name='L216'> 216 
+<a name='L217'> 217 <b>extern</b> <a href='../S/415.html#L81' title='Defined at 81 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reassemble.h.'>fragment_data</a> *
+<a name='L218'> 218 fragment_add_seq_802_11(<a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/7512.html' title='Multiple used in 508 places.'>tvb</a>, <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>,
+<a name='L219'> 219              <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>,
+<a name='L220'> 220              <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/6296.html' title='Multiple used in 8 places.'>reassembled_table</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3211.html' title='Multiple used in 5 places.'>frag_number</a>,
+<a name='L221'> 221              <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3210.html' title='Multiple used in 9 places.'>frag_data_len</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/4503.html' title='Multiple used in 10 places.'>more_frags</a>);
+<a name='L222'> 222 
+<a name='L223'> 223 <b>extern</b> <a href='../S/415.html#L81' title='Defined at 81 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reassemble.h.'>fragment_data</a> *
+<a name='L224'> 224 fragment_add_seq_next(<a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/7512.html' title='Multiple used in 508 places.'>tvb</a>, <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>,
+<a name='L225'> 225              <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>, <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/6296.html' title='Multiple used in 8 places.'>reassembled_table</a>,
+<a name='L226'> 226              <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3210.html' title='Multiple used in 9 places.'>frag_data_len</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/4503.html' title='Multiple used in 10 places.'>more_frags</a>);
+<a name='L227'> 227 
+<a name='L228'> 228 <b>extern</b> <b>void</b>
+<a name='L229'> 229 fragment_start_seq_check(<a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>, 
+<a name='L230'> 230                          <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/7431.html' title='Multiple used in 9 places.'>tot_len</a>);
+<a name='L231'> 231 
+<a name='L232'> 232 <b>extern</b> <a href='../S/415.html#L81' title='Defined at 81 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reassemble.h.'>fragment_data</a> *
+<a name='L233'> 233 fragment_end_seq_next(<a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>,
+<a name='L234'> 234                       <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/6296.html' title='Multiple used in 8 places.'>reassembled_table</a>);
+<a name='L235'> 235 <i><font color='green'>/* to specify how much to reassemble, for fragmentation where last fragment can not be</font></i>
+<a name='L236'> 236 <i><font color='green'> * identified by flags or such.</font></i>
+<a name='L237'> 237 <i><font color='green'> * note that for FD_BLOCKSEQUENCE tot_len is the index for the tail fragment.</font></i>
+<a name='L238'> 238 <i><font color='green'> * i.e. since the block numbers start at 0, if we specify tot_len==2, that</font></i>
+<a name='L239'> 239 <i><font color='green'> * actually means we want to defragment 3 blocks, block 0, 1 and 2.</font></i>
+<a name='L240'> 240 <i><font color='green'> *</font></i>
+<a name='L241'> 241 <i><font color='green'> */</font></i>
+<a name='L242'> 242 <b>extern</b> <b>void</b>
+<a name='L243'> 243 fragment_set_tot_len(<a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>,
+<a name='L244'> 244                      <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/7431.html' title='Multiple used in 9 places.'>tot_len</a>);
+<a name='L245'> 245 
+<a name='L246'> 246 <i><font color='green'>/* to resad whatever totlen previously set */</font></i>
+<a name='L247'> 247 <b>extern</b> <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a>
+<a name='L248'> 248 fragment_get_tot_len(<a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>);
+<a name='L249'> 249 
+<a name='L250'> 250 <i><font color='green'>/*</font></i>
+<a name='L251'> 251 <i><font color='green'> * This function will set the partial reassembly flag(FD_PARTIAL_REASSEMBLY) for a fh.</font></i>
+<a name='L252'> 252 <i><font color='green'> * When this function is called, the fh MUST already exist, i.e.</font></i>
+<a name='L253'> 253 <i><font color='green'> * the fh MUST be created by the initial call to fragment_add() before</font></i>
+<a name='L254'> 254 <i><font color='green'> * this function is called. Also note that this function MUST be called to indicate</font></i>
+<a name='L255'> 255 <i><font color='green'> * a fh will be extended (increase the already stored data). After calling this function,</font></i>
+<a name='L256'> 256 <i><font color='green'> * and if FD_DEFRAGMENTED is set, the reassembly process will be continued.</font></i>
+<a name='L257'> 257 <i><font color='green'> */</font></i>
+<a name='L258'> 258 <b>extern</b> <b>void</b>
+<a name='L259'> 259 fragment_set_partial_reassembly(<a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>);
+<a name='L260'> 260 
+<a name='L261'> 261 <i><font color='green'>/* This function is used to check if there is partial or completed reassembly state</font></i>
+<a name='L262'> 262 <i><font color='green'> * matching this packet. I.e. Are there reassembly going on or not for this packet?</font></i>
+<a name='L263'> 263 <i><font color='green'> */</font></i>
+<a name='L264'> 264 <b>extern</b> <a href='../S/415.html#L81' title='Defined at 81 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reassemble.h.'>fragment_data</a> *
+<a name='L265'> 265 fragment_get(<a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>);
+<a name='L266'> 266 
+<a name='L267'> 267 <i><font color='green'>/* The same for the reassemble table */</font></i>
+<a name='L268'> 268 <i><font color='green'>/* id *must* be the frame number for this to work! */</font></i>
+<a name='L269'> 269 <b>extern</b> <a href='../S/415.html#L81' title='Defined at 81 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reassemble.h.'>fragment_data</a> *
+<a name='L270'> 270 fragment_get_reassembled(<a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/6296.html' title='Multiple used in 8 places.'>reassembled_table</a>);
+<a name='L271'> 271 
+<a name='L272'> 272 <b>extern</b> <a href='../S/415.html#L81' title='Defined at 81 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/reassemble.h.'>fragment_data</a> *
+<a name='L273'> 273 fragment_get_reassembled_id(<a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/6296.html' title='Multiple used in 8 places.'>reassembled_table</a>);
+<a name='L274'> 274 
+<a name='L275'> 275 <i><font color='green'>/* This will free up all resources and delete reassembly state for this PDU.</font></i>
+<a name='L276'> 276 <i><font color='green'> * Except if the PDU is completely reassembled, then it would NOT deallocate the</font></i>
+<a name='L277'> 277 <i><font color='green'> * buffer holding the reassembled data but instead return the pointer to that</font></i>
+<a name='L278'> 278 <i><font color='green'> * buffer.</font></i>
+<a name='L279'> 279 <i><font color='green'> *</font></i>
+<a name='L280'> 280 <i><font color='green'> * So, if you call fragment_delete and it returns non-NULL, YOU are responsible to</font></i>
+<a name='L281'> 281 <i><font color='green'> * g_free() that buffer.</font></i>
+<a name='L282'> 282 <i><font color='green'> */</font></i>
+<a name='L283'> 283 <b>extern</b> <b>unsigned</b> <b>char</b> *
+<a name='L284'> 284 fragment_delete(<a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/381.html' title='Multiple used in 31 places.'>GHashTable</a> *<a href='../Y/3217.html' title='Multiple used in 18 places.'>fragment_table</a>);
+<a name='L285'> 285 
+<a name='L286'> 286 <i><font color='green'>/* hf_fragment, hf_fragment_error, and hf_reassembled_in should be</font></i>
+<a name='L287'> 287 <i><font color='green'>   FT_FRAMENUM, the others should be FT_BOOLEAN</font></i>
+<a name='L288'> 288 <i><font color='green'>*/</font></i>
+<a name='L289'> 289 <b>typedef</b> <b>struct</b> <a href='../S/420.html#L33' title='Refered from 33 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/stream.h.'>_fragment_items</a> <font color='red'>{</font>
+<a name='L290'> 290         <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a>    *ett_fragment;
+<a name='L291'> 291         <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a>    *ett_fragments;
+<a name='L292'> 292 
+<a name='L293'> 293         <b>int</b>     *hf_fragments;
+<a name='L294'> 294         <b>int</b>     *hf_fragment;
+<a name='L295'> 295         <b>int</b>     *hf_fragment_overlap;
+<a name='L296'> 296         <b>int</b>     *hf_fragment_overlap_conflict;
+<a name='L297'> 297         <b>int</b>     *hf_fragment_multiple_tails;
+<a name='L298'> 298         <b>int</b>     *hf_fragment_too_long_fragment;
+<a name='L299'> 299         <b>int</b>     *hf_fragment_error;
+<a name='L300'> 300         <b>int</b>     *hf_reassembled_in;
+<a name='L301'> 301 
+<a name='L302'> 302         <b>const</b> <b>char</b>      *<a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a>;
+<a name='L303'> 303 <font color='red'>}</font> fragment_items;
+<a name='L304'> 304 
+<a name='L305'> 305 <b>extern</b> <a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *
+<a name='L306'> 306 process_reassembled_data(<a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/7512.html' title='Multiple used in 508 places.'>tvb</a>, <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>,
+<a name='L307'> 307     <b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>, <a href='../Y/3214.html' title='Multiple used in 3 places.'>fragment_data</a> *fd_head, <b>const</b> <a href='../Y/3215.html' title='Multiple used in 3 places.'>fragment_items</a> *<a href='../Y/3111.html' title='Multiple used in 4 places.'>fit</a>,
+<a name='L308'> 308     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> *<a href='../Y/7657.html' title='Multiple used in 2 places.'>update_col_infop</a>, <a href='../Y/6018.html' title='Multiple used in 61 places.'>proto_tree</a> *<a href='../Y/7472.html' title='Multiple used in 55 places.'>tree</a>);
+<a name='L309'> 309 
+<a name='L310'> 310 <b>extern</b> <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a>
+<a name='L311'> 311 show_fragment_tree(<a href='../Y/3214.html' title='Multiple used in 3 places.'>fragment_data</a> *<a href='../Y/3900.html' title='Multiple used in 2 places.'>ipfd_head</a>, <b>const</b> <a href='../Y/3215.html' title='Multiple used in 3 places.'>fragment_items</a> *<a href='../Y/3111.html' title='Multiple used in 4 places.'>fit</a>,
+<a name='L312'> 312     <a href='../Y/6018.html' title='Multiple used in 61 places.'>proto_tree</a> *<a href='../Y/7472.html' title='Multiple used in 55 places.'>tree</a>, <a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/7512.html' title='Multiple used in 508 places.'>tvb</a>, <a href='../Y/5983.html' title='Multiple used in 21 places.'>proto_item</a> **<a href='../Y/3034.html' title='Multiple used in 6 places.'>fi</a>);
+<a name='L313'> 313 
+<a name='L314'> 314 <b>extern</b> <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a>
+<a name='L315'> 315 show_fragment_seq_tree(<a href='../Y/3214.html' title='Multiple used in 3 places.'>fragment_data</a> *<a href='../Y/3900.html' title='Multiple used in 2 places.'>ipfd_head</a>, <b>const</b> <a href='../Y/3215.html' title='Multiple used in 3 places.'>fragment_items</a> *<a href='../Y/3111.html' title='Multiple used in 4 places.'>fit</a>,
+<a name='L316'> 316     <a href='../Y/6018.html' title='Multiple used in 61 places.'>proto_tree</a> *<a href='../Y/7472.html' title='Multiple used in 55 places.'>tree</a>, <a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a> *<a href='../Y/7512.html' title='Multiple used in 508 places.'>tvb</a>, <a href='../Y/5983.html' title='Multiple used in 21 places.'>proto_item</a> **<a href='../Y/3034.html' title='Multiple used in 6 places.'>fi</a>);
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<html>
+<head>
+<title>wsock</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/1002.html#L350'>wsock</a>             350 components/conn.c     int wsock, bytes, done = 0;
+<a href='../S/1002.html#L364'>wsock</a>             364 components/conn.c         wsock = pop_front();
+<a href='../S/1002.html#L365'>wsock</a>             365 components/conn.c         if (wsock &lt; 0) continue;
+<a href='../S/1002.html#L371'>wsock</a>             371 components/conn.c             bytes = read(wsock, rx_buf, BUFFER_SIZE);
+<a href='../S/1002.html#L382'>wsock</a>             382 components/conn.c             bytes = recv_cb(wsock, rx_buf, bytes);
+<a href='../S/1002.html#L392'>wsock</a>             392 components/conn.c             sw.fd = wsock;
+<a href='../S/1002.html#L395'>wsock</a>             395 components/conn.c             clean_context(wsock);
+<a href='../S/1002.html#L396'>wsock</a>             396 components/conn.c             close(wsock);
+<a href='../S/1002.html#L398'>wsock</a>             398 components/conn.c             if (relink_epoll(epoll, wsock, EPOLLIN | EPOLLET | EPOLLONESHOT) &lt; 0) {
+<a href='../S/1002.html#L401'>wsock</a>             401 components/conn.c                 sw.fd = wsock;
+<a href='../S/1002.html#L404'>wsock</a>             404 components/conn.c                 clean_context(wsock);
+<a href='../S/1002.html#L405'>wsock</a>             405 components/conn.c                 close(wsock);
+<a href='../S/1009.html#L344'>wsock</a>             344 components/conn_sb.c     int wsock, bytes, done = 0;
+<a href='../S/1009.html#L358'>wsock</a>             358 components/conn_sb.c         wsock = pop_front();
+<a href='../S/1009.html#L359'>wsock</a>             359 components/conn_sb.c         if (wsock &lt; 0) continue;
+<a href='../S/1009.html#L365'>wsock</a>             365 components/conn_sb.c             bytes = read(wsock, rx_buf, BUFFER_SIZE);
+<a href='../S/1009.html#L376'>wsock</a>             376 components/conn_sb.c             bytes = sb_recv_cb(wsock, rx_buf, bytes);
+<a href='../S/1009.html#L386'>wsock</a>             386 components/conn_sb.c             sw.fd = wsock;
+<a href='../S/1009.html#L389'>wsock</a>             389 components/conn_sb.c             clean_context(wsock);
+<a href='../S/1009.html#L390'>wsock</a>             390 components/conn_sb.c             close(wsock);
+<a href='../S/1009.html#L392'>wsock</a>             392 components/conn_sb.c             if (relink_epoll(epoll, wsock, EPOLLIN | EPOLLET | EPOLLONESHOT) &lt; 0) {
+<a href='../S/1009.html#L395'>wsock</a>             395 components/conn_sb.c                 sw.fd = wsock;
+<a href='../S/1009.html#L398'>wsock</a>             398 components/conn_sb.c                 clean_context(wsock);
+<a href='../S/1009.html#L399'>wsock</a>             399 components/conn_sb.c                 close(wsock);
+<a href='../S/952.html#L340'>wsock</a>             340 southbound/src/southbound.c     int wsock, bytes, done = 0;
+<a href='../S/952.html#L354'>wsock</a>             354 southbound/src/southbound.c         wsock = ds_pop_front();
+<a href='../S/952.html#L355'>wsock</a>             355 southbound/src/southbound.c         if (wsock &lt; 0) continue;
+<a href='../S/952.html#L361'>wsock</a>             361 southbound/src/southbound.c             if (fcntl(wsock, F_GETFD) &lt; 0) {
+<a href='../S/952.html#L365'>wsock</a>             365 southbound/src/southbound.c             bytes = read(wsock, rx_buf, BUFFER_SIZE);
+<a href='../S/952.html#L376'>wsock</a>             376 southbound/src/southbound.c             bytes = ds_recv_cb(wsock, rx_buf, bytes);
+<a href='../S/952.html#L380'>wsock</a>             380 southbound/src/southbound.c             close(cr2sb[wsock]);
+<a href='../S/952.html#L382'>wsock</a>             382 southbound/src/southbound.c             sb2cr[cr2sb[wsock]] = 0;
+<a href='../S/952.html#L383'>wsock</a>             383 southbound/src/southbound.c             cr2sb[wsock] = 0;
+<a href='../S/952.html#L385'>wsock</a>             385 southbound/src/southbound.c             close(wsock);
+<a href='../S/952.html#L387'>wsock</a>             387 southbound/src/southbound.c             if (relink_epoll(ds_epoll, wsock, EPOLLIN | EPOLLET | EPOLLONESHOT) &lt; 0) {
+<a href='../S/952.html#L388'>wsock</a>             388 southbound/src/southbound.c                 close(cr2sb[wsock]);
+<a href='../S/952.html#L390'>wsock</a>             390 southbound/src/southbound.c                 sb2cr[cr2sb[wsock]] = 0;
+<a href='../S/952.html#L391'>wsock</a>             391 southbound/src/southbound.c                 cr2sb[wsock] = 0;
+<a href='../S/952.html#L393'>wsock</a>             393 southbound/src/southbound.c                 close(wsock);
+<a href='../S/952.html#L456'>wsock</a>             456 southbound/src/southbound.c     int wsock, bytes, done = 0;
+<a href='../S/952.html#L470'>wsock</a>             470 southbound/src/southbound.c         wsock = pop_front();
+<a href='../S/952.html#L471'>wsock</a>             471 southbound/src/southbound.c         if (wsock &lt; 0) continue;
+<a href='../S/952.html#L477'>wsock</a>             477 southbound/src/southbound.c             bytes = read(wsock, rx_buf, BUFFER_SIZE);
+<a href='../S/952.html#L488'>wsock</a>             488 southbound/src/southbound.c             bytes = recv_cb(wsock, rx_buf, bytes);
+<a href='../S/952.html#L492'>wsock</a>             492 southbound/src/southbound.c             close(sb2cr[wsock]);
+<a href='../S/952.html#L494'>wsock</a>             494 southbound/src/southbound.c             cr2sb[sb2cr[wsock]] = 0;
+<a href='../S/952.html#L495'>wsock</a>             495 southbound/src/southbound.c             sb2cr[wsock] = 0;
+<a href='../S/952.html#L497'>wsock</a>             497 southbound/src/southbound.c             close(wsock);
+<a href='../S/952.html#L499'>wsock</a>             499 southbound/src/southbound.c             if (relink_epoll(epoll, wsock, EPOLLIN | EPOLLET | EPOLLONESHOT) &lt; 0) {
+<a href='../S/952.html#L500'>wsock</a>             500 southbound/src/southbound.c                 close(sb2cr[wsock]);
+<a href='../S/952.html#L502'>wsock</a>             502 southbound/src/southbound.c                 DEBUG("Closed (cfd = %2d, fd = %2d)\n", sb2cr[wsock], wsock);
+<a href='../S/952.html#L504'>wsock</a>             504 southbound/src/southbound.c                 cr2sb[sb2cr[wsock]] = 0;
+<a href='../S/952.html#L505'>wsock</a>             505 southbound/src/southbound.c                 sb2cr[wsock] = 0;
+<a href='../S/952.html#L507'>wsock</a>             507 southbound/src/southbound.c                 close(wsock);
+</pre>
+</body>
+</html>

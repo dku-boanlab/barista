@@ -1,0 +1,215 @@
+<html>
+<head>
+<title>ext_applications/l2_shortest/shim/include/common.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1159.html'>ext_applications</a>/<a href='../files/1165.html'>l2_shortest</a>/<a href='../files/1166.html'>shim</a>/<a href='../files/1167.html'>include</a>/common.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/650.html' title='Multiple included from 51 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright 2015-2018 NSSLab, KAIST</font></i>
+<a name='L3'>   3 <i><font color='green'> */</font></i>
+<a name='L4'>   4 
+<a name='L5'>   5 <i><font color='green'>/**</font></i>
+<a name='L6'>   6 <i><font color='green'> * \file</font></i>
+<a name='L7'>   7 <i><font color='green'> * \author Jaehyun Nam &lt;namjh@kaist.ac.kr&gt;</font></i>
+<a name='L8'>   8 <i><font color='green'> */</font></i>
+<a name='L9'>   9 
+<a name='L10'>  10 <font color='darkred'>#define</font> _GNU_SOURCE
+<a name='L11'>  11 
+<a name='L12'>  12 <font color='darkred'>#include</font> &lt;stdio.h&gt;
+<a name='L13'>  13 <font color='darkred'>#include</font> &lt;unistd.h&gt;
+<a name='L14'>  14 <font color='darkred'>#include</font> &lt;stdlib.h&gt;
+<a name='L15'>  15 <font color='darkred'>#include</font> &lt;string.h&gt;
+<a name='L16'>  16 <font color='darkred'>#include</font> &lt;stdarg.h&gt;
+<a name='L17'>  17 <font color='darkred'>#include</font> &lt;stdint.h&gt;
+<a name='L18'>  18 <font color='darkred'>#include</font> &lt;pthread.h&gt;
+<a name='L19'>  19 <font color='darkred'>#include</font> &lt;ctype.h&gt;
+<a name='L20'>  20 <font color='darkred'>#include</font> &lt;errno.h&gt;
+<a name='L21'>  21 
+<a name='L22'>  22 <font color='darkred'>#ifndef</font> <a href='../Y/1126.html' title='Multiple used in 12 places.'>__DISABLE_CLI</a>
+<a name='L23'>  23 <font color='darkred'>#include</font> "<a href='1091.html'>libcli.h</a>"
+<a name='L24'>  24 <font color='darkred'>#endif</font> <i><font color='green'>/* CLI */</font></i>
+<a name='L25'>  25 
+<a name='L26'>  26 <font color='darkred'>#define</font> <a href='../R/1870.html' title='Multiple refered from 39 places.'>__CONF_ARGC</a> 16
+<a name='L27'>  27 <font color='darkred'>#define</font> <a href='../R/1872.html' title='Multiple refered from 12 places.'>__CONF_SHORT_LEN</a> 16
+<a name='L28'>  28 <font color='darkred'>#define</font> <a href='../R/1874.html' title='Multiple refered from 161 places.'>__CONF_WORD_LEN</a> 256
+<a name='L29'>  29 <font color='darkred'>#define</font> <a href='../R/1873.html' title='Multiple refered from 71 places.'>__CONF_STR_LEN</a> 1024
+<a name='L30'>  30 <font color='darkred'>#define</font> <a href='../R/1871.html' title='Multiple refered from 78 places.'>__CONF_LSTR_LEN</a> 2048
+<a name='L31'>  31 
+<a name='L32'>  32 <font color='darkred'>#define</font> <a href='../R/1882.html' title='Multiple refered from 72 places.'>__DEFAULT_TABLE_SIZE</a> 65536
+<a name='L33'>  33 <font color='darkred'>#define</font> <a href='../R/1906.html' title='Multiple refered from 6 places.'>__HASHING_NAME_LENGTH</a> 8
+<a name='L34'>  34 
+<a name='L35'>  35 <font color='darkred'>#define</font> FLOW_MGMT_REQUEST_TIME 5
+<a name='L36'>  36 <font color='darkred'>#define</font> <a href='../S/964.html#L271' title='Refered from 271 in components/topo_mgmt.c.'>TOPO_MGMT_REQUEST_TIME</a> 5
+<a name='L37'>  37 <font color='darkred'>#define</font> <a href='../R/1585.html' title='Multiple refered from 2 places.'>STAT_MGMT_REQUEST_TIME</a> 5
+<a name='L38'>  38 <font color='darkred'>#define</font> <a href='../R/1526.html' title='Multiple refered from 3 places.'>RESOURCE_MGMT_MONITOR_TIME</a> 1
+<a name='L39'>  39 <font color='darkred'>#define</font> <a href='../R/1525.html' title='Multiple refered from 8 places.'>RESOURCE_MGMT_HISTORY</a> 3600
+<a name='L40'>  40 <font color='darkred'>#define</font> <a href='../R/1657.html' title='Multiple refered from 2 places.'>TRAFFIC_MGMT_MONITOR_TIME</a> 1
+<a name='L41'>  41 <font color='darkred'>#define</font> <a href='../R/1655.html' title='Multiple refered from 10 places.'>TRAFFIC_MGMT_HISTORY</a> 3600
+<a name='L42'>  42 <font color='darkred'>#define</font> <a href='../R/188.html' title='Multiple refered from 2 places.'>CLUSTER_UPDATE_TIME_NS</a> (1000*1000)
+<a name='L43'>  43 <font color='darkred'>#define</font> <a href='../R/184.html' title='Multiple refered from 3 places.'>CLUSTER_DELIMITER</a> 2000
+<a name='L44'>  44 <font color='darkred'>#define</font> <a href='../S/1007.html#L166' title='Refered from 166 in components/log.c.'>LOG_UPDATE_TIME</a> 1
+<a name='L45'>  45 
+<a name='L46'>  46 <i><font color='green'>//#define __SHOW_COMPONENT_ID</font></i>
+<a name='L47'>  47 
+<a name='L48'>  48 <font color='darkred'>#include</font> "<a href='../I/653.html'>type.h</a>"
+<a name='L49'>  49 
+<a name='L50'>  50 <i><font color='green'>/** \brief The default component configuration file */</font></i>
+<a name='L51'>  51 <font color='darkred'>#define</font> <a href='../R/225.html' title='Multiple refered from 2 places.'>COMPNT_DEFAULT_CONFIG_FILE</a> "config/components.conf"
+<a name='L52'>  52 
+<a name='L53'>  53 <i><font color='green'>/** \brief The default component configuration file */</font></i>
+<a name='L54'>  54 <font color='darkred'>#define</font> <a href='../S/936.html#L178' title='Refered from 178 in src/main.c.'>COMPNT_BASE_CONFIG_FILE</a> "config/components.base"
+<a name='L55'>  55 
+<a name='L56'>  56 <i><font color='green'>/** \brief The default application configuration file */</font></i>
+<a name='L57'>  57 <font color='darkred'>#define</font> <a href='../R/60.html' title='Multiple refered from 2 places.'>APP_DEFAULT_CONFIG_FILE</a> "config/applications.conf"
+<a name='L58'>  58 
+<a name='L59'>  59 <i><font color='green'>/** \brief The default application configuration file */</font></i>
+<a name='L60'>  60 <font color='darkred'>#define</font> <a href='../S/936.html#L181' title='Refered from 181 in src/main.c.'>APP_BASE_CONFIG_FILE</a> "config/applications.base"
+<a name='L61'>  61 
+<a name='L62'>  62 <i><font color='green'>/** \brief The default operator-defined policy file */</font></i>
+<a name='L63'>  63 <font color='darkred'>#define</font> <a href='../R/295.html' title='Multiple refered from 4 places.'>DEFAULT_ODP_FILE</a> "config/operator-defined.policy"
+<a name='L64'>  64 
+<a name='L65'>  65 <i><font color='green'>/** \brief The default log file */</font></i>
+<a name='L66'>  66 <font color='darkred'>#define</font> <a href='../R/294.html' title='Multiple refered from 4 places.'>DEFAULT_LOG_FILE</a> "../log/message.log"
+<a name='L67'>  67 
+<a name='L68'>  68 <i><font color='green'>/** \brief The default resource file */</font></i>
+<a name='L69'>  69 <font color='darkred'>#define</font> <a href='../S/999.html#L35' title='Refered from 35 in components/resource_mgmt.c.'>DEFAULT_RESOURCE_FILE</a> "../log/resource.log"
+<a name='L70'>  70 
+<a name='L71'>  71 <i><font color='green'>/** \brief The default raw resource file */</font></i>
+<a name='L72'>  72 <font color='darkred'>#define</font> <a href='../R/297.html' title='Multiple refered from 2 places.'>DEFAULT_RAW_RESOURCE_FILE</a> "../tmp/raw_usage"
+<a name='L73'>  73 
+<a name='L74'>  74 <i><font color='green'>/** \brief The default traffic file */</font></i>
+<a name='L75'>  75 <font color='darkred'>#define</font> <a href='../S/1003.html#L38' title='Refered from 38 in components/traffic_mgmt.c.'>DEFAULT_TRAFFIC_FILE</a> "../log/traffic.log"
+<a name='L76'>  76 
+<a name='L77'>  77 <i><font color='green'>/** \brief The default application role file */</font></i>
+<a name='L78'>  78 <font color='darkred'>#define</font> <a href='../S/961.html#L29' title='Refered from 29 in applications/rbac.c.'>DEFAULT_APP_ROLE_FILE</a> "config/app_events.role"
+<a name='L79'>  79 
+<a name='L80'>  80 <i><font color='green'>/** \brief The default extended application path */</font></i>
+<a name='L81'>  81 <font color='darkred'>#define</font> <a href='../R/290.html' title='Multiple refered from 5 places.'>DEFAULT_EXT_APP_PATH</a> "../ext_applications"
+<a name='L82'>  82 
+<a name='L83'>  83 <i><font color='green'>/** \brief Font color */</font></i>
+<a name='L84'>  84 <i><font color='green'>/* @{ */</font></i>
+<a name='L85'>  85 <font color='darkred'>#define</font> <a href='../S/1007.html#L276' title='Refered from 276 in components/log.c.'>ANSI_COLOR_RED</a>     "\x1b[31m"
+<a name='L86'>  86 <font color='darkred'>#define</font> <a href='../R/50.html' title='Multiple refered from 4 places.'>ANSI_COLOR_GREEN</a>   "\x1b[32m"
+<a name='L87'>  87 <font color='darkred'>#define</font> ANSI_COLOR_YELLOW  "\x1b[33m"
+<a name='L88'>  88 <font color='darkred'>#define</font> <a href='../R/49.html' title='Multiple refered from 4 places.'>ANSI_COLOR_BLUE</a>    "\x1b[34m"
+<a name='L89'>  89 <font color='darkred'>#define</font> <a href='../R/51.html' title='Multiple refered from 2 places.'>ANSI_COLOR_MAGENTA</a> "\x1b[35m"
+<a name='L90'>  90 <font color='darkred'>#define</font> ANSI_COLOR_CYAN    "\x1b[36m"
+<a name='L91'>  91 <font color='darkred'>#define</font> <a href='../R/53.html' title='Multiple refered from 11 places.'>ANSI_COLOR_RESET</a>   "\x1b[0m"
+<a name='L92'>  92 <i><font color='green'>/* @} */</font></i>
+<a name='L93'>  93 
+<a name='L94'>  94 <i><font color='green'>/** \brief TRUE, FALSE */</font></i>
+<a name='L95'>  95 <i><font color='green'>/** @{ */</font></i>
+<a name='L96'>  96 <font color='darkred'>#define</font> <a href='../R/1658.html' title='Multiple refered from 87 places.'>TRUE</a> 1
+<a name='L97'>  97 <font color='darkred'>#define</font> <a href='../R/593.html' title='Multiple refered from 162 places.'>FALSE</a> 0
+<a name='L98'>  98 <i><font color='green'>/** @} */</font></i>
+<a name='L99'>  99 
+<a name='L100'> 100 <i><font color='green'>/** \brief Min function */</font></i>
+<a name='L101'> 101 <font color='darkred'>#define</font> <a href='../R/902.html' title='Multiple refered from 25 places.'>MIN</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>,<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>) (((<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>)&lt;(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>))?(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>):(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>))
+<a name='L102'> 102 
+<a name='L103'> 103 <i><font color='green'>/** \brief Max function */</font></i>
+<a name='L104'> 104 <font color='darkred'>#define</font> <a href='../R/863.html' title='Multiple refered from 19 places.'>MAX</a>(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>,<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>) (((<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>)&gt;(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>))?(<a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>):(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>))
+<a name='L105'> 105 
+<a name='L106'> 106 <i><font color='green'>/** \brief Activation code for the main function of each component */</font></i>
+<a name='L107'> 107 <font color='darkred'>#define</font> <a href='../R/2149.html' title='Multiple refered from 25 places.'>activate</a>() \
+<a name='L108'> 108 <font color='red'>{</font> \
+<a name='L109'> 109     *<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a> = <a href='../D/5695.html' title='Multiple defined in 7 places.'>TRUE</a>; \
+<a name='L110'> 110     <a href='../D/10115.html' title='Multiple defined in 6 places.'>waitsec</a>(0, 1000); \
+<a name='L111'> 111 <font color='red'>}</font>
+<a name='L112'> 112 
+<a name='L113'> 113 <i><font color='green'>/** \brief Deactivation code for the cleanup function of each component */</font></i>
+<a name='L114'> 114 <font color='darkred'>#define</font> <a href='../R/2555.html' title='Multiple refered from 25 places.'>deactivate</a>() \
+<a name='L115'> 115 <font color='red'>{</font> \
+<a name='L116'> 116     *<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a> = <a href='../D/1780.html' title='Multiple defined in 7 places.'>FALSE</a>; \
+<a name='L117'> 117     <a href='../D/10115.html' title='Multiple defined in 6 places.'>waitsec</a>(0, 1000); \
+<a name='L118'> 118 <font color='red'>}</font>
+<a name='L119'> 119 
+<a name='L120'> 120 <i><font color='green'>/** \brief Allocate a space */</font></i>
+<a name='L121'> 121 <font color='darkred'>#define</font> <a href='../R/859.html' title='Multiple refered from 66 places.'>MALLOC</a>(<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>) <a href='../Y/4326.html' title='Multiple used in 68 places.'>malloc</a>(<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>)
+<a name='L122'> 122 <font color='darkred'>#define</font> <a href='../R/163.html' title='Multiple refered from 15 places.'>CALLOC</a>(<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>, <a href='../Y/8037.html' title='Multiple used in 240 places.'>y</a>) <a href='../Y/1781.html' title='Multiple used in 32 places.'>calloc</a>(<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>, <a href='../Y/8037.html' title='Multiple used in 240 places.'>y</a>)
+<a name='L123'> 123 
+<a name='L124'> 124 <i><font color='green'>/** \brief Free a space if the space is valid */</font></i>
+<a name='L125'> 125 <font color='darkred'>#define</font> <a href='../R/622.html' title='Multiple refered from 115 places.'>FREE</a>(<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>) \
+<a name='L126'> 126 <font color='red'>{</font> \
+<a name='L127'> 127     <b>if</b> (<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>) <font color='red'>{</font> \
+<a name='L128'> 128         <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>); \
+<a name='L129'> 129         <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>; \
+<a name='L130'> 130     <font color='red'>}</font> \
+<a name='L131'> 131 <font color='red'>}</font>
+<a name='L132'> 132 
+<a name='L133'> 133 <i><font color='green'>/** \brief Timer */</font></i>
+<a name='L134'> 134 <font color='darkred'>#include</font> &lt;time.h&gt;
+<a name='L135'> 135 <font color='darkred'>#define</font> <a href='../R/4999.html' title='Multiple refered from 47 places.'>waitsec</a>(<a href='../Y/6623.html' title='Multiple used in 39 places.'>sec</a>, <a href='../Y/4947.html' title='Multiple used in 12 places.'>nsec</a>) \
+<a name='L136'> 136 <font color='red'>{</font> \
+<a name='L137'> 137     <b>struct</b> <a href='../Y/7384.html' title='Multiple used in 6 places.'>timespec</a> <a href='../Y/6391.html' title='Multiple used in 52 places.'>req</a>; \
+<a name='L138'> 138     <a href='../Y/6391.html' title='Multiple used in 52 places.'>req</a>.<a href='../Y/7510.html' title='Multiple used in 122 places.'>tv_sec</a> = <a href='../Y/6623.html' title='Multiple used in 39 places.'>sec</a>; \
+<a name='L139'> 139     <a href='../Y/6391.html' title='Multiple used in 52 places.'>req</a>.<a href='../Y/7509.html' title='Multiple used in 6 places.'>tv_nsec</a> = <a href='../Y/4947.html' title='Multiple used in 12 places.'>nsec</a>; \
+<a name='L140'> 140     <a href='../Y/4658.html' title='Multiple used in 6 places.'>nanosleep</a>(&amp;<a href='../Y/6391.html' title='Multiple used in 52 places.'>req</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>); \
+<a name='L141'> 141 <font color='red'>}</font>
+<a name='L142'> 142 
+<a name='L143'> 143 <i><font color='green'>/** \brief Functions to change the byte orders of 64-bit fields */</font></i>
+<a name='L144'> 144 <i><font color='green'>/* @{ */</font></i>
+<a name='L145'> 145 <font color='darkred'>#ifdef</font> <a href='../Y/1073.html' title='Multiple used in 6 places.'>WORDS_BIGENDIAN</a>
+<a name='L146'> 146 <font color='darkred'>#define</font> <a href='../R/3243.html' title='Multiple refered from 47 places.'>htonll</a>(<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>) (<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>)
+<a name='L147'> 147 <font color='darkred'>#define</font> <a href='../R/3761.html' title='Multiple refered from 105 places.'>ntohll</a>(<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>) (<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>)
+<a name='L148'> 148 <font color='darkred'>#else</font>
+<a name='L149'> 149 <font color='darkred'>#define</font> <a href='../R/3243.html' title='Multiple refered from 47 places.'>htonll</a>(<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>) ((((<a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a>)<a href='../Y/3677.html' title='Multiple used in 235 places.'>htonl</a>(<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>)) &lt;&lt;32) + <a href='../Y/3677.html' title='Multiple used in 235 places.'>htonl</a>(<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>&gt;&gt; 32))
+<a name='L150'> 150 <font color='darkred'>#define</font> <a href='../R/3761.html' title='Multiple refered from 105 places.'>ntohll</a>(<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>) ((((<a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a>)<a href='../Y/4953.html' title='Multiple used in 218 places.'>ntohl</a>(<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>)) &lt;&lt;32) + <a href='../Y/4953.html' title='Multiple used in 218 places.'>ntohl</a>(<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a>&gt;&gt; 32))
+<a name='L151'> 151 <font color='darkred'>#endif</font>
+<a name='L152'> 152 <i><font color='green'>/* @} */</font></i>
+<a name='L153'> 153 
+<a name='L154'> 154 <i><font color='green'>/** \brief Functions to print messages through the CLI */</font></i>
+<a name='L155'> 155 <i><font color='green'>/* @{ */</font></i>
+<a name='L156'> 156 <font color='darkred'>#define</font> <a href='../R/2362.html' title='Multiple refered from 28 places.'>cli_bufcls</a>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>) <a href='../Y/4419.html' title='Multiple used in 245 places.'>memset</a>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, 0, <b>sizeof</b>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>))
+<a name='L157'> 157 <font color='darkred'>#define</font> <a href='../R/2363.html' title='Multiple refered from 82 places.'>cli_buffer</a>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...) <a href='../Y/6924.html' title='Multiple used in 107 places.'>sprintf</a>(&amp;<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>[<a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>)], <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L158'> 158 <font color='darkred'>#define</font> <a href='../R/2365.html' title='Multiple refered from 30 places.'>cli_bufprt</a>(<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>) <a href='../D/7132.html' title='Multiple defined in 7 places.'>cli_print</a>(<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, "%s", <a href='../Y/1693.html' title='Multiple used in 469 places.'>buf</a>)
+<a name='L159'> 159 <font color='darkred'>#ifdef</font> <a href='../Y/1126.html' title='Multiple used in 12 places.'>__DISABLE_CLI</a>
+<a name='L160'> 160 <font color='darkred'>#define</font> <a href='../R/2413.html' title='Multiple refered from 517 places.'>cli_print</a>(<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...) <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("%s: " <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1131.html' title='Multiple used in 43 places.'>__FUNCTION__</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L161'> 161 <font color='darkred'>#endif</font> <i><font color='green'>/* CLI */</font></i>
+<a name='L162'> 162 <i><font color='green'>/* @} */</font></i>
+<a name='L163'> 163 
+<a name='L164'> 164 <i><font color='green'>/** \brief Functions for debug and error messages */</font></i>
+<a name='L165'> 165 <i><font color='green'>/* @{ */</font></i>
+<a name='L166'> 166 <i><font color='green'>//#define __ENABLE_DEBUG</font></i>
+<a name='L167'> 167 <font color='darkred'>#ifdef</font> <a href='../Y/1129.html' title='Multiple used in 7 places.'>__ENABLE_DEBUG</a>
+<a name='L168'> 168 <font color='darkred'>#define</font> <a href='../R/284.html' title='Multiple refered from 58 places.'>DEBUG</a>(<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...) (<font color='red'>{</font> <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("%s: " <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1131.html' title='Multiple used in 43 places.'>__FUNCTION__</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>); <a href='../Y/3028.html' title='Multiple used in 35 places.'>fflush</a>(<a href='../Y/7051.html' title='Multiple used in 64 places.'>stdout</a>); <font color='red'>}</font>)
+<a name='L169'> 169 <font color='darkred'>#define</font> <a href='../R/1455.html' title='Multiple refered from 52 places.'>PRINTF</a>(<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...) (<font color='red'>{</font> <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("%s: " <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1131.html' title='Multiple used in 43 places.'>__FUNCTION__</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>); <a href='../Y/3028.html' title='Multiple used in 35 places.'>fflush</a>(<a href='../Y/7051.html' title='Multiple used in 64 places.'>stdout</a>); <font color='red'>}</font>)
+<a name='L170'> 170 <font color='darkred'>#define</font> <a href='../R/1458.html' title='Multiple refered from 127 places.'>PRINT_EV</a>(<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...) (<font color='red'>{</font> <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("%s: " <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1131.html' title='Multiple used in 43 places.'>__FUNCTION__</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>); <a href='../Y/3028.html' title='Multiple used in 35 places.'>fflush</a>(<a href='../Y/7051.html' title='Multiple used in 64 places.'>stdout</a>); <font color='red'>}</font>)
+<a name='L171'> 171 <font color='darkred'>#else</font> <i><font color='green'>/* !__ENABLE_DEBUG */</font></i>
+<a name='L172'> 172 <font color='darkred'>#define</font> <a href='../R/284.html' title='Multiple refered from 58 places.'>DEBUG</a>(<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...) (<b>void</b>)0
+<a name='L173'> 173 <font color='darkred'>#define</font> <a href='../R/1455.html' title='Multiple refered from 52 places.'>PRINTF</a>(<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...) (<font color='red'>{</font> <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>(<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>); <a href='../Y/3028.html' title='Multiple used in 35 places.'>fflush</a>(<a href='../Y/7051.html' title='Multiple used in 64 places.'>stdout</a>); <font color='red'>}</font>)
+<a name='L174'> 174 <font color='darkred'>#define</font> <a href='../R/1458.html' title='Multiple refered from 127 places.'>PRINT_EV</a>(<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...) (<b>void</b>)0
+<a name='L175'> 175 <font color='darkred'>#endif</font> <i><font color='green'>/* !__ENABLE_DEBUG */</font></i>
+<a name='L176'> 176 <font color='darkred'>#define</font> <a href='../R/1409.html' title='Multiple refered from 171 places.'>PERROR</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>) <a href='../Y/3207.html' title='Multiple used in 289 places.'>fprintf</a>(<a href='../Y/7051.html' title='Multiple used in 64 places.'>stdout</a>, "\x1b[31m[%s:%d] %s: %s\x1b[0m\n", <a href='../Y/1131.html' title='Multiple used in 43 places.'>__FUNCTION__</a>, <a href='../Y/1136.html' title='Multiple used in 18 places.'>__LINE__</a>, (<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>), <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>))
+<a name='L177'> 177 <i><font color='green'>/* @} */</font></i>
+<a name='L178'> 178 
+<a name='L179'> 179 <i><font color='green'>/** \brief Wrappers that trigger log events */</font></i>
+<a name='L180'> 180 <i><font color='green'>/* @{ */</font></i>
+<a name='L181'> 181 <font color='darkred'>#define</font> <a href='../S/970.html#L183' title='Refered from 183 in components/include/appint.h.'>LOG_FATAL</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...) <a href='../S/1024.html#L214' title='Defined at 214 in events/event.c.'>ev_log_fatal</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L182'> 182 <font color='darkred'>#define</font> <a href='../R/796.html' title='Multiple refered from 70 places.'>LOG_ERROR</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...) <a href='../S/1024.html#L203' title='Defined at 203 in events/event.c.'>ev_log_error</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L183'> 183 <font color='darkred'>#define</font> <a href='../R/803.html' title='Multiple refered from 7 places.'>LOG_WARN</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)  <a href='../S/1024.html#L192' title='Defined at 192 in events/event.c.'>ev_log_warn</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L184'> 184 <font color='darkred'>#define</font> <a href='../R/801.html' title='Multiple refered from 69 places.'>LOG_INFO</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)  <a href='../S/1024.html#L181' title='Defined at 181 in events/event.c.'>ev_log_info</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L185'> 185 <font color='darkred'>#define</font> <a href='../R/795.html' title='Multiple refered from 4 places.'>LOG_DEBUG</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...) <a href='../S/1024.html#L170' title='Defined at 170 in events/event.c.'>ev_log_debug</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L186'> 186 <i><font color='green'>/* @} */</font></i>
+<a name='L187'> 187 
+<a name='L188'> 188 <i><font color='green'>/** \brief Wrappers that trigger app log events */</font></i>
+<a name='L189'> 189 <i><font color='green'>/* @{ */</font></i>
+<a name='L190'> 190 <font color='darkred'>#define</font> ALOG_FATAL(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...) <a href='../D/6947.html' title='Multiple defined in 4 places.'>av_log_fatal</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L191'> 191 <font color='darkred'>#define</font> <a href='../R/45.html' title='Multiple refered from 2 places.'>ALOG_ERROR</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...) <a href='../D/6946.html' title='Multiple defined in 4 places.'>av_log_error</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L192'> 192 <font color='darkred'>#define</font> <a href='../S/961.html#L444' title='Refered from 444 in applications/rbac.c.'>ALOG_WARN</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)  <a href='../D/6949.html' title='Multiple defined in 4 places.'>av_log_warn</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L193'> 193 <font color='darkred'>#define</font> <a href='../R/46.html' title='Multiple refered from 14 places.'>ALOG_INFO</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...)  <a href='../D/6948.html' title='Multiple defined in 4 places.'>av_log_info</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L194'> 194 <font color='darkred'>#define</font> ALOG_DEBUG(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, <a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>...) <a href='../D/6945.html' title='Multiple defined in 4 places.'>av_log_debug</a>(<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ##<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L195'> 195 <i><font color='green'>/* @} */</font></i>
+<a name='L196'> 196 
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

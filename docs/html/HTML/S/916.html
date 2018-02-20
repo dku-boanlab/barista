@@ -1,0 +1,106 @@
+<html>
+<head>
+<title>cbench/openflow/lib/list.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/list.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/215.html' title='Multiple included from 24 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> * </font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> * </font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> * </font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> * </font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 <font color='darkred'>#ifndef</font> <a href='../S/916.html#L34' title='Defined at 34 in cbench/openflow/lib/list.h.'>LIST_H</a>
+<a name='L34'>  34 <font color='darkred'>#define</font> <a href='../S/916.html#L33' title='Refered from 33 in cbench/openflow/lib/list.h.'>LIST_H</a> 1
+<a name='L35'>  35 
+<a name='L36'>  36 <i><font color='green'>/* Doubly linked list. */</font></i>
+<a name='L37'>  37 
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;stdbool.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> &lt;stddef.h&gt;
+<a name='L40'>  40 <font color='darkred'>#include</font> "<a href='../I/69.html'>util.h</a>"
+<a name='L41'>  41 
+<a name='L42'>  42 <i><font color='green'>/* Doubly linked list head or element. */</font></i>
+<a name='L43'>  43 <b>struct</b> <a href='../R/3369.html' title='Multiple refered from 165 places.'>list</a>
+<a name='L44'>  44   <font color='red'>{</font>
+<a name='L45'>  45     <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> *<a href='../Y/5873.html' title='Multiple used in 287 places.'>prev</a>;     <i><font color='green'>/* Previous list element. */</font></i>
+<a name='L46'>  46     <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> *<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;     <i><font color='green'>/* Next list element. */</font></i>
+<a name='L47'>  47   <font color='red'>}</font>;
+<a name='L48'>  48 
+<a name='L49'>  49 <font color='darkred'>#define</font> <a href='../R/773.html' title='Multiple refered from 5 places.'>LIST_INITIALIZER</a>(<a href='../Y/503.html' title='Multiple used in 10 places.'>LIST</a>) <font color='red'>{</font> <a href='../Y/503.html' title='Multiple used in 10 places.'>LIST</a>, <a href='../Y/503.html' title='Multiple used in 10 places.'>LIST</a> <font color='red'>}</font>
+<a name='L50'>  50 
+<a name='L51'>  51 <b>void</b> <a href='../S/845.html#L39' title='Defined at 39 in cbench/openflow/lib/list.c.'>list_init</a>(<b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *);
+<a name='L52'>  52 
+<a name='L53'>  53 <i><font color='green'>/* List insertion. */</font></i>
+<a name='L54'>  54 <b>void</b> <a href='../S/845.html#L46' title='Defined at 46 in cbench/openflow/lib/list.c.'>list_insert</a>(<b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *, <b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *);
+<a name='L55'>  55 <b>void</b> <a href='../S/845.html#L57' title='Defined at 57 in cbench/openflow/lib/list.c.'>list_splice</a>(<b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *<a href='../Y/1606.html' title='Multiple used in 12 places.'>before</a>, <b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *<a href='../Y/3096.html' title='Multiple used in 13 places.'>first</a>, <b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *<a href='../Y/4066.html' title='Multiple used in 36 places.'>last</a>);
+<a name='L56'>  56 <b>void</b> <a href='../S/845.html#L77' title='Defined at 77 in cbench/openflow/lib/list.c.'>list_push_front</a>(<b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *, <b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *);
+<a name='L57'>  57 <b>void</b> <a href='../S/845.html#L85' title='Defined at 85 in cbench/openflow/lib/list.c.'>list_push_back</a>(<b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *, <b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *);
+<a name='L58'>  58 <b>void</b> <a href='../S/845.html#L93' title='Defined at 93 in cbench/openflow/lib/list.c.'>list_replace</a>(<b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *, <b>const</b> <b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *);
+<a name='L59'>  59 
+<a name='L60'>  60 <i><font color='green'>/* List removal. */</font></i>
+<a name='L61'>  61 <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> *<a href='../S/845.html#L104' title='Defined at 104 in cbench/openflow/lib/list.c.'>list_remove</a>(<b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *);
+<a name='L62'>  62 <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> *<a href='../S/845.html#L114' title='Defined at 114 in cbench/openflow/lib/list.c.'>list_pop_front</a>(<b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *);
+<a name='L63'>  63 <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> *<a href='../S/845.html#L124' title='Defined at 124 in cbench/openflow/lib/list.c.'>list_pop_back</a>(<b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *);
+<a name='L64'>  64 
+<a name='L65'>  65 <i><font color='green'>/* List elements. */</font></i>
+<a name='L66'>  66 <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> *<a href='../S/845.html#L134' title='Defined at 134 in cbench/openflow/lib/list.c.'>list_front</a>(<b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *);
+<a name='L67'>  67 <b>struct</b> <a href='../S/916.html#L43' title='Defined at 43 in cbench/openflow/lib/list.h.'>list</a> *<a href='../S/845.html#L143' title='Defined at 143 in cbench/openflow/lib/list.c.'>list_back</a>(<b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *);
+<a name='L68'>  68 
+<a name='L69'>  69 <i><font color='green'>/* List properties. */</font></i>
+<a name='L70'>  70 <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../S/845.html#L152' title='Defined at 152 in cbench/openflow/lib/list.c.'>list_size</a>(<b>const</b> <b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *);
+<a name='L71'>  71 <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../S/845.html#L164' title='Defined at 164 in cbench/openflow/lib/list.c.'>list_is_empty</a>(<b>const</b> <b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *);
+<a name='L72'>  72 
+<a name='L73'>  73 <font color='darkred'>#define</font> <a href='../R/769.html' title='Multiple refered from 30 places.'>LIST_FOR_EACH</a>(<a href='../Y/474.html' title='Multiple used in 13 places.'>ITER</a>, <a href='../Y/904.html' title='Multiple used in 20 places.'>STRUCT</a>, <a href='../Y/539.html' title='Multiple used in 30 places.'>MEMBER</a>, <a href='../Y/503.html' title='Multiple used in 10 places.'>LIST</a>)                   \
+<a name='L74'>  74     <b>for</b> (<a href='../Y/474.html' title='Multiple used in 13 places.'>ITER</a> = <a href='../S/840.html#L88' title='Defined at 88 in cbench/openflow/lib/util.h.'>CONTAINER_OF</a>((<a href='../Y/503.html' title='Multiple used in 10 places.'>LIST</a>)-&gt;<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>, <a href='../Y/904.html' title='Multiple used in 20 places.'>STRUCT</a>, <a href='../Y/539.html' title='Multiple used in 30 places.'>MEMBER</a>);         \
+<a name='L75'>  75          &amp;(<a href='../Y/474.html' title='Multiple used in 13 places.'>ITER</a>)-&gt;<a href='../Y/539.html' title='Multiple used in 30 places.'>MEMBER</a> != (<a href='../Y/503.html' title='Multiple used in 10 places.'>LIST</a>);                                 \
+<a name='L76'>  76          <a href='../Y/474.html' title='Multiple used in 13 places.'>ITER</a> = <a href='../S/840.html#L88' title='Defined at 88 in cbench/openflow/lib/util.h.'>CONTAINER_OF</a>((<a href='../Y/474.html' title='Multiple used in 13 places.'>ITER</a>)-&gt;<a href='../Y/539.html' title='Multiple used in 30 places.'>MEMBER</a>.<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>, <a href='../Y/904.html' title='Multiple used in 20 places.'>STRUCT</a>, <a href='../Y/539.html' title='Multiple used in 30 places.'>MEMBER</a>))
+<a name='L77'>  77 <font color='darkred'>#define</font> <a href='../S/250.html#L51' title='Refered from 51 in cbench/openflow/tests/test-list.c.'>LIST_FOR_EACH_REVERSE</a>(<a href='../Y/474.html' title='Multiple used in 13 places.'>ITER</a>, <a href='../Y/904.html' title='Multiple used in 20 places.'>STRUCT</a>, <a href='../Y/539.html' title='Multiple used in 30 places.'>MEMBER</a>, <a href='../Y/503.html' title='Multiple used in 10 places.'>LIST</a>)           \
+<a name='L78'>  78     <b>for</b> (<a href='../Y/474.html' title='Multiple used in 13 places.'>ITER</a> = <a href='../S/840.html#L88' title='Defined at 88 in cbench/openflow/lib/util.h.'>CONTAINER_OF</a>((<a href='../Y/503.html' title='Multiple used in 10 places.'>LIST</a>)-&gt;<a href='../Y/5873.html' title='Multiple used in 287 places.'>prev</a>, <a href='../Y/904.html' title='Multiple used in 20 places.'>STRUCT</a>, <a href='../Y/539.html' title='Multiple used in 30 places.'>MEMBER</a>);         \
+<a name='L79'>  79          &amp;(<a href='../Y/474.html' title='Multiple used in 13 places.'>ITER</a>)-&gt;<a href='../Y/539.html' title='Multiple used in 30 places.'>MEMBER</a> != (<a href='../Y/503.html' title='Multiple used in 10 places.'>LIST</a>);                                 \
+<a name='L80'>  80          <a href='../Y/474.html' title='Multiple used in 13 places.'>ITER</a> = <a href='../S/840.html#L88' title='Defined at 88 in cbench/openflow/lib/util.h.'>CONTAINER_OF</a>((<a href='../Y/474.html' title='Multiple used in 13 places.'>ITER</a>)-&gt;<a href='../Y/539.html' title='Multiple used in 30 places.'>MEMBER</a>.<a href='../Y/5873.html' title='Multiple used in 287 places.'>prev</a>, <a href='../Y/904.html' title='Multiple used in 20 places.'>STRUCT</a>, <a href='../Y/539.html' title='Multiple used in 30 places.'>MEMBER</a>))
+<a name='L81'>  81 <font color='darkred'>#define</font> <a href='../R/771.html' title='Multiple refered from 15 places.'>LIST_FOR_EACH_SAFE</a>(<a href='../Y/474.html' title='Multiple used in 13 places.'>ITER</a>, <a href='../Y/570.html' title='Multiple used in 6 places.'>NEXT</a>, <a href='../Y/904.html' title='Multiple used in 20 places.'>STRUCT</a>, <a href='../Y/539.html' title='Multiple used in 30 places.'>MEMBER</a>, <a href='../Y/503.html' title='Multiple used in 10 places.'>LIST</a>)        \
+<a name='L82'>  82     <b>for</b> (<a href='../Y/474.html' title='Multiple used in 13 places.'>ITER</a> = <a href='../S/840.html#L88' title='Defined at 88 in cbench/openflow/lib/util.h.'>CONTAINER_OF</a>((<a href='../Y/503.html' title='Multiple used in 10 places.'>LIST</a>)-&gt;<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>, <a href='../Y/904.html' title='Multiple used in 20 places.'>STRUCT</a>, <a href='../Y/539.html' title='Multiple used in 30 places.'>MEMBER</a>);         \
+<a name='L83'>  83          (<a href='../Y/570.html' title='Multiple used in 6 places.'>NEXT</a> = <a href='../S/840.html#L88' title='Defined at 88 in cbench/openflow/lib/util.h.'>CONTAINER_OF</a>((<a href='../Y/474.html' title='Multiple used in 13 places.'>ITER</a>)-&gt;<a href='../Y/539.html' title='Multiple used in 30 places.'>MEMBER</a>.<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>, <a href='../Y/904.html' title='Multiple used in 20 places.'>STRUCT</a>, <a href='../Y/539.html' title='Multiple used in 30 places.'>MEMBER</a>), \
+<a name='L84'>  84           &amp;(<a href='../Y/474.html' title='Multiple used in 13 places.'>ITER</a>)-&gt;<a href='../Y/539.html' title='Multiple used in 30 places.'>MEMBER</a> != (<a href='../Y/503.html' title='Multiple used in 10 places.'>LIST</a>));                               \
+<a name='L85'>  85          <a href='../Y/474.html' title='Multiple used in 13 places.'>ITER</a> = <a href='../Y/570.html' title='Multiple used in 6 places.'>NEXT</a>)
+<a name='L86'>  86 
+<a name='L87'>  87 <font color='darkred'>#endif</font> <i><font color='green'>/* list.h */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

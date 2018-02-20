@@ -1,0 +1,28 @@
+<html>
+<head>
+<title>cmsg</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/890.html#L148'>cmsg</a>              148 cbench/openflow/lib/vlog-socket.c     struct cmsghdr* cmsg;
+<a href='../S/890.html#L171'>cmsg</a>              171 cbench/openflow/lib/vlog-socket.c     for (cmsg = CMSG_FIRSTHDR(&amp;msg); cmsg != NULL;
+<a href='../S/890.html#L172'>cmsg</a>              172 cbench/openflow/lib/vlog-socket.c          cmsg = CMSG_NXTHDR(&amp;msg, cmsg)) {
+<a href='../S/890.html#L173'>cmsg</a>              173 cbench/openflow/lib/vlog-socket.c         if (cmsg-&gt;cmsg_level == SOL_SOCKET
+<a href='../S/890.html#L174'>cmsg</a>              174 cbench/openflow/lib/vlog-socket.c             &amp;&amp; cmsg-&gt;cmsg_type == SCM_CREDENTIALS) {
+<a href='../S/890.html#L175'>cmsg</a>              175 cbench/openflow/lib/vlog-socket.c             cred = (struct ucred *) CMSG_DATA(cmsg);
+<a href='../S/890.html#L176'>cmsg</a>              176 cbench/openflow/lib/vlog-socket.c         } else if (cmsg-&gt;cmsg_level == SOL_SOCKET
+<a href='../S/890.html#L177'>cmsg</a>              177 cbench/openflow/lib/vlog-socket.c                    &amp;&amp; cmsg-&gt;cmsg_type == SCM_RIGHTS) {
+<a href='../S/890.html#L180'>cmsg</a>              180 cbench/openflow/lib/vlog-socket.c             int* fds = (int *) CMSG_DATA(cmsg);
+<a href='../S/890.html#L181'>cmsg</a>              181 cbench/openflow/lib/vlog-socket.c             size_t n_fds = (cmsg-&gt;cmsg_len - CMSG_LEN(0)) / sizeof *fds;
+<a href='../S/890.html#L384'>cmsg</a>              384 cbench/openflow/lib/vlog-socket.c     struct cmsghdr* cmsg;
+<a href='../S/890.html#L400'>cmsg</a>              400 cbench/openflow/lib/vlog-socket.c     cmsg = CMSG_FIRSTHDR(&amp;msg);
+<a href='../S/890.html#L401'>cmsg</a>              401 cbench/openflow/lib/vlog-socket.c     cmsg-&gt;cmsg_level = SOL_SOCKET;
+<a href='../S/890.html#L402'>cmsg</a>              402 cbench/openflow/lib/vlog-socket.c     cmsg-&gt;cmsg_type = SCM_CREDENTIALS;
+<a href='../S/890.html#L403'>cmsg</a>              403 cbench/openflow/lib/vlog-socket.c     cmsg-&gt;cmsg_len = CMSG_LEN(sizeof cred);
+<a href='../S/890.html#L404'>cmsg</a>              404 cbench/openflow/lib/vlog-socket.c     memcpy(CMSG_DATA(cmsg), &amp;cred, sizeof cred);
+<a href='../S/890.html#L405'>cmsg</a>              405 cbench/openflow/lib/vlog-socket.c     msg.msg_controllen = cmsg-&gt;cmsg_len;
+</pre>
+</body>
+</html>

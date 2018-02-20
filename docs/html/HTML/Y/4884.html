@@ -1,0 +1,57 @@
+<html>
+<head>
+<title>nla</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/293.html#L132'>nla</a>               132 cbench/openflow/datapath/datapath.c void nla_shrink(struct sk_buff *skb, struct nlattr *nla, int len)
+<a href='../S/293.html#L134'>nla</a>               134 cbench/openflow/datapath/datapath.c 	int delta = nla_total_size(len) - nla_total_size(nla_len(nla));
+<a href='../S/293.html#L138'>nla</a>               138 cbench/openflow/datapath/datapath.c 	nla-&gt;nla_len = nla_attr_size(len);
+<a href='../S/885.html#L211'>nla</a>               211 cbench/openflow/lib/dpif.c     struct nlattr *nla;
+<a href='../S/885.html#L227'>nla</a>               227 cbench/openflow/lib/dpif.c     nla = ofpbuf_put_uninit(&amp;hdr, sizeof *nla);
+<a href='../S/885.html#L228'>nla</a>               228 cbench/openflow/lib/dpif.c     nla-&gt;nla_len = sizeof *nla + buffer-&gt;size;
+<a href='../S/885.html#L229'>nla</a>               229 cbench/openflow/lib/dpif.c     nla-&gt;nla_type = DP_GENL_A_OPENFLOW;
+<a href='../S/885.html#L230'>nla</a>               230 cbench/openflow/lib/dpif.c     pad_bytes = NLA_ALIGN(nla-&gt;nla_len) - nla-&gt;nla_len;
+<a href='../S/826.html#L591'>nla</a>               591 cbench/openflow/lib/netlink.c     struct nlattr* nla = nl_msg_put_uninit(msg, total_size);
+<a href='../S/826.html#L593'>nla</a>               593 cbench/openflow/lib/netlink.c     nla-&gt;nla_len = total_size;
+<a href='../S/826.html#L594'>nla</a>               594 cbench/openflow/lib/netlink.c     nla-&gt;nla_type = type;
+<a href='../S/826.html#L595'>nla</a>               595 cbench/openflow/lib/netlink.c     return nla + 1;
+<a href='../S/826.html#L671'>nla</a>               671 cbench/openflow/lib/netlink.c nl_attr_get(const struct nlattr *nla) 
+<a href='../S/826.html#L673'>nla</a>               673 cbench/openflow/lib/netlink.c     assert(nla-&gt;nla_len &gt;= NLA_HDRLEN);
+<a href='../S/826.html#L674'>nla</a>               674 cbench/openflow/lib/netlink.c     return nla + 1;
+<a href='../S/826.html#L679'>nla</a>               679 cbench/openflow/lib/netlink.c nl_attr_get_size(const struct nlattr *nla) 
+<a href='../S/826.html#L681'>nla</a>               681 cbench/openflow/lib/netlink.c     assert(nla-&gt;nla_len &gt;= NLA_HDRLEN);
+<a href='../S/826.html#L682'>nla</a>               682 cbench/openflow/lib/netlink.c     return nla-&gt;nla_len - NLA_HDRLEN;
+<a href='../S/826.html#L688'>nla</a>               688 cbench/openflow/lib/netlink.c nl_attr_get_unspec(const struct nlattr *nla, size_t size) 
+<a href='../S/826.html#L690'>nla</a>               690 cbench/openflow/lib/netlink.c     assert(nla-&gt;nla_len &gt;= NLA_HDRLEN + size);
+<a href='../S/826.html#L691'>nla</a>               691 cbench/openflow/lib/netlink.c     return nla + 1;
+<a href='../S/826.html#L697'>nla</a>               697 cbench/openflow/lib/netlink.c nl_attr_get_flag(const struct nlattr *nla) 
+<a href='../S/826.html#L699'>nla</a>               699 cbench/openflow/lib/netlink.c     return nla != NULL;
+<a href='../S/826.html#L703'>nla</a>               703 cbench/openflow/lib/netlink.c         (*(TYPE*) nl_attr_get_unspec(nla, sizeof(TYPE)))
+<a href='../S/826.html#L709'>nla</a>               709 cbench/openflow/lib/netlink.c nl_attr_get_u8(const struct nlattr *nla) 
+<a href='../S/826.html#L711'>nla</a>               711 cbench/openflow/lib/netlink.c     return NL_ATTR_GET_AS(nla, uint8_t);
+<a href='../S/826.html#L718'>nla</a>               718 cbench/openflow/lib/netlink.c nl_attr_get_u16(const struct nlattr *nla) 
+<a href='../S/826.html#L720'>nla</a>               720 cbench/openflow/lib/netlink.c     return NL_ATTR_GET_AS(nla, uint16_t);
+<a href='../S/826.html#L727'>nla</a>               727 cbench/openflow/lib/netlink.c nl_attr_get_u32(const struct nlattr *nla) 
+<a href='../S/826.html#L729'>nla</a>               729 cbench/openflow/lib/netlink.c     return NL_ATTR_GET_AS(nla, uint32_t);
+<a href='../S/826.html#L736'>nla</a>               736 cbench/openflow/lib/netlink.c nl_attr_get_u64(const struct nlattr *nla) 
+<a href='../S/826.html#L738'>nla</a>               738 cbench/openflow/lib/netlink.c     return NL_ATTR_GET_AS(nla, uint64_t);
+<a href='../S/826.html#L745'>nla</a>               745 cbench/openflow/lib/netlink.c nl_attr_get_string(const struct nlattr *nla) 
+<a href='../S/826.html#L747'>nla</a>               747 cbench/openflow/lib/netlink.c     assert(nla-&gt;nla_len &gt; NLA_HDRLEN);
+<a href='../S/826.html#L748'>nla</a>               748 cbench/openflow/lib/netlink.c     assert(memchr(nl_attr_get(nla), '\0', nla-&gt;nla_len - NLA_HDRLEN) != NULL);
+<a href='../S/826.html#L749'>nla</a>               749 cbench/openflow/lib/netlink.c     return nl_attr_get(nla);
+<a href='../S/826.html#L801'>nla</a>               801 cbench/openflow/lib/netlink.c         struct nlattr *nla = p;
+<a href='../S/826.html#L806'>nla</a>               806 cbench/openflow/lib/netlink.c         if (nla-&gt;nla_len &lt; NLA_HDRLEN) {
+<a href='../S/826.html#L808'>nla</a>               808 cbench/openflow/lib/netlink.c                         offset, nla-&gt;nla_len);
+<a href='../S/826.html#L811'>nla</a>               811 cbench/openflow/lib/netlink.c         len = nla-&gt;nla_len - NLA_HDRLEN;
+<a href='../S/826.html#L816'>nla</a>               816 cbench/openflow/lib/netlink.c                         offset, nla-&gt;nla_type, aligned_len,
+<a href='../S/826.html#L821'>nla</a>               821 cbench/openflow/lib/netlink.c         type = nla-&gt;nla_type;
+<a href='../S/826.html#L836'>nla</a>               836 cbench/openflow/lib/netlink.c                 if (((char *) nla)[nla-&gt;nla_len - 1]) {
+<a href='../S/826.html#L841'>nla</a>               841 cbench/openflow/lib/netlink.c                 if (memchr(nla + 1, '\0', len - 1) != NULL) {
+<a href='../S/826.html#L851'>nla</a>               851 cbench/openflow/lib/netlink.c             attrs[type] = nla;
+<a href='../S/826.html#L855'>nla</a>               855 cbench/openflow/lib/netlink.c         p = (char*)p + NLA_ALIGN(nla-&gt;nla_len);
+</pre>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<html>
+<head>
+<title>components/conn_tls.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1155.html'>components</a>/conn_tls.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L33'>[^]</a><a href='#L70'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L33' title='Defined at 33.'>conn_tls_main</a>
+<li><a href='#L46' title='Defined at 46.'>conn_tls_cleanup</a>
+<li><a href='#L60' title='Defined at 60.'>conn_tls_cli</a>
+<li><a href='#L70' title='Defined at 70.'>conn_tls_handler</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright 2015-2018 NSSLab, KAIST</font></i>
+<a name='L3'>   3 <i><font color='green'> */</font></i>
+<a name='L4'>   4 
+<a name='L5'>   5 <i><font color='green'>/**</font></i>
+<a name='L6'>   6 <i><font color='green'> * \ingroup compnt</font></i>
+<a name='L7'>   7 <i><font color='green'> * @{</font></i>
+<a name='L8'>   8 <i><font color='green'> * \defgroup conn_tls Packet I/O Engine with TLS</font></i>
+<a name='L9'>   9 <i><font color='green'> * \brief (Base) packet I/O engine with TLS</font></i>
+<a name='L10'>  10 <i><font color='green'> * @{</font></i>
+<a name='L11'>  11 <i><font color='green'> */</font></i>
+<a name='L12'>  12 
+<a name='L13'>  13 <i><font color='green'>/**</font></i>
+<a name='L14'>  14 <i><font color='green'> * \file</font></i>
+<a name='L15'>  15 <i><font color='green'> * \author Jaehyun Nam &lt;namjh@kaist.ac.kr&gt;</font></i>
+<a name='L16'>  16 <i><font color='green'> */</font></i>
+<a name='L17'>  17 
+<a name='L18'>  18 <font color='darkred'>#include</font> "<a href='971.html'>conn_tls.h</a>"
+<a name='L19'>  19 
+<a name='L20'>  20 <i><font color='green'>/** \brief TLS-based Packet I/O engine ID */</font></i>
+<a name='L21'>  21 <font color='darkred'>#define</font> <a href='../R/244.html' title='Multiple refered from 2 places.'>CONN_TLS_ID</a> 1075988948
+<a name='L22'>  22 
+<a name='L23'>  23 <i><font color='green'>//TODO complete conn_tls</font></i>
+<a name='L24'>  24 
+<a name='L25'>  25 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L26'>  26 
+<a name='L27'>  27 <i><font color='green'>/**</font></i>
+<a name='L28'>  28 <i><font color='green'> * \brief The main function</font></i>
+<a name='L29'>  29 <i><font color='green'> * \param activated The activation flag of this component</font></i>
+<a name='L30'>  30 <i><font color='green'> * \param argc The number of arguments</font></i>
+<a name='L31'>  31 <i><font color='green'> * \param argv Arguments</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 <b>int</b> <a href='../S/979.html#L131' title='Refered from 131 in components/include/component_list.h.'>conn_tls_main</a>(<b>int</b> *<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>, <b>int</b> <a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a>, <b>char</b> **<a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>)
+<a name='L34'>  34 <font color='red'>{</font>
+<a name='L35'>  35     <a href='../D/2419.html' title='Multiple defined in 6 places.'>LOG_INFO</a>(<a href='../S/995.html#L21' title='Defined at 21 in components/conn_tls.c.'>CONN_TLS_ID</a>, "Init - Packet I/O engine with TLS");
+<a name='L36'>  36 
+<a name='L37'>  37     <a href='../D/6825.html' title='Multiple defined in 6 places.'>activate</a>();
+<a name='L38'>  38 
+<a name='L39'>  39     <b>return</b> 0;
+<a name='L40'>  40 <font color='red'>}</font>
+<a name='L41'>  41 
+<a name='L42'>  42 <i><font color='green'>/**</font></i>
+<a name='L43'>  43 <i><font color='green'> * \brief The cleanup function</font></i>
+<a name='L44'>  44 <i><font color='green'> * \param activated The activation flag of this component</font></i>
+<a name='L45'>  45 <i><font color='green'> */</font></i>
+<a name='L46'>  46 <b>int</b> <a href='../S/979.html#L131' title='Refered from 131 in components/include/component_list.h.'>conn_tls_cleanup</a>(<b>int</b> *<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>)
+<a name='L47'>  47 <font color='red'>{</font>
+<a name='L48'>  48     <a href='../D/2419.html' title='Multiple defined in 6 places.'>LOG_INFO</a>(<a href='../S/995.html#L21' title='Defined at 21 in components/conn_tls.c.'>CONN_TLS_ID</a>, "Clean up - Packet I/O engine with TLS");
+<a name='L49'>  49 
+<a name='L50'>  50     <a href='../D/7280.html' title='Multiple defined in 6 places.'>deactivate</a>();
+<a name='L51'>  51 
+<a name='L52'>  52     <b>return</b> 0;
+<a name='L53'>  53 <font color='red'>}</font>
+<a name='L54'>  54 
+<a name='L55'>  55 <i><font color='green'>/**</font></i>
+<a name='L56'>  56 <i><font color='green'> * \brief The CLI function</font></i>
+<a name='L57'>  57 <i><font color='green'> * \param cli The CLI pointer</font></i>
+<a name='L58'>  58 <i><font color='green'> * \param args Arguments</font></i>
+<a name='L59'>  59 <i><font color='green'> */</font></i>
+<a name='L60'>  60 <b>int</b> <a href='../S/979.html#L131' title='Refered from 131 in components/include/component_list.h.'>conn_tls_cli</a>(<a href='../D/7177.html' title='Multiple defined in 6 places.'>cli_t</a> *<a href='../Y/1901.html' title='Multiple used in 1485 places.'>cli</a>, <b>char</b> **<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L61'>  61 <font color='red'>{</font>
+<a name='L62'>  62     <b>return</b> 0;
+<a name='L63'>  63 <font color='red'>}</font>
+<a name='L64'>  64 
+<a name='L65'>  65 <i><font color='green'>/**</font></i>
+<a name='L66'>  66 <i><font color='green'> * \brief The handler function</font></i>
+<a name='L67'>  67 <i><font color='green'> * \param ev Read-only event</font></i>
+<a name='L68'>  68 <i><font color='green'> * \param ev_out Read-write event (if this component has the write permission)</font></i>
+<a name='L69'>  69 <i><font color='green'> */</font></i>
+<a name='L70'>  70 <b>int</b> <a href='../S/979.html#L131' title='Refered from 131 in components/include/component_list.h.'>conn_tls_handler</a>(<b>const</b> <a href='../D/7743.html' title='Multiple defined in 7 places.'>event_t</a> *<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>, <a href='../D/7740.html' title='Multiple defined in 7 places.'>event_out_t</a> *<a href='../Y/2897.html' title='Multiple used in 49 places.'>ev_out</a>)
+<a name='L71'>  71 <font color='red'>{</font>
+<a name='L72'>  72     <b>return</b> 0;
+<a name='L73'>  73 <font color='red'>}</font>
+<a name='L74'>  74 
+<a name='L75'>  75 <i><font color='green'>/**</font></i>
+<a name='L76'>  76 <i><font color='green'> * @}</font></i>
+<a name='L77'>  77 <i><font color='green'> *</font></i>
+<a name='L78'>  78 <i><font color='green'> * @}</font></i>
+<a name='L79'>  79 <i><font color='green'> */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L33'>[^]</a><a href='#L70'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

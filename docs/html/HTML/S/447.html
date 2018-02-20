@@ -1,0 +1,80 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tap.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/tap.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/487.html' title='Multiple included from 2 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* tap.h</font></i>
+<a name='L2'>   2 <i><font color='green'> * packet tap interface   2002 Ronnie Sahlberg</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * $Id: tap.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L5'>   5 <i><font color='green'> *</font></i>
+<a name='L6'>   6 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L7'>   7 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L8'>   8 <i><font color='green'> * Copyright 1998 Gerald Combs</font></i>
+<a name='L9'>   9 <i><font color='green'> * </font></i>
+<a name='L10'>  10 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L11'>  11 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L12'>  12 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L13'>  13 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L14'>  14 <i><font color='green'> * </font></i>
+<a name='L15'>  15 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L16'>  16 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L17'>  17 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L18'>  18 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L19'>  19 <i><font color='green'> * </font></i>
+<a name='L20'>  20 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L21'>  21 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L22'>  22 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L23'>  23 <i><font color='green'> */</font></i>
+<a name='L24'>  24 
+<a name='L25'>  25 <font color='darkred'>#ifndef</font> <a href='../S/447.html#L26' title='Defined at 26 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tap.h.'>_TAP_H_</a>
+<a name='L26'>  26 <font color='darkred'>#define</font> <a href='../S/447.html#L25' title='Refered from 25 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tap.h.'>_TAP_H_</a>
+<a name='L27'>  27 
+<a name='L28'>  28 <font color='darkred'>#include</font> "<a href='501.html'>epan/epan.h</a>"
+<a name='L29'>  29 
+<a name='L30'>  30 <font color='darkred'>#ifdef</font> <a href='../S/588.html#L262' title='Defined at 262 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/config.h.'>INTTYPES_H_DEFINES_FORMATS</a>
+<a name='L31'>  31 <font color='darkred'>#include</font> &lt;inttypes.h&gt;
+<a name='L32'>  32 <font color='darkred'>#endif</font>
+<a name='L33'>  33 
+<a name='L34'>  34 <i><font color='green'>/* With MSVC and a libwireshark.dll, we need a </font></i>
+<a name='L35'>  35 <i><font color='green'> * special declaration of num_tap_filters.</font></i>
+<a name='L36'>  36 <i><font color='green'> */</font></i>
+<a name='L37'>  37 <a href='../S/588.html#L318' title='Defined at 318 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/config.h.'>WS_VAR_IMPORT</a> <b>int</b> num_tap_filters;
+<a name='L38'>  38 
+<a name='L39'>  39 <b>typedef</b> <b>void</b> (*<a href='../Y/7254.html' title='Multiple used in 2 places.'>tap_reset_cb</a>)(<b>void</b> *<a href='../Y/7256.html' title='Multiple used in 6 places.'>tapdata</a>);
+<a name='L40'>  40 <b>typedef</b> <b>int</b>  (*<a href='../Y/7252.html' title='Multiple used in 2 places.'>tap_packet_cb</a>)(<b>void</b> *<a href='../Y/7256.html' title='Multiple used in 6 places.'>tapdata</a>, <a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <a href='../Y/2723.html' title='Multiple used in 2 places.'>epan_dissect_t</a> *<a href='../Y/2632.html' title='Multiple used in 21 places.'>edt</a>, <b>const</b> <b>void</b> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L41'>  41 <b>typedef</b> <b>void</b> (*<a href='../Y/7246.html' title='Multiple used in 2 places.'>tap_draw_cb</a>)(<b>void</b> *<a href='../Y/7256.html' title='Multiple used in 6 places.'>tapdata</a>);
+<a name='L42'>  42 
+<a name='L43'>  43 
+<a name='L44'>  44 <b>extern</b> <b>void</b> tap_init(<b>void</b>);
+<a name='L45'>  45 <b>extern</b> <b>int</b> register_tap(<b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>);
+<a name='L46'>  46 <b>extern</b> <b>int</b> find_tap_id(<b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>);
+<a name='L47'>  47 <b>extern</b> <b>void</b> tap_queue_packet(<b>int</b> <a href='../Y/7249.html' title='Multiple used in 3 places.'>tap_id</a>, <a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <b>const</b> <b>void</b> *tap_specific_data);
+<a name='L48'>  48 <b>extern</b> <b>void</b> tap_queue_init(<a href='../S/501.html#L32' title='Defined at 32 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h.'>epan_dissect_t</a> *<a href='../Y/2632.html' title='Multiple used in 21 places.'>edt</a>);
+<a name='L49'>  49 <b>extern</b> <b>void</b> tap_push_tapped_queue(<a href='../S/501.html#L32' title='Defined at 32 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h.'>epan_dissect_t</a> *<a href='../Y/2632.html' title='Multiple used in 21 places.'>edt</a>);
+<a name='L50'>  50 <b>extern</b> <b>void</b> reset_tap_listeners(<b>void</b>);
+<a name='L51'>  51 <b>extern</b> <b>void</b> draw_tap_listeners(<a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> draw_all);
+<a name='L52'>  52 <b>extern</b> <a href='../Y/392.html' title='Multiple used in 20 places.'>GString</a> *register_tap_listener(<b>const</b> <b>char</b> *<a href='../Y/7257.html' title='Multiple used in 3 places.'>tapname</a>, <b>void</b> *<a href='../Y/7256.html' title='Multiple used in 6 places.'>tapdata</a>,
+<a name='L53'>  53     <b>const</b> <b>char</b> *<a href='../Y/3260.html' title='Multiple used in 2 places.'>fstring</a>, <a href='../Y/7254.html' title='Multiple used in 2 places.'>tap_reset_cb</a> tap_reset, <a href='../Y/7252.html' title='Multiple used in 2 places.'>tap_packet_cb</a> tap_packet,
+<a name='L54'>  54     <a href='../Y/7246.html' title='Multiple used in 2 places.'>tap_draw_cb</a> tap_draw);
+<a name='L55'>  55 <b>extern</b> <a href='../Y/392.html' title='Multiple used in 20 places.'>GString</a> *set_tap_dfilter(<b>void</b> *<a href='../Y/7256.html' title='Multiple used in 6 places.'>tapdata</a>, <b>const</b> <b>char</b> *<a href='../Y/3260.html' title='Multiple used in 2 places.'>fstring</a>);
+<a name='L56'>  56 <b>extern</b> <b>void</b> remove_tap_listener(<b>void</b> *<a href='../Y/7256.html' title='Multiple used in 6 places.'>tapdata</a>);
+<a name='L57'>  57 <b>extern</b> <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> have_tap_listeners(<b>void</b>);
+<a name='L58'>  58 <b>extern</b> <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> have_tap_listener(<b>int</b> <a href='../Y/7249.html' title='Multiple used in 3 places.'>tap_id</a>);
+<a name='L59'>  59 <b>extern</b> <b>const</b> <b>void</b> *fetch_tapped_data(<b>int</b> <a href='../Y/7249.html' title='Multiple used in 3 places.'>tap_id</a>, <b>int</b> <a href='../Y/3716.html' title='Multiple used in 200 places.'>idx</a>);
+<a name='L60'>  60 
+<a name='L61'>  61 <font color='darkred'>#endif</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

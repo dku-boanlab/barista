@@ -1,0 +1,179 @@
+<html>
+<head>
+<title>cbench/openflow/lib/tag.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/tag.h</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L97'>[^]</a><a href='#L141'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/256.html' title='Multiple included from 3 places.'>INCLUDED FROM</a></h2>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L97' title='Defined at 97.'>tag_intersects</a>
+<li><a href='#L106' title='Defined at 106.'>tag_is_valid</a>
+<li><a href='#L133' title='Defined at 133.'>tag_set_is_empty</a>
+<li><a href='#L141' title='Defined at 141.'>tag_set_intersects</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> *</font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> *</font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#ifndef</font> <a href='../S/822.html#L35' title='Defined at 35 in cbench/openflow/lib/tag.h.'>TAG_H</a>
+<a name='L35'>  35 <font color='darkred'>#define</font> <a href='../S/822.html#L34' title='Refered from 34 in cbench/openflow/lib/tag.h.'>TAG_H</a> 1
+<a name='L36'>  36 
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;assert.h&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;stdbool.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> &lt;stdint.h&gt;
+<a name='L40'>  40 <font color='darkred'>#include</font> "<a href='../I/69.html'>util.h</a>"
+<a name='L41'>  41 
+<a name='L42'>  42 <i><font color='green'>/*</font></i>
+<a name='L43'>  43 <i><font color='green'> * Tagging support.</font></i>
+<a name='L44'>  44 <i><font color='green'> *</font></i>
+<a name='L45'>  45 <i><font color='green'> * A 'tag' represents an arbitrary category.  Currently, tags are used to</font></i>
+<a name='L46'>  46 <i><font color='green'> * represent categories of flows and in particular the dependencies for a flow</font></i>
+<a name='L47'>  47 <i><font color='green'> * switching decision.  For example, if a flow's output port is based on</font></i>
+<a name='L48'>  48 <i><font color='green'> * knowledge that source MAC 00:02:e3:0f:80:a4 is on eth0, then a tag that</font></i>
+<a name='L49'>  49 <i><font color='green'> * represents that dependency is attached to that flow in the flowtracking hash</font></i>
+<a name='L50'>  50 <i><font color='green'> * table.</font></i>
+<a name='L51'>  51 <i><font color='green'> *</font></i>
+<a name='L52'>  52 <i><font color='green'> * As this example shows, the universe of possible categories is very large,</font></i>
+<a name='L53'>  53 <i><font color='green'> * and even the number of categories that are in use at a given time can be</font></i>
+<a name='L54'>  54 <i><font color='green'> * very large.  This means that keeping track of category membership via</font></i>
+<a name='L55'>  55 <i><font color='green'> * conventional means (lists, bitmaps, etc.) is likely to be expensive.</font></i>
+<a name='L56'>  56 <i><font color='green'> *</font></i>
+<a name='L57'>  57 <i><font color='green'> * Tags are actually implemented via a "superimposed coding", as discussed in</font></i>
+<a name='L58'>  58 <i><font color='green'> * Knuth TAOCP v.3 section 6.5 "Retrieval on Secondary Keys".  A tag is an</font></i>
+<a name='L59'>  59 <i><font color='green'> * unsigned integer in which exactly 2 bits are set to 1 and the rest set to 0.</font></i>
+<a name='L60'>  60 <i><font color='green'> * For 32-bit integers (as currently used) there are 32 * 31 / 2 = 496 unique</font></i>
+<a name='L61'>  61 <i><font color='green'> * tags; for 64-bit integers there are 64 * 63 / 2 = 2,016.</font></i>
+<a name='L62'>  62 <i><font color='green'> *</font></i>
+<a name='L63'>  63 <i><font color='green'> * Because there is a small finite number of unique tags, tags must collide</font></i>
+<a name='L64'>  64 <i><font color='green'> * after some number of them have been created.  In practice we generally</font></i>
+<a name='L65'>  65 <i><font color='green'> * create tags by choosing bits randomly.</font></i>
+<a name='L66'>  66 <i><font color='green'> *</font></i>
+<a name='L67'>  67 <i><font color='green'> * The key property of tags is that we can combine them without increasing the</font></i>
+<a name='L68'>  68 <i><font color='green'> * amount of data required using bitwise-OR, since the result has the 1-bits</font></i>
+<a name='L69'>  69 <i><font color='green'> * from both tags set.  The necessary tradeoff is that the result is even more</font></i>
+<a name='L70'>  70 <i><font color='green'> * ambiguous: if combining two tags yields a value with 4 bits set to 1, then</font></i>
+<a name='L71'>  71 <i><font color='green'> * the result value will test as having 4 * 3 / 2 = 6 unique tags, not just the</font></i>
+<a name='L72'>  72 <i><font color='green'> * two tags that we combined.</font></i>
+<a name='L73'>  73 <i><font color='green'> *</font></i>
+<a name='L74'>  74 <i><font color='green'> * The upshot is this: a value that is the bitwise-OR combination of a number</font></i>
+<a name='L75'>  75 <i><font color='green'> * of tags will always include the tags that were combined, but it may contain</font></i>
+<a name='L76'>  76 <i><font color='green'> * any number of additional tags as well.  This is acceptable for flowtracking,</font></i>
+<a name='L77'>  77 <i><font color='green'> * since we want to be sure that we catch every flow that needs to be</font></i>
+<a name='L78'>  78 <i><font color='green'> * revalidated, but it is OK if we revalidate a few extra flows as well.</font></i>
+<a name='L79'>  79 <i><font color='green'> *</font></i>
+<a name='L80'>  80 <i><font color='green'> * If we combine too many tags, then the result will have every bit set, so</font></i>
+<a name='L81'>  81 <i><font color='green'> * that it will test as including every tag.  Fortunately, this is not a big</font></i>
+<a name='L82'>  82 <i><font color='green'> * problem for us: although there are many flows overall, each individual flow</font></i>
+<a name='L83'>  83 <i><font color='green'> * belongs only to a small number of categories.</font></i>
+<a name='L84'>  84 <i><font color='green'> */</font></i>
+<a name='L85'>  85 
+<a name='L86'>  86 <i><font color='green'>/* Represents a tag, or the combination of 0 or more tags. */</font></i>
+<a name='L87'>  87 <b>typedef</b> <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../R/4751.html' title='Multiple refered from 18 places.'>tag_type</a>;
+<a name='L88'>  88 
+<a name='L89'>  89 <a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a> <a href='../S/842.html#L49' title='Defined at 49 in cbench/openflow/lib/tag.c.'>tag_create_random</a>(<b>void</b>);
+<a name='L90'>  90 <a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a> <a href='../S/842.html#L66' title='Defined at 66 in cbench/openflow/lib/tag.c.'>tag_create_deterministic</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/6635.html' title='Multiple used in 15 places.'>seed</a>);
+<a name='L91'>  91 <b>static</b> <b>inline</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../S/822.html#L97' title='Defined at 97 in cbench/openflow/lib/tag.h.'>tag_intersects</a>(<a href='../Y/7237.html' title='Multiple used in 10 places.'>tag_type</a>, <a href='../Y/7237.html' title='Multiple used in 10 places.'>tag_type</a>);
+<a name='L92'>  92 <b>static</b> <b>inline</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../S/822.html#L106' title='Defined at 106 in cbench/openflow/lib/tag.h.'>tag_is_valid</a>(<a href='../Y/7237.html' title='Multiple used in 10 places.'>tag_type</a>);
+<a name='L93'>  93 
+<a name='L94'>  94 <i><font color='green'>/* Returns true if 'a' and 'b' have at least one tag in common,</font></i>
+<a name='L95'>  95 <i><font color='green'> * false if their set of tags is disjoint. . */</font></i>
+<a name='L96'>  96 <b>static</b> <b>inline</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a>
+<a name='L97'>  97 <a href='../R/4745.html' title='Multiple refered from 6 places.'>tag_intersects</a>(<a href='../Y/7237.html' title='Multiple used in 10 places.'>tag_type</a> <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a>, <a href='../Y/7237.html' title='Multiple used in 10 places.'>tag_type</a> <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>)
+<a name='L98'>  98 <font color='red'>{</font>
+<a name='L99'>  99     <a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a> <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a> = <a href='../Y/1250.html' title='Multiple used in 288 places.'>a</a> &amp; <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>;
+<a name='L100'> 100     <b>return</b> (<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a> &amp; (<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a> - 1)) != 0;
+<a name='L101'> 101 <font color='red'>}</font>
+<a name='L102'> 102 
+<a name='L103'> 103 <i><font color='green'>/* Returns true if 'tag' is a valid tag, that is, if exactly two bits are set</font></i>
+<a name='L104'> 104 <i><font color='green'> * to 1 and the rest to 0.   Otherwise, returns false. */</font></i>
+<a name='L105'> 105 <b>static</b> <b>inline</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a>
+<a name='L106'> 106 <a href='../R/4746.html' title='Multiple refered from 2 places.'>tag_is_valid</a>(<a href='../Y/7237.html' title='Multiple used in 10 places.'>tag_type</a> <a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a>)
+<a name='L107'> 107 <font color='red'>{</font>
+<a name='L108'> 108     <a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a> <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a> = <a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a> &amp; (<a href='../Y/7235.html' title='Multiple used in 22 places.'>tag</a> - 1);
+<a name='L109'> 109     <a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a> <a href='../Y/8037.html' title='Multiple used in 240 places.'>y</a> = <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a> &amp; (<a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a> - 1);
+<a name='L110'> 110     <b>return</b> <a href='../Y/7991.html' title='Multiple used in 651 places.'>x</a> &amp;&amp; !<a href='../Y/8037.html' title='Multiple used in 240 places.'>y</a>;
+<a name='L111'> 111 <font color='red'>}</font>
+<a name='L112'> 112 
+<a name='L113'> 113 <i><font color='green'>/*</font></i>
+<a name='L114'> 114 <i><font color='green'> * A tag set accumulates tags with reduced ambiguity compared to a single tag.</font></i>
+<a name='L115'> 115 <i><font color='green'> * The flow tracking uses tag sets to keep track of tags that need to</font></i>
+<a name='L116'> 116 <i><font color='green'> * revalidated after a number of packets have been processed.</font></i>
+<a name='L117'> 117 <i><font color='green'> */</font></i>
+<a name='L118'> 118 <font color='darkred'>#define</font> <a href='../R/1629.html' title='Multiple refered from 3 places.'>TAG_SET_SIZE</a> 4
+<a name='L119'> 119 <b>struct</b> tag_set <font color='red'>{</font>
+<a name='L120'> 120     <a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a> <a href='../Y/7434.html' title='Multiple used in 24 places.'>total</a>;
+<a name='L121'> 121     <a href='../S/822.html#L87' title='Defined at 87 in cbench/openflow/lib/tag.h.'>tag_type</a> <a href='../Y/7238.html' title='Multiple used in 9 places.'>tags</a>[<a href='../S/822.html#L118' title='Defined at 118 in cbench/openflow/lib/tag.h.'>TAG_SET_SIZE</a>];
+<a name='L122'> 122     <b>unsigned</b> <b>int</b> <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>;
+<a name='L123'> 123 <font color='red'>}</font>;
+<a name='L124'> 124 
+<a name='L125'> 125 <b>void</b> <a href='../S/842.html#L76' title='Defined at 76 in cbench/openflow/lib/tag.c.'>tag_set_init</a>(<b>struct</b> <a href='../Y/7236.html' title='Multiple used in 10 places.'>tag_set</a> *);
+<a name='L126'> 126 <b>void</b> <a href='../S/842.html#L83' title='Defined at 83 in cbench/openflow/lib/tag.c.'>tag_set_add</a>(<b>struct</b> <a href='../Y/7236.html' title='Multiple used in 10 places.'>tag_set</a> *, <a href='../Y/7237.html' title='Multiple used in 10 places.'>tag_type</a>);
+<a name='L127'> 127 <b>static</b> <b>inline</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../S/822.html#L133' title='Defined at 133 in cbench/openflow/lib/tag.h.'>tag_set_is_empty</a>(<b>const</b> <b>struct</b> <a href='../Y/7236.html' title='Multiple used in 10 places.'>tag_set</a> *);
+<a name='L128'> 128 <b>static</b> <b>inline</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../S/822.html#L141' title='Defined at 141 in cbench/openflow/lib/tag.h.'>tag_set_intersects</a>(<b>const</b> <b>struct</b> <a href='../Y/7236.html' title='Multiple used in 10 places.'>tag_set</a> *, <a href='../Y/7237.html' title='Multiple used in 10 places.'>tag_type</a>);
+<a name='L129'> 129 
+<a name='L130'> 130 <i><font color='green'>/* Returns true if 'set' will match no tags at all,</font></i>
+<a name='L131'> 131 <i><font color='green'> * false if it will match at least one tag. */</font></i>
+<a name='L132'> 132 <b>static</b> <b>inline</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a>
+<a name='L133'> 133 <a href='../S/822.html#L127' title='Refered from 127 in cbench/openflow/lib/tag.h.'>tag_set_is_empty</a>(<b>const</b> <b>struct</b> <a href='../Y/7236.html' title='Multiple used in 10 places.'>tag_set</a> *<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>)
+<a name='L134'> 134 <font color='red'>{</font>
+<a name='L135'> 135     <b>return</b> !<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>;
+<a name='L136'> 136 <font color='red'>}</font>
+<a name='L137'> 137 
+<a name='L138'> 138 <i><font color='green'>/* Returns true if any of the tags in 'tags' are also in 'set',</font></i>
+<a name='L139'> 139 <i><font color='green'> * false if the intersection is empty. */</font></i>
+<a name='L140'> 140 <b>static</b> <b>inline</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a>
+<a name='L141'> 141 <a href='../R/4749.html' title='Multiple refered from 2 places.'>tag_set_intersects</a>(<b>const</b> <b>struct</b> <a href='../Y/7236.html' title='Multiple used in 10 places.'>tag_set</a> *<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>, <a href='../Y/7237.html' title='Multiple used in 10 places.'>tag_type</a> <a href='../Y/7238.html' title='Multiple used in 9 places.'>tags</a>)
+<a name='L142'> 142 <font color='red'>{</font>
+<a name='L143'> 143     <a href='../D/522.html' title='Multiple defined in 2 places.'>BUILD_ASSERT_DECL</a>(<a href='../S/822.html#L118' title='Defined at 118 in cbench/openflow/lib/tag.h.'>TAG_SET_SIZE</a> == 4);
+<a name='L144'> 144     <b>return</b> (<a href='../S/822.html#L97' title='Defined at 97 in cbench/openflow/lib/tag.h.'>tag_intersects</a>(<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>-&gt;<a href='../Y/7434.html' title='Multiple used in 24 places.'>total</a>, <a href='../Y/7238.html' title='Multiple used in 9 places.'>tags</a>)
+<a name='L145'> 145             &amp;&amp; (<a href='../S/822.html#L97' title='Defined at 97 in cbench/openflow/lib/tag.h.'>tag_intersects</a>(<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>-&gt;<a href='../Y/7238.html' title='Multiple used in 9 places.'>tags</a>[0], <a href='../Y/7238.html' title='Multiple used in 9 places.'>tags</a>)
+<a name='L146'> 146                 || <a href='../S/822.html#L97' title='Defined at 97 in cbench/openflow/lib/tag.h.'>tag_intersects</a>(<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>-&gt;<a href='../Y/7238.html' title='Multiple used in 9 places.'>tags</a>[1], <a href='../Y/7238.html' title='Multiple used in 9 places.'>tags</a>)
+<a name='L147'> 147                 || <a href='../S/822.html#L97' title='Defined at 97 in cbench/openflow/lib/tag.h.'>tag_intersects</a>(<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>-&gt;<a href='../Y/7238.html' title='Multiple used in 9 places.'>tags</a>[2], <a href='../Y/7238.html' title='Multiple used in 9 places.'>tags</a>)
+<a name='L148'> 148                 || <a href='../S/822.html#L97' title='Defined at 97 in cbench/openflow/lib/tag.h.'>tag_intersects</a>(<a href='../Y/6683.html' title='Multiple used in 21 places.'>set</a>-&gt;<a href='../Y/7238.html' title='Multiple used in 9 places.'>tags</a>[3], <a href='../Y/7238.html' title='Multiple used in 9 places.'>tags</a>)));
+<a name='L149'> 149 <font color='red'>}</font>
+<a name='L150'> 150 
+<a name='L151'> 151 <font color='darkred'>#endif</font> <i><font color='green'>/* tag.h */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L97'>[^]</a><a href='#L141'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

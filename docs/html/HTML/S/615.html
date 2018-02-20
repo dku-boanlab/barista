@@ -1,0 +1,449 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/ofp-discover.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/ofp-discover.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L83'>[^]</a><a href='#L395'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L83' title='Defined at 83.'>usage</a>
+<li><a href='#L220' title='Defined at 220.'>iface_init</a>
+<li><a href='#L256' title='Defined at 256.'>release_ifaces</a>
+<li><a href='#L270' title='Defined at 270.'>modify_dhcp_request</a>
+<li><a href='#L276' title='Defined at 276.'>validate_dhcp_offer</a>
+<li><a href='#L293' title='Defined at 293.'>parse_options</a>
+<li><a href='#L395' title='Defined at 395.'>usage</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008, 2009 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> *</font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> *</font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> &lt;<a href='557.html'>getopt.h</a>&gt;
+<a name='L36'>  36 <font color='darkred'>#include</font> &lt;limits.h&gt;
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;regex.h&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;signal.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> &lt;stdlib.h&gt;
+<a name='L40'>  40 <font color='darkred'>#include</font> &lt;unistd.h&gt;
+<a name='L41'>  41 <font color='darkred'>#include</font> "<a href='850.html'>command-line.h</a>"
+<a name='L42'>  42 <font color='darkred'>#include</font> "<a href='876.html'>daemon.h</a>"
+<a name='L43'>  43 <font color='darkred'>#include</font> "<a href='869.html'>dhcp-client.h</a>"
+<a name='L44'>  44 <font color='darkred'>#include</font> "<a href='866.html'>dhcp.h</a>"
+<a name='L45'>  45 <font color='darkred'>#include</font> "<a href='858.html'>dirs.h</a>"
+<a name='L46'>  46 <font color='darkred'>#include</font> "<a href='908.html'>dynamic-string.h</a>"
+<a name='L47'>  47 <font color='darkred'>#include</font> "<a href='888.html'>fatal-signal.h</a>"
+<a name='L48'>  48 <font color='darkred'>#include</font> "<a href='814.html'>netdev.h</a>"
+<a name='L49'>  49 <font color='darkred'>#include</font> "<a href='901.html'>poll-loop.h</a>"
+<a name='L50'>  50 <font color='darkred'>#include</font> "<a href='812.html'>timeval.h</a>"
+<a name='L51'>  51 <font color='darkred'>#include</font> "<a href='../I/69.html'>util.h</a>"
+<a name='L52'>  52 <font color='darkred'>#include</font> "<a href='824.html'>vlog-socket.h</a>"
+<a name='L53'>  53 
+<a name='L54'>  54 <font color='darkred'>#include</font> "<a href='859.html'>vlog.h</a>"
+<a name='L55'>  55 <font color='darkred'>#define</font> <a href='../R/1643.html' title='Multiple refered from 13 places.'>THIS_MODULE</a> VLM_ofp_discover
+<a name='L56'>  56 
+<a name='L57'>  57 <b>struct</b> <a href='../R/3269.html' title='Multiple refered from 26 places.'>iface</a> <font color='red'>{</font>
+<a name='L58'>  58     <b>const</b> <b>char</b> *<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;
+<a name='L59'>  59     <b>struct</b> <a href='../S/832.html#L88' title='Defined at 88 in cbench/openflow/lib/dhcp-client.c.'>dhclient</a> *<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a>;
+<a name='L60'>  60 <font color='red'>}</font>;
+<a name='L61'>  61 
+<a name='L62'>  62 <i><font color='green'>/* The interfaces that we serve. */</font></i>
+<a name='L63'>  63 <b>static</b> <b>struct</b> <a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a> *<a href='../Y/3733.html' title='Multiple used in 8 places.'>ifaces</a>;
+<a name='L64'>  64 <b>static</b> <b>int</b> <a href='../Y/4591.html' title='Multiple used in 10 places.'>n_ifaces</a>;
+<a name='L65'>  65 
+<a name='L66'>  66 <i><font color='green'>/* --accept-vconn: Regular expression specifying the class of controller vconns</font></i>
+<a name='L67'>  67 <i><font color='green'> * that we will accept during autodiscovery. */</font></i>
+<a name='L68'>  68 <b>static</b> <b>const</b> <b>char</b> *<a href='../Y/1268.html' title='Multiple used in 8 places.'>accept_controller_re</a> = ".*";
+<a name='L69'>  69 <b>static</b> <a href='../Y/6330.html' title='Multiple used in 3 places.'>regex_t</a> <a href='../Y/1269.html' title='Multiple used in 10 places.'>accept_controller_regex</a>;
+<a name='L70'>  70 
+<a name='L71'>  71 <i><font color='green'>/* --exit-without-bind: Exit after discovering the controller, without binding</font></i>
+<a name='L72'>  72 <i><font color='green'> * the network device to an IP address? */</font></i>
+<a name='L73'>  73 <b>static</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/2947.html' title='Multiple used in 5 places.'>exit_without_bind</a>;
+<a name='L74'>  74 
+<a name='L75'>  75 <i><font color='green'>/* --exit-after-bind: Exit after discovering the controller, after binding the</font></i>
+<a name='L76'>  76 <i><font color='green'> * network device to an IP address? */</font></i>
+<a name='L77'>  77 <b>static</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/2944.html' title='Multiple used in 5 places.'>exit_after_bind</a>;
+<a name='L78'>  78 
+<a name='L79'>  79 <b>static</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../S/615.html#L220' title='Defined at 220 in cbench/openflow/utilities/ofp-discover.c.'>iface_init</a>(<b>struct</b> <a href='../Y/3730.html' title='Multiple used in 4 places.'>iface</a> *, <b>const</b> <b>char</b> *<a href='../Y/4716.html' title='Multiple used in 32 places.'>netdev_name</a>);
+<a name='L80'>  80 <b>static</b> <b>void</b> <a href='../S/615.html#L256' title='Defined at 256 in cbench/openflow/utilities/ofp-discover.c.'>release_ifaces</a>(<b>void</b> *<a href='../Y/1539.html' title='Multiple used in 86 places.'>aux</a> <a href='../D/5808.html' title='Multiple defined in 5 places.'>UNUSED</a>);
+<a name='L81'>  81 
+<a name='L82'>  82 <b>static</b> <b>void</b> <a href='../D/9003.html' title='Multiple defined in 8 places.'>parse_options</a>(<b>int</b> <a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a>, <b>char</b> *<a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>[]);
+<a name='L83'>  83 <b>static</b> <b>void</b> <a href='../R/4885.html' title='Multiple refered from 18 places.'>usage</a>(<b>void</b>) <a href='../S/872.html#L37' title='Defined at 37 in cbench/openflow/lib/compiler.h.'>NO_RETURN</a>;
+<a name='L84'>  84 
+<a name='L85'>  85 <b>static</b> <b>void</b> modify_dhcp_request(<b>struct</b> <a href='../Y/2393.html' title='Multiple used in 77 places.'>dhcp_msg</a> *, <b>void</b> *<a href='../Y/1539.html' title='Multiple used in 86 places.'>aux</a>);
+<a name='L86'>  86 <b>static</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> validate_dhcp_offer(<b>const</b> <b>struct</b> <a href='../Y/2393.html' title='Multiple used in 77 places.'>dhcp_msg</a> *, <b>void</b> *<a href='../Y/1539.html' title='Multiple used in 86 places.'>aux</a>);
+<a name='L87'>  87 
+<a name='L88'>  88 <b>int</b>
+<a name='L89'>  89 <a href='../Y/4315.html' title='Multiple used in 5 places.'>main</a>(<b>int</b> <a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a>, <b>char</b> *<a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>[])
+<a name='L90'>  90 <font color='red'>{</font>
+<a name='L91'>  91     <b>int</b> <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>;
+<a name='L92'>  92     <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L93'>  93 
+<a name='L94'>  94     <a href='../S/878.html#L187' title='Defined at 187 in cbench/openflow/lib/util.c.'>set_program_name</a>(<a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>[0]);
+<a name='L95'>  95     <a href='../S/902.html#L65' title='Defined at 65 in cbench/openflow/lib/timeval.c.'>time_init</a>();
+<a name='L96'>  96     <a href='../S/848.html#L405' title='Defined at 405 in cbench/openflow/lib/vlog.c.'>vlog_init</a>();
+<a name='L97'>  97     <a href='../D/9003.html' title='Multiple defined in 8 places.'>parse_options</a>(<a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a>, <a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>);
+<a name='L98'>  98 
+<a name='L99'>  99     <a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a> -= <a href='../Y/5500.html' title='Multiple used in 22 places.'>optind</a>;
+<a name='L100'> 100     <a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a> += <a href='../Y/5500.html' title='Multiple used in 22 places.'>optind</a>;
+<a name='L101'> 101     <b>if</b> (<a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a> &lt; 1) <font color='red'>{</font>
+<a name='L102'> 102         <a href='../S/878.html#L153' title='Defined at 153 in cbench/openflow/lib/util.c.'>ofp_fatal</a>(0, "need at least one non-option argument; "
+<a name='L103'> 103                   "use --help for usage");
+<a name='L104'> 104     <font color='red'>}</font>
+<a name='L105'> 105 
+<a name='L106'> 106     <a href='../Y/3733.html' title='Multiple used in 8 places.'>ifaces</a> = <a href='../D/10153.html' title='Multiple defined in 2 places.'>xmalloc</a>(<a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a> * <b>sizeof</b> *<a href='../Y/3733.html' title='Multiple used in 8 places.'>ifaces</a>);
+<a name='L107'> 107     <a href='../Y/4591.html' title='Multiple used in 10 places.'>n_ifaces</a> = 0;
+<a name='L108'> 108     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L109'> 109         <b>if</b> (<a href='../S/615.html#L220' title='Defined at 220 in cbench/openflow/utilities/ofp-discover.c.'>iface_init</a>(&amp;<a href='../Y/3733.html' title='Multiple used in 8 places.'>ifaces</a>[<a href='../Y/4591.html' title='Multiple used in 10 places.'>n_ifaces</a>], <a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>])) <font color='red'>{</font>
+<a name='L110'> 110             <a href='../Y/4591.html' title='Multiple used in 10 places.'>n_ifaces</a>++;
+<a name='L111'> 111         <font color='red'>}</font>
+<a name='L112'> 112     <font color='red'>}</font>
+<a name='L113'> 113     <b>if</b> (!<a href='../Y/4591.html' title='Multiple used in 10 places.'>n_ifaces</a>) <font color='red'>{</font>
+<a name='L114'> 114         <a href='../S/878.html#L153' title='Defined at 153 in cbench/openflow/lib/util.c.'>ofp_fatal</a>(0, "failed to initialize any DHCP clients");
+<a name='L115'> 115     <font color='red'>}</font>
+<a name='L116'> 116 
+<a name='L117'> 117     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../Y/4591.html' title='Multiple used in 10 places.'>n_ifaces</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L118'> 118         <b>struct</b> <a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a> *<a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a> = &amp;<a href='../Y/3733.html' title='Multiple used in 8 places.'>ifaces</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>];
+<a name='L119'> 119         <a href='../S/832.html#L246' title='Defined at 246 in cbench/openflow/lib/dhcp-client.c.'>dhclient_init</a>(<a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a>, 0);
+<a name='L120'> 120     <font color='red'>}</font>
+<a name='L121'> 121     <a href='../S/891.html#L78' title='Defined at 78 in cbench/openflow/lib/fatal-signal.c.'>fatal_signal_add_hook</a>(<a href='../S/615.html#L256' title='Defined at 256 in cbench/openflow/utilities/ofp-discover.c.'>release_ifaces</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>);
+<a name='L122'> 122 
+<a name='L123'> 123     <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../Y/6328.html' title='Multiple used in 3 places.'>regcomp</a>(&amp;<a href='../Y/1269.html' title='Multiple used in 10 places.'>accept_controller_regex</a>, <a href='../Y/1268.html' title='Multiple used in 8 places.'>accept_controller_re</a>,
+<a name='L124'> 124                      <a href='../Y/730.html' title='Multiple used in 3 places.'>REG_NOSUB</a> | <a href='../Y/728.html' title='Multiple used in 3 places.'>REG_EXTENDED</a>);
+<a name='L125'> 125     <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>) <font color='red'>{</font>
+<a name='L126'> 126         <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <a href='../Y/6329.html' title='Multiple used in 4 places.'>regerror</a>(<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>, &amp;<a href='../Y/1269.html' title='Multiple used in 10 places.'>accept_controller_regex</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, 0);
+<a name='L127'> 127         <b>char</b> *<a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a> = <a href='../D/10153.html' title='Multiple defined in 2 places.'>xmalloc</a>(<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>);
+<a name='L128'> 128         <a href='../Y/6329.html' title='Multiple used in 4 places.'>regerror</a>(<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>, &amp;<a href='../Y/1269.html' title='Multiple used in 10 places.'>accept_controller_regex</a>, <a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>, <a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>);
+<a name='L129'> 129         <a href='../S/878.html#L153' title='Defined at 153 in cbench/openflow/lib/util.c.'>ofp_fatal</a>(0, "%s: %s", <a href='../Y/1268.html' title='Multiple used in 8 places.'>accept_controller_re</a>, <a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>);
+<a name='L130'> 130     <font color='red'>}</font>
+<a name='L131'> 131 
+<a name='L132'> 132     <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../S/890.html#L90' title='Defined at 90 in cbench/openflow/lib/vlog-socket.c.'>vlog_server_listen</a>(<a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>);
+<a name='L133'> 133     <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>) <font color='red'>{</font>
+<a name='L134'> 134         <a href='../S/878.html#L153' title='Defined at 153 in cbench/openflow/lib/util.c.'>ofp_fatal</a>(<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>, "Could not listen for vlog connections");
+<a name='L135'> 135     <font color='red'>}</font>
+<a name='L136'> 136 
+<a name='L137'> 137     <a href='../S/817.html#L133' title='Defined at 133 in cbench/openflow/lib/daemon.c.'>die_if_already_running</a>();
+<a name='L138'> 138 
+<a name='L139'> 139     <a href='../S/871.html#L55' title='Defined at 55 in cbench/openflow/lib/signals.c.'>signal</a>(<a href='../Y/784.html' title='Multiple used in 12 places.'>SIGPIPE</a>, <a href='../Y/805.html' title='Multiple used in 13 places.'>SIG_IGN</a>);
+<a name='L140'> 140     <b>for</b> (;;) <font color='red'>{</font>
+<a name='L141'> 141         <a href='../S/891.html#L97' title='Defined at 97 in cbench/openflow/lib/fatal-signal.c.'>fatal_signal_block</a>();
+<a name='L142'> 142         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../Y/4591.html' title='Multiple used in 10 places.'>n_ifaces</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L143'> 143             <b>struct</b> <a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a> *<a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a> = &amp;<a href='../Y/3733.html' title='Multiple used in 8 places.'>ifaces</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>];
+<a name='L144'> 144             <a href='../S/832.html#L795' title='Defined at 795 in cbench/openflow/lib/dhcp-client.c.'>dhclient_run</a>(<a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a>);
+<a name='L145'> 145             <b>if</b> (<a href='../S/832.html#L332' title='Defined at 332 in cbench/openflow/lib/dhcp-client.c.'>dhclient_changed</a>(<a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a>)) <font color='red'>{</font>
+<a name='L146'> 146                 <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/3920.html' title='Multiple used in 3 places.'>is_bound</a> = <a href='../S/832.html#L324' title='Defined at 324 in cbench/openflow/lib/dhcp-client.c.'>dhclient_is_bound</a>(<a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a>);
+<a name='L147'> 147                 <b>int</b> <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>;
+<a name='L148'> 148 
+<a name='L149'> 149                 <i><font color='green'>/* Configure network device. */</font></i>
+<a name='L150'> 150                 <b>if</b> (!<a href='../Y/2947.html' title='Multiple used in 5 places.'>exit_without_bind</a>) <font color='red'>{</font>
+<a name='L151'> 151                     <a href='../S/832.html#L415' title='Defined at 415 in cbench/openflow/lib/dhcp-client.c.'>dhclient_configure_netdev</a>(<a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a>);
+<a name='L152'> 152                     <a href='../S/832.html#L446' title='Defined at 446 in cbench/openflow/lib/dhcp-client.c.'>dhclient_update_resolv_conf</a>(<a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a>);
+<a name='L153'> 153                 <font color='red'>}</font>
+<a name='L154'> 154 
+<a name='L155'> 155                 <b>if</b> (<a href='../Y/3920.html' title='Multiple used in 3 places.'>is_bound</a>) <font color='red'>{</font>
+<a name='L156'> 156                     <b>static</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/2357.html' title='Multiple used in 3 places.'>detached</a> = <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L157'> 157                     <b>struct</b> <a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a> <a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>;
+<a name='L158'> 158 
+<a name='L159'> 159                     <i><font color='green'>/* Disable timeout, since discovery was successful. */</font></i>
+<a name='L160'> 160                     <a href='../S/902.html#L125' title='Defined at 125 in cbench/openflow/lib/timeval.c.'>time_alarm</a>(0);
+<a name='L161'> 161 
+<a name='L162'> 162                     <i><font color='green'>/* Print discovered parameters. */</font></i>
+<a name='L163'> 163                     <a href='../S/907.html#L44' title='Defined at 44 in cbench/openflow/lib/dynamic-string.c.'>ds_init</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>);
+<a name='L164'> 164                     <a href='../S/841.html#L524' title='Defined at 524 in cbench/openflow/lib/dhcp.c.'>dhcp_msg_to_string</a>(<a href='../S/832.html#L395' title='Defined at 395 in cbench/openflow/lib/dhcp-client.c.'>dhclient_get_config</a>(<a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a>),
+<a name='L165'> 165                                        <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>, &amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>);
+<a name='L166'> 166                     <a href='../Y/3208.html' title='Multiple used in 12 places.'>fputs</a>(<a href='../S/907.html#L198' title='Defined at 198 in cbench/openflow/lib/dynamic-string.c.'>ds_cstr</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>), <a href='../Y/7051.html' title='Multiple used in 64 places.'>stdout</a>);
+<a name='L167'> 167                     putchar('\n');
+<a name='L168'> 168                     <a href='../Y/3028.html' title='Multiple used in 35 places.'>fflush</a>(<a href='../Y/7051.html' title='Multiple used in 64 places.'>stdout</a>);
+<a name='L169'> 169                     <a href='../S/907.html#L208' title='Defined at 208 in cbench/openflow/lib/dynamic-string.c.'>ds_destroy</a>(&amp;<a href='../S/908.html#L46' title='Defined at 46 in cbench/openflow/lib/dynamic-string.h.'>ds</a>);
+<a name='L170'> 170 
+<a name='L171'> 171                     <i><font color='green'>/* Exit if the user requested it. */</font></i>
+<a name='L172'> 172                     <b>if</b> (<a href='../Y/2947.html' title='Multiple used in 5 places.'>exit_without_bind</a>) <font color='red'>{</font>
+<a name='L173'> 173                         <a href='../S/859.html#L153' title='Defined at 153 in cbench/openflow/lib/vlog.h.'>VLOG_DBG</a>("exiting because of successful binding on %s "
+<a name='L174'> 174                                  "and --exit-without-bind specified",
+<a name='L175'> 175                                  <a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>);
+<a name='L176'> 176                         <a href='../Y/2943.html' title='Multiple used in 74 places.'>exit</a>(0);
+<a name='L177'> 177                     <font color='red'>}</font>
+<a name='L178'> 178                     <b>if</b> (<a href='../Y/2944.html' title='Multiple used in 5 places.'>exit_after_bind</a>) <font color='red'>{</font>
+<a name='L179'> 179                         <a href='../S/859.html#L153' title='Defined at 153 in cbench/openflow/lib/vlog.h.'>VLOG_DBG</a>("exiting because of successful binding on %s "
+<a name='L180'> 180                                  "and --exit-after-bind specified",
+<a name='L181'> 181                                  <a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>);
+<a name='L182'> 182                         <a href='../Y/2943.html' title='Multiple used in 74 places.'>exit</a>(0);
+<a name='L183'> 183                     <font color='red'>}</font>
+<a name='L184'> 184 
+<a name='L185'> 185                     <i><font color='green'>/* Detach into background, if we haven't already. */</font></i>
+<a name='L186'> 186                     <b>if</b> (!<a href='../Y/2357.html' title='Multiple used in 3 places.'>detached</a>) <font color='red'>{</font>
+<a name='L187'> 187                         <a href='../Y/2357.html' title='Multiple used in 3 places.'>detached</a> = <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>;
+<a name='L188'> 188                         <a href='../D/7265.html' title='Multiple defined in 2 places.'>daemonize</a>();
+<a name='L189'> 189                     <font color='red'>}</font>
+<a name='L190'> 190                 <font color='red'>}</font>
+<a name='L191'> 191 
+<a name='L192'> 192                 <i><font color='green'>/* We only want an address on a single one of our interfaces.</font></i>
+<a name='L193'> 193 <i><font color='green'>                 * So: if we have an address on this interface, stop looking</font></i>
+<a name='L194'> 194 <i><font color='green'>                 * for one on the others; if we don't have an address on this</font></i>
+<a name='L195'> 195 <i><font color='green'>                 * interface, start looking everywhere. */</font></i>
+<a name='L196'> 196                 <b>for</b> (<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a> = 0; <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a> &lt; <a href='../Y/4591.html' title='Multiple used in 10 places.'>n_ifaces</a>; <a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>++) <font color='red'>{</font>
+<a name='L197'> 197                     <b>struct</b> <a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a> *<a href='../Y/3721.html' title='Multiple used in 4 places.'>if2</a> = &amp;<a href='../Y/3733.html' title='Multiple used in 8 places.'>ifaces</a>[<a href='../Y/3969.html' title='Multiple used in 385 places.'>j</a>];
+<a name='L198'> 198                     <b>if</b> (<a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a> != <a href='../Y/3721.html' title='Multiple used in 4 places.'>if2</a>) <font color='red'>{</font>
+<a name='L199'> 199                         <b>if</b> (<a href='../Y/3920.html' title='Multiple used in 3 places.'>is_bound</a>) <font color='red'>{</font>
+<a name='L200'> 200                             <a href='../S/832.html#L257' title='Defined at 257 in cbench/openflow/lib/dhcp-client.c.'>dhclient_release</a>(<a href='../Y/3721.html' title='Multiple used in 4 places.'>if2</a>-&gt;<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a>);
+<a name='L201'> 201                         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L202'> 202                             <a href='../S/832.html#L246' title='Defined at 246 in cbench/openflow/lib/dhcp-client.c.'>dhclient_init</a>(<a href='../Y/3721.html' title='Multiple used in 4 places.'>if2</a>-&gt;<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a>, 0);
+<a name='L203'> 203                         <font color='red'>}</font>
+<a name='L204'> 204                     <font color='red'>}</font>
+<a name='L205'> 205                 <font color='red'>}</font>
+<a name='L206'> 206             <font color='red'>}</font>
+<a name='L207'> 207         <font color='red'>}</font>
+<a name='L208'> 208         <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../Y/4591.html' title='Multiple used in 10 places.'>n_ifaces</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L209'> 209             <b>struct</b> <a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a> *<a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a> = &amp;<a href='../Y/3733.html' title='Multiple used in 8 places.'>ifaces</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>];
+<a name='L210'> 210             <a href='../S/832.html#L816' title='Defined at 816 in cbench/openflow/lib/dhcp-client.c.'>dhclient_wait</a>(<a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a>);
+<a name='L211'> 211         <font color='red'>}</font>
+<a name='L212'> 212         <a href='../S/891.html#L131' title='Defined at 131 in cbench/openflow/lib/fatal-signal.c.'>fatal_signal_unblock</a>();
+<a name='L213'> 213         <a href='../S/854.html#L154' title='Defined at 154 in cbench/openflow/lib/poll-loop.c.'>poll_block</a>();
+<a name='L214'> 214     <font color='red'>}</font>
+<a name='L215'> 215 
+<a name='L216'> 216     <b>return</b> 0;
+<a name='L217'> 217 <font color='red'>}</font>
+<a name='L218'> 218 
+<a name='L219'> 219 <b>static</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a>
+<a name='L220'> 220 <a href='../R/3270.html' title='Multiple refered from 2 places.'>iface_init</a>(<b>struct</b> <a href='../Y/3730.html' title='Multiple used in 4 places.'>iface</a> *<a href='../Y/3730.html' title='Multiple used in 4 places.'>iface</a>, <b>const</b> <b>char</b> *<a href='../Y/4716.html' title='Multiple used in 32 places.'>netdev_name</a>)
+<a name='L221'> 221 <font color='red'>{</font>
+<a name='L222'> 222     <b>int</b> <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>;
+<a name='L223'> 223 
+<a name='L224'> 224     <a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a> = <a href='../Y/4716.html' title='Multiple used in 32 places.'>netdev_name</a>;
+<a name='L225'> 225     <a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L226'> 226 
+<a name='L227'> 227     <b>if</b> (<a href='../Y/2944.html' title='Multiple used in 5 places.'>exit_after_bind</a>) <font color='red'>{</font>
+<a name='L228'> 228         <i><font color='green'>/* Bring this interface up permanently, so that the bound address</font></i>
+<a name='L229'> 229 <i><font color='green'>         * persists past program termination. */</font></i>
+<a name='L230'> 230         <b>struct</b> <a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a> *<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>;
+<a name='L231'> 231 
+<a name='L232'> 232         <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../S/851.html#L628' title='Defined at 628 in cbench/openflow/lib/netdev.c.'>netdev_open</a>(<a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>, <a href='../S/814.html#L66' title='Defined at 66 in cbench/openflow/lib/netdev.h.'>NETDEV_ETH_TYPE_NONE</a>, &amp;<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>);
+<a name='L233'> 233         <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>) <font color='red'>{</font>
+<a name='L234'> 234             <a href='../S/878.html#L169' title='Defined at 169 in cbench/openflow/lib/util.c.'>ofp_error</a>(<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>, "Could not open %s device", <a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>);
+<a name='L235'> 235             <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L236'> 236         <font color='red'>}</font>
+<a name='L237'> 237         <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../S/851.html#L1242' title='Defined at 1242 in cbench/openflow/lib/netdev.c.'>netdev_turn_flags_on</a>(<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>, <a href='../S/814.html#L60' title='Defined at 60 in cbench/openflow/lib/netdev.h.'>NETDEV_UP</a>, <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>);
+<a name='L238'> 238         <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>) <font color='red'>{</font>
+<a name='L239'> 239             <a href='../S/878.html#L169' title='Defined at 169 in cbench/openflow/lib/util.c.'>ofp_error</a>(<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>, "Could not bring %s device up", <a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>);
+<a name='L240'> 240             <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L241'> 241         <font color='red'>}</font>
+<a name='L242'> 242         <a href='../S/851.html#L821' title='Defined at 821 in cbench/openflow/lib/netdev.c.'>netdev_close</a>(<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>);
+<a name='L243'> 243     <font color='red'>}</font>
+<a name='L244'> 244 
+<a name='L245'> 245     <a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a> = <a href='../S/832.html#L165' title='Defined at 165 in cbench/openflow/lib/dhcp-client.c.'>dhclient_create</a>(<a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>, <a href='../D/8373.html' title='Multiple defined in 3 places.'>modify_dhcp_request</a>,
+<a name='L246'> 246                              <a href='../D/9998.html' title='Multiple defined in 2 places.'>validate_dhcp_offer</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, &amp;<a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a>);
+<a name='L247'> 247     <b>if</b> (<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>) <font color='red'>{</font>
+<a name='L248'> 248         <a href='../S/878.html#L169' title='Defined at 169 in cbench/openflow/lib/util.c.'>ofp_error</a>(<a href='../Y/6437.html' title='Multiple used in 433 places.'>retval</a>, "%s: failed to initialize DHCP client", <a href='../S/615.html#L57' title='Defined at 57 in cbench/openflow/utilities/ofp-discover.c.'>iface</a>-&gt;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>);
+<a name='L249'> 249         <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L250'> 250     <font color='red'>}</font>
+<a name='L251'> 251 
+<a name='L252'> 252     <b>return</b> <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>;
+<a name='L253'> 253 <font color='red'>}</font>
+<a name='L254'> 254 
+<a name='L255'> 255 <b>static</b> <b>void</b>
+<a name='L256'> 256 <a href='../R/4353.html' title='Multiple refered from 2 places.'>release_ifaces</a>(<b>void</b> *<a href='../Y/1539.html' title='Multiple used in 86 places.'>aux</a> <a href='../D/5808.html' title='Multiple defined in 5 places.'>UNUSED</a>)
+<a name='L257'> 257 <font color='red'>{</font>
+<a name='L258'> 258     <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L259'> 259 
+<a name='L260'> 260     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> = 0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a> &lt; <a href='../Y/4591.html' title='Multiple used in 10 places.'>n_ifaces</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L261'> 261         <b>struct</b> <a href='../S/832.html#L88' title='Defined at 88 in cbench/openflow/lib/dhcp-client.c.'>dhclient</a> *<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a> = <a href='../Y/3733.html' title='Multiple used in 8 places.'>ifaces</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>].<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a>;
+<a name='L262'> 262         <a href='../S/832.html#L257' title='Defined at 257 in cbench/openflow/lib/dhcp-client.c.'>dhclient_release</a>(<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a>);
+<a name='L263'> 263         <b>if</b> (<a href='../S/832.html#L332' title='Defined at 332 in cbench/openflow/lib/dhcp-client.c.'>dhclient_changed</a>(<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a>)) <font color='red'>{</font>
+<a name='L264'> 264             <a href='../S/832.html#L415' title='Defined at 415 in cbench/openflow/lib/dhcp-client.c.'>dhclient_configure_netdev</a>(<a href='../Y/2391.html' title='Multiple used in 85 places.'>dhcp</a>);
+<a name='L265'> 265         <font color='red'>}</font>
+<a name='L266'> 266     <font color='red'>}</font>
+<a name='L267'> 267 <font color='red'>}</font>
+<a name='L268'> 268 
+<a name='L269'> 269 <b>static</b> <b>void</b>
+<a name='L270'> 270 <a href='../R/3520.html' title='Multiple refered from 5 places.'>modify_dhcp_request</a>(<b>struct</b> <a href='../Y/2393.html' title='Multiple used in 77 places.'>dhcp_msg</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <b>void</b> *<a href='../Y/1539.html' title='Multiple used in 86 places.'>aux</a> <a href='../D/5808.html' title='Multiple defined in 5 places.'>UNUSED</a>)
+<a name='L271'> 271 <font color='red'>{</font>
+<a name='L272'> 272     <a href='../S/841.html#L241' title='Defined at 241 in cbench/openflow/lib/dhcp.c.'>dhcp_msg_put_string</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/238.html' title='Multiple used in 4 places.'>DHCP_CODE_VENDOR_CLASS</a>, "OpenFlow");
+<a name='L273'> 273 <font color='red'>}</font>
+<a name='L274'> 274 
+<a name='L275'> 275 <b>static</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a>
+<a name='L276'> 276 <a href='../R/4888.html' title='Multiple refered from 3 places.'>validate_dhcp_offer</a>(<b>const</b> <b>struct</b> <a href='../Y/2393.html' title='Multiple used in 77 places.'>dhcp_msg</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <b>void</b> *<a href='../Y/1539.html' title='Multiple used in 86 places.'>aux</a> <a href='../D/5808.html' title='Multiple defined in 5 places.'>UNUSED</a>)
+<a name='L277'> 277 <font color='red'>{</font>
+<a name='L278'> 278     <b>static</b> <b>struct</b> <a href='../D/10099.html' title='Multiple defined in 2 places.'>vlog_rate_limit</a> <a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a> = <a href='../S/859.html#L107' title='Defined at 107 in cbench/openflow/lib/vlog.h.'>VLOG_RATE_LIMIT_INIT</a>(60, 60);
+<a name='L279'> 279     <b>char</b> *<a href='../Y/7749.html' title='Multiple used in 38 places.'>vconn_name</a>;
+<a name='L280'> 280     <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/1266.html' title='Multiple used in 18 places.'>accept</a>;
+<a name='L281'> 281 
+<a name='L282'> 282     <a href='../Y/7749.html' title='Multiple used in 38 places.'>vconn_name</a> = <a href='../S/841.html#L362' title='Defined at 362 in cbench/openflow/lib/dhcp.c.'>dhcp_msg_get_string</a>(<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>, <a href='../Y/226.html' title='Multiple used in 4 places.'>DHCP_CODE_OFP_CONTROLLER_VCONN</a>);
+<a name='L283'> 283     <b>if</b> (!<a href='../Y/7749.html' title='Multiple used in 38 places.'>vconn_name</a>) <font color='red'>{</font>
+<a name='L284'> 284         <a href='../S/859.html#L171' title='Defined at 171 in cbench/openflow/lib/vlog.h.'>VLOG_WARN_RL</a>(&amp;<a href='../Y/6448.html' title='Multiple used in 214 places.'>rl</a>, "rejecting DHCP offer missing controller vconn");
+<a name='L285'> 285         <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L286'> 286     <font color='red'>}</font>
+<a name='L287'> 287     <a href='../Y/1266.html' title='Multiple used in 18 places.'>accept</a> = !<a href='../Y/6331.html' title='Multiple used in 3 places.'>regexec</a>(&amp;<a href='../Y/1269.html' title='Multiple used in 10 places.'>accept_controller_regex</a>, <a href='../Y/7749.html' title='Multiple used in 38 places.'>vconn_name</a>, 0, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, 0);
+<a name='L288'> 288     <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/7749.html' title='Multiple used in 38 places.'>vconn_name</a>);
+<a name='L289'> 289     <b>return</b> <a href='../Y/1266.html' title='Multiple used in 18 places.'>accept</a>;
+<a name='L290'> 290 <font color='red'>}</font>
+<a name='L291'> 291 
+<a name='L292'> 292 <b>static</b> <b>void</b>
+<a name='L293'> 293 <a href='../R/4009.html' title='Multiple refered from 16 places.'>parse_options</a>(<b>int</b> <a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a>, <b>char</b> *<a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>[])
+<a name='L294'> 294 <font color='red'>{</font>
+<a name='L295'> 295     <b>enum</b> <font color='red'>{</font>
+<a name='L296'> 296         <a href='../R/1337.html' title='Multiple refered from 4 places.'>OPT_ACCEPT_VCONN</a> = <a href='../R/1673.html' title='Multiple refered from 3 places.'>UCHAR_MAX</a> + 1,
+<a name='L297'> 297         <a href='../R/1343.html' title='Multiple refered from 2 places.'>OPT_EXIT_WITHOUT_BIND</a>,
+<a name='L298'> 298         <a href='../R/1342.html' title='Multiple refered from 2 places.'>OPT_EXIT_AFTER_BIND</a>,
+<a name='L299'> 299         <a href='../R/1350.html' title='Multiple refered from 2 places.'>OPT_NO_DETACH</a>,
+<a name='L300'> 300     <font color='red'>}</font>;
+<a name='L301'> 301     <b>static</b> <b>struct</b> <a href='../S/557.html#L77' title='Defined at 77 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/getopt.h.'>option</a> <a href='../Y/4237.html' title='Multiple used in 26 places.'>long_options</a>[] = <font color='red'>{</font>
+<a name='L302'> 302         <font color='red'>{</font>"accept-vconn", <a href='../S/557.html#L94' title='Defined at 94 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/getopt.h.'>required_argument</a>, 0, <a href='../D/4025.html' title='Multiple defined in 2 places.'>OPT_ACCEPT_VCONN</a><font color='red'>}</font>,
+<a name='L303'> 303         <font color='red'>{</font>"exit-without-bind", <a href='../S/557.html#L93' title='Defined at 93 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/getopt.h.'>no_argument</a>, 0, <a href='../S/615.html#L297' title='Defined at 297 in cbench/openflow/utilities/ofp-discover.c.'>OPT_EXIT_WITHOUT_BIND</a><font color='red'>}</font>,
+<a name='L304'> 304         <font color='red'>{</font>"exit-after-bind", <a href='../S/557.html#L93' title='Defined at 93 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/getopt.h.'>no_argument</a>, 0, <a href='../S/615.html#L298' title='Defined at 298 in cbench/openflow/utilities/ofp-discover.c.'>OPT_EXIT_AFTER_BIND</a><font color='red'>}</font>,
+<a name='L305'> 305         <font color='red'>{</font>"no-detach",   <a href='../S/557.html#L93' title='Defined at 93 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/getopt.h.'>no_argument</a>, 0, <a href='../S/615.html#L299' title='Defined at 299 in cbench/openflow/utilities/ofp-discover.c.'>OPT_NO_DETACH</a><font color='red'>}</font>,
+<a name='L306'> 306         <font color='red'>{</font>"timeout",     <a href='../S/557.html#L94' title='Defined at 94 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/getopt.h.'>required_argument</a>, 0, 't'<font color='red'>}</font>,
+<a name='L307'> 307         <font color='red'>{</font>"pidfile",     <a href='../S/557.html#L95' title='Defined at 95 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/getopt.h.'>optional_argument</a>, 0, 'P'<font color='red'>}</font>,
+<a name='L308'> 308         <font color='red'>{</font>"force",       <a href='../S/557.html#L93' title='Defined at 93 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/getopt.h.'>no_argument</a>, 0, 'f'<font color='red'>}</font>,
+<a name='L309'> 309         <font color='red'>{</font>"verbose",     <a href='../S/557.html#L95' title='Defined at 95 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/getopt.h.'>optional_argument</a>, 0, 'v'<font color='red'>}</font>,
+<a name='L310'> 310         <font color='red'>{</font>"help",        <a href='../S/557.html#L93' title='Defined at 93 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/getopt.h.'>no_argument</a>, 0, 'h'<font color='red'>}</font>,
+<a name='L311'> 311         <font color='red'>{</font>"version",     <a href='../S/557.html#L93' title='Defined at 93 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/getopt.h.'>no_argument</a>, 0, 'V'<font color='red'>}</font>,
+<a name='L312'> 312         <font color='red'>{</font>0, 0, 0, 0<font color='red'>}</font>,
+<a name='L313'> 313     <font color='red'>}</font>;
+<a name='L314'> 314     <b>char</b> *<a href='../Y/6742.html' title='Multiple used in 29 places.'>short_options</a> = <a href='../S/879.html#L45' title='Defined at 45 in cbench/openflow/lib/command-line.c.'>long_options_to_short_options</a>(<a href='../Y/4237.html' title='Multiple used in 26 places.'>long_options</a>);
+<a name='L315'> 315     <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/2356.html' title='Multiple used in 4 places.'>detach_after_bind</a> = <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>;
+<a name='L316'> 316 
+<a name='L317'> 317     <b>for</b> (;;) <font color='red'>{</font>
+<a name='L318'> 318         <b>unsigned</b> <b>long</b> <b>int</b> <a href='../D/9898.html' title='Multiple defined in 2 places.'>timeout</a>;
+<a name='L319'> 319         <b>int</b> <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>;
+<a name='L320'> 320 
+<a name='L321'> 321         <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> = <a href='../Y/3423.html' title='Multiple used in 12 places.'>getopt_long</a>(<a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a>, <a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>, <a href='../Y/6742.html' title='Multiple used in 29 places.'>short_options</a>, <a href='../Y/4237.html' title='Multiple used in 26 places.'>long_options</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>);
+<a name='L322'> 322         <b>if</b> (<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> == -1) <font color='red'>{</font>
+<a name='L323'> 323             <b>break</b>;
+<a name='L324'> 324         <font color='red'>}</font>
+<a name='L325'> 325 
+<a name='L326'> 326         <b>switch</b> (<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>) <font color='red'>{</font>
+<a name='L327'> 327         <b>case</b> <a href='../D/4025.html' title='Multiple defined in 2 places.'>OPT_ACCEPT_VCONN</a>:
+<a name='L328'> 328             <a href='../Y/1268.html' title='Multiple used in 8 places.'>accept_controller_re</a> = (<a href='../Y/5497.html' title='Multiple used in 99 places.'>optarg</a>[0] == '^'
+<a name='L329'> 329                                     ? <a href='../Y/5497.html' title='Multiple used in 99 places.'>optarg</a>
+<a name='L330'> 330                                     : <a href='../S/878.html#L129' title='Defined at 129 in cbench/openflow/lib/util.c.'>xasprintf</a>("^%s", <a href='../Y/5497.html' title='Multiple used in 99 places.'>optarg</a>));
+<a name='L331'> 331             <b>break</b>;
+<a name='L332'> 332 
+<a name='L333'> 333         <b>case</b> <a href='../S/615.html#L297' title='Defined at 297 in cbench/openflow/utilities/ofp-discover.c.'>OPT_EXIT_WITHOUT_BIND</a>:
+<a name='L334'> 334             <a href='../Y/2947.html' title='Multiple used in 5 places.'>exit_without_bind</a> = <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>;
+<a name='L335'> 335             <b>break</b>;
+<a name='L336'> 336 
+<a name='L337'> 337         <b>case</b> <a href='../S/615.html#L298' title='Defined at 298 in cbench/openflow/utilities/ofp-discover.c.'>OPT_EXIT_AFTER_BIND</a>:
+<a name='L338'> 338             <a href='../Y/2944.html' title='Multiple used in 5 places.'>exit_after_bind</a> = <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>;
+<a name='L339'> 339             <b>break</b>;
+<a name='L340'> 340 
+<a name='L341'> 341         <b>case</b> <a href='../S/615.html#L299' title='Defined at 299 in cbench/openflow/utilities/ofp-discover.c.'>OPT_NO_DETACH</a>:
+<a name='L342'> 342             <a href='../Y/2356.html' title='Multiple used in 4 places.'>detach_after_bind</a> = <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L343'> 343             <b>break</b>;
+<a name='L344'> 344 
+<a name='L345'> 345         <b>case</b> 'P':
+<a name='L346'> 346             <a href='../S/817.html#L74' title='Defined at 74 in cbench/openflow/lib/daemon.c.'>set_pidfile</a>(<a href='../Y/5497.html' title='Multiple used in 99 places.'>optarg</a>);
+<a name='L347'> 347             <b>break</b>;
+<a name='L348'> 348 
+<a name='L349'> 349         <b>case</b> 'f':
+<a name='L350'> 350             <a href='../S/817.html#L93' title='Defined at 93 in cbench/openflow/lib/daemon.c.'>ignore_existing_pidfile</a>();
+<a name='L351'> 351             <b>break</b>;
+<a name='L352'> 352 
+<a name='L353'> 353         <b>case</b> 't':
+<a name='L354'> 354             <a href='../D/9898.html' title='Multiple defined in 2 places.'>timeout</a> = <a href='../Y/7113.html' title='Multiple used in 6 places.'>strtoul</a>(<a href='../Y/5497.html' title='Multiple used in 99 places.'>optarg</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, 10);
+<a name='L355'> 355             <b>if</b> (<a href='../D/9898.html' title='Multiple defined in 2 places.'>timeout</a> &lt;= 0) <font color='red'>{</font>
+<a name='L356'> 356                 <a href='../S/878.html#L153' title='Defined at 153 in cbench/openflow/lib/util.c.'>ofp_fatal</a>(0, "value %s on -t or --timeout is not at least 1",
+<a name='L357'> 357                           <a href='../Y/5497.html' title='Multiple used in 99 places.'>optarg</a>);
+<a name='L358'> 358             <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L359'> 359                 <a href='../S/902.html#L125' title='Defined at 125 in cbench/openflow/lib/timeval.c.'>time_alarm</a>(<a href='../D/9898.html' title='Multiple defined in 2 places.'>timeout</a>);
+<a name='L360'> 360             <font color='red'>}</font>
+<a name='L361'> 361             <a href='../S/871.html#L55' title='Defined at 55 in cbench/openflow/lib/signals.c.'>signal</a>(<a href='../Y/775.html' title='Multiple used in 7 places.'>SIGALRM</a>, <a href='../Y/803.html' title='Multiple used in 8 places.'>SIG_DFL</a>);
+<a name='L362'> 362             <b>break</b>;
+<a name='L363'> 363 
+<a name='L364'> 364         <b>case</b> 'h':
+<a name='L365'> 365             <a href='../D/9994.html' title='Multiple defined in 13 places.'>usage</a>();
+<a name='L366'> 366 
+<a name='L367'> 367         <b>case</b> 'V':
+<a name='L368'> 368             <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("%s %s compiled "<a href='../Y/1124.html' title='Multiple used in 8 places.'>__DATE__</a>" "<a href='../Y/1150.html' title='Multiple used in 8 places.'>__TIME__</a>"\n",
+<a name='L369'> 369                    <a href='../Y/5944.html' title='Multiple used in 28 places.'>program_name</a>, <a href='../D/5885.html' title='Multiple defined in 3 places.'>VERSION</a> <a href='../Y/140.html' title='Multiple used in 10 places.'>BUILDNR</a>);
+<a name='L370'> 370             <a href='../Y/2943.html' title='Multiple used in 74 places.'>exit</a>(<a href='../Y/314.html' title='Multiple used in 16 places.'>EXIT_SUCCESS</a>);
+<a name='L371'> 371 
+<a name='L372'> 372         <b>case</b> 'v':
+<a name='L373'> 373             <a href='../S/848.html#L391' title='Defined at 391 in cbench/openflow/lib/vlog.c.'>vlog_set_verbosity</a>(<a href='../Y/5497.html' title='Multiple used in 99 places.'>optarg</a>);
+<a name='L374'> 374             <b>break</b>;
+<a name='L375'> 375 
+<a name='L376'> 376         <b>case</b> '?':
+<a name='L377'> 377             <a href='../Y/2943.html' title='Multiple used in 74 places.'>exit</a>(<a href='../Y/313.html' title='Multiple used in 15 places.'>EXIT_FAILURE</a>);
+<a name='L378'> 378 
+<a name='L379'> 379         <b>default</b>:
+<a name='L380'> 380             <a href='../Y/1261.html' title='Multiple used in 14 places.'>abort</a>();
+<a name='L381'> 381         <font color='red'>}</font>
+<a name='L382'> 382     <font color='red'>}</font>
+<a name='L383'> 383     <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/6742.html' title='Multiple used in 29 places.'>short_options</a>);
+<a name='L384'> 384 
+<a name='L385'> 385     <b>if</b> ((<a href='../Y/2947.html' title='Multiple used in 5 places.'>exit_without_bind</a> + <a href='../Y/2944.html' title='Multiple used in 5 places.'>exit_after_bind</a> + !<a href='../Y/2356.html' title='Multiple used in 4 places.'>detach_after_bind</a>) &gt; 1) <font color='red'>{</font>
+<a name='L386'> 386         <a href='../S/878.html#L153' title='Defined at 153 in cbench/openflow/lib/util.c.'>ofp_fatal</a>(0, "--exit-without-bind, --exit-after-bind, and --no-detach "
+<a name='L387'> 387                   "are mutually exclusive");
+<a name='L388'> 388     <font color='red'>}</font>
+<a name='L389'> 389     <b>if</b> (<a href='../Y/2356.html' title='Multiple used in 4 places.'>detach_after_bind</a>) <font color='red'>{</font>
+<a name='L390'> 390         <a href='../S/817.html#L101' title='Defined at 101 in cbench/openflow/lib/daemon.c.'>set_detach</a>();
+<a name='L391'> 391     <font color='red'>}</font>
+<a name='L392'> 392 <font color='red'>}</font>
+<a name='L393'> 393 
+<a name='L394'> 394 <b>static</b> <b>void</b>
+<a name='L395'> 395 <a href='../R/4885.html' title='Multiple refered from 18 places.'>usage</a>(<b>void</b>)
+<a name='L396'> 396 <font color='red'>{</font>
+<a name='L397'> 397     <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("%s: a tool for discovering OpenFlow controllers.\n"
+<a name='L398'> 398            "usage: %s [OPTIONS] NETDEV [NETDEV...]\n"
+<a name='L399'> 399            "where each NETDEV is a network device on which to perform\n"
+<a name='L400'> 400            "controller discovery.\n"
+<a name='L401'> 401            "\nOrdinarily, ofp-discover runs in the foreground until it\n"
+<a name='L402'> 402            "obtains an IP address and discovers an OpenFlow controller via\n"
+<a name='L403'> 403            "DHCP, then it prints information about the controller to stdout\n"
+<a name='L404'> 404            "and detaches to the background to maintain the IP address lease.\n"
+<a name='L405'> 405            "\nNetworking options:\n"
+<a name='L406'> 406            "  --accept-vconn=REGEX    accept matching discovered controllers\n"
+<a name='L407'> 407            "  --exit-without-bind     exit after discovery, without binding\n"
+<a name='L408'> 408            "  --exit-after-bind       exit after discovery, after binding\n"
+<a name='L409'> 409            "  --no-detach             do not detach after discovery\n",
+<a name='L410'> 410            <a href='../Y/5944.html' title='Multiple used in 28 places.'>program_name</a>, <a href='../Y/5944.html' title='Multiple used in 28 places.'>program_name</a>);
+<a name='L411'> 411     <a href='../S/848.html#L670' title='Defined at 670 in cbench/openflow/lib/vlog.c.'>vlog_usage</a>();
+<a name='L412'> 412     <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>("\nOther options:\n"
+<a name='L413'> 413            "  -t, --timeout=SECS      give up discovery after SECS seconds\n"
+<a name='L414'> 414            "  -P, --pidfile[=FILE]    create pidfile (default: %s/%s.pid)\n"
+<a name='L415'> 415            "  -f, --force             with -P, start even if already running\n"
+<a name='L416'> 416            "  -h, --help              display this help message\n"
+<a name='L417'> 417            "  -V, --version           display version information\n",
+<a name='L418'> 418            <a href='../Y/5323.html' title='Multiple used in 6 places.'>ofp_rundir</a>, <a href='../Y/5944.html' title='Multiple used in 28 places.'>program_name</a>);
+<a name='L419'> 419     <a href='../Y/2943.html' title='Multiple used in 74 places.'>exit</a>(<a href='../Y/314.html' title='Multiple used in 16 places.'>EXIT_SUCCESS</a>);
+<a name='L420'> 420 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L83'>[^]</a><a href='#L395'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

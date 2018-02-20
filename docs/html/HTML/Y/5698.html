@@ -1,0 +1,165 @@
+<html>
+<head>
+<title>pe</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/108.html#L454'>pe</a>                454 cbench/oflops/example_modules/openflow_action_delay/action_delay.c handle_pcap_event(struct oflops_context *ctx, struct pcap_event * pe, oflops_channel_name ch) {
+<a href='../S/108.html#L463'>pe</a>                463 cbench/oflops/example_modules/openflow_action_delay/action_delay.c     dir = append_data_to_flow(pe-&gt;data,pe-&gt;pcaphdr);
+<a href='../S/108.html#L471'>pe</a>                471 cbench/oflops/example_modules/openflow_action_delay/action_delay.c 	    memcpy(&amp;true_modification, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/108.html#L473'>pe</a>                473 cbench/oflops/example_modules/openflow_action_delay/action_delay.c 	    memcpy(&amp;false_modification, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/108.html#L477'>pe</a>                477 cbench/oflops/example_modules/openflow_action_delay/action_delay.c 	  oflops_log(pe-&gt;pcaphdr.ts,OFPT_FLOW_MOD_ADD, "flow modification send");
+<a href='../S/108.html#L482'>pe</a>                482 cbench/oflops/example_modules/openflow_action_delay/action_delay.c 	  memcpy(&amp;ofp_ping_timestamp[ntohl(ofp-&gt;xid)], &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/108.html#L486'>pe</a>                486 cbench/oflops/example_modules/openflow_action_delay/action_delay.c 	  delay[ntohl(ofp-&gt;xid)] = time_diff(&amp;ofp_ping_timestamp[ntohl(ofp-&gt;xid)], &amp;pe-&gt;pcaphdr.ts);
+<a href='../S/108.html#L492'>pe</a>                492 cbench/oflops/example_modules/openflow_action_delay/action_delay.c 	  delay_false_modificaton = time_diff(&amp;false_modification, &amp;pe-&gt;pcaphdr.ts);
+<a href='../S/108.html#L495'>pe</a>                495 cbench/oflops/example_modules/openflow_action_delay/action_delay.c 	  oflops_log(pe-&gt;pcaphdr.ts, OFPT_ERROR_MSG, msg);
+<a href='../S/108.html#L503'>pe</a>                503 cbench/oflops/example_modules/openflow_action_delay/action_delay.c     pktgen = extract_pktgen_pkt(pe-&gt;data, pe-&gt;pcaphdr.caplen, &amp;fl);
+<a href='../S/108.html#L505'>pe</a>                505 cbench/oflops/example_modules/openflow_action_delay/action_delay.c       delay_modificaton = time_diff(&amp;true_modification, &amp;pe-&gt;pcaphdr.ts);
+<a href='../S/108.html#L506'>pe</a>                506 cbench/oflops/example_modules/openflow_action_delay/action_delay.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, "PACKET_NEW_PORT");
+<a href='../S/108.html#L516'>pe</a>                516 cbench/oflops/example_modules/openflow_action_delay/action_delay.c     memcpy(&amp;n1-&gt;rcv, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/75.html#L343'>pe</a>                343 cbench/oflops/example_modules/openflow_action_install/action.c handle_pcap_event(struct oflops_context *ctx, struct pcap_event * pe, oflops_channel_name ch) {
+<a href='../S/75.html#L352'>pe</a>                352 cbench/oflops/example_modules/openflow_action_install/action.c     dir = append_data_to_flow(pe-&gt;data,pe-&gt;pcaphdr);
+<a href='../S/75.html#L359'>pe</a>                359 cbench/oflops/example_modules/openflow_action_install/action.c 	  memcpy(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/75.html#L362'>pe</a>                362 cbench/oflops/example_modules/openflow_action_install/action.c 	oflops_log(pe-&gt;pcaphdr.ts,OFPT_FLOW_MOD_ADD, "flow modification send");
+<a href='../S/75.html#L367'>pe</a>                367 cbench/oflops/example_modules/openflow_action_install/action.c 	oflops_log(pe-&gt;pcaphdr.ts, OFPT_ERROR_MSG, msg);
+<a href='../S/75.html#L375'>pe</a>                375 cbench/oflops/example_modules/openflow_action_install/action.c     pktgen = extract_pktgen_pkt(pe-&gt;data, pe-&gt;pcaphdr.caplen, &amp;fl);
+<a href='../S/75.html#L377'>pe</a>                377 cbench/oflops/example_modules/openflow_action_install/action.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, "FIRST_PKT_RCV");
+<a href='../S/75.html#L378'>pe</a>                378 cbench/oflops/example_modules/openflow_action_install/action.c       snprintf(msg, 1024, "INSERT_DELAY:%d", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/75.html#L379'>pe</a>                379 cbench/oflops/example_modules/openflow_action_install/action.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/75.html#L391'>pe</a>                391 cbench/oflops/example_modules/openflow_action_install/action.c     memcpy(&amp;n1-&gt;rcv, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/77.html#L432'>pe</a>                432 cbench/oflops/example_modules/openflow_action_measurement/action.c handle_pcap_event(struct oflops_context *ctx, struct pcap_event * pe, oflops_channel_name ch) {
+<a href='../S/77.html#L441'>pe</a>                441 cbench/oflops/example_modules/openflow_action_measurement/action.c     dir = append_data_to_flow(pe-&gt;data,pe-&gt;pcaphdr);
+<a href='../S/77.html#L449'>pe</a>                449 cbench/oflops/example_modules/openflow_action_measurement/action.c 	    memcpy(&amp;true_modification, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/77.html#L451'>pe</a>                451 cbench/oflops/example_modules/openflow_action_measurement/action.c 	    memcpy(&amp;false_modification, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/77.html#L455'>pe</a>                455 cbench/oflops/example_modules/openflow_action_measurement/action.c 	  oflops_log(pe-&gt;pcaphdr.ts,OFPT_FLOW_MOD_ADD, "flow modification send");
+<a href='../S/77.html#L460'>pe</a>                460 cbench/oflops/example_modules/openflow_action_measurement/action.c 	  memcpy(&amp;ofp_ping_timestamp[ntohl(ofp-&gt;xid)], &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/77.html#L464'>pe</a>                464 cbench/oflops/example_modules/openflow_action_measurement/action.c 	  delay[ntohl(ofp-&gt;xid)] = time_diff(&amp;ofp_ping_timestamp[ntohl(ofp-&gt;xid)], &amp;pe-&gt;pcaphdr.ts);
+<a href='../S/77.html#L465'>pe</a>                465 cbench/oflops/example_modules/openflow_action_measurement/action.c 	  snprintf(msg, 1024, "%d", time_diff(&amp;ofp_ping_timestamp[ntohl(ofp-&gt;xid)], &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/77.html#L466'>pe</a>                466 cbench/oflops/example_modules/openflow_action_measurement/action.c 	  oflops_log(pe-&gt;pcaphdr.ts, OFPT_ECHO_REPLY_MSG, msg);
+<a href='../S/77.html#L472'>pe</a>                472 cbench/oflops/example_modules/openflow_action_measurement/action.c 	  delay_false_modificaton = time_diff(&amp;false_modification, &amp;pe-&gt;pcaphdr.ts);
+<a href='../S/77.html#L475'>pe</a>                475 cbench/oflops/example_modules/openflow_action_measurement/action.c 	  oflops_log(pe-&gt;pcaphdr.ts, OFPT_ERROR_MSG, msg);
+<a href='../S/77.html#L483'>pe</a>                483 cbench/oflops/example_modules/openflow_action_measurement/action.c     pktgen = extract_pktgen_pkt(pe-&gt;data, pe-&gt;pcaphdr.caplen, &amp;fl);
+<a href='../S/77.html#L485'>pe</a>                485 cbench/oflops/example_modules/openflow_action_measurement/action.c       delay_modificaton = time_diff(&amp;true_modification, &amp;pe-&gt;pcaphdr.ts);
+<a href='../S/77.html#L486'>pe</a>                486 cbench/oflops/example_modules/openflow_action_measurement/action.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, "first packet on new port");
+<a href='../S/77.html#L495'>pe</a>                495 cbench/oflops/example_modules/openflow_action_measurement/action.c     memcpy(&amp;n1-&gt;rcv, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/73.html#L394'>pe</a>                394 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c handle_pcap_event(struct oflops_context *ctx, struct pcap_event * pe, oflops_channel_name ch) {
+<a href='../S/73.html#L403'>pe</a>                403 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c     dir = append_data_to_flow(pe-&gt;data,pe-&gt;pcaphdr);
+<a href='../S/73.html#L410'>pe</a>                410 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c 	  memcpy(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/73.html#L413'>pe</a>                413 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c 	oflops_log(pe-&gt;pcaphdr.ts,OFPT_FLOW_MOD_ADD, "flow modification send");
+<a href='../S/73.html#L418'>pe</a>                418 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c 	oflops_log(pe-&gt;pcaphdr.ts, OFPT_ERROR_MSG, msg);
+<a href='../S/73.html#L423'>pe</a>                423 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c 	printf("%ld.%06ld: OFPT_ECHO_REQUEST %d\n", pe-&gt;pcaphdr.ts.tv_sec, pe-&gt;pcaphdr.ts.tv_usec, ntohl(ofp-&gt;xid));
+<a href='../S/73.html#L425'>pe</a>                425 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c 	  memcpy(&amp;echo_data[ntohl(ofp-&gt;xid)].snd, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/73.html#L429'>pe</a>                429 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c 	printf("%ld.%06ld: OFPT_ECHO_REPLY %d\n", pe-&gt;pcaphdr.ts.tv_sec, pe-&gt;pcaphdr.ts.tv_usec, ntohl(ofp-&gt;xid));
+<a href='../S/73.html#L431'>pe</a>                431 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c 	  memcpy(&amp;echo_data[ntohl(ofp-&gt;xid)].rcv, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/73.html#L438'>pe</a>                438 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c     pktgen = extract_pktgen_pkt(pe-&gt;data, pe-&gt;pcaphdr.caplen, &amp;fl);
+<a href='../S/73.html#L440'>pe</a>                440 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, "FIRST_PKT_RCV");
+<a href='../S/73.html#L441'>pe</a>                441 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c       printf("INSERT_DELAY:%d\n", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/73.html#L442'>pe</a>                442 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/73.html#L443'>pe</a>                443 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c       snprintf(msg, 1024, "INSERT_DELAY:%d", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/73.html#L444'>pe</a>                444 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/73.html#L456'>pe</a>                456 cbench/oflops/example_modules/openflow_action_scalability/action_scalability.c     memcpy(&amp;n1-&gt;rcv, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/100.html#L410'>pe</a>                410 cbench/oflops/example_modules/openflow_add_flow/add_flow.c handle_pcap_event(struct oflops_context *ctx, struct pcap_event * pe, oflops_channel_name ch) {
+<a href='../S/100.html#L419'>pe</a>                419 cbench/oflops/example_modules/openflow_add_flow/add_flow.c     dir = append_data_to_flow(pe-&gt;data,pe-&gt;pcaphdr);
+<a href='../S/100.html#L426'>pe</a>                426 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	  memcpy(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/100.html#L429'>pe</a>                429 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	oflops_log(pe-&gt;pcaphdr.ts,OFPT_FLOW_MOD_ADD, "flow modification send");
+<a href='../S/100.html#L434'>pe</a>                434 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	oflops_log(pe-&gt;pcaphdr.ts, OFPT_ERROR_MSG, msg);
+<a href='../S/100.html#L439'>pe</a>                439 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	printf("%ld.%06ld: OFPT_ECHO_REQUEST %d\n", pe-&gt;pcaphdr.ts.tv_sec, pe-&gt;pcaphdr.ts.tv_usec, ntohl(ofp-&gt;xid));
+<a href='../S/100.html#L441'>pe</a>                441 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	  memcpy(&amp;echo_data[ntohl(ofp-&gt;xid)].snd, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/100.html#L445'>pe</a>                445 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	printf("%ld.%06ld: OFPT_ECHO_REPLY %d\n", pe-&gt;pcaphdr.ts.tv_sec, pe-&gt;pcaphdr.ts.tv_usec, ntohl(ofp-&gt;xid));
+<a href='../S/100.html#L447'>pe</a>                447 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	  memcpy(&amp;echo_data[ntohl(ofp-&gt;xid)].rcv, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/100.html#L454'>pe</a>                454 cbench/oflops/example_modules/openflow_add_flow/add_flow.c     pktgen = extract_pktgen_pkt(pe-&gt;data, pe-&gt;pcaphdr.caplen, &amp;fl);
+<a href='../S/100.html#L456'>pe</a>                456 cbench/oflops/example_modules/openflow_add_flow/add_flow.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, "FIRST_PKT_RCV");
+<a href='../S/100.html#L457'>pe</a>                457 cbench/oflops/example_modules/openflow_add_flow/add_flow.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/100.html#L458'>pe</a>                458 cbench/oflops/example_modules/openflow_add_flow/add_flow.c       printf("INSERT_DELAY:%d\n", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/100.html#L459'>pe</a>                459 cbench/oflops/example_modules/openflow_add_flow/add_flow.c       snprintf(msg, 1024, "INSERT_DELAY:%d", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/100.html#L460'>pe</a>                460 cbench/oflops/example_modules/openflow_add_flow/add_flow.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/100.html#L476'>pe</a>                476 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	  oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, "LAST_PKT_RCV");
+<a href='../S/100.html#L477'>pe</a>                477 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	  oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/100.html#L479'>pe</a>                479 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	  printf("COMPLETE_INSERT_DELAY:%u\n", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/100.html#L480'>pe</a>                480 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	  snprintf(msg, 1024, "INSERT_DELAY:%u", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/100.html#L481'>pe</a>                481 cbench/oflops/example_modules/openflow_add_flow/add_flow.c 	  oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/100.html#L491'>pe</a>                491 cbench/oflops/example_modules/openflow_add_flow/add_flow.c     memcpy(&amp;n1-&gt;rcv, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/90.html#L538'>pe</a>                538 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c int handle_pcap_event(struct oflops_context *ctx, struct pcap_event *pe,
+<a href='../S/90.html#L542'>pe</a>                542 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c     pktgen = extract_pktgen_pkt((unsigned char *)pe-&gt;data, pe-&gt;pcaphdr.caplen, NULL);
+<a href='../S/90.html#L549'>pe</a>                549 cbench/oflops/example_modules/openflow_aggr_flow_stats/aggr_flow_stats.c     memcpy(&amp;n1-&gt;rcv, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/85.html#L107'>pe</a>                107 cbench/oflops/example_modules/openflow_dummy/dummy.c int handle_pcap_event(struct oflops_context *ctx, struct pcap_event * pe, oflops_channel_name ch) {
+<a href='../S/106.html#L478'>pe</a>                478 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c int handle_pcap_event(struct oflops_context *ctx, struct pcap_event *pe,
+<a href='../S/106.html#L482'>pe</a>                482 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c     pktgen = extract_pktgen_pkt((unsigned char *)pe-&gt;data, pe-&gt;pcaphdr.caplen, NULL);
+<a href='../S/106.html#L489'>pe</a>                489 cbench/oflops/example_modules/openflow_flow_dump_test/pktin.c     memcpy(&amp;n1-&gt;rcv, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/97.html#L539'>pe</a>                539 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c int handle_pcap_event(struct oflops_context *ctx, struct pcap_event *pe,
+<a href='../S/97.html#L543'>pe</a>                543 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c     pktgen = extract_pktgen_pkt((unsigned char *)pe-&gt;data, pe-&gt;pcaphdr.caplen, NULL);
+<a href='../S/97.html#L550'>pe</a>                550 cbench/oflops/example_modules/openflow_flow_stats/flow_stats.c     memcpy(&amp;n1-&gt;rcv, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/81.html#L421'>pe</a>                421 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c handle_pcap_event(struct oflops_context *ctx, struct pcap_event * pe, oflops_channel_name ch) {
+<a href='../S/81.html#L430'>pe</a>                430 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c     dir = append_data_to_flow(pe-&gt;data,pe-&gt;pcaphdr);
+<a href='../S/81.html#L437'>pe</a>                437 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	  memcpy(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/81.html#L440'>pe</a>                440 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	oflops_log(pe-&gt;pcaphdr.ts,OFPT_FLOW_MOD_ADD, "flow modification send");
+<a href='../S/81.html#L445'>pe</a>                445 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	oflops_log(pe-&gt;pcaphdr.ts, OFPT_ERROR_MSG, msg);
+<a href='../S/81.html#L450'>pe</a>                450 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	printf("%ld.%06ld: OFPT_ECHO_REQUEST %d\n", pe-&gt;pcaphdr.ts.tv_sec, pe-&gt;pcaphdr.ts.tv_usec, ntohl(ofp-&gt;xid));
+<a href='../S/81.html#L452'>pe</a>                452 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	  memcpy(&amp;echo_data[ntohl(ofp-&gt;xid)].snd, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/81.html#L456'>pe</a>                456 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	printf("%ld.%06ld: OFPT_ECHO_REPLY %d\n", pe-&gt;pcaphdr.ts.tv_sec, pe-&gt;pcaphdr.ts.tv_usec, ntohl(ofp-&gt;xid));
+<a href='../S/81.html#L458'>pe</a>                458 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	  memcpy(&amp;echo_data[ntohl(ofp-&gt;xid)].rcv, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/81.html#L465'>pe</a>                465 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c     pktgen = extract_pktgen_pkt(pe-&gt;data, pe-&gt;pcaphdr.caplen, &amp;fl);
+<a href='../S/81.html#L467'>pe</a>                467 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, "FIRST_PKT_RCV");
+<a href='../S/81.html#L468'>pe</a>                468 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/81.html#L469'>pe</a>                469 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c       printf("INSERT_DELAY:%d\n", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/81.html#L470'>pe</a>                470 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c       snprintf(msg, 1024, "INSERT_DELAY:%d", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/81.html#L471'>pe</a>                471 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c       oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/81.html#L487'>pe</a>                487 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	  oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, "LAST_PKT_RCV");
+<a href='../S/81.html#L488'>pe</a>                488 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	  oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/81.html#L490'>pe</a>                490 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	  printf("COMPLETE_INSERT_DELAY:%u\n", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/81.html#L491'>pe</a>                491 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	  snprintf(msg, 1024, "INSERT_DELAY:%u", time_diff(&amp;flow_mod_timestamp, &amp;pe-&gt;pcaphdr.ts));
+<a href='../S/81.html#L492'>pe</a>                492 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c 	  oflops_log(pe-&gt;pcaphdr.ts, GENERIC_MSG, msg);
+<a href='../S/81.html#L502'>pe</a>                502 cbench/oflops/example_modules/openflow_mod_flow/mod_flow.c     memcpy(&amp;n1-&gt;rcv, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/88.html#L210'>pe</a>                210 cbench/oflops/example_modules/openflow_packet_in/pktin.c int handle_pcap_event(struct oflops_context *ctx, struct pcap_event * pe, oflops_channel_name ch) {
+<a href='../S/88.html#L220'>pe</a>                220 cbench/oflops/example_modules/openflow_packet_in/pktin.c     dir = append_data_to_flow(pe-&gt;data,pe-&gt;pcaphdr);
+<a href='../S/88.html#L226'>pe</a>                226 cbench/oflops/example_modules/openflow_packet_in/pktin.c 	pktgen = extract_pktgen_pkt(pkt_in-&gt;data, pe-&gt;pcaphdr.caplen - sizeof(struct ofp_packet_in), &amp;fl);
+<a href='../S/88.html#L234'>pe</a>                234 cbench/oflops/example_modules/openflow_packet_in/pktin.c 	memcpy(&amp;n1-&gt;rcv, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/88.html#L248'>pe</a>                248 cbench/oflops/example_modules/openflow_packet_in/pktin.c 	oflops_log(pe-&gt;pcaphdr.ts, OFPT_PACKET_IN_MSG, msg);
+<a href='../S/103.html#L443'>pe</a>                443 cbench/oflops/example_modules/openflow_packet_out/packet_out.c int handle_pcap_event(struct oflops_context *ctx, struct pcap_event *pe,
+<a href='../S/103.html#L448'>pe</a>                448 cbench/oflops/example_modules/openflow_packet_out/packet_out.c     pkt = extract_pktgen_pkt((unsigned char *)pe-&gt;data, pe-&gt;pcaphdr.caplen, &amp;fl);
+<a href='../S/103.html#L455'>pe</a>                455 cbench/oflops/example_modules/openflow_packet_out/packet_out.c     memcpy(&amp;n1-&gt;rcv, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/102.html#L180'>pe</a>                180 cbench/oflops/example_modules/openflow_path_delay/path_delay.c int handle_pcap_event(struct oflops_context *ctx, struct pcap_event * pe, oflops_channel_name ch) {
+<a href='../S/79.html#L245'>pe</a>                245 cbench/oflops/example_modules/openflow_port_status/portstat.c int handle_pcap_event(struct oflops_context *ctx, struct pcap_event * pe, oflops_channel_name ch)
+<a href='../S/79.html#L257'>pe</a>                257 cbench/oflops/example_modules/openflow_port_status/portstat.c 	if(pe-&gt;pcaphdr.caplen &lt;70)
+<a href='../S/79.html#L259'>pe</a>                259 cbench/oflops/example_modules/openflow_port_status/portstat.c 	type = pe-&gt;data[67];
+<a href='../S/79.html#L262'>pe</a>                262 cbench/oflops/example_modules/openflow_port_status/portstat.c 	ptime = pe-&gt;pcaphdr.ts;
+<a href='../S/79.html#L263'>pe</a>                263 cbench/oflops/example_modules/openflow_port_status/portstat.c 	probe_index  = *((uint32_t*) &amp;(pe-&gt;data)[70]);
+<a href='../S/79.html#L270'>pe</a>                270 cbench/oflops/example_modules/openflow_port_status/portstat.c 				pe-&gt;pcaphdr.len, type,
+<a href='../S/84.html#L334'>pe</a>                334 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c handle_pcap_event(struct oflops_context *ctx, struct pcap_event * pe, oflops_channel_name ch) {
+<a href='../S/84.html#L343'>pe</a>                343 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c     dir = append_data_to_flow(pe-&gt;data,pe-&gt;pcaphdr);
+<a href='../S/84.html#L349'>pe</a>                349 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c 	oflops_log(pe-&gt;pcaphdr.ts,OFPT_FLOW_MOD_ADD, "stats request send");
+<a href='../S/84.html#L360'>pe</a>                360 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c 	oflops_log(pe-&gt;pcaphdr.ts, OFPT_ERROR_MSG, msg);
+<a href='../S/84.html#L369'>pe</a>                369 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c     pktgen = extract_pktgen_pkt(pe-&gt;data, pe-&gt;pcaphdr.caplen, &amp;fl);
+<a href='../S/84.html#L375'>pe</a>                375 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c     uint64_t diff = 1000000*(pe-&gt;pcaphdr.ts.tv_sec - htonl(pktgen-&gt;time.tv_sec)) +
+<a href='../S/84.html#L376'>pe</a>                376 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c       (pe-&gt;pcaphdr.ts.tv_usec - htonl(pktgen-&gt;time.tv_usec));
+<a href='../S/84.html#L386'>pe</a>                386 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c 	       (long unsigned int)pe-&gt;pcaphdr.ts.tv_sec, 
+<a href='../S/84.html#L387'>pe</a>                387 cbench/oflops/example_modules/openflow_vlan_mod/vlan_mod.c 	       (long unsigned int)pe-&gt;pcaphdr.ts.tv_usec, c) &lt; 0)  
+<a href='../S/94.html#L186'>pe</a>                186 cbench/oflops/example_modules/snmp_queue_delay/queue_delay.c handle_pcap_event(struct oflops_context *ctx, struct pcap_event * pe, oflops_channel_name ch) {
+<a href='../S/94.html#L192'>pe</a>                192 cbench/oflops/example_modules/snmp_queue_delay/queue_delay.c     pktgen = extract_pktgen_pkt(pe-&gt;data, pe-&gt;pcaphdr.caplen, &amp;fl);
+<a href='../S/94.html#L199'>pe</a>                199 cbench/oflops/example_modules/snmp_queue_delay/queue_delay.c     memcpy(&amp;rcv, &amp;pe-&gt;pcaphdr.ts, sizeof(struct timeval));
+<a href='../S/123.html#L44'>pe</a>                 44 cbench/oflops/module_default.c int default_module_handle_pcap_event(struct oflops_context *ctx, struct pcap_event * pe, oflops_channel_name ch)
+<a href='../S/123.html#L52'>pe</a>                 52 cbench/oflops/module_default.c 	return ptrack_add_of_entry(ctx-&gt;channels[OFLOPS_CONTROL].timestamps, pe-&gt;data, pe-&gt;pcaphdr.caplen, pe-&gt;pcaphdr);
+<a href='../S/11.html#L17'>pe</a>                 17 cbench/oflops/module_default.h int default_module_handle_pcap_event(struct oflops_context *ctx, struct pcap_event * pe, oflops_channel_name ch);
+<a href='../S/38.html#L320'>pe</a>                320 cbench/oflops/module_run.c     pcap_dump((u_char *)ctx-&gt;channels[ch].dump, &amp;wrap.pe-&gt;pcaphdr, wrap.pe-&gt;data);
+<a href='../S/38.html#L330'>pe</a>                330 cbench/oflops/module_run.c   mod-&gt;handle_pcap_event(ctx, wrap.pe, ch);
+<a href='../S/38.html#L332'>pe</a>                332 cbench/oflops/module_run.c   pcap_event_free(wrap.pe);
+<a href='../S/10.html#L235'>pe</a>                235 cbench/oflops/msg.c get_next_msg(int dir, struct pcap_event **pe) {
+<a href='../S/10.html#L245'>pe</a>                245 cbench/oflops/msg.c   *pe = ofp_msg;
+<a href='../S/10.html#L247'>pe</a>                247 cbench/oflops/msg.c   (*pe)-&gt;pcaphdr.len = count;
+<a href='../S/10.html#L248'>pe</a>                248 cbench/oflops/msg.c   (*pe)-&gt;pcaphdr.caplen = count;
+<a href='../S/124.html#L11'>pe</a>                 11 cbench/oflops/oflops_pcap.c void pcap_event_free(pcap_event * pe)
+<a href='../S/124.html#L13'>pe</a>                 13 cbench/oflops/oflops_pcap.c 	assert(pe);
+<a href='../S/124.html#L14'>pe</a>                 14 cbench/oflops/oflops_pcap.c 	free(pe-&gt;data);
+<a href='../S/124.html#L15'>pe</a>                 15 cbench/oflops/oflops_pcap.c 	free(pe);
+<a href='../S/124.html#L28'>pe</a>                 28 cbench/oflops/oflops_pcap.c 	wrap-&gt;pe = malloc_and_check(sizeof(pcap_event));
+<a href='../S/124.html#L29'>pe</a>                 29 cbench/oflops/oflops_pcap.c 	memcpy(&amp;wrap-&gt;pe-&gt;pcaphdr,h, sizeof(struct pcap_pkthdr));
+<a href='../S/124.html#L31'>pe</a>                 31 cbench/oflops/oflops_pcap.c 	wrap-&gt;pe-&gt;data = malloc_and_check(h-&gt;caplen);
+<a href='../S/124.html#L32'>pe</a>                 32 cbench/oflops/oflops_pcap.c 	memcpy(wrap-&gt;pe-&gt;data, bytes, h-&gt;caplen);
+<a href='../S/32.html#L21'>pe</a>                 21 cbench/oflops/oflops_pcap.h 	pcap_event *pe;
+<a href='../S/32.html#L25'>pe</a>                 25 cbench/oflops/oflops_pcap.h void pcap_event_free(pcap_event * pe);
+<a href='../S/55.html#L101'>pe</a>                101 cbench/oflops/test_module.h 	int (*handle_pcap_event)(struct oflops_context *ctx, struct pcap_event * pe, oflops_channel_name ch);
+</pre>
+</body>
+</html>

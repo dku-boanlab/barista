@@ -1,0 +1,989 @@
+<html>
+<head>
+<title>cbench/openflow/include/openflow/openflow.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1138.html'>include</a>/<a href='../files/1139.html'>openflow</a>/openflow.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/177.html' title='Multiple included from 57 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> *</font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> *</font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <i><font color='green'>/* OpenFlow: protocol between controller and datapath. */</font></i>
+<a name='L35'>  35 
+<a name='L36'>  36 <font color='darkred'>#ifndef</font> <a href='../D/3872.html' title='Multiple defined in 3 places.'>OPENFLOW_OPENFLOW_H</a>
+<a name='L37'>  37 <font color='darkred'>#define</font> <a href='../R/1323.html' title='Multiple refered from 3 places.'>OPENFLOW_OPENFLOW_H</a> 1
+<a name='L38'>  38 
+<a name='L39'>  39 <font color='darkred'>#ifdef</font> <a href='../Y/1134.html' title='Multiple used in 11 places.'>__KERNEL__</a>
+<a name='L40'>  40 <font color='darkred'>#include</font> &lt;<a href='315.html'>linux/types.h</a>&gt;
+<a name='L41'>  41 <font color='darkred'>#else</font>
+<a name='L42'>  42 <font color='darkred'>#include</font> &lt;stdint.h&gt;
+<a name='L43'>  43 <font color='darkred'>#endif</font>
+<a name='L44'>  44 
+<a name='L45'>  45 <font color='darkred'>#ifdef</font> <a href='../Y/920.html' title='Multiple used in 6 places.'>SWIG</a>
+<a name='L46'>  46 <font color='darkred'>#define</font> <a href='../R/1279.html' title='Multiple refered from 175 places.'>OFP_ASSERT</a>(<a href='../Y/315.html' title='Multiple used in 13 places.'>EXPR</a>)        <i><font color='green'>/* SWIG can't handle OFP_ASSERT. */</font></i>
+<a name='L47'>  47 <font color='darkred'>#elif</font> !<b>defined</b>(<a href='../Y/1158.html' title='Multiple used in 106 places.'>__cplusplus</a>)
+<a name='L48'>  48 <i><font color='green'>/* Build-time assertion for use in a declaration context. */</font></i>
+<a name='L49'>  49 <font color='darkred'>#define</font> <a href='../R/1279.html' title='Multiple refered from 175 places.'>OFP_ASSERT</a>(<a href='../Y/315.html' title='Multiple used in 13 places.'>EXPR</a>)                                                \
+<a name='L50'>  50         <b>extern</b> <b>int</b> (*<a href='../Y/1717.html' title='Multiple used in 4 places.'>build_assert</a>(<b>void</b>))[ <b>sizeof</b>(<b>struct</b> <font color='red'>{</font>               \
+<a name='L51'>  51                     <b>unsigned</b> <b>int</b> <a href='../Y/1718.html' title='Multiple used in 7 places.'>build_assert_failed</a> : (<a href='../Y/315.html' title='Multiple used in 13 places.'>EXPR</a>) ? 1 : -1; <font color='red'>}</font>)]
+<a name='L52'>  52 <font color='darkred'>#else</font> <i><font color='green'>/* __cplusplus */</font></i>
+<a name='L53'>  53 <font color='darkred'>#define</font> <a href='../R/1279.html' title='Multiple refered from 175 places.'>OFP_ASSERT</a>(<a href='../Y/1111.html' title='Multiple used in 3 places.'>_EXPR</a>) <b>typedef</b> <b>int</b> <a href='../Y/1718.html' title='Multiple used in 7 places.'>build_assert_failed</a>[(<a href='../Y/1111.html' title='Multiple used in 3 places.'>_EXPR</a>) ? 1 : -1]
+<a name='L54'>  54 <font color='darkred'>#endif</font> <i><font color='green'>/* __cplusplus */</font></i>
+<a name='L55'>  55 
+<a name='L56'>  56 <font color='darkred'>#ifndef</font> <a href='../Y/920.html' title='Multiple used in 6 places.'>SWIG</a>
+<a name='L57'>  57 <font color='darkred'>#define</font> <a href='../Y/617.html' title='Multiple used in 6 places.'>OFP_PACKED</a> <b>__attribute__</b>((<a href='../Y/5591.html' title='Multiple used in 14 places.'>packed</a>))
+<a name='L58'>  58 <font color='darkred'>#else</font>
+<a name='L59'>  59 <font color='darkred'>#define</font> <a href='../Y/617.html' title='Multiple used in 6 places.'>OFP_PACKED</a>              <i><font color='green'>/* SWIG doesn't understand __attribute. */</font></i>
+<a name='L60'>  60 <font color='darkred'>#endif</font>
+<a name='L61'>  61 
+<a name='L62'>  62 <i><font color='green'>/* Version number:</font></i>
+<a name='L63'>  63 <i><font color='green'> * Non-experimental versions released: 0x01</font></i>
+<a name='L64'>  64 <i><font color='green'> * Experimental versions released: 0x81 -- 0x99</font></i>
+<a name='L65'>  65 <i><font color='green'> */</font></i>
+<a name='L66'>  66 <i><font color='green'>/* The most significant bit being set in the version field indicates an</font></i>
+<a name='L67'>  67 <i><font color='green'> * experimental OpenFlow version.</font></i>
+<a name='L68'>  68 <i><font color='green'> */</font></i>
+<a name='L69'>  69 <font color='darkred'>#define</font> <a href='../Y/621.html' title='Multiple used in 78 places.'>OFP_VERSION</a>   0x01
+<a name='L70'>  70 
+<a name='L71'>  71 <font color='darkred'>#define</font> <a href='../Y/616.html' title='Multiple used in 9 places.'>OFP_MAX_TABLE_NAME_LEN</a> 32
+<a name='L72'>  72 <font color='darkred'>#define</font> <a href='../Y/615.html' title='Multiple used in 14 places.'>OFP_MAX_PORT_NAME_LEN</a>  16
+<a name='L73'>  73 
+<a name='L74'>  74 <font color='darkred'>#define</font> <a href='../Y/620.html' title='Multiple used in 12 places.'>OFP_TCP_PORT</a>  6633
+<a name='L75'>  75 <font color='darkred'>#define</font> <a href='../Y/619.html' title='Multiple used in 10 places.'>OFP_SSL_PORT</a>  6633
+<a name='L76'>  76 
+<a name='L77'>  77 <font color='darkred'>#define</font> <a href='../Y/614.html' title='Multiple used in 21 places.'>OFP_ETH_ALEN</a> 6          <i><font color='green'>/* Bytes in an Ethernet address. */</font></i>
+<a name='L78'>  78 
+<a name='L79'>  79 <i><font color='green'>/* Port numbering.  Physical ports are numbered starting from 1. */</font></i>
+<a name='L80'>  80 <b>enum</b> <a href='../Y/5273.html' title='Multiple used in 3 places.'>ofp_port</a> <font color='red'>{</font>
+<a name='L81'>  81     <i><font color='green'>/* Maximum number of physical switch ports. */</font></i>
+<a name='L82'>  82     <a href='../R/1182.html' title='Multiple refered from 14 places.'>OFPP_MAX</a> = 0xff00,
+<a name='L83'>  83 
+<a name='L84'>  84     <i><font color='green'>/* Fake output "ports". */</font></i>
+<a name='L85'>  85     <a href='../R/1180.html' title='Multiple refered from 15 places.'>OFPP_IN_PORT</a>    = 0xfff8,  <i><font color='green'>/* Send the packet out the input port.  This</font></i>
+<a name='L86'>  86 <i><font color='green'>                                  virtual port must be explicitly used</font></i>
+<a name='L87'>  87 <i><font color='green'>                                  in order to send back out of the input</font></i>
+<a name='L88'>  88 <i><font color='green'>                                  port. */</font></i>
+<a name='L89'>  89     <a href='../R/1185.html' title='Multiple refered from 6 places.'>OFPP_TABLE</a>      = 0xfff9,  <i><font color='green'>/* Perform actions in flow table.</font></i>
+<a name='L90'>  90 <i><font color='green'>                                  NB: This can only be the destination</font></i>
+<a name='L91'>  91 <i><font color='green'>                                  port for packet-out messages. */</font></i>
+<a name='L92'>  92     <a href='../R/1184.html' title='Multiple refered from 3 places.'>OFPP_NORMAL</a>     = 0xfffa,  <i><font color='green'>/* Process with normal L2/L3 switching. */</font></i>
+<a name='L93'>  93     <a href='../R/1179.html' title='Multiple refered from 21 places.'>OFPP_FLOOD</a>      = 0xfffb,  <i><font color='green'>/* All physical ports except input port and</font></i>
+<a name='L94'>  94 <i><font color='green'>                                  those disabled by STP. */</font></i>
+<a name='L95'>  95     <a href='../R/1177.html' title='Multiple refered from 17 places.'>OFPP_ALL</a>        = 0xfffc,  <i><font color='green'>/* All physical ports except input port. */</font></i>
+<a name='L96'>  96     <a href='../R/1178.html' title='Multiple refered from 12 places.'>OFPP_CONTROLLER</a> = 0xfffd,  <i><font color='green'>/* Send to controller. */</font></i>
+<a name='L97'>  97     <a href='../R/1181.html' title='Multiple refered from 24 places.'>OFPP_LOCAL</a>      = 0xfffe,  <i><font color='green'>/* Local openflow "port". */</font></i>
+<a name='L98'>  98     OFPP_NONE       = 0xffff   <i><font color='green'>/* Not associated with a physical port. */</font></i>
+<a name='L99'>  99 <font color='red'>}</font>;
+<a name='L100'> 100 
+<a name='L101'> 101 <b>enum</b> ofp_type <font color='red'>{</font>
+<a name='L102'> 102     <i><font color='green'>/* Immutable messages. */</font></i>
+<a name='L103'> 103     <a href='../R/1222.html' title='Multiple refered from 22 places.'>OFPT_HELLO</a>,               <i><font color='green'>/* Symmetric message */</font></i>
+<a name='L104'> 104     <a href='../R/1213.html' title='Multiple refered from 25 places.'>OFPT_ERROR</a>,               <i><font color='green'>/* Symmetric message */</font></i>
+<a name='L105'> 105     <a href='../R/1212.html' title='Multiple refered from 32 places.'>OFPT_ECHO_REQUEST</a>,        <i><font color='green'>/* Symmetric message */</font></i>
+<a name='L106'> 106     <a href='../R/1210.html' title='Multiple refered from 31 places.'>OFPT_ECHO_REPLY</a>,          <i><font color='green'>/* Symmetric message */</font></i>
+<a name='L107'> 107     <a href='../R/1237.html' title='Multiple refered from 23 places.'>OFPT_VENDOR</a>,              <i><font color='green'>/* Symmetric message */</font></i>
+<a name='L108'> 108 
+<a name='L109'> 109     <i><font color='green'>/* Switch configuration messages. */</font></i>
+<a name='L110'> 110     <a href='../R/1216.html' title='Multiple refered from 19 places.'>OFPT_FEATURES_REQUEST</a>,    <i><font color='green'>/* Controller/switch message */</font></i>
+<a name='L111'> 111     <a href='../R/1215.html' title='Multiple refered from 13 places.'>OFPT_FEATURES_REPLY</a>,      <i><font color='green'>/* Controller/switch message */</font></i>
+<a name='L112'> 112     <a href='../R/1221.html' title='Multiple refered from 12 places.'>OFPT_GET_CONFIG_REQUEST</a>,  <i><font color='green'>/* Controller/switch message */</font></i>
+<a name='L113'> 113     <a href='../R/1220.html' title='Multiple refered from 11 places.'>OFPT_GET_CONFIG_REPLY</a>,    <i><font color='green'>/* Controller/switch message */</font></i>
+<a name='L114'> 114     <a href='../R/1231.html' title='Multiple refered from 13 places.'>OFPT_SET_CONFIG</a>,          <i><font color='green'>/* Controller/switch message */</font></i>
+<a name='L115'> 115 
+<a name='L116'> 116     <i><font color='green'>/* Asynchronous messages. */</font></i>
+<a name='L117'> 117     <a href='../R/1224.html' title='Multiple refered from 15 places.'>OFPT_PACKET_IN</a>,           <i><font color='green'>/* Async message */</font></i>
+<a name='L118'> 118     <a href='../R/1219.html' title='Multiple refered from 10 places.'>OFPT_FLOW_REMOVED</a>,        <i><font color='green'>/* Async message */</font></i>
+<a name='L119'> 119     <a href='../R/1228.html' title='Multiple refered from 14 places.'>OFPT_PORT_STATUS</a>,         <i><font color='green'>/* Async message */</font></i>
+<a name='L120'> 120 
+<a name='L121'> 121     <i><font color='green'>/* Controller command messages. */</font></i>
+<a name='L122'> 122     <a href='../R/1226.html' title='Multiple refered from 14 places.'>OFPT_PACKET_OUT</a>,          <i><font color='green'>/* Controller/switch message */</font></i>
+<a name='L123'> 123     <a href='../R/1217.html' title='Multiple refered from 26 places.'>OFPT_FLOW_MOD</a>,            <i><font color='green'>/* Controller/switch message */</font></i>
+<a name='L124'> 124     <a href='../R/1227.html' title='Multiple refered from 11 places.'>OFPT_PORT_MOD</a>,            <i><font color='green'>/* Controller/switch message */</font></i>
+<a name='L125'> 125 
+<a name='L126'> 126     <i><font color='green'>/* Statistics messages. */</font></i>
+<a name='L127'> 127     <a href='../R/1235.html' title='Multiple refered from 21 places.'>OFPT_STATS_REQUEST</a>,       <i><font color='green'>/* Controller/switch message */</font></i>
+<a name='L128'> 128     <a href='../R/1232.html' title='Multiple refered from 15 places.'>OFPT_STATS_REPLY</a>,         <i><font color='green'>/* Controller/switch message */</font></i>
+<a name='L129'> 129 
+<a name='L130'> 130     <i><font color='green'>/* Barrier messages. */</font></i>
+<a name='L131'> 131     <a href='../R/1209.html' title='Multiple refered from 10 places.'>OFPT_BARRIER_REQUEST</a>,     <i><font color='green'>/* Controller/switch message */</font></i>
+<a name='L132'> 132     <a href='../R/1208.html' title='Multiple refered from 9 places.'>OFPT_BARRIER_REPLY</a>,       <i><font color='green'>/* Controller/switch message */</font></i>
+<a name='L133'> 133 
+<a name='L134'> 134     <i><font color='green'>/* Queue Configuration messages. */</font></i>
+<a name='L135'> 135     <a href='../R/1230.html' title='Multiple refered from 6 places.'>OFPT_QUEUE_GET_CONFIG_REQUEST</a>,  <i><font color='green'>/* Controller/switch message */</font></i>
+<a name='L136'> 136     <a href='../R/1229.html' title='Multiple refered from 8 places.'>OFPT_QUEUE_GET_CONFIG_REPLY</a>     <i><font color='green'>/* Controller/switch message */</font></i>
+<a name='L137'> 137 
+<a name='L138'> 138 <font color='red'>}</font>;
+<a name='L139'> 139 
+<a name='L140'> 140 <i><font color='green'>/* Header on all OpenFlow packets. */</font></i>
+<a name='L141'> 141 <b>struct</b> <a href='../R/3877.html' title='Multiple refered from 245 places.'>ofp_header</a> <font color='red'>{</font>
+<a name='L142'> 142     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/7770.html' title='Multiple used in 173 places.'>version</a>;    <i><font color='green'>/* OFP_VERSION. */</font></i>
+<a name='L143'> 143     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;       <i><font color='green'>/* One of the OFPT_ constants. */</font></i>
+<a name='L144'> 144     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>;    <i><font color='green'>/* Length including this ofp_header. */</font></i>
+<a name='L145'> 145     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7997.html' title='Multiple used in 182 places.'>xid</a>;       <i><font color='green'>/* Transaction id associated with this packet.</font></i>
+<a name='L146'> 146 <i><font color='green'>                           Replies use the same id as was in the request</font></i>
+<a name='L147'> 147 <i><font color='green'>                           to facilitate pairing. */</font></i>
+<a name='L148'> 148 <font color='red'>}</font>;
+<a name='L149'> 149 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5176.html' title='Multiple used in 54 places.'>ofp_header</a>) == 8);
+<a name='L150'> 150 
+<a name='L151'> 151 <i><font color='green'>/* OFPT_HELLO.  This message has an empty body, but implementations must</font></i>
+<a name='L152'> 152 <i><font color='green'> * ignore any data included in the body, to allow for future extensions. */</font></i>
+<a name='L153'> 153 <b>struct</b> <a href='../R/3878.html' title='Multiple refered from 34 places.'>ofp_hello</a> <font color='red'>{</font>
+<a name='L154'> 154     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L155'> 155 <font color='red'>}</font>;
+<a name='L156'> 156 
+<a name='L157'> 157 <font color='darkred'>#define</font> <a href='../R/1280.html' title='Multiple refered from 3 places.'>OFP_DEFAULT_MISS_SEND_LEN</a>   128
+<a name='L158'> 158 
+<a name='L159'> 159 <b>enum</b> ofp_config_flags <font color='red'>{</font>
+<a name='L160'> 160     <i><font color='green'>/* Handling of IP fragments. */</font></i>
+<a name='L161'> 161     <a href='../R/1095.html' title='Multiple refered from 5 places.'>OFPC_FRAG_NORMAL</a>   = 0,  <i><font color='green'>/* No special handling for fragments. */</font></i>
+<a name='L162'> 162     <a href='../R/1093.html' title='Multiple refered from 7 places.'>OFPC_FRAG_DROP</a>     = 1,  <i><font color='green'>/* Drop fragments. */</font></i>
+<a name='L163'> 163     <a href='../S/604.html#L191' title='Refered from 191 in cbench/openflow/utilities/wireshark_dissectors/openflow/packet-openflow.c.'>OFPC_FRAG_REASM</a>    = 2,  <i><font color='green'>/* Reassemble (only if OFPC_IP_REASM set). */</font></i>
+<a name='L164'> 164     <a href='../R/1094.html' title='Multiple refered from 13 places.'>OFPC_FRAG_MASK</a>     = 3
+<a name='L165'> 165 <font color='red'>}</font>;
+<a name='L166'> 166 
+<a name='L167'> 167 <i><font color='green'>/* Switch configuration. */</font></i>
+<a name='L168'> 168 <b>struct</b> <a href='../R/3930.html' title='Multiple refered from 25 places.'>ofp_switch_config</a> <font color='red'>{</font>
+<a name='L169'> 169     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L170'> 170     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>;             <i><font color='green'>/* OFPC_* flags. */</font></i>
+<a name='L171'> 171     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4473.html' title='Multiple used in 19 places.'>miss_send_len</a>;     <i><font color='green'>/* Max bytes of new flow that datapath should</font></i>
+<a name='L172'> 172 <i><font color='green'>                                   send to the controller. */</font></i>
+<a name='L173'> 173 <font color='red'>}</font>;
+<a name='L174'> 174 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5332.html' title='Multiple used in 3 places.'>ofp_switch_config</a>) == 12);
+<a name='L175'> 175 
+<a name='L176'> 176 <i><font color='green'>/* Capabilities supported by the datapath. */</font></i>
+<a name='L177'> 177 <b>enum</b> ofp_capabilities <font color='red'>{</font>
+<a name='L178'> 178     <a href='../R/1092.html' title='Multiple refered from 5 places.'>OFPC_FLOW_STATS</a>     = 1 &lt;&lt; 0,  <i><font color='green'>/* Flow statistics. */</font></i>
+<a name='L179'> 179     <a href='../R/1102.html' title='Multiple refered from 4 places.'>OFPC_TABLE_STATS</a>    = 1 &lt;&lt; 1,  <i><font color='green'>/* Table statistics. */</font></i>
+<a name='L180'> 180     <a href='../R/1098.html' title='Multiple refered from 4 places.'>OFPC_PORT_STATS</a>     = 1 &lt;&lt; 2,  <i><font color='green'>/* Port statistics. */</font></i>
+<a name='L181'> 181     <a href='../R/1101.html' title='Multiple refered from 5 places.'>OFPC_STP</a>            = 1 &lt;&lt; 3,  <i><font color='green'>/* 802.1d spanning tree. */</font></i>
+<a name='L182'> 182     <a href='../S/604.html#L1290' title='Refered from 1290 in cbench/openflow/utilities/wireshark_dissectors/openflow/packet-openflow.c.'>OFPC_RESERVED</a>       = 1 &lt;&lt; 4,  <i><font color='green'>/* Reserved, must be zero. */</font></i>
+<a name='L183'> 183     <a href='../S/604.html#L1293' title='Refered from 1293 in cbench/openflow/utilities/wireshark_dissectors/openflow/packet-openflow.c.'>OFPC_IP_REASM</a>       = 1 &lt;&lt; 5,  <i><font color='green'>/* Can reassemble IP fragments. */</font></i>
+<a name='L184'> 184     <a href='../R/1099.html' title='Multiple refered from 3 places.'>OFPC_QUEUE_STATS</a>    = 1 &lt;&lt; 6,  <i><font color='green'>/* Queue statistics. */</font></i>
+<a name='L185'> 185     <a href='../R/1091.html' title='Multiple refered from 3 places.'>OFPC_ARP_MATCH_IP</a>   = 1 &lt;&lt; 7   <i><font color='green'>/* Match IP addresses in ARP pkts. */</font></i>
+<a name='L186'> 186 <font color='red'>}</font>;
+<a name='L187'> 187 
+<a name='L188'> 188 <i><font color='green'>/* Flags to indicate behavior of the physical port.  These flags are</font></i>
+<a name='L189'> 189 <i><font color='green'> * used in ofp_phy_port to describe the current configuration.  They are</font></i>
+<a name='L190'> 190 <i><font color='green'> * used in the ofp_port_mod message to configure the port's behavior.</font></i>
+<a name='L191'> 191 <i><font color='green'> */</font></i>
+<a name='L192'> 192 <b>enum</b> ofp_port_config <font color='red'>{</font>
+<a name='L193'> 193     <a href='../R/1153.html' title='Multiple refered from 19 places.'>OFPPC_PORT_DOWN</a>    = 1 &lt;&lt; 0,  <i><font color='green'>/* Port is administratively down. */</font></i>
+<a name='L194'> 194 
+<a name='L195'> 195     <a href='../R/1152.html' title='Multiple refered from 7 places.'>OFPPC_NO_STP</a>       = 1 &lt;&lt; 1,  <i><font color='green'>/* Disable 802.1D spanning tree on port. */</font></i>
+<a name='L196'> 196     <a href='../R/1150.html' title='Multiple refered from 7 places.'>OFPPC_NO_RECV</a>      = 1 &lt;&lt; 2,  <i><font color='green'>/* Drop all packets except 802.1D spanning</font></i>
+<a name='L197'> 197 <i><font color='green'>                                     tree packets. */</font></i>
+<a name='L198'> 198     <a href='../R/1151.html' title='Multiple refered from 7 places.'>OFPPC_NO_RECV_STP</a>  = 1 &lt;&lt; 3,  <i><font color='green'>/* Drop received 802.1D STP packets. */</font></i>
+<a name='L199'> 199     <a href='../R/1147.html' title='Multiple refered from 11 places.'>OFPPC_NO_FLOOD</a>     = 1 &lt;&lt; 4,  <i><font color='green'>/* Do not include this port when flooding. */</font></i>
+<a name='L200'> 200     <a href='../R/1148.html' title='Multiple refered from 5 places.'>OFPPC_NO_FWD</a>       = 1 &lt;&lt; 5,  <i><font color='green'>/* Drop packets forwarded to port. */</font></i>
+<a name='L201'> 201     <a href='../R/1149.html' title='Multiple refered from 5 places.'>OFPPC_NO_PACKET_IN</a> = 1 &lt;&lt; 6   <i><font color='green'>/* Do not send packet-in msgs for port. */</font></i>
+<a name='L202'> 202 <font color='red'>}</font>;
+<a name='L203'> 203 
+<a name='L204'> 204 <i><font color='green'>/* Current state of the physical port.  These are not configurable from</font></i>
+<a name='L205'> 205 <i><font color='green'> * the controller.</font></i>
+<a name='L206'> 206 <i><font color='green'> */</font></i>
+<a name='L207'> 207 <b>enum</b> ofp_port_state <font color='red'>{</font>
+<a name='L208'> 208     <a href='../R/1171.html' title='Multiple refered from 11 places.'>OFPPS_LINK_DOWN</a>   = 1 &lt;&lt; 0, <i><font color='green'>/* No physical link present. */</font></i>
+<a name='L209'> 209 
+<a name='L210'> 210     <i><font color='green'>/* The OFPPS_STP_* bits have no effect on switch operation.  The</font></i>
+<a name='L211'> 211 <i><font color='green'>     * controller must adjust OFPPC_NO_RECV, OFPPC_NO_FWD, and</font></i>
+<a name='L212'> 212 <i><font color='green'>     * OFPPC_NO_PACKET_IN appropriately to fully implement an 802.1D spanning</font></i>
+<a name='L213'> 213 <i><font color='green'>     * tree. */</font></i>
+<a name='L214'> 214     <a href='../R/1175.html' title='Multiple refered from 3 places.'>OFPPS_STP_LISTEN</a>  = 0 &lt;&lt; 8, <i><font color='green'>/* Not learning or relaying frames. */</font></i>
+<a name='L215'> 215     <a href='../R/1174.html' title='Multiple refered from 3 places.'>OFPPS_STP_LEARN</a>   = 1 &lt;&lt; 8, <i><font color='green'>/* Learning but not relaying frames. */</font></i>
+<a name='L216'> 216     <a href='../R/1173.html' title='Multiple refered from 4 places.'>OFPPS_STP_FORWARD</a> = 2 &lt;&lt; 8, <i><font color='green'>/* Learning and relaying frames. */</font></i>
+<a name='L217'> 217     <a href='../R/1172.html' title='Multiple refered from 3 places.'>OFPPS_STP_BLOCK</a>   = 3 &lt;&lt; 8, <i><font color='green'>/* Not part of spanning tree. */</font></i>
+<a name='L218'> 218     <a href='../R/1176.html' title='Multiple refered from 4 places.'>OFPPS_STP_MASK</a>    = 3 &lt;&lt; 8  <i><font color='green'>/* Bit mask for OFPPS_STP_* values. */</font></i>
+<a name='L219'> 219 <font color='red'>}</font>;
+<a name='L220'> 220 
+<a name='L221'> 221 <i><font color='green'>/* Features of physical ports available in a datapath. */</font></i>
+<a name='L222'> 222 <b>enum</b> ofp_port_features <font color='red'>{</font>
+<a name='L223'> 223     <a href='../R/1158.html' title='Multiple refered from 19 places.'>OFPPF_10MB_HD</a>    = 1 &lt;&lt; 0,  <i><font color='green'>/* 10 Mb half-duplex rate support. */</font></i>
+<a name='L224'> 224     <a href='../R/1157.html' title='Multiple refered from 19 places.'>OFPPF_10MB_FD</a>    = 1 &lt;&lt; 1,  <i><font color='green'>/* 10 Mb full-duplex rate support. */</font></i>
+<a name='L225'> 225     <a href='../R/1155.html' title='Multiple refered from 19 places.'>OFPPF_100MB_HD</a>   = 1 &lt;&lt; 2,  <i><font color='green'>/* 100 Mb half-duplex rate support. */</font></i>
+<a name='L226'> 226     <a href='../R/1154.html' title='Multiple refered from 19 places.'>OFPPF_100MB_FD</a>   = 1 &lt;&lt; 3,  <i><font color='green'>/* 100 Mb full-duplex rate support. */</font></i>
+<a name='L227'> 227     <a href='../R/1160.html' title='Multiple refered from 19 places.'>OFPPF_1GB_HD</a>     = 1 &lt;&lt; 4,  <i><font color='green'>/* 1 Gb half-duplex rate support. */</font></i>
+<a name='L228'> 228     <a href='../R/1159.html' title='Multiple refered from 19 places.'>OFPPF_1GB_FD</a>     = 1 &lt;&lt; 5,  <i><font color='green'>/* 1 Gb full-duplex rate support. */</font></i>
+<a name='L229'> 229     <a href='../R/1156.html' title='Multiple refered from 19 places.'>OFPPF_10GB_FD</a>    = 1 &lt;&lt; 6,  <i><font color='green'>/* 10 Gb full-duplex rate support. */</font></i>
+<a name='L230'> 230     <a href='../R/1162.html' title='Multiple refered from 12 places.'>OFPPF_COPPER</a>     = 1 &lt;&lt; 7,  <i><font color='green'>/* Copper medium. */</font></i>
+<a name='L231'> 231     <a href='../R/1163.html' title='Multiple refered from 12 places.'>OFPPF_FIBER</a>      = 1 &lt;&lt; 8,  <i><font color='green'>/* Fiber medium. */</font></i>
+<a name='L232'> 232     <a href='../R/1161.html' title='Multiple refered from 13 places.'>OFPPF_AUTONEG</a>    = 1 &lt;&lt; 9,  <i><font color='green'>/* Auto-negotiation. */</font></i>
+<a name='L233'> 233     <a href='../R/1164.html' title='Multiple refered from 11 places.'>OFPPF_PAUSE</a>      = 1 &lt;&lt; 10, <i><font color='green'>/* Pause. */</font></i>
+<a name='L234'> 234     <a href='../R/1165.html' title='Multiple refered from 11 places.'>OFPPF_PAUSE_ASYM</a> = 1 &lt;&lt; 11  <i><font color='green'>/* Asymmetric pause. */</font></i>
+<a name='L235'> 235 <font color='red'>}</font>;
+<a name='L236'> 236 
+<a name='L237'> 237 <i><font color='green'>/* Description of a physical port */</font></i>
+<a name='L238'> 238 <b>struct</b> <a href='../R/3897.html' title='Multiple refered from 36 places.'>ofp_phy_port</a> <font color='red'>{</font>
+<a name='L239'> 239     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5822.html' title='Multiple used in 265 places.'>port_no</a>;
+<a name='L240'> 240     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/3680.html' title='Multiple used in 27 places.'>hw_addr</a>[<a href='../Y/614.html' title='Multiple used in 21 places.'>OFP_ETH_ALEN</a>];
+<a name='L241'> 241     <b>char</b> <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>[<a href='../Y/615.html' title='Multiple used in 14 places.'>OFP_MAX_PORT_NAME_LEN</a>]; <i><font color='green'>/* Null-terminated */</font></i>
+<a name='L242'> 242 
+<a name='L243'> 243     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/2052.html' title='Multiple used in 115 places.'>config</a>;        <i><font color='green'>/* Bitmap of OFPPC_* flags. */</font></i>
+<a name='L244'> 244     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../S/849.html#L59' title='Defined at 59 in cbench/openflow/lib/rconn.c.'>state</a>;         <i><font color='green'>/* Bitmap of OFPPS_* flags. */</font></i>
+<a name='L245'> 245 
+<a name='L246'> 246     <i><font color='green'>/* Bitmaps of OFPPF_* that describe features.  All bits zeroed if</font></i>
+<a name='L247'> 247 <i><font color='green'>     * unsupported or unavailable. */</font></i>
+<a name='L248'> 248     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/2219.html' title='Multiple used in 811 places.'>curr</a>;          <i><font color='green'>/* Current features. */</font></i>
+<a name='L249'> 249     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/1343.html' title='Multiple used in 51 places.'>advertised</a>;    <i><font color='green'>/* Features being advertised by the port. */</font></i>
+<a name='L250'> 250     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7167.html' title='Multiple used in 79 places.'>supported</a>;     <i><font color='green'>/* Features supported by the port. */</font></i>
+<a name='L251'> 251     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/5700.html' title='Multiple used in 46 places.'>peer</a>;          <i><font color='green'>/* Features advertised by peer. */</font></i>
+<a name='L252'> 252 <font color='red'>}</font>;
+<a name='L253'> 253 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5253.html' title='Multiple used in 22 places.'>ofp_phy_port</a>) == 48);
+<a name='L254'> 254 
+<a name='L255'> 255 <i><font color='green'>/* Switch features. */</font></i>
+<a name='L256'> 256 <b>struct</b> <a href='../R/3931.html' title='Multiple refered from 22 places.'>ofp_switch_features</a> <font color='red'>{</font>
+<a name='L257'> 257     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L258'> 258     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/2281.html' title='Multiple used in 28 places.'>datapath_id</a>;   <i><font color='green'>/* Datapath unique ID.  The lower 48-bits are for</font></i>
+<a name='L259'> 259 <i><font color='green'>                               a MAC address, while the upper 16-bits are</font></i>
+<a name='L260'> 260 <i><font color='green'>                               implementer-defined. */</font></i>
+<a name='L261'> 261 
+<a name='L262'> 262     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/4573.html' title='Multiple used in 18 places.'>n_buffers</a>;     <i><font color='green'>/* Max packets buffered at once. */</font></i>
+<a name='L263'> 263 
+<a name='L264'> 264     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/4620.html' title='Multiple used in 45 places.'>n_tables</a>;       <i><font color='green'>/* Number of tables supported by datapath. */</font></i>
+<a name='L265'> 265     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[3];         <i><font color='green'>/* Align to 64-bits. */</font></i>
+<a name='L266'> 266 
+<a name='L267'> 267     <i><font color='green'>/* Features. */</font></i>
+<a name='L268'> 268     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/1792.html' title='Multiple used in 28 places.'>capabilities</a>;  <i><font color='green'>/* Bitmap of support "ofp_capabilities". */</font></i>
+<a name='L269'> 269     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/1294.html' title='Multiple used in 157 places.'>actions</a>;       <i><font color='green'>/* Bitmap of supported "ofp_action_type"s. */</font></i>
+<a name='L270'> 270 
+<a name='L271'> 271     <i><font color='green'>/* Port info.*/</font></i>
+<a name='L272'> 272     <b>struct</b> <a href='../D/8852.html' title='Multiple defined in 2 places.'>ofp_phy_port</a> <a href='../Y/5841.html' title='Multiple used in 64 places.'>ports</a>[0];  <i><font color='green'>/* Port definitions.  The number of ports</font></i>
+<a name='L273'> 273 <i><font color='green'>                                      is inferred from the length field in</font></i>
+<a name='L274'> 274 <i><font color='green'>                                      the header. */</font></i>
+<a name='L275'> 275 <font color='red'>}</font>;
+<a name='L276'> 276 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5336.html' title='Multiple used in 4 places.'>ofp_switch_features</a>) == 32);
+<a name='L277'> 277 
+<a name='L278'> 278 <i><font color='green'>/* What changed about the physical port */</font></i>
+<a name='L279'> 279 <b>enum</b> ofp_port_reason <font color='red'>{</font>
+<a name='L280'> 280     <a href='../R/1168.html' title='Multiple refered from 9 places.'>OFPPR_ADD</a>,              <i><font color='green'>/* The port was added. */</font></i>
+<a name='L281'> 281     <a href='../R/1169.html' title='Multiple refered from 7 places.'>OFPPR_DELETE</a>,           <i><font color='green'>/* The port was removed. */</font></i>
+<a name='L282'> 282     <a href='../R/1170.html' title='Multiple refered from 9 places.'>OFPPR_MODIFY</a>            <i><font color='green'>/* Some attribute of the port has changed. */</font></i>
+<a name='L283'> 283 <font color='red'>}</font>;
+<a name='L284'> 284 
+<a name='L285'> 285 <i><font color='green'>/* A physical port has changed in the datapath */</font></i>
+<a name='L286'> 286 <b>struct</b> <a href='../R/3903.html' title='Multiple refered from 17 places.'>ofp_port_status</a> <font color='red'>{</font>
+<a name='L287'> 287     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L288'> 288     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/6294.html' title='Multiple used in 94 places.'>reason</a>;          <i><font color='green'>/* One of OFPPR_*. */</font></i>
+<a name='L289'> 289     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[7];          <i><font color='green'>/* Align to 64-bits. */</font></i>
+<a name='L290'> 290     <b>struct</b> <a href='../D/8852.html' title='Multiple defined in 2 places.'>ofp_phy_port</a> <a href='../Y/2332.html' title='Multiple used in 133 places.'>desc</a>;
+<a name='L291'> 291 <font color='red'>}</font>;
+<a name='L292'> 292 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5300.html' title='Multiple used in 12 places.'>ofp_port_status</a>) == 64);
+<a name='L293'> 293 
+<a name='L294'> 294 <i><font color='green'>/* Modify behavior of the physical port */</font></i>
+<a name='L295'> 295 <b>struct</b> <a href='../R/3899.html' title='Multiple refered from 15 places.'>ofp_port_mod</a> <font color='red'>{</font>
+<a name='L296'> 296     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L297'> 297     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5822.html' title='Multiple used in 265 places.'>port_no</a>;
+<a name='L298'> 298     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/3680.html' title='Multiple used in 27 places.'>hw_addr</a>[<a href='../Y/614.html' title='Multiple used in 21 places.'>OFP_ETH_ALEN</a>]; <i><font color='green'>/* The hardware address is not</font></i>
+<a name='L299'> 299 <i><font color='green'>                                      configurable.  This is used to</font></i>
+<a name='L300'> 300 <i><font color='green'>                                      sanity-check the request, so it must</font></i>
+<a name='L301'> 301 <i><font color='green'>                                      be the same as returned in an</font></i>
+<a name='L302'> 302 <i><font color='green'>                                      ofp_phy_port struct. */</font></i>
+<a name='L303'> 303 
+<a name='L304'> 304     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/2052.html' title='Multiple used in 115 places.'>config</a>;        <i><font color='green'>/* Bitmap of OFPPC_* flags. */</font></i>
+<a name='L305'> 305     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/4338.html' title='Multiple used in 220 places.'>mask</a>;          <i><font color='green'>/* Bitmap of OFPPC_* flags to be changed. */</font></i>
+<a name='L306'> 306 
+<a name='L307'> 307     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/1340.html' title='Multiple used in 7 places.'>advertise</a>;     <i><font color='green'>/* Bitmap of "ofp_port_features"s.  Zero all</font></i>
+<a name='L308'> 308 <i><font color='green'>                               bits to prevent any action taking place. */</font></i>
+<a name='L309'> 309     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[4];         <i><font color='green'>/* Pad to 64-bits. */</font></i>
+<a name='L310'> 310 <font color='red'>}</font>;
+<a name='L311'> 311 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5274.html' title='Multiple used in 7 places.'>ofp_port_mod</a>) == 32);
+<a name='L312'> 312 
+<a name='L313'> 313 <i><font color='green'>/* Why is this packet being sent to the controller? */</font></i>
+<a name='L314'> 314 <b>enum</b> <a href='../R/3893.html' title='Multiple refered from 3 places.'>ofp_packet_in_reason</a> <font color='red'>{</font>
+<a name='L315'> 315     <a href='../R/1198.html' title='Multiple refered from 11 places.'>OFPR_NO_MATCH</a>,          <i><font color='green'>/* No matching flow. */</font></i>
+<a name='L316'> 316     <a href='../R/1197.html' title='Multiple refered from 14 places.'>OFPR_ACTION</a>             <i><font color='green'>/* Action explicitly output to controller. */</font></i>
+<a name='L317'> 317 <font color='red'>}</font>;
+<a name='L318'> 318 
+<a name='L319'> 319 <i><font color='green'>/* Packet received on port (datapath -&gt; controller). */</font></i>
+<a name='L320'> 320 <b>struct</b> <a href='../R/3892.html' title='Multiple refered from 36 places.'>ofp_packet_in</a> <font color='red'>{</font>
+<a name='L321'> 321     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L322'> 322     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/1706.html' title='Multiple used in 133 places.'>buffer_id</a>;     <i><font color='green'>/* ID assigned by datapath. */</font></i>
+<a name='L323'> 323     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7436.html' title='Multiple used in 79 places.'>total_len</a>;     <i><font color='green'>/* Full length of frame. */</font></i>
+<a name='L324'> 324     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/3786.html' title='Multiple used in 144 places.'>in_port</a>;       <i><font color='green'>/* Port on which frame was received. */</font></i>
+<a name='L325'> 325     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/6294.html' title='Multiple used in 94 places.'>reason</a>;         <i><font color='green'>/* Reason packet is being sent (one of OFPR_*) */</font></i>
+<a name='L326'> 326     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>;
+<a name='L327'> 327     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>[0];        <i><font color='green'>/* Ethernet frame, halfway through 32-bit word,</font></i>
+<a name='L328'> 328 <i><font color='green'>                               so the IP header is 32-bit aligned.  The</font></i>
+<a name='L329'> 329 <i><font color='green'>                               amount of data is inferred from the length</font></i>
+<a name='L330'> 330 <i><font color='green'>                               field in the header.  Because of padding,</font></i>
+<a name='L331'> 331 <i><font color='green'>                               offsetof(struct ofp_packet_in, data) ==</font></i>
+<a name='L332'> 332 <i><font color='green'>                               sizeof(struct ofp_packet_in) - 2. */</font></i>
+<a name='L333'> 333 <font color='red'>}</font>;
+<a name='L334'> 334 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5229.html' title='Multiple used in 18 places.'>ofp_packet_in</a>) == 20);
+<a name='L335'> 335 
+<a name='L336'> 336 <b>enum</b> <a href='../R/3850.html' title='Multiple refered from 3 places.'>ofp_action_type</a> <font color='red'>{</font>
+<a name='L337'> 337     <a href='../R/1060.html' title='Multiple refered from 35 places.'>OFPAT_OUTPUT</a>,           <i><font color='green'>/* Output to switch port. */</font></i>
+<a name='L338'> 338     <a href='../R/1069.html' title='Multiple refered from 19 places.'>OFPAT_SET_VLAN_VID</a>,     <i><font color='green'>/* Set the 802.1q VLAN id. */</font></i>
+<a name='L339'> 339     <a href='../R/1068.html' title='Multiple refered from 19 places.'>OFPAT_SET_VLAN_PCP</a>,     <i><font color='green'>/* Set the 802.1q priority. */</font></i>
+<a name='L340'> 340     <a href='../R/1070.html' title='Multiple refered from 20 places.'>OFPAT_STRIP_VLAN</a>,       <i><font color='green'>/* Strip the 802.1q header. */</font></i>
+<a name='L341'> 341     <a href='../R/1062.html' title='Multiple refered from 24 places.'>OFPAT_SET_DL_SRC</a>,       <i><font color='green'>/* Ethernet source address. */</font></i>
+<a name='L342'> 342     <a href='../R/1061.html' title='Multiple refered from 22 places.'>OFPAT_SET_DL_DST</a>,       <i><font color='green'>/* Ethernet destination address. */</font></i>
+<a name='L343'> 343     <a href='../R/1064.html' title='Multiple refered from 20 places.'>OFPAT_SET_NW_SRC</a>,       <i><font color='green'>/* IP source address. */</font></i>
+<a name='L344'> 344     <a href='../R/1063.html' title='Multiple refered from 18 places.'>OFPAT_SET_NW_DST</a>,       <i><font color='green'>/* IP destination address. */</font></i>
+<a name='L345'> 345     <a href='../R/1065.html' title='Multiple refered from 14 places.'>OFPAT_SET_NW_TOS</a>,       <i><font color='green'>/* IP ToS (DSCP field, 6 bits). */</font></i>
+<a name='L346'> 346     <a href='../R/1067.html' title='Multiple refered from 22 places.'>OFPAT_SET_TP_SRC</a>,       <i><font color='green'>/* TCP/UDP source port. */</font></i>
+<a name='L347'> 347     <a href='../R/1066.html' title='Multiple refered from 18 places.'>OFPAT_SET_TP_DST</a>,       <i><font color='green'>/* TCP/UDP destination port. */</font></i>
+<a name='L348'> 348     <a href='../R/1059.html' title='Multiple refered from 11 places.'>OFPAT_ENQUEUE</a>,          <i><font color='green'>/* Output to queue.  */</font></i>
+<a name='L349'> 349     <a href='../R/1071.html' title='Multiple refered from 7 places.'>OFPAT_VENDOR</a> = 0xffff
+<a name='L350'> 350 <font color='red'>}</font>;
+<a name='L351'> 351 
+<a name='L352'> 352 <i><font color='green'>/* Action structure for OFPAT_OUTPUT, which sends packets out 'port'.</font></i>
+<a name='L353'> 353 <i><font color='green'> * When the 'port' is the OFPP_CONTROLLER, 'max_len' indicates the max</font></i>
+<a name='L354'> 354 <i><font color='green'> * number of bytes to send.  A 'max_len' of zero means no bytes of the</font></i>
+<a name='L355'> 355 <i><font color='green'> * packet should be sent.*/</font></i>
+<a name='L356'> 356 <b>struct</b> <a href='../R/3848.html' title='Multiple refered from 76 places.'>ofp_action_output</a> <font color='red'>{</font>
+<a name='L357'> 357     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;                  <i><font color='green'>/* OFPAT_OUTPUT. */</font></i>
+<a name='L358'> 358     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;                   <i><font color='green'>/* Length is 8. */</font></i>
+<a name='L359'> 359     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a>;                  <i><font color='green'>/* Output port. */</font></i>
+<a name='L360'> 360     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4375.html' title='Multiple used in 47 places.'>max_len</a>;               <i><font color='green'>/* Max length to send to controller. */</font></i>
+<a name='L361'> 361 <font color='red'>}</font>;
+<a name='L362'> 362 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5095.html' title='Multiple used in 3 places.'>ofp_action_output</a>) == 8);
+<a name='L363'> 363 
+<a name='L364'> 364 <i><font color='green'>/* The VLAN id is 12 bits, so we can use the entire 16 bits to indicate</font></i>
+<a name='L365'> 365 <i><font color='green'> * special conditions.  All ones is used to match that no VLAN id was</font></i>
+<a name='L366'> 366 <i><font color='green'> * set. */</font></i>
+<a name='L367'> 367 <font color='darkred'>#define</font> <a href='../R/1296.html' title='Multiple refered from 6 places.'>OFP_VLAN_NONE</a>      0xffff
+<a name='L368'> 368 
+<a name='L369'> 369 <i><font color='green'>/* Action structure for OFPAT_SET_VLAN_VID. */</font></i>
+<a name='L370'> 370 <b>struct</b> <a href='../R/3853.html' title='Multiple refered from 32 places.'>ofp_action_vlan_vid</a> <font color='red'>{</font>
+<a name='L371'> 371     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;                  <i><font color='green'>/* OFPAT_SET_VLAN_VID. */</font></i>
+<a name='L372'> 372     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;                   <i><font color='green'>/* Length is 8. */</font></i>
+<a name='L373'> 373     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7811.html' title='Multiple used in 24 places.'>vlan_vid</a>;              <i><font color='green'>/* VLAN id. */</font></i>
+<a name='L374'> 374     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[2];
+<a name='L375'> 375 <font color='red'>}</font>;
+<a name='L376'> 376 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5107.html' title='Multiple used in 2 places.'>ofp_action_vlan_vid</a>) == 8);
+<a name='L377'> 377 
+<a name='L378'> 378 <i><font color='green'>/* Action structure for OFPAT_SET_VLAN_PCP. */</font></i>
+<a name='L379'> 379 <b>struct</b> <a href='../R/3852.html' title='Multiple refered from 32 places.'>ofp_action_vlan_pcp</a> <font color='red'>{</font>
+<a name='L380'> 380     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;                  <i><font color='green'>/* OFPAT_SET_VLAN_PCP. */</font></i>
+<a name='L381'> 381     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;                   <i><font color='green'>/* Length is 8. */</font></i>
+<a name='L382'> 382     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/7808.html' title='Multiple used in 82 places.'>vlan_pcp</a>;               <i><font color='green'>/* VLAN priority. */</font></i>
+<a name='L383'> 383     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[3];
+<a name='L384'> 384 <font color='red'>}</font>;
+<a name='L385'> 385 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5106.html' title='Multiple used in 2 places.'>ofp_action_vlan_pcp</a>) == 8);
+<a name='L386'> 386 
+<a name='L387'> 387 <i><font color='green'>/* Action structure for OFPAT_SET_DL_SRC/DST. */</font></i>
+<a name='L388'> 388 <b>struct</b> <a href='../R/3843.html' title='Multiple refered from 49 places.'>ofp_action_dl_addr</a> <font color='red'>{</font>
+<a name='L389'> 389     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;                  <i><font color='green'>/* OFPAT_SET_DL_SRC/DST. */</font></i>
+<a name='L390'> 390     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;                   <i><font color='green'>/* Length is 16. */</font></i>
+<a name='L391'> 391     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/2460.html' title='Multiple used in 23 places.'>dl_addr</a>[<a href='../Y/614.html' title='Multiple used in 21 places.'>OFP_ETH_ALEN</a>];  <i><font color='green'>/* Ethernet address. */</font></i>
+<a name='L392'> 392     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[6];
+<a name='L393'> 393 <font color='red'>}</font>;
+<a name='L394'> 394 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5082.html' title='Multiple used in 2 places.'>ofp_action_dl_addr</a>) == 16);
+<a name='L395'> 395 
+<a name='L396'> 396 <i><font color='green'>/* Action structure for OFPAT_SET_NW_SRC/DST. */</font></i>
+<a name='L397'> 397 <b>struct</b> <a href='../R/3846.html' title='Multiple refered from 45 places.'>ofp_action_nw_addr</a> <font color='red'>{</font>
+<a name='L398'> 398     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;                  <i><font color='green'>/* OFPAT_SET_TW_SRC/DST. */</font></i>
+<a name='L399'> 399     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;                   <i><font color='green'>/* Length is 8. */</font></i>
+<a name='L400'> 400     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/5014.html' title='Multiple used in 15 places.'>nw_addr</a>;               <i><font color='green'>/* IP address. */</font></i>
+<a name='L401'> 401 <font color='red'>}</font>;
+<a name='L402'> 402 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5092.html' title='Multiple used in 2 places.'>ofp_action_nw_addr</a>) == 8);
+<a name='L403'> 403 
+<a name='L404'> 404 <i><font color='green'>/* Action structure for OFPAT_SET_TP_SRC/DST. */</font></i>
+<a name='L405'> 405 <b>struct</b> <a href='../R/3849.html' title='Multiple refered from 45 places.'>ofp_action_tp_port</a> <font color='red'>{</font>
+<a name='L406'> 406     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;                  <i><font color='green'>/* OFPAT_SET_TP_SRC/DST. */</font></i>
+<a name='L407'> 407     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;                   <i><font color='green'>/* Length is 8. */</font></i>
+<a name='L408'> 408     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7445.html' title='Multiple used in 15 places.'>tp_port</a>;               <i><font color='green'>/* TCP/UDP port. */</font></i>
+<a name='L409'> 409     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[2];
+<a name='L410'> 410 <font color='red'>}</font>;
+<a name='L411'> 411 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5102.html' title='Multiple used in 2 places.'>ofp_action_tp_port</a>) == 8);
+<a name='L412'> 412 
+<a name='L413'> 413 <i><font color='green'>/* Action structure for OFPAT_SET_NW_TOS. */</font></i>
+<a name='L414'> 414 <b>struct</b> <a href='../R/3847.html' title='Multiple refered from 20 places.'>ofp_action_nw_tos</a> <font color='red'>{</font>
+<a name='L415'> 415     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;                  <i><font color='green'>/* OFPAT_SET_TW_SRC/DST. */</font></i>
+<a name='L416'> 416     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;                   <i><font color='green'>/* Length is 8. */</font></i>
+<a name='L417'> 417     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5020.html' title='Multiple used in 36 places.'>nw_tos</a>;                 <i><font color='green'>/* IP ToS (DSCP field, 6 bits). */</font></i>
+<a name='L418'> 418     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[3];
+<a name='L419'> 419 <font color='red'>}</font>;
+<a name='L420'> 420 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5093.html' title='Multiple used in 2 places.'>ofp_action_nw_tos</a>) == 8);
+<a name='L421'> 421 
+<a name='L422'> 422 <i><font color='green'>/* Action header for OFPAT_VENDOR. The rest of the body is vendor-defined. */</font></i>
+<a name='L423'> 423 <b>struct</b> <a href='../R/3851.html' title='Multiple refered from 12 places.'>ofp_action_vendor_header</a> <font color='red'>{</font>
+<a name='L424'> 424     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;                  <i><font color='green'>/* OFPAT_VENDOR. */</font></i>
+<a name='L425'> 425     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;                   <i><font color='green'>/* Length is a multiple of 8. */</font></i>
+<a name='L426'> 426     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7757.html' title='Multiple used in 43 places.'>vendor</a>;                <i><font color='green'>/* Vendor ID, which takes the same form</font></i>
+<a name='L427'> 427 <i><font color='green'>                                       as in "struct ofp_vendor_header". */</font></i>
+<a name='L428'> 428 <font color='red'>}</font>;
+<a name='L429'> 429 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5105.html' title='Multiple used in 2 places.'>ofp_action_vendor_header</a>) == 8);
+<a name='L430'> 430 
+<a name='L431'> 431 <i><font color='green'>/* Action header that is common to all actions.  The length includes the</font></i>
+<a name='L432'> 432 <i><font color='green'> * header and any padding used to make the action 64-bit aligned.</font></i>
+<a name='L433'> 433 <i><font color='green'> * NB: The length of an action *must* always be a multiple of eight. */</font></i>
+<a name='L434'> 434 <b>struct</b> <a href='../R/3845.html' title='Multiple refered from 65 places.'>ofp_action_header</a> <font color='red'>{</font>
+<a name='L435'> 435     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;                  <i><font color='green'>/* One of OFPAT_*. */</font></i>
+<a name='L436'> 436     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;                   <i><font color='green'>/* Length of action, including this</font></i>
+<a name='L437'> 437 <i><font color='green'>                                       header.  This is the length of action,</font></i>
+<a name='L438'> 438 <i><font color='green'>                                       including any padding to make it</font></i>
+<a name='L439'> 439 <i><font color='green'>                                       64-bit aligned. */</font></i>
+<a name='L440'> 440     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[4];
+<a name='L441'> 441 <font color='red'>}</font>;
+<a name='L442'> 442 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5088.html' title='Multiple used in 65 places.'>ofp_action_header</a>) == 8);
+<a name='L443'> 443 
+<a name='L444'> 444 <i><font color='green'>/* Send packet (controller -&gt; datapath). */</font></i>
+<a name='L445'> 445 <b>struct</b> <a href='../R/3894.html' title='Multiple refered from 27 places.'>ofp_packet_out</a> <font color='red'>{</font>
+<a name='L446'> 446     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L447'> 447     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/1706.html' title='Multiple used in 133 places.'>buffer_id</a>;           <i><font color='green'>/* ID assigned by datapath (-1 if none). */</font></i>
+<a name='L448'> 448     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/3786.html' title='Multiple used in 144 places.'>in_port</a>;             <i><font color='green'>/* Packet's input port (OFPP_NONE if none). */</font></i>
+<a name='L449'> 449     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/1295.html' title='Multiple used in 192 places.'>actions_len</a>;         <i><font color='green'>/* Size of action array in bytes. */</font></i>
+<a name='L450'> 450     <b>struct</b> <a href='../D/8736.html' title='Multiple defined in 3 places.'>ofp_action_header</a> <a href='../Y/1294.html' title='Multiple used in 157 places.'>actions</a>[0]; <i><font color='green'>/* Actions. */</font></i>
+<a name='L451'> 451     <i><font color='green'>/* uint8_t data[0]; */</font></i>        <i><font color='green'>/* Packet data.  The length is inferred</font></i>
+<a name='L452'> 452 <i><font color='green'>                                     from the length field in the header.</font></i>
+<a name='L453'> 453 <i><font color='green'>                                     (Only meaningful if buffer_id == -1.) */</font></i>
+<a name='L454'> 454 <font color='red'>}</font>;
+<a name='L455'> 455 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5234.html' title='Multiple used in 5 places.'>ofp_packet_out</a>) == 16);
+<a name='L456'> 456 
+<a name='L457'> 457 <b>enum</b> <a href='../R/3868.html' title='Multiple refered from 3 places.'>ofp_flow_mod_command</a> <font color='red'>{</font>
+<a name='L458'> 458     <a href='../R/1109.html' title='Multiple refered from 15 places.'>OFPFC_ADD</a>,              <i><font color='green'>/* New flow. */</font></i>
+<a name='L459'> 459     <a href='../R/1112.html' title='Multiple refered from 7 places.'>OFPFC_MODIFY</a>,           <i><font color='green'>/* Modify all matching flows. */</font></i>
+<a name='L460'> 460     <a href='../R/1113.html' title='Multiple refered from 9 places.'>OFPFC_MODIFY_STRICT</a>,    <i><font color='green'>/* Modify entry strictly matching wildcards */</font></i>
+<a name='L461'> 461     <a href='../R/1110.html' title='Multiple refered from 8 places.'>OFPFC_DELETE</a>,           <i><font color='green'>/* Delete all matching flows. */</font></i>
+<a name='L462'> 462     <a href='../R/1111.html' title='Multiple refered from 9 places.'>OFPFC_DELETE_STRICT</a>    <i><font color='green'>/* Strictly match wildcards and priority. */</font></i>
+<a name='L463'> 463 <font color='red'>}</font>;
+<a name='L464'> 464 
+<a name='L465'> 465 <i><font color='green'>/* Flow wildcards. */</font></i>
+<a name='L466'> 466 <b>enum</b> ofp_flow_wildcards <font color='red'>{</font>
+<a name='L467'> 467     <a href='../R/1131.html' title='Multiple refered from 33 places.'>OFPFW_IN_PORT</a>  = 1 &lt;&lt; 0,  <i><font color='green'>/* Switch input port. */</font></i>
+<a name='L468'> 468     <a href='../R/1127.html' title='Multiple refered from 26 places.'>OFPFW_DL_VLAN</a>  = 1 &lt;&lt; 1,  <i><font color='green'>/* VLAN id. */</font></i>
+<a name='L469'> 469     <a href='../R/1125.html' title='Multiple refered from 25 places.'>OFPFW_DL_SRC</a>   = 1 &lt;&lt; 2,  <i><font color='green'>/* Ethernet source address. */</font></i>
+<a name='L470'> 470     <a href='../R/1124.html' title='Multiple refered from 25 places.'>OFPFW_DL_DST</a>   = 1 &lt;&lt; 3,  <i><font color='green'>/* Ethernet destination address. */</font></i>
+<a name='L471'> 471     <a href='../R/1126.html' title='Multiple refered from 23 places.'>OFPFW_DL_TYPE</a>  = 1 &lt;&lt; 4,  <i><font color='green'>/* Ethernet frame type. */</font></i>
+<a name='L472'> 472     <a href='../R/1136.html' title='Multiple refered from 35 places.'>OFPFW_NW_PROTO</a> = 1 &lt;&lt; 5,  <i><font color='green'>/* IP protocol. */</font></i>
+<a name='L473'> 473     <a href='../R/1144.html' title='Multiple refered from 30 places.'>OFPFW_TP_SRC</a>   = 1 &lt;&lt; 6,  <i><font color='green'>/* TCP/UDP source port. */</font></i>
+<a name='L474'> 474     <a href='../R/1143.html' title='Multiple refered from 36 places.'>OFPFW_TP_DST</a>   = 1 &lt;&lt; 7,  <i><font color='green'>/* TCP/UDP destination port. */</font></i>
+<a name='L475'> 475 
+<a name='L476'> 476     <i><font color='green'>/* IP source address wildcard bit count.  0 is exact match, 1 ignores the</font></i>
+<a name='L477'> 477 <i><font color='green'>     * LSB, 2 ignores the 2 least-significant bits, ..., 32 and higher wildcard</font></i>
+<a name='L478'> 478 <i><font color='green'>     * the entire field.  This is the *opposite* of the usual convention where</font></i>
+<a name='L479'> 479 <i><font color='green'>     * e.g. /24 indicates that 8 bits (not 24 bits) are wildcarded. */</font></i>
+<a name='L480'> 480     <a href='../R/1140.html' title='Multiple refered from 16 places.'>OFPFW_NW_SRC_SHIFT</a> = 8,
+<a name='L481'> 481     <a href='../R/1138.html' title='Multiple refered from 4 places.'>OFPFW_NW_SRC_BITS</a> = 6,
+<a name='L482'> 482     <a href='../R/1139.html' title='Multiple refered from 9 places.'>OFPFW_NW_SRC_MASK</a> = ((1 &lt;&lt; <a href='../R/1138.html' title='Multiple refered from 4 places.'>OFPFW_NW_SRC_BITS</a>) - 1) &lt;&lt; <a href='../R/1140.html' title='Multiple refered from 16 places.'>OFPFW_NW_SRC_SHIFT</a>,
+<a name='L483'> 483     <a href='../R/1137.html' title='Multiple refered from 12 places.'>OFPFW_NW_SRC_ALL</a> = 32 &lt;&lt; <a href='../R/1140.html' title='Multiple refered from 16 places.'>OFPFW_NW_SRC_SHIFT</a>,
+<a name='L484'> 484 
+<a name='L485'> 485     <i><font color='green'>/* IP destination address wildcard bit count.  Same format as source. */</font></i>
+<a name='L486'> 486     <a href='../R/1135.html' title='Multiple refered from 16 places.'>OFPFW_NW_DST_SHIFT</a> = 14,
+<a name='L487'> 487     OFPFW_NW_DST_BITS = 6,
+<a name='L488'> 488     <a href='../R/1134.html' title='Multiple refered from 9 places.'>OFPFW_NW_DST_MASK</a> = ((1 &lt;&lt; OFPFW_NW_DST_BITS) - 1) &lt;&lt; <a href='../R/1135.html' title='Multiple refered from 16 places.'>OFPFW_NW_DST_SHIFT</a>,
+<a name='L489'> 489     <a href='../R/1133.html' title='Multiple refered from 12 places.'>OFPFW_NW_DST_ALL</a> = 32 &lt;&lt; <a href='../R/1135.html' title='Multiple refered from 16 places.'>OFPFW_NW_DST_SHIFT</a>,
+<a name='L490'> 490 
+<a name='L491'> 491     <a href='../R/1128.html' title='Multiple refered from 29 places.'>OFPFW_DL_VLAN_PCP</a> = 1 &lt;&lt; 20,  <i><font color='green'>/* VLAN priority. */</font></i>
+<a name='L492'> 492     <a href='../R/1141.html' title='Multiple refered from 26 places.'>OFPFW_NW_TOS</a> = 1 &lt;&lt; 21,  <i><font color='green'>/* IP ToS (DSCP field, 6 bits). */</font></i>
+<a name='L493'> 493 
+<a name='L494'> 494     <i><font color='green'>/* Wildcard all fields. */</font></i>
+<a name='L495'> 495     <a href='../R/1123.html' title='Multiple refered from 17 places.'>OFPFW_ALL</a> = ((1 &lt;&lt; 22) - 1)
+<a name='L496'> 496 <font color='red'>}</font>;
+<a name='L497'> 497 
+<a name='L498'> 498 <i><font color='green'>/* The wildcards for ICMP type and code fields use the transport source</font></i>
+<a name='L499'> 499 <i><font color='green'> * and destination port fields, respectively. */</font></i>
+<a name='L500'> 500 <font color='darkred'>#define</font> <a href='../R/1130.html' title='Multiple refered from 2 places.'>OFPFW_ICMP_TYPE</a> <a href='../D/3447.html' title='Multiple defined in 2 places.'>OFPFW_TP_SRC</a>
+<a name='L501'> 501 <font color='darkred'>#define</font> <a href='../R/1129.html' title='Multiple refered from 2 places.'>OFPFW_ICMP_CODE</a> <a href='../D/3446.html' title='Multiple defined in 2 places.'>OFPFW_TP_DST</a>
+<a name='L502'> 502 
+<a name='L503'> 503 <i><font color='green'>/* Values below this cutoff are 802.3 packets and the two bytes</font></i>
+<a name='L504'> 504 <i><font color='green'> * following MAC addresses are used as a frame length.  Otherwise, the</font></i>
+<a name='L505'> 505 <i><font color='green'> * two bytes are used as the Ethernet type.</font></i>
+<a name='L506'> 506 <i><font color='green'> */</font></i>
+<a name='L507'> 507 <font color='darkred'>#define</font> <a href='../R/1282.html' title='Multiple refered from 2 places.'>OFP_DL_TYPE_ETH2_CUTOFF</a>   0x0600
+<a name='L508'> 508 
+<a name='L509'> 509 <i><font color='green'>/* Value of dl_type to indicate that the frame does not include an</font></i>
+<a name='L510'> 510 <i><font color='green'> * Ethernet type.</font></i>
+<a name='L511'> 511 <i><font color='green'> */</font></i>
+<a name='L512'> 512 <font color='darkred'>#define</font> <a href='../R/1283.html' title='Multiple refered from 3 places.'>OFP_DL_TYPE_NOT_ETH_TYPE</a>  0x05ff
+<a name='L513'> 513 
+<a name='L514'> 514 <i><font color='green'>/* The VLAN id is 12-bits, so we can use the entire 16 bits to indicate</font></i>
+<a name='L515'> 515 <i><font color='green'> * special conditions.  All ones indicates that no VLAN id was set.</font></i>
+<a name='L516'> 516 <i><font color='green'> */</font></i>
+<a name='L517'> 517 <font color='darkred'>#define</font> <a href='../R/1296.html' title='Multiple refered from 6 places.'>OFP_VLAN_NONE</a>      0xffff
+<a name='L518'> 518 
+<a name='L519'> 519 <i><font color='green'>/* Fields to match against flows */</font></i>
+<a name='L520'> 520 <b>struct</b> <a href='../R/3884.html' title='Multiple refered from 35 places.'>ofp_match</a> <font color='red'>{</font>
+<a name='L521'> 521     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7877.html' title='Multiple used in 308 places.'>wildcards</a>;        <i><font color='green'>/* Wildcard fields. */</font></i>
+<a name='L522'> 522     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/3786.html' title='Multiple used in 144 places.'>in_port</a>;          <i><font color='green'>/* Input switch port. */</font></i>
+<a name='L523'> 523     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/2462.html' title='Multiple used in 77 places.'>dl_src</a>[<a href='../Y/614.html' title='Multiple used in 21 places.'>OFP_ETH_ALEN</a>]; <i><font color='green'>/* Ethernet source address. */</font></i>
+<a name='L524'> 524     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/2461.html' title='Multiple used in 96 places.'>dl_dst</a>[<a href='../Y/614.html' title='Multiple used in 21 places.'>OFP_ETH_ALEN</a>]; <i><font color='green'>/* Ethernet destination address. */</font></i>
+<a name='L525'> 525     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/2464.html' title='Multiple used in 65 places.'>dl_vlan</a>;          <i><font color='green'>/* Input VLAN id. */</font></i>
+<a name='L526'> 526     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/2465.html' title='Multiple used in 33 places.'>dl_vlan_pcp</a>;       <i><font color='green'>/* Input VLAN priority. */</font></i>
+<a name='L527'> 527     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5628.html' title='Multiple used in 2 places.'>pad1</a>[1];           <i><font color='green'>/* Align to 64-bits */</font></i>
+<a name='L528'> 528     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/2463.html' title='Multiple used in 81 places.'>dl_type</a>;          <i><font color='green'>/* Ethernet frame type. */</font></i>
+<a name='L529'> 529     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5020.html' title='Multiple used in 36 places.'>nw_tos</a>;            <i><font color='green'>/* IP ToS (actually DSCP field, 6 bits). */</font></i>
+<a name='L530'> 530     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5017.html' title='Multiple used in 95 places.'>nw_proto</a>;          <i><font color='green'>/* IP protocol or lower 8 bits of</font></i>
+<a name='L531'> 531 <i><font color='green'>                                * ARP opcode. */</font></i>
+<a name='L532'> 532     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5629.html' title='Multiple used in 15 places.'>pad2</a>[2];           <i><font color='green'>/* Align to 64-bits */</font></i>
+<a name='L533'> 533     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/5018.html' title='Multiple used in 62 places.'>nw_src</a>;           <i><font color='green'>/* IP source address. */</font></i>
+<a name='L534'> 534     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/5015.html' title='Multiple used in 78 places.'>nw_dst</a>;           <i><font color='green'>/* IP destination address. */</font></i>
+<a name='L535'> 535     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7446.html' title='Multiple used in 54 places.'>tp_src</a>;           <i><font color='green'>/* TCP/UDP source port. */</font></i>
+<a name='L536'> 536     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7444.html' title='Multiple used in 55 places.'>tp_dst</a>;           <i><font color='green'>/* TCP/UDP destination port. */</font></i>
+<a name='L537'> 537 <font color='red'>}</font>;
+<a name='L538'> 538 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5195.html' title='Multiple used in 19 places.'>ofp_match</a>) == 40);
+<a name='L539'> 539 
+<a name='L540'> 540 <i><font color='green'>/* The match fields for ICMP type and code use the transport source and</font></i>
+<a name='L541'> 541 <i><font color='green'> * destination port fields, respectively. */</font></i>
+<a name='L542'> 542 <font color='darkred'>#define</font> <a href='../R/3261.html' title='Multiple refered from 10 places.'>icmp_type</a> <a href='../Y/7446.html' title='Multiple used in 54 places.'>tp_src</a>
+<a name='L543'> 543 <font color='darkred'>#define</font> <a href='../R/3258.html' title='Multiple refered from 18 places.'>icmp_code</a> <a href='../Y/7444.html' title='Multiple used in 55 places.'>tp_dst</a>
+<a name='L544'> 544 
+<a name='L545'> 545 <i><font color='green'>/* Value used in "idle_timeout" and "hard_timeout" to indicate that the entry</font></i>
+<a name='L546'> 546 <i><font color='green'> * is permanent. */</font></i>
+<a name='L547'> 547 <font color='darkred'>#define</font> <a href='../R/1288.html' title='Multiple refered from 22 places.'>OFP_FLOW_PERMANENT</a> 0
+<a name='L548'> 548 
+<a name='L549'> 549 <i><font color='green'>/* By default, choose a priority in the middle. */</font></i>
+<a name='L550'> 550 <font color='darkred'>#define</font> <a href='../S/333.html#L1004' title='Refered from 1004 in cbench/openflow/utilities/dpctl.c.'>OFP_DEFAULT_PRIORITY</a> 0x8000
+<a name='L551'> 551 
+<a name='L552'> 552 <b>enum</b> <a href='../R/3869.html' title='Multiple refered from 6 places.'>ofp_flow_mod_flags</a> <font color='red'>{</font>
+<a name='L553'> 553     <a href='../R/1116.html' title='Multiple refered from 10 places.'>OFPFF_SEND_FLOW_REM</a> = 1 &lt;&lt; 0,  <i><font color='green'>/* Send flow removed message when flow</font></i>
+<a name='L554'> 554 <i><font color='green'>                                    * expires or is deleted. */</font></i>
+<a name='L555'> 555     <a href='../R/1114.html' title='Multiple refered from 4 places.'>OFPFF_CHECK_OVERLAP</a> = 1 &lt;&lt; 1,  <i><font color='green'>/* Check for overlapping entries first. */</font></i>
+<a name='L556'> 556     <a href='../R/1115.html' title='Multiple refered from 23 places.'>OFPFF_EMERG</a>         = 1 &lt;&lt; 2   <i><font color='green'>/* Remark this is for emergency. */</font></i>
+<a name='L557'> 557 <font color='red'>}</font>;
+<a name='L558'> 558 
+<a name='L559'> 559 <i><font color='green'>/* Flow setup and teardown (controller -&gt; datapath). */</font></i>
+<a name='L560'> 560 <b>struct</b> <a href='../R/3867.html' title='Multiple refered from 38 places.'>ofp_flow_mod</a> <font color='red'>{</font>
+<a name='L561'> 561     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L562'> 562     <b>struct</b> <a href='../D/8818.html' title='Multiple defined in 3 places.'>ofp_match</a> <a href='../S/252.html#L421' title='Defined at 421 in cbench/openflow/tests/test-stp.c.'>match</a>;      <i><font color='green'>/* Fields to match */</font></i>
+<a name='L563'> 563     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/2133.html' title='Multiple used in 81 places.'>cookie</a>;             <i><font color='green'>/* Opaque controller-issued identifier. */</font></i>
+<a name='L564'> 564 
+<a name='L565'> 565     <i><font color='green'>/* Flow actions. */</font></i>
+<a name='L566'> 566     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../S/333.html#L92' title='Defined at 92 in cbench/openflow/utilities/dpctl.c.'>command</a>;             <i><font color='green'>/* One of OFPFC_*. */</font></i>
+<a name='L567'> 567     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../S/935.html#L773' title='Defined at 773 in src/cli.c.'>idle_timeout</a>;        <i><font color='green'>/* Idle time before discarding (seconds). */</font></i>
+<a name='L568'> 568     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/3541.html' title='Multiple used in 76 places.'>hard_timeout</a>;        <i><font color='green'>/* Max time before discarding (seconds). */</font></i>
+<a name='L569'> 569     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>;            <i><font color='green'>/* Priority level of flow entry. */</font></i>
+<a name='L570'> 570     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/1706.html' title='Multiple used in 133 places.'>buffer_id</a>;           <i><font color='green'>/* Buffered packet to apply to (or -1).</font></i>
+<a name='L571'> 571 <i><font color='green'>                                     Not meaningful for OFPFC_DELETE*. */</font></i>
+<a name='L572'> 572     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5548.html' title='Multiple used in 164 places.'>out_port</a>;            <i><font color='green'>/* For OFPFC_DELETE* commands, require</font></i>
+<a name='L573'> 573 <i><font color='green'>                                     matching entries to include this as an</font></i>
+<a name='L574'> 574 <i><font color='green'>                                     output port.  A value of OFPP_NONE</font></i>
+<a name='L575'> 575 <i><font color='green'>                                     indicates no restriction. */</font></i>
+<a name='L576'> 576     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>;               <i><font color='green'>/* One of OFPFF_*. */</font></i>
+<a name='L577'> 577     <b>struct</b> <a href='../D/8736.html' title='Multiple defined in 3 places.'>ofp_action_header</a> <a href='../Y/1294.html' title='Multiple used in 157 places.'>actions</a>[0]; <i><font color='green'>/* The action length is inferred</font></i>
+<a name='L578'> 578 <i><font color='green'>                                            from the length field in the</font></i>
+<a name='L579'> 579 <i><font color='green'>                                            header. */</font></i>
+<a name='L580'> 580 <font color='red'>}</font>;
+<a name='L581'> 581 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5140.html' title='Multiple used in 7 places.'>ofp_flow_mod</a>) == 72);
+<a name='L582'> 582 
+<a name='L583'> 583 <i><font color='green'>/* Why was this flow removed? */</font></i>
+<a name='L584'> 584 <b>enum</b> <a href='../R/3871.html' title='Multiple refered from 3 places.'>ofp_flow_removed_reason</a> <font color='red'>{</font>
+<a name='L585'> 585     <a href='../R/1196.html' title='Multiple refered from 6 places.'>OFPRR_IDLE_TIMEOUT</a>,         <i><font color='green'>/* Flow idle time exceeded idle_timeout. */</font></i>
+<a name='L586'> 586     <a href='../R/1195.html' title='Multiple refered from 5 places.'>OFPRR_HARD_TIMEOUT</a>,         <i><font color='green'>/* Time exceeded hard_timeout. */</font></i>
+<a name='L587'> 587     <a href='../R/1194.html' title='Multiple refered from 12 places.'>OFPRR_DELETE</a>                <i><font color='green'>/* Evicted by a DELETE flow mod. */</font></i>
+<a name='L588'> 588 <font color='red'>}</font>;
+<a name='L589'> 589 
+<a name='L590'> 590 <i><font color='green'>/* Flow removed (datapath -&gt; controller). */</font></i>
+<a name='L591'> 591 <b>struct</b> <a href='../R/3870.html' title='Multiple refered from 12 places.'>ofp_flow_removed</a> <font color='red'>{</font>
+<a name='L592'> 592     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L593'> 593     <b>struct</b> <a href='../D/8818.html' title='Multiple defined in 3 places.'>ofp_match</a> <a href='../S/252.html#L421' title='Defined at 421 in cbench/openflow/tests/test-stp.c.'>match</a>;   <i><font color='green'>/* Description of fields. */</font></i>
+<a name='L594'> 594     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/2133.html' title='Multiple used in 81 places.'>cookie</a>;          <i><font color='green'>/* Opaque controller-issued identifier. */</font></i>
+<a name='L595'> 595 
+<a name='L596'> 596     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>;        <i><font color='green'>/* Priority level of flow entry. */</font></i>
+<a name='L597'> 597     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/6294.html' title='Multiple used in 94 places.'>reason</a>;           <i><font color='green'>/* One of OFPRR_*. */</font></i>
+<a name='L598'> 598     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[1];           <i><font color='green'>/* Align to 32-bits. */</font></i>
+<a name='L599'> 599 
+<a name='L600'> 600     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/2614.html' title='Multiple used in 24 places.'>duration_sec</a>;    <i><font color='green'>/* Time flow was alive in seconds. */</font></i>
+<a name='L601'> 601     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/2613.html' title='Multiple used in 24 places.'>duration_nsec</a>;   <i><font color='green'>/* Time flow was alive in nanoseconds beyond</font></i>
+<a name='L602'> 602 <i><font color='green'>                                 duration_sec. */</font></i>
+<a name='L603'> 603     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../S/935.html#L773' title='Defined at 773 in src/cli.c.'>idle_timeout</a>;    <i><font color='green'>/* Idle timeout from original flow mod. */</font></i>
+<a name='L604'> 604     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5629.html' title='Multiple used in 15 places.'>pad2</a>[2];          <i><font color='green'>/* Align to 64-bits. */</font></i>
+<a name='L605'> 605     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/5595.html' title='Multiple used in 48 places.'>packet_count</a>;
+<a name='L606'> 606     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/1732.html' title='Multiple used in 68 places.'>byte_count</a>;
+<a name='L607'> 607 <font color='red'>}</font>;
+<a name='L608'> 608 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5147.html' title='Multiple used in 5 places.'>ofp_flow_removed</a>) == 88);
+<a name='L609'> 609 
+<a name='L610'> 610 <i><font color='green'>/* Values for 'type' in ofp_error_message.  These values are immutable: they</font></i>
+<a name='L611'> 611 <i><font color='green'> * will not change in future versions of the protocol (although new values may</font></i>
+<a name='L612'> 612 <i><font color='green'> * be added). */</font></i>
+<a name='L613'> 613 <b>enum</b> ofp_error_type <font color='red'>{</font>
+<a name='L614'> 614     <a href='../R/1106.html' title='Multiple refered from 13 places.'>OFPET_HELLO_FAILED</a>,         <i><font color='green'>/* Hello protocol failed. */</font></i>
+<a name='L615'> 615     <a href='../R/1104.html' title='Multiple refered from 22 places.'>OFPET_BAD_REQUEST</a>,          <i><font color='green'>/* Request was not understood. */</font></i>
+<a name='L616'> 616     <a href='../R/1103.html' title='Multiple refered from 20 places.'>OFPET_BAD_ACTION</a>,           <i><font color='green'>/* Error in action description. */</font></i>
+<a name='L617'> 617     <a href='../R/1105.html' title='Multiple refered from 19 places.'>OFPET_FLOW_MOD_FAILED</a>,      <i><font color='green'>/* Problem modifying flow entry. */</font></i>
+<a name='L618'> 618     <a href='../R/1107.html' title='Multiple refered from 4 places.'>OFPET_PORT_MOD_FAILED</a>,      <i><font color='green'>/* Port mod request failed. */</font></i>
+<a name='L619'> 619     <a href='../R/1108.html' title='Multiple refered from 14 places.'>OFPET_QUEUE_OP_FAILED</a>       <i><font color='green'>/* Queue operation failed. */</font></i>
+<a name='L620'> 620 <font color='red'>}</font>;
+<a name='L621'> 621 
+<a name='L622'> 622 <i><font color='green'>/* ofp_error_msg 'code' values for OFPET_HELLO_FAILED.  'data' contains an</font></i>
+<a name='L623'> 623 <i><font color='green'> * ASCII text string that may give failure details. */</font></i>
+<a name='L624'> 624 <b>enum</b> ofp_hello_failed_code <font color='red'>{</font>
+<a name='L625'> 625     <a href='../R/1146.html' title='Multiple refered from 6 places.'>OFPHFC_INCOMPATIBLE</a>,        <i><font color='green'>/* No compatible version. */</font></i>
+<a name='L626'> 626     <a href='../R/1145.html' title='Multiple refered from 4 places.'>OFPHFC_EPERM</a>                <i><font color='green'>/* Permissions error. */</font></i>
+<a name='L627'> 627 <font color='red'>}</font>;
+<a name='L628'> 628 
+<a name='L629'> 629 <i><font color='green'>/* ofp_error_msg 'code' values for OFPET_BAD_REQUEST.  'data' contains at least</font></i>
+<a name='L630'> 630 <i><font color='green'> * the first 64 bytes of the failed request. */</font></i>
+<a name='L631'> 631 <b>enum</b> ofp_bad_request_code <font color='red'>{</font>
+<a name='L632'> 632     <a href='../R/1086.html' title='Multiple refered from 6 places.'>OFPBRC_BAD_VERSION</a>,         <i><font color='green'>/* ofp_header.version not supported. */</font></i>
+<a name='L633'> 633     <a href='../R/1084.html' title='Multiple refered from 5 places.'>OFPBRC_BAD_TYPE</a>,            <i><font color='green'>/* ofp_header.type not supported. */</font></i>
+<a name='L634'> 634     <a href='../R/1082.html' title='Multiple refered from 4 places.'>OFPBRC_BAD_STAT</a>,            <i><font color='green'>/* ofp_stats_request.type not supported. */</font></i>
+<a name='L635'> 635     <a href='../R/1085.html' title='Multiple refered from 6 places.'>OFPBRC_BAD_VENDOR</a>,          <i><font color='green'>/* Vendor not supported (in ofp_vendor_header</font></i>
+<a name='L636'> 636 <i><font color='green'>                                 * or ofp_stats_request or ofp_stats_reply). */</font></i>
+<a name='L637'> 637     <a href='../R/1083.html' title='Multiple refered from 2 places.'>OFPBRC_BAD_SUBTYPE</a>,         <i><font color='green'>/* Vendor subtype not supported. */</font></i>
+<a name='L638'> 638     <a href='../R/1089.html' title='Multiple refered from 3 places.'>OFPBRC_EPERM</a>,               <i><font color='green'>/* Permissions error. */</font></i>
+<a name='L639'> 639     <a href='../S/998.html#L95' title='Refered from 95 in components/ofp10.c.'>OFPBRC_BAD_LEN</a>,             <i><font color='green'>/* Wrong request length for type. */</font></i>
+<a name='L640'> 640     <a href='../S/998.html#L98' title='Refered from 98 in components/ofp10.c.'>OFPBRC_BUFFER_EMPTY</a>,        <i><font color='green'>/* Specified buffer has already been used. */</font></i>
+<a name='L641'> 641     <a href='../R/1088.html' title='Multiple refered from 2 places.'>OFPBRC_BUFFER_UNKNOWN</a>       <i><font color='green'>/* Specified buffer does not exist. */</font></i>
+<a name='L642'> 642 <font color='red'>}</font>;
+<a name='L643'> 643 
+<a name='L644'> 644 <i><font color='green'>/* ofp_error_msg 'code' values for OFPET_BAD_ACTION.  'data' contains at least</font></i>
+<a name='L645'> 645 <i><font color='green'> * the first 64 bytes of the failed request. */</font></i>
+<a name='L646'> 646 <b>enum</b> ofp_bad_action_code <font color='red'>{</font>
+<a name='L647'> 647     <a href='../R/1076.html' title='Multiple refered from 6 places.'>OFPBAC_BAD_TYPE</a>,           <i><font color='green'>/* Unknown action type. */</font></i>
+<a name='L648'> 648     <a href='../R/1073.html' title='Multiple refered from 11 places.'>OFPBAC_BAD_LEN</a>,            <i><font color='green'>/* Length problem in actions. */</font></i>
+<a name='L649'> 649     <a href='../R/1077.html' title='Multiple refered from 5 places.'>OFPBAC_BAD_VENDOR</a>,         <i><font color='green'>/* Unknown vendor id specified. */</font></i>
+<a name='L650'> 650     <a href='../R/1078.html' title='Multiple refered from 3 places.'>OFPBAC_BAD_VENDOR_TYPE</a>,    <i><font color='green'>/* Unknown action type for vendor id. */</font></i>
+<a name='L651'> 651     <a href='../R/1074.html' title='Multiple refered from 6 places.'>OFPBAC_BAD_OUT_PORT</a>,       <i><font color='green'>/* Problem validating output action. */</font></i>
+<a name='L652'> 652     <a href='../R/1072.html' title='Multiple refered from 3 places.'>OFPBAC_BAD_ARGUMENT</a>,       <i><font color='green'>/* Bad action argument. */</font></i>
+<a name='L653'> 653     <a href='../R/1079.html' title='Multiple refered from 3 places.'>OFPBAC_EPERM</a>,              <i><font color='green'>/* Permissions error. */</font></i>
+<a name='L654'> 654     <a href='../S/998.html#L129' title='Refered from 129 in components/ofp10.c.'>OFPBAC_TOO_MANY</a>,           <i><font color='green'>/* Can't handle this many actions. */</font></i>
+<a name='L655'> 655     <a href='../R/1075.html' title='Multiple refered from 2 places.'>OFPBAC_BAD_QUEUE</a>           <i><font color='green'>/* Problem validating output queue. */</font></i>
+<a name='L656'> 656 <font color='red'>}</font>;
+<a name='L657'> 657 
+<a name='L658'> 658 <i><font color='green'>/* ofp_error_msg 'code' values for OFPET_FLOW_MOD_FAILED.  'data' contains</font></i>
+<a name='L659'> 659 <i><font color='green'> * at least the first 64 bytes of the failed request. */</font></i>
+<a name='L660'> 660 <b>enum</b> ofp_flow_mod_failed_code <font color='red'>{</font>
+<a name='L661'> 661     <a href='../R/1117.html' title='Multiple refered from 8 places.'>OFPFMFC_ALL_TABLES_FULL</a>,    <i><font color='green'>/* Flow not added because of full tables. */</font></i>
+<a name='L662'> 662     <a href='../R/1121.html' title='Multiple refered from 5 places.'>OFPFMFC_OVERLAP</a>,            <i><font color='green'>/* Attempted to add overlapping flow with</font></i>
+<a name='L663'> 663 <i><font color='green'>                                 * CHECK_OVERLAP flag set. */</font></i>
+<a name='L664'> 664     <a href='../R/1120.html' title='Multiple refered from 3 places.'>OFPFMFC_EPERM</a>,              <i><font color='green'>/* Permissions error. */</font></i>
+<a name='L665'> 665     <a href='../R/1119.html' title='Multiple refered from 5 places.'>OFPFMFC_BAD_EMERG_TIMEOUT</a>,  <i><font color='green'>/* Flow not added because of non-zero idle/hard</font></i>
+<a name='L666'> 666 <i><font color='green'>                                 * timeout. */</font></i>
+<a name='L667'> 667     <a href='../S/998.html#L151' title='Refered from 151 in components/ofp10.c.'>OFPFMFC_BAD_COMMAND</a>,        <i><font color='green'>/* Unknown command. */</font></i>
+<a name='L668'> 668     <a href='../R/1122.html' title='Multiple refered from 2 places.'>OFPFMFC_UNSUPPORTED</a>         <i><font color='green'>/* Unsupported action list - cannot process in</font></i>
+<a name='L669'> 669 <i><font color='green'>                                 * the order specified. */</font></i>
+<a name='L670'> 670 <font color='red'>}</font>;
+<a name='L671'> 671 
+<a name='L672'> 672 <i><font color='green'>/* ofp_error_msg 'code' values for OFPET_PORT_MOD_FAILED.  'data' contains</font></i>
+<a name='L673'> 673 <i><font color='green'> * at least the first 64 bytes of the failed request. */</font></i>
+<a name='L674'> 674 <b>enum</b> ofp_port_mod_failed_code <font color='red'>{</font>
+<a name='L675'> 675     <a href='../R/1167.html' title='Multiple refered from 2 places.'>OFPPMFC_BAD_PORT</a>,            <i><font color='green'>/* Specified port does not exist. */</font></i>
+<a name='L676'> 676     <a href='../R/1166.html' title='Multiple refered from 2 places.'>OFPPMFC_BAD_HW_ADDR</a>,         <i><font color='green'>/* Specified hardware address is wrong. */</font></i>
+<a name='L677'> 677 <font color='red'>}</font>;
+<a name='L678'> 678 
+<a name='L679'> 679 <i><font color='green'>/* ofp_error msg 'code' values for OFPET_QUEUE_OP_FAILED. 'data' contains</font></i>
+<a name='L680'> 680 <i><font color='green'> * at least the first 64 bytes of the failed request */</font></i>
+<a name='L681'> 681 <b>enum</b> ofp_queue_op_failed_code <font color='red'>{</font>
+<a name='L682'> 682     <a href='../R/1186.html' title='Multiple refered from 7 places.'>OFPQOFC_BAD_PORT</a>,           <i><font color='green'>/* Invalid port (or port does not exist). */</font></i>
+<a name='L683'> 683     <a href='../R/1187.html' title='Multiple refered from 2 places.'>OFPQOFC_BAD_QUEUE</a>,          <i><font color='green'>/* Queue does not exist. */</font></i>
+<a name='L684'> 684     <a href='../R/1188.html' title='Multiple refered from 4 places.'>OFPQOFC_EPERM</a>               <i><font color='green'>/* Permissions error. */</font></i>
+<a name='L685'> 685 <font color='red'>}</font>;
+<a name='L686'> 686 
+<a name='L687'> 687 <i><font color='green'>/* OFPT_ERROR: Error message (datapath -&gt; controller). */</font></i>
+<a name='L688'> 688 <b>struct</b> <a href='../R/3864.html' title='Multiple refered from 50 places.'>ofp_error_msg</a> <font color='red'>{</font>
+<a name='L689'> 689     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L690'> 690 
+<a name='L691'> 691     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;
+<a name='L692'> 692     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a>;
+<a name='L693'> 693     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>[0];          <i><font color='green'>/* Variable-length data.  Interpreted based</font></i>
+<a name='L694'> 694 <i><font color='green'>                                 on the type and code. */</font></i>
+<a name='L695'> 695 <font color='red'>}</font>;
+<a name='L696'> 696 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5131.html' title='Multiple used in 3 places.'>ofp_error_msg</a>) == 12);
+<a name='L697'> 697 
+<a name='L698'> 698 <b>enum</b> ofp_stats_types <font color='red'>{</font>
+<a name='L699'> 699     <i><font color='green'>/* Description of this OpenFlow switch.</font></i>
+<a name='L700'> 700 <i><font color='green'>     * The request body is empty.</font></i>
+<a name='L701'> 701 <i><font color='green'>     * The reply body is struct ofp_desc_stats. */</font></i>
+<a name='L702'> 702     <a href='../R/1202.html' title='Multiple refered from 12 places.'>OFPST_DESC</a>,
+<a name='L703'> 703 
+<a name='L704'> 704     <i><font color='green'>/* Individual flow statistics.</font></i>
+<a name='L705'> 705 <i><font color='green'>     * The request body is struct ofp_flow_stats_request.</font></i>
+<a name='L706'> 706 <i><font color='green'>     * The reply body is an array of struct ofp_flow_stats. */</font></i>
+<a name='L707'> 707     <a href='../R/1203.html' title='Multiple refered from 16 places.'>OFPST_FLOW</a>,
+<a name='L708'> 708 
+<a name='L709'> 709     <i><font color='green'>/* Aggregate flow statistics.</font></i>
+<a name='L710'> 710 <i><font color='green'>     * The request body is struct ofp_aggregate_stats_request.</font></i>
+<a name='L711'> 711 <i><font color='green'>     * The reply body is struct ofp_aggregate_stats_reply. */</font></i>
+<a name='L712'> 712     <a href='../R/1201.html' title='Multiple refered from 10 places.'>OFPST_AGGREGATE</a>,
+<a name='L713'> 713 
+<a name='L714'> 714     <i><font color='green'>/* Flow table statistics.</font></i>
+<a name='L715'> 715 <i><font color='green'>     * The request body is empty.</font></i>
+<a name='L716'> 716 <i><font color='green'>     * The reply body is an array of struct ofp_table_stats. */</font></i>
+<a name='L717'> 717     <a href='../R/1206.html' title='Multiple refered from 8 places.'>OFPST_TABLE</a>,
+<a name='L718'> 718 
+<a name='L719'> 719     <i><font color='green'>/* Physical port statistics.</font></i>
+<a name='L720'> 720 <i><font color='green'>     * The request body is struct ofp_port_stats_request.</font></i>
+<a name='L721'> 721 <i><font color='green'>     * The reply body is an array of struct ofp_port_stats. */</font></i>
+<a name='L722'> 722     <a href='../R/1204.html' title='Multiple refered from 13 places.'>OFPST_PORT</a>,
+<a name='L723'> 723 
+<a name='L724'> 724     <i><font color='green'>/* Queue statistics for a port</font></i>
+<a name='L725'> 725 <i><font color='green'>     * The request body defines the port</font></i>
+<a name='L726'> 726 <i><font color='green'>     * The reply body is an array of struct ofp_queue_stats */</font></i>
+<a name='L727'> 727     <a href='../R/1205.html' title='Multiple refered from 9 places.'>OFPST_QUEUE</a>,
+<a name='L728'> 728 
+<a name='L729'> 729     <i><font color='green'>/* Vendor extension.</font></i>
+<a name='L730'> 730 <i><font color='green'>     * The request and reply bodies begin with a 32-bit vendor ID, which takes</font></i>
+<a name='L731'> 731 <i><font color='green'>     * the same form as in "struct ofp_vendor_header".  The request and reply</font></i>
+<a name='L732'> 732 <i><font color='green'>     * bodies are otherwise vendor-defined. */</font></i>
+<a name='L733'> 733     <a href='../R/1207.html' title='Multiple refered from 10 places.'>OFPST_VENDOR</a> = 0xffff
+<a name='L734'> 734 <font color='red'>}</font>;
+<a name='L735'> 735 
+<a name='L736'> 736 <b>struct</b> <a href='../R/3929.html' title='Multiple refered from 54 places.'>ofp_stats_request</a> <font color='red'>{</font>
+<a name='L737'> 737     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L738'> 738     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;              <i><font color='green'>/* One of the OFPST_* constants. */</font></i>
+<a name='L739'> 739     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>;             <i><font color='green'>/* OFPSF_REQ_* flags (none yet defined). */</font></i>
+<a name='L740'> 740     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/1642.html' title='Multiple used in 85 places.'>body</a>[0];            <i><font color='green'>/* Body of the request. */</font></i>
+<a name='L741'> 741 <font color='red'>}</font>;
+<a name='L742'> 742 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5328.html' title='Multiple used in 4 places.'>ofp_stats_request</a>) == 12);
+<a name='L743'> 743 
+<a name='L744'> 744 <b>enum</b> <a href='../R/3928.html' title='Multiple refered from 3 places.'>ofp_stats_reply_flags</a> <font color='red'>{</font>
+<a name='L745'> 745     <a href='../R/1199.html' title='Multiple refered from 10 places.'>OFPSF_REPLY_MORE</a>  = 1 &lt;&lt; 0  <i><font color='green'>/* More replies to follow. */</font></i>
+<a name='L746'> 746 <font color='red'>}</font>;
+<a name='L747'> 747 
+<a name='L748'> 748 <b>struct</b> <a href='../R/3927.html' title='Multiple refered from 27 places.'>ofp_stats_reply</a> <font color='red'>{</font>
+<a name='L749'> 749     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L750'> 750     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;              <i><font color='green'>/* One of the OFPST_* constants. */</font></i>
+<a name='L751'> 751     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>;             <i><font color='green'>/* OFPSF_REPLY_* flags. */</font></i>
+<a name='L752'> 752     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/1642.html' title='Multiple used in 85 places.'>body</a>[0];            <i><font color='green'>/* Body of the reply. */</font></i>
+<a name='L753'> 753 <font color='red'>}</font>;
+<a name='L754'> 754 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5324.html' title='Multiple used in 4 places.'>ofp_stats_reply</a>) == 12);
+<a name='L755'> 755 
+<a name='L756'> 756 <font color='darkred'>#define</font> <a href='../R/304.html' title='Multiple refered from 32 places.'>DESC_STR_LEN</a>   256
+<a name='L757'> 757 <font color='darkred'>#define</font> <a href='../R/1545.html' title='Multiple refered from 6 places.'>SERIAL_NUM_LEN</a> 32
+<a name='L758'> 758 <i><font color='green'>/* Body of reply to OFPST_DESC request.  Each entry is a NULL-terminated</font></i>
+<a name='L759'> 759 <i><font color='green'> * ASCII string. */</font></i>
+<a name='L760'> 760 <b>struct</b> <a href='../R/3860.html' title='Multiple refered from 9 places.'>ofp_desc_stats</a> <font color='red'>{</font>
+<a name='L761'> 761     <b>char</b> <a href='../Y/4440.html' title='Multiple used in 24 places.'>mfr_desc</a>[<a href='../D/1200.html' title='Multiple defined in 3 places.'>DESC_STR_LEN</a>];       <i><font color='green'>/* Manufacturer description. */</font></i>
+<a name='L762'> 762     <b>char</b> <a href='../Y/3683.html' title='Multiple used in 24 places.'>hw_desc</a>[<a href='../D/1200.html' title='Multiple defined in 3 places.'>DESC_STR_LEN</a>];        <i><font color='green'>/* Hardware description. */</font></i>
+<a name='L763'> 763     <b>char</b> <a href='../Y/7176.html' title='Multiple used in 22 places.'>sw_desc</a>[<a href='../D/1200.html' title='Multiple defined in 3 places.'>DESC_STR_LEN</a>];        <i><font color='green'>/* Software description. */</font></i>
+<a name='L764'> 764     <b>char</b> <a href='../Y/6673.html' title='Multiple used in 24 places.'>serial_num</a>[<a href='../D/5295.html' title='Multiple defined in 3 places.'>SERIAL_NUM_LEN</a>];   <i><font color='green'>/* Serial number. */</font></i>
+<a name='L765'> 765     <b>char</b> <a href='../Y/2506.html' title='Multiple used in 33 places.'>dp_desc</a>[<a href='../D/1200.html' title='Multiple defined in 3 places.'>DESC_STR_LEN</a>];        <i><font color='green'>/* Human readable description of datapath. */</font></i>
+<a name='L766'> 766 <font color='red'>}</font>;
+<a name='L767'> 767 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5124.html' title='Multiple used in 2 places.'>ofp_desc_stats</a>) == 1056);
+<a name='L768'> 768 
+<a name='L769'> 769 <i><font color='green'>/* Body for ofp_stats_request of type OFPST_FLOW. */</font></i>
+<a name='L770'> 770 <b>struct</b> <a href='../R/3874.html' title='Multiple refered from 26 places.'>ofp_flow_stats_request</a> <font color='red'>{</font>
+<a name='L771'> 771     <b>struct</b> <a href='../D/8818.html' title='Multiple defined in 3 places.'>ofp_match</a> <a href='../S/252.html#L421' title='Defined at 421 in cbench/openflow/tests/test-stp.c.'>match</a>;   <i><font color='green'>/* Fields to match. */</font></i>
+<a name='L772'> 772     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/7227.html' title='Multiple used in 65 places.'>table_id</a>;         <i><font color='green'>/* ID of table to read (from ofp_table_stats),</font></i>
+<a name='L773'> 773 <i><font color='green'>                                 0xff for all tables or 0xfe for emergency. */</font></i>
+<a name='L774'> 774     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>;              <i><font color='green'>/* Align to 32 bits. */</font></i>
+<a name='L775'> 775     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5548.html' title='Multiple used in 164 places.'>out_port</a>;        <i><font color='green'>/* Require matching entries to include this</font></i>
+<a name='L776'> 776 <i><font color='green'>                                 as an output port.  A value of OFPP_NONE</font></i>
+<a name='L777'> 777 <i><font color='green'>                                 indicates no restriction. */</font></i>
+<a name='L778'> 778 <font color='red'>}</font>;
+<a name='L779'> 779 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5166.html' title='Multiple used in 3 places.'>ofp_flow_stats_request</a>) == 44);
+<a name='L780'> 780 
+<a name='L781'> 781 <i><font color='green'>/* Body of reply to OFPST_FLOW request. */</font></i>
+<a name='L782'> 782 <b>struct</b> <a href='../R/3872.html' title='Multiple refered from 11 places.'>ofp_flow_stats</a> <font color='red'>{</font>
+<a name='L783'> 783     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>;          <i><font color='green'>/* Length of this entry. */</font></i>
+<a name='L784'> 784     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/7227.html' title='Multiple used in 65 places.'>table_id</a>;         <i><font color='green'>/* ID of table flow came from. */</font></i>
+<a name='L785'> 785     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>;
+<a name='L786'> 786     <b>struct</b> <a href='../D/8818.html' title='Multiple defined in 3 places.'>ofp_match</a> <a href='../S/252.html#L421' title='Defined at 421 in cbench/openflow/tests/test-stp.c.'>match</a>;   <i><font color='green'>/* Description of fields. */</font></i>
+<a name='L787'> 787     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/2614.html' title='Multiple used in 24 places.'>duration_sec</a>;    <i><font color='green'>/* Time flow has been alive in seconds. */</font></i>
+<a name='L788'> 788     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/2613.html' title='Multiple used in 24 places.'>duration_nsec</a>;   <i><font color='green'>/* Time flow has been alive in nanoseconds beyond</font></i>
+<a name='L789'> 789 <i><font color='green'>                                 duration_sec. */</font></i>
+<a name='L790'> 790     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>;        <i><font color='green'>/* Priority of the entry. Only meaningful</font></i>
+<a name='L791'> 791 <i><font color='green'>                                 when this is not an exact-match entry. */</font></i>
+<a name='L792'> 792     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../S/935.html#L773' title='Defined at 773 in src/cli.c.'>idle_timeout</a>;    <i><font color='green'>/* Number of seconds idle before expiration. */</font></i>
+<a name='L793'> 793     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/3541.html' title='Multiple used in 76 places.'>hard_timeout</a>;    <i><font color='green'>/* Number of seconds before expiration. */</font></i>
+<a name='L794'> 794     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5629.html' title='Multiple used in 15 places.'>pad2</a>[6];          <i><font color='green'>/* Align to 64-bits. */</font></i>
+<a name='L795'> 795     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/2133.html' title='Multiple used in 81 places.'>cookie</a>;          <i><font color='green'>/* Opaque controller-issued identifier. */</font></i>
+<a name='L796'> 796     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/5595.html' title='Multiple used in 48 places.'>packet_count</a>;    <i><font color='green'>/* Number of packets in flow. */</font></i>
+<a name='L797'> 797     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/1732.html' title='Multiple used in 68 places.'>byte_count</a>;      <i><font color='green'>/* Number of bytes in flow. */</font></i>
+<a name='L798'> 798     <b>struct</b> <a href='../D/8736.html' title='Multiple defined in 3 places.'>ofp_action_header</a> <a href='../Y/1294.html' title='Multiple used in 157 places.'>actions</a>[0]; <i><font color='green'>/* Actions. */</font></i>
+<a name='L799'> 799 <font color='red'>}</font>;
+<a name='L800'> 800 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5156.html' title='Multiple used in 6 places.'>ofp_flow_stats</a>) == 88);
+<a name='L801'> 801 
+<a name='L802'> 802 <i><font color='green'>/* Body for ofp_stats_request of type OFPST_AGGREGATE. */</font></i>
+<a name='L803'> 803 <b>struct</b> <a href='../R/3855.html' title='Multiple refered from 16 places.'>ofp_aggregate_stats_request</a> <font color='red'>{</font>
+<a name='L804'> 804     <b>struct</b> <a href='../D/8818.html' title='Multiple defined in 3 places.'>ofp_match</a> <a href='../S/252.html#L421' title='Defined at 421 in cbench/openflow/tests/test-stp.c.'>match</a>;   <i><font color='green'>/* Fields to match. */</font></i>
+<a name='L805'> 805     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/7227.html' title='Multiple used in 65 places.'>table_id</a>;         <i><font color='green'>/* ID of table to read (from ofp_table_stats)</font></i>
+<a name='L806'> 806 <i><font color='green'>                                 0xff for all tables or 0xfe for emergency. */</font></i>
+<a name='L807'> 807     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>;              <i><font color='green'>/* Align to 32 bits. */</font></i>
+<a name='L808'> 808     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5548.html' title='Multiple used in 164 places.'>out_port</a>;        <i><font color='green'>/* Require matching entries to include this</font></i>
+<a name='L809'> 809 <i><font color='green'>                                 as an output port.  A value of OFPP_NONE</font></i>
+<a name='L810'> 810 <i><font color='green'>                                 indicates no restriction. */</font></i>
+<a name='L811'> 811 <font color='red'>}</font>;
+<a name='L812'> 812 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5116.html' title='Multiple used in 3 places.'>ofp_aggregate_stats_request</a>) == 44);
+<a name='L813'> 813 
+<a name='L814'> 814 <i><font color='green'>/* Body of reply to OFPST_AGGREGATE request. */</font></i>
+<a name='L815'> 815 <b>struct</b> <a href='../R/3854.html' title='Multiple refered from 10 places.'>ofp_aggregate_stats_reply</a> <font color='red'>{</font>
+<a name='L816'> 816     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/5595.html' title='Multiple used in 48 places.'>packet_count</a>;    <i><font color='green'>/* Number of packets in flows. */</font></i>
+<a name='L817'> 817     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/1732.html' title='Multiple used in 68 places.'>byte_count</a>;      <i><font color='green'>/* Number of bytes in flows. */</font></i>
+<a name='L818'> 818     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3136.html' title='Multiple used in 25 places.'>flow_count</a>;      <i><font color='green'>/* Number of flows. */</font></i>
+<a name='L819'> 819     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[4];           <i><font color='green'>/* Align to 64 bits. */</font></i>
+<a name='L820'> 820 <font color='red'>}</font>;
+<a name='L821'> 821 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5115.html' title='Multiple used in 5 places.'>ofp_aggregate_stats_reply</a>) == 24);
+<a name='L822'> 822 
+<a name='L823'> 823 <i><font color='green'>/* Body of reply to OFPST_TABLE request. */</font></i>
+<a name='L824'> 824 <b>struct</b> <a href='../R/3933.html' title='Multiple refered from 7 places.'>ofp_table_stats</a> <font color='red'>{</font>
+<a name='L825'> 825     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/7227.html' title='Multiple used in 65 places.'>table_id</a>;        <i><font color='green'>/* Identifier of table.  Lower numbered tables</font></i>
+<a name='L826'> 826 <i><font color='green'>                                are consulted first. */</font></i>
+<a name='L827'> 827     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[3];          <i><font color='green'>/* Align to 32-bits. */</font></i>
+<a name='L828'> 828     <b>char</b> <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>[<a href='../Y/616.html' title='Multiple used in 9 places.'>OFP_MAX_TABLE_NAME_LEN</a>];
+<a name='L829'> 829     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7877.html' title='Multiple used in 308 places.'>wildcards</a>;      <i><font color='green'>/* Bitmap of OFPFW_* wildcards that are</font></i>
+<a name='L830'> 830 <i><font color='green'>                                supported by the table. */</font></i>
+<a name='L831'> 831     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/4367.html' title='Multiple used in 6 places.'>max_entries</a>;    <i><font color='green'>/* Max number of entries supported. */</font></i>
+<a name='L832'> 832     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/1299.html' title='Multiple used in 6 places.'>active_count</a>;   <i><font color='green'>/* Number of active entries. */</font></i>
+<a name='L833'> 833     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/4244.html' title='Multiple used in 6 places.'>lookup_count</a>;   <i><font color='green'>/* Number of packets looked up in table. */</font></i>
+<a name='L834'> 834     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/4349.html' title='Multiple used in 6 places.'>matched_count</a>;  <i><font color='green'>/* Number of packets that hit table. */</font></i>
+<a name='L835'> 835 <font color='red'>}</font>;
+<a name='L836'> 836 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5356.html' title='Multiple used in 4 places.'>ofp_table_stats</a>) == 64);
+<a name='L837'> 837 
+<a name='L838'> 838 <i><font color='green'>/* Body for ofp_stats_request of type OFPST_PORT. */</font></i>
+<a name='L839'> 839 <b>struct</b> <a href='../R/3902.html' title='Multiple refered from 16 places.'>ofp_port_stats_request</a> <font color='red'>{</font>
+<a name='L840'> 840     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5822.html' title='Multiple used in 265 places.'>port_no</a>;        <i><font color='green'>/* OFPST_PORT message must request statistics</font></i>
+<a name='L841'> 841 <i><font color='green'>                              * either for a single port (specified in</font></i>
+<a name='L842'> 842 <i><font color='green'>                              * port_no) or for all ports (if port_no ==</font></i>
+<a name='L843'> 843 <i><font color='green'>                              * OFPP_NONE). */</font></i>
+<a name='L844'> 844     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[6];
+<a name='L845'> 845 <font color='red'>}</font>;
+<a name='L846'> 846 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5287.html' title='Multiple used in 3 places.'>ofp_port_stats_request</a>) == 8);
+<a name='L847'> 847 
+<a name='L848'> 848 <i><font color='green'>/* Body of reply to OFPST_PORT request. If a counter is unsupported, set</font></i>
+<a name='L849'> 849 <i><font color='green'> * the field to all ones. */</font></i>
+<a name='L850'> 850 <b>struct</b> <a href='../R/3900.html' title='Multiple refered from 10 places.'>ofp_port_stats</a> <font color='red'>{</font>
+<a name='L851'> 851     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5822.html' title='Multiple used in 265 places.'>port_no</a>;
+<a name='L852'> 852     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[6];          <i><font color='green'>/* Align to 64-bits. */</font></i>
+<a name='L853'> 853     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/6526.html' title='Multiple used in 32 places.'>rx_packets</a>;     <i><font color='green'>/* Number of received packets. */</font></i>
+<a name='L854'> 854     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/7534.html' title='Multiple used in 38 places.'>tx_packets</a>;     <i><font color='green'>/* Number of transmitted packets. */</font></i>
+<a name='L855'> 855     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/6515.html' title='Multiple used in 32 places.'>rx_bytes</a>;       <i><font color='green'>/* Number of received bytes. */</font></i>
+<a name='L856'> 856     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/7530.html' title='Multiple used in 38 places.'>tx_bytes</a>;       <i><font color='green'>/* Number of transmitted bytes. */</font></i>
+<a name='L857'> 857     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/6519.html' title='Multiple used in 9 places.'>rx_dropped</a>;     <i><font color='green'>/* Number of packets dropped by RX. */</font></i>
+<a name='L858'> 858     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/7531.html' title='Multiple used in 15 places.'>tx_dropped</a>;     <i><font color='green'>/* Number of packets dropped by TX. */</font></i>
+<a name='L859'> 859     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/6520.html' title='Multiple used in 9 places.'>rx_errors</a>;      <i><font color='green'>/* Number of receive errors.  This is a super-set</font></i>
+<a name='L860'> 860 <i><font color='green'>                                of more specific receive errors and should be</font></i>
+<a name='L861'> 861 <i><font color='green'>                                greater than or equal to the sum of all</font></i>
+<a name='L862'> 862 <i><font color='green'>                                rx_*_err values. */</font></i>
+<a name='L863'> 863     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/7532.html' title='Multiple used in 15 places.'>tx_errors</a>;      <i><font color='green'>/* Number of transmit errors.  This is a super-set</font></i>
+<a name='L864'> 864 <i><font color='green'>                                of more specific transmit errors and should be</font></i>
+<a name='L865'> 865 <i><font color='green'>                                greater than or equal to the sum of all</font></i>
+<a name='L866'> 866 <i><font color='green'>                                tx_*_err values (none currently defined.) */</font></i>
+<a name='L867'> 867     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/6521.html' title='Multiple used in 9 places.'>rx_frame_err</a>;   <i><font color='green'>/* Number of frame alignment errors. */</font></i>
+<a name='L868'> 868     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/6524.html' title='Multiple used in 9 places.'>rx_over_err</a>;    <i><font color='green'>/* Number of packets with RX overrun. */</font></i>
+<a name='L869'> 869     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/6517.html' title='Multiple used in 9 places.'>rx_crc_err</a>;     <i><font color='green'>/* Number of CRC errors. */</font></i>
+<a name='L870'> 870     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/2002.html' title='Multiple used in 9 places.'>collisions</a>;     <i><font color='green'>/* Number of collisions. */</font></i>
+<a name='L871'> 871 <font color='red'>}</font>;
+<a name='L872'> 872 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5284.html' title='Multiple used in 8 places.'>ofp_port_stats</a>) == 104);
+<a name='L873'> 873 
+<a name='L874'> 874 <i><font color='green'>/* Vendor extension. */</font></i>
+<a name='L875'> 875 <b>struct</b> <a href='../R/3938.html' title='Multiple refered from 6 places.'>ofp_vendor_header</a> <font color='red'>{</font>
+<a name='L876'> 876     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;   <i><font color='green'>/* Type OFPT_VENDOR. */</font></i>
+<a name='L877'> 877     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/7757.html' title='Multiple used in 43 places.'>vendor</a>;            <i><font color='green'>/* Vendor ID:</font></i>
+<a name='L878'> 878 <i><font color='green'>                                 * - MSB 0: low-order bytes are IEEE OUI.</font></i>
+<a name='L879'> 879 <i><font color='green'>                                 * - MSB != 0: defined by OpenFlow</font></i>
+<a name='L880'> 880 <i><font color='green'>                                 *   consortium. */</font></i>
+<a name='L881'> 881     <i><font color='green'>/* Vendor-defined arbitrary additional data. */</font></i>
+<a name='L882'> 882 <font color='red'>}</font>;
+<a name='L883'> 883 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5367.html' title='Multiple used in 3 places.'>ofp_vendor_header</a>) == 12);
+<a name='L884'> 884 
+<a name='L885'> 885 <i><font color='green'>/* All ones is used to indicate all queues in a port (for stats retrieval). */</font></i>
+<a name='L886'> 886 <font color='darkred'>#define</font> <a href='../R/1192.html' title='Multiple refered from 4 places.'>OFPQ_ALL</a>      0xffffffff
+<a name='L887'> 887 
+<a name='L888'> 888 <i><font color='green'>/* Min rate &gt; 1000 means not configured. */</font></i>
+<a name='L889'> 889 <font color='darkred'>#define</font> <a href='../S/333.html#L1566' title='Refered from 1566 in cbench/openflow/utilities/dpctl.c.'>OFPQ_MIN_RATE_UNCFG</a>      0xffff
+<a name='L890'> 890 
+<a name='L891'> 891 <b>enum</b> ofp_queue_properties <font color='red'>{</font>
+<a name='L892'> 892     <a href='../S/604.html#L207' title='Refered from 207 in cbench/openflow/utilities/wireshark_dissectors/openflow/packet-openflow.c.'>OFPQT_NONE</a> = 0,       <i><font color='green'>/* No property defined for queue (default). */</font></i>
+<a name='L893'> 893     <a href='../R/1190.html' title='Multiple refered from 5 places.'>OFPQT_MIN_RATE</a>,       <i><font color='green'>/* Minimum datarate guaranteed. */</font></i>
+<a name='L894'> 894                           <i><font color='green'>/* Other types should be added here</font></i>
+<a name='L895'> 895 <i><font color='green'>                           * (i.e. max rate, precedence, etc). */</font></i>
+<a name='L896'> 896 <font color='red'>}</font>;
+<a name='L897'> 897 
+<a name='L898'> 898 <i><font color='green'>/* Common description for a queue. */</font></i>
+<a name='L899'> 899 <b>struct</b> <a href='../R/3922.html' title='Multiple refered from 11 places.'>ofp_queue_prop_header</a> <font color='red'>{</font>
+<a name='L900'> 900     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5953.html' title='Multiple used in 9 places.'>property</a>;    <i><font color='green'>/* One of OFPQT_. */</font></i>
+<a name='L901'> 901     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;         <i><font color='green'>/* Length of property, including this header. */</font></i>
+<a name='L902'> 902     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[4];       <i><font color='green'>/* 64-bit alignemnt. */</font></i>
+<a name='L903'> 903 <font color='red'>}</font>;
+<a name='L904'> 904 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5311.html' title='Multiple used in 3 places.'>ofp_queue_prop_header</a>) == 8);
+<a name='L905'> 905 
+<a name='L906'> 906 <i><font color='green'>/* Min-Rate queue property description. */</font></i>
+<a name='L907'> 907 <b>struct</b> <a href='../R/3923.html' title='Multiple refered from 9 places.'>ofp_queue_prop_min_rate</a> <font color='red'>{</font>
+<a name='L908'> 908     <b>struct</b> <a href='../D/8886.html' title='Multiple defined in 3 places.'>ofp_queue_prop_header</a> <a href='../Y/5950.html' title='Multiple used in 15 places.'>prop_header</a>; <i><font color='green'>/* prop: OFPQT_MIN, len: 16. */</font></i>
+<a name='L909'> 909     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/6242.html' title='Multiple used in 26 places.'>rate</a>;        <i><font color='green'>/* In 1/10 of a percent; &gt;1000 -&gt; disabled. */</font></i>
+<a name='L910'> 910     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[6];       <i><font color='green'>/* 64-bit alignment */</font></i>
+<a name='L911'> 911 <font color='red'>}</font>;
+<a name='L912'> 912 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5313.html' title='Multiple used in 5 places.'>ofp_queue_prop_min_rate</a>) == 16);
+<a name='L913'> 913 
+<a name='L914'> 914 <i><font color='green'>/* Full description for a queue. */</font></i>
+<a name='L915'> 915 <b>struct</b> <a href='../R/3895.html' title='Multiple refered from 18 places.'>ofp_packet_queue</a> <font color='red'>{</font>
+<a name='L916'> 916     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/6209.html' title='Multiple used in 61 places.'>queue_id</a>;     <i><font color='green'>/* id for the specific queue. */</font></i>
+<a name='L917'> 917     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;          <i><font color='green'>/* Length in bytes of this queue desc. */</font></i>
+<a name='L918'> 918     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[2];        <i><font color='green'>/* 64-bit alignment. */</font></i>
+<a name='L919'> 919     <b>struct</b> <a href='../D/8886.html' title='Multiple defined in 3 places.'>ofp_queue_prop_header</a> <a href='../Y/5952.html' title='Multiple used in 8 places.'>properties</a>[0]; <i><font color='green'>/* List of properties. */</font></i>
+<a name='L920'> 920 <font color='red'>}</font>;
+<a name='L921'> 921 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5240.html' title='Multiple used in 5 places.'>ofp_packet_queue</a>) == 8);
+<a name='L922'> 922 
+<a name='L923'> 923 <i><font color='green'>/* Query for port queue configuration. */</font></i>
+<a name='L924'> 924 <b>struct</b> <a href='../R/3921.html' title='Multiple refered from 7 places.'>ofp_queue_get_config_request</a> <font color='red'>{</font>
+<a name='L925'> 925     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L926'> 926     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a>;         <i><font color='green'>/* Port to be queried. Should refer</font></i>
+<a name='L927'> 927 <i><font color='green'>                              to a valid physical port (i.e. &lt; OFPP_MAX) */</font></i>
+<a name='L928'> 928     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[2];        <i><font color='green'>/* 32-bit alignment. */</font></i>
+<a name='L929'> 929 <font color='red'>}</font>;
+<a name='L930'> 930 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5307.html' title='Multiple used in 3 places.'>ofp_queue_get_config_request</a>) == 12);
+<a name='L931'> 931 
+<a name='L932'> 932 <i><font color='green'>/* Queue configuration for a given port. */</font></i>
+<a name='L933'> 933 <b>struct</b> <a href='../R/3920.html' title='Multiple refered from 7 places.'>ofp_queue_get_config_reply</a> <font color='red'>{</font>
+<a name='L934'> 934     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> <a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>;
+<a name='L935'> 935     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a>;
+<a name='L936'> 936     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[6];
+<a name='L937'> 937     <b>struct</b> <a href='../D/8850.html' title='Multiple defined in 3 places.'>ofp_packet_queue</a> <a href='../Y/6219.html' title='Multiple used in 13 places.'>queues</a>[0]; <i><font color='green'>/* List of configured queues. */</font></i>
+<a name='L938'> 938 <font color='red'>}</font>;
+<a name='L939'> 939 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5303.html' title='Multiple used in 3 places.'>ofp_queue_get_config_reply</a>) == 16);
+<a name='L940'> 940 
+<a name='L941'> 941 <i><font color='green'>/* OFPAT_ENQUEUE action struct: send packets to given queue on port. */</font></i>
+<a name='L942'> 942 <b>struct</b> <a href='../R/3844.html' title='Multiple refered from 13 places.'>ofp_action_enqueue</a> <font color='red'>{</font>
+<a name='L943'> 943     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;            <i><font color='green'>/* OFPAT_ENQUEUE. */</font></i>
+<a name='L944'> 944     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;             <i><font color='green'>/* Len is 16. */</font></i>
+<a name='L945'> 945     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a>;            <i><font color='green'>/* Port that queue belongs. Should</font></i>
+<a name='L946'> 946 <i><font color='green'>                                 refer to a valid physical port</font></i>
+<a name='L947'> 947 <i><font color='green'>                                 (i.e. &lt; OFPP_MAX) or OFPP_IN_PORT. */</font></i>
+<a name='L948'> 948     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[6];           <i><font color='green'>/* Pad for 64-bit alignment. */</font></i>
+<a name='L949'> 949     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/6209.html' title='Multiple used in 61 places.'>queue_id</a>;        <i><font color='green'>/* Where to enqueue the packets. */</font></i>
+<a name='L950'> 950 <font color='red'>}</font>;
+<a name='L951'> 951 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5083.html' title='Multiple used in 2 places.'>ofp_action_enqueue</a>) == 16);
+<a name='L952'> 952 
+<a name='L953'> 953 <b>struct</b> <a href='../R/3926.html' title='Multiple refered from 8 places.'>ofp_queue_stats_request</a> <font color='red'>{</font>
+<a name='L954'> 954     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5822.html' title='Multiple used in 265 places.'>port_no</a>;        <i><font color='green'>/* All ports if OFPT_ALL. */</font></i>
+<a name='L955'> 955     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[2];          <i><font color='green'>/* Align to 32-bits. */</font></i>
+<a name='L956'> 956     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/6209.html' title='Multiple used in 61 places.'>queue_id</a>;       <i><font color='green'>/* All queues if OFPQ_ALL. */</font></i>
+<a name='L957'> 957 <font color='red'>}</font>;
+<a name='L958'> 958 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5318.html' title='Multiple used in 3 places.'>ofp_queue_stats_request</a>) == 8);
+<a name='L959'> 959 
+<a name='L960'> 960 <b>struct</b> <a href='../R/3924.html' title='Multiple refered from 5 places.'>ofp_queue_stats</a> <font color='red'>{</font>
+<a name='L961'> 961     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5822.html' title='Multiple used in 265 places.'>port_no</a>;
+<a name='L962'> 962     <a href='../Y/7625.html' title='Multiple used in 747 places.'>uint8_t</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[2];          <i><font color='green'>/* Align to 32-bits. */</font></i>
+<a name='L963'> 963     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/6209.html' title='Multiple used in 61 places.'>queue_id</a>;       <i><font color='green'>/* Queue i.d */</font></i>
+<a name='L964'> 964     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/7530.html' title='Multiple used in 38 places.'>tx_bytes</a>;       <i><font color='green'>/* Number of transmitted bytes. */</font></i>
+<a name='L965'> 965     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/7534.html' title='Multiple used in 38 places.'>tx_packets</a>;     <i><font color='green'>/* Number of transmitted packets. */</font></i>
+<a name='L966'> 966     <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/7532.html' title='Multiple used in 15 places.'>tx_errors</a>;      <i><font color='green'>/* Number of packets dropped due to overrun. */</font></i>
+<a name='L967'> 967 <font color='red'>}</font>;
+<a name='L968'> 968 <a href='../D/3746.html' title='Multiple defined in 9 places.'>OFP_ASSERT</a>(<b>sizeof</b>(<b>struct</b> <a href='../Y/5315.html' title='Multiple used in 3 places.'>ofp_queue_stats</a>) == 32);
+<a name='L969'> 969 
+<a name='L970'> 970 <font color='darkred'>#endif</font> <i><font color='green'>/* openflow/openflow.h */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

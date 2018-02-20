@@ -1,0 +1,290 @@
+<html>
+<head>
+<title>stp</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/894.html#L96'>stp</a>                96 cbench/openflow/lib/stp.c     struct stp *stp;
+<a href='../S/894.html#L158'>stp</a>               158 cbench/openflow/lib/stp.c     for (; port &lt; &amp;stp-&gt;ports[ARRAY_SIZE(stp-&gt;ports)]; port++) {
+<a href='../S/894.html#L226'>stp</a>               226 cbench/openflow/lib/stp.c struct stp *
+<a href='../S/894.html#L231'>stp</a>               231 cbench/openflow/lib/stp.c     struct stp *stp;
+<a href='../S/894.html#L234'>stp</a>               234 cbench/openflow/lib/stp.c     stp = xcalloc(1, sizeof *stp);
+<a href='../S/894.html#L235'>stp</a>               235 cbench/openflow/lib/stp.c     stp-&gt;name = xstrdup(name);
+<a href='../S/894.html#L236'>stp</a>               236 cbench/openflow/lib/stp.c     stp-&gt;bridge_id = bridge_id;
+<a href='../S/894.html#L237'>stp</a>               237 cbench/openflow/lib/stp.c     if (!(stp-&gt;bridge_id &gt;&gt; 48)) {
+<a href='../S/894.html#L238'>stp</a>               238 cbench/openflow/lib/stp.c         stp-&gt;bridge_id |= (uint64_t) STP_DEFAULT_BRIDGE_PRIORITY &lt;&lt; 48;
+<a href='../S/894.html#L241'>stp</a>               241 cbench/openflow/lib/stp.c     stp-&gt;rq_max_age = 6000;
+<a href='../S/894.html#L242'>stp</a>               242 cbench/openflow/lib/stp.c     stp-&gt;rq_hello_time = 2000;
+<a href='../S/894.html#L243'>stp</a>               243 cbench/openflow/lib/stp.c     stp-&gt;rq_forward_delay = 4000;
+<a href='../S/894.html#L244'>stp</a>               244 cbench/openflow/lib/stp.c     stp_update_bridge_timers(stp);
+<a href='../S/894.html#L245'>stp</a>               245 cbench/openflow/lib/stp.c     stp-&gt;max_age = stp-&gt;bridge_max_age;
+<a href='../S/894.html#L246'>stp</a>               246 cbench/openflow/lib/stp.c     stp-&gt;hello_time = stp-&gt;bridge_hello_time;
+<a href='../S/894.html#L247'>stp</a>               247 cbench/openflow/lib/stp.c     stp-&gt;forward_delay = stp-&gt;bridge_forward_delay;
+<a href='../S/894.html#L249'>stp</a>               249 cbench/openflow/lib/stp.c     stp-&gt;designated_root = stp-&gt;bridge_id;
+<a href='../S/894.html#L250'>stp</a>               250 cbench/openflow/lib/stp.c     stp-&gt;root_path_cost = 0;
+<a href='../S/894.html#L251'>stp</a>               251 cbench/openflow/lib/stp.c     stp-&gt;root_port = NULL;
+<a href='../S/894.html#L252'>stp</a>               252 cbench/openflow/lib/stp.c     stp-&gt;topology_change_detected = false;
+<a href='../S/894.html#L253'>stp</a>               253 cbench/openflow/lib/stp.c     stp-&gt;topology_change = false;
+<a href='../S/894.html#L255'>stp</a>               255 cbench/openflow/lib/stp.c     stp_stop_timer(&amp;stp-&gt;tcn_timer);
+<a href='../S/894.html#L256'>stp</a>               256 cbench/openflow/lib/stp.c     stp_stop_timer(&amp;stp-&gt;topology_change_timer);
+<a href='../S/894.html#L257'>stp</a>               257 cbench/openflow/lib/stp.c     stp_start_timer(&amp;stp-&gt;hello_timer, 0);
+<a href='../S/894.html#L259'>stp</a>               259 cbench/openflow/lib/stp.c     stp-&gt;send_bpdu = send_bpdu;
+<a href='../S/894.html#L260'>stp</a>               260 cbench/openflow/lib/stp.c     stp-&gt;aux = aux;
+<a href='../S/894.html#L262'>stp</a>               262 cbench/openflow/lib/stp.c     stp-&gt;first_changed_port = &amp;stp-&gt;ports[ARRAY_SIZE(stp-&gt;ports)];
+<a href='../S/894.html#L263'>stp</a>               263 cbench/openflow/lib/stp.c     for (p = stp-&gt;ports; p &lt; &amp;stp-&gt;ports[ARRAY_SIZE(stp-&gt;ports)]; p++) {
+<a href='../S/894.html#L264'>stp</a>               264 cbench/openflow/lib/stp.c         p-&gt;stp = stp;
+<a href='../S/894.html#L269'>stp</a>               269 cbench/openflow/lib/stp.c     return stp;
+<a href='../S/894.html#L276'>stp</a>               276 cbench/openflow/lib/stp.c     free(stp);
+<a href='../S/894.html#L289'>stp</a>               289 cbench/openflow/lib/stp.c     ms = clamp(ms, 0, INT_MAX - 1000) + stp-&gt;elapsed_remainder;
+<a href='../S/894.html#L291'>stp</a>               291 cbench/openflow/lib/stp.c     stp-&gt;elapsed_remainder = ms_to_timer_remainder(ms);
+<a href='../S/894.html#L296'>stp</a>               296 cbench/openflow/lib/stp.c     if (stp_timer_expired(&amp;stp-&gt;hello_timer, elapsed, stp-&gt;hello_time)) {
+<a href='../S/894.html#L297'>stp</a>               297 cbench/openflow/lib/stp.c         stp_hello_timer_expiry(stp);
+<a href='../S/894.html#L299'>stp</a>               299 cbench/openflow/lib/stp.c     if (stp_timer_expired(&amp;stp-&gt;tcn_timer, elapsed, stp-&gt;bridge_hello_time)) {
+<a href='../S/894.html#L300'>stp</a>               300 cbench/openflow/lib/stp.c         stp_tcn_timer_expiry(stp);
+<a href='../S/894.html#L302'>stp</a>               302 cbench/openflow/lib/stp.c     if (stp_timer_expired(&amp;stp-&gt;topology_change_timer, elapsed,
+<a href='../S/894.html#L303'>stp</a>               303 cbench/openflow/lib/stp.c                           stp-&gt;max_age + stp-&gt;forward_delay)) {
+<a href='../S/894.html#L304'>stp</a>               304 cbench/openflow/lib/stp.c         stp_topology_change_timer_expiry(stp);
+<a href='../S/894.html#L306'>stp</a>               306 cbench/openflow/lib/stp.c     FOR_EACH_ENABLED_PORT (p, stp) {
+<a href='../S/894.html#L307'>stp</a>               307 cbench/openflow/lib/stp.c         if (stp_timer_expired(&amp;p-&gt;message_age_timer, elapsed, stp-&gt;max_age)) {
+<a href='../S/894.html#L311'>stp</a>               311 cbench/openflow/lib/stp.c     FOR_EACH_ENABLED_PORT (p, stp) {
+<a href='../S/894.html#L313'>stp</a>               313 cbench/openflow/lib/stp.c                               stp-&gt;forward_delay)) {
+<a href='../S/894.html#L325'>stp</a>               325 cbench/openflow/lib/stp.c     if (new_bridge_id != stp-&gt;bridge_id) {
+<a href='../S/894.html#L329'>stp</a>               329 cbench/openflow/lib/stp.c         root = stp_is_root_bridge(stp);
+<a href='../S/894.html#L330'>stp</a>               330 cbench/openflow/lib/stp.c         FOR_EACH_ENABLED_PORT (p, stp) {
+<a href='../S/894.html#L335'>stp</a>               335 cbench/openflow/lib/stp.c         stp-&gt;bridge_id = new_bridge_id;
+<a href='../S/894.html#L336'>stp</a>               336 cbench/openflow/lib/stp.c         stp_configuration_update(stp);
+<a href='../S/894.html#L337'>stp</a>               337 cbench/openflow/lib/stp.c         stp_port_state_selection(stp);
+<a href='../S/894.html#L338'>stp</a>               338 cbench/openflow/lib/stp.c         if (stp_is_root_bridge(stp) &amp;&amp; !root) {
+<a href='../S/894.html#L339'>stp</a>               339 cbench/openflow/lib/stp.c             stp_become_root_bridge(stp);
+<a href='../S/894.html#L349'>stp</a>               349 cbench/openflow/lib/stp.c     set_bridge_id(stp, (stp-&gt;bridge_id &amp; pri_bits) | (bridge_id &amp; mac_bits));
+<a href='../S/894.html#L356'>stp</a>               356 cbench/openflow/lib/stp.c     set_bridge_id(stp, ((stp-&gt;bridge_id &amp; mac_bits)
+<a href='../S/894.html#L367'>stp</a>               367 cbench/openflow/lib/stp.c     stp-&gt;rq_hello_time = ms;
+<a href='../S/894.html#L368'>stp</a>               368 cbench/openflow/lib/stp.c     stp_update_bridge_timers(stp);
+<a href='../S/894.html#L379'>stp</a>               379 cbench/openflow/lib/stp.c     stp-&gt;rq_max_age = ms;
+<a href='../S/894.html#L380'>stp</a>               380 cbench/openflow/lib/stp.c     stp_update_bridge_timers(stp);
+<a href='../S/894.html#L390'>stp</a>               390 cbench/openflow/lib/stp.c     stp-&gt;rq_forward_delay = ms;
+<a href='../S/894.html#L391'>stp</a>               391 cbench/openflow/lib/stp.c     stp_update_bridge_timers(stp);
+<a href='../S/894.html#L398'>stp</a>               398 cbench/openflow/lib/stp.c     return stp-&gt;name;
+<a href='../S/894.html#L405'>stp</a>               405 cbench/openflow/lib/stp.c     return stp-&gt;bridge_id;
+<a href='../S/894.html#L412'>stp</a>               412 cbench/openflow/lib/stp.c     return stp-&gt;designated_root;
+<a href='../S/894.html#L420'>stp</a>               420 cbench/openflow/lib/stp.c     return stp-&gt;bridge_id == stp-&gt;designated_root;
+<a href='../S/894.html#L427'>stp</a>               427 cbench/openflow/lib/stp.c     return stp-&gt;root_path_cost;
+<a href='../S/894.html#L436'>stp</a>               436 cbench/openflow/lib/stp.c     return timer_to_ms(stp-&gt;bridge_hello_time);
+<a href='../S/894.html#L446'>stp</a>               446 cbench/openflow/lib/stp.c     return timer_to_ms(stp-&gt;bridge_max_age);
+<a href='../S/894.html#L456'>stp</a>               456 cbench/openflow/lib/stp.c     return timer_to_ms(stp-&gt;bridge_forward_delay);
+<a href='../S/894.html#L464'>stp</a>               464 cbench/openflow/lib/stp.c     assert(port_no &gt;= 0 &amp;&amp; port_no &lt; ARRAY_SIZE(stp-&gt;ports));
+<a href='../S/894.html#L465'>stp</a>               465 cbench/openflow/lib/stp.c     return &amp;stp-&gt;ports[port_no];
+<a href='../S/894.html#L473'>stp</a>               473 cbench/openflow/lib/stp.c     return stp-&gt;root_port;
+<a href='../S/894.html#L482'>stp</a>               482 cbench/openflow/lib/stp.c     struct stp_port *end = &amp;stp-&gt;ports[ARRAY_SIZE(stp-&gt;ports)];
+<a href='../S/894.html#L485'>stp</a>               485 cbench/openflow/lib/stp.c     for (p = stp-&gt;first_changed_port; p &lt; end; p++) {
+<a href='../S/894.html#L488'>stp</a>               488 cbench/openflow/lib/stp.c             stp-&gt;first_changed_port = p + 1;
+<a href='../S/894.html#L493'>stp</a>               493 cbench/openflow/lib/stp.c     stp-&gt;first_changed_port = end;
+<a href='../S/894.html#L548'>stp</a>               548 cbench/openflow/lib/stp.c     struct stp *stp = p-&gt;stp;
+<a href='../S/894.html#L556'>stp</a>               556 cbench/openflow/lib/stp.c         VLOG_WARN("%s: received runt %zu-byte BPDU", stp-&gt;name, bpdu_size);
+<a href='../S/894.html#L563'>stp</a>               563 cbench/openflow/lib/stp.c                   stp-&gt;name, ntohs(header-&gt;protocol_id));
+<a href='../S/894.html#L568'>stp</a>               568 cbench/openflow/lib/stp.c                  stp-&gt;name, header-&gt;protocol_version);
+<a href='../S/894.html#L575'>stp</a>               575 cbench/openflow/lib/stp.c                       stp-&gt;name, bpdu_size);
+<a href='../S/894.html#L578'>stp</a>               578 cbench/openflow/lib/stp.c         stp_received_config_bpdu(stp, p, bpdu);
+<a href='../S/894.html#L584'>stp</a>               584 cbench/openflow/lib/stp.c                       stp-&gt;name, bpdu_size);
+<a href='../S/894.html#L587'>stp</a>               587 cbench/openflow/lib/stp.c         stp_received_tcn_bpdu(stp, p);
+<a href='../S/894.html#L592'>stp</a>               592 cbench/openflow/lib/stp.c                   stp-&gt;name, header-&gt;bpdu_type);
+<a href='../S/894.html#L598'>stp</a>               598 cbench/openflow/lib/stp.c struct stp *
+<a href='../S/894.html#L601'>stp</a>               601 cbench/openflow/lib/stp.c     return p-&gt;stp;
+<a href='../S/894.html#L608'>stp</a>               608 cbench/openflow/lib/stp.c     struct stp *stp = p-&gt;stp;
+<a href='../S/894.html#L609'>stp</a>               609 cbench/openflow/lib/stp.c     assert(p &gt;= stp-&gt;ports &amp;&amp; p &lt; &amp;stp-&gt;ports[ARRAY_SIZE(stp-&gt;ports)]);
+<a href='../S/894.html#L610'>stp</a>               610 cbench/openflow/lib/stp.c     return p - stp-&gt;ports;
+<a href='../S/894.html#L624'>stp</a>               624 cbench/openflow/lib/stp.c     struct stp *stp = p-&gt;stp;
+<a href='../S/894.html#L626'>stp</a>               626 cbench/openflow/lib/stp.c         bool root = stp_is_root_bridge(stp);
+<a href='../S/894.html#L633'>stp</a>               633 cbench/openflow/lib/stp.c         stp_configuration_update(stp);
+<a href='../S/894.html#L634'>stp</a>               634 cbench/openflow/lib/stp.c         stp_port_state_selection(stp);
+<a href='../S/894.html#L635'>stp</a>               635 cbench/openflow/lib/stp.c         if (stp_is_root_bridge(stp) &amp;&amp; !root) {
+<a href='../S/894.html#L636'>stp</a>               636 cbench/openflow/lib/stp.c             stp_become_root_bridge(stp);
+<a href='../S/894.html#L647'>stp</a>               647 cbench/openflow/lib/stp.c         stp_port_state_selection(p-&gt;stp);
+<a href='../S/894.html#L658'>stp</a>               658 cbench/openflow/lib/stp.c         struct stp *stp = p-&gt;stp;
+<a href='../S/894.html#L663'>stp</a>               663 cbench/openflow/lib/stp.c         if (stp-&gt;bridge_id == p-&gt;designated_bridge
+<a href='../S/894.html#L666'>stp</a>               666 cbench/openflow/lib/stp.c             stp_port_state_selection(stp);
+<a href='../S/894.html#L678'>stp</a>               678 cbench/openflow/lib/stp.c         struct stp *stp = p-&gt;stp;
+<a href='../S/894.html#L680'>stp</a>               680 cbench/openflow/lib/stp.c         stp_configuration_update(stp);
+<a href='../S/894.html#L681'>stp</a>               681 cbench/openflow/lib/stp.c         stp_port_state_selection(stp);
+<a href='../S/894.html#L715'>stp</a>               715 cbench/openflow/lib/stp.c     struct stp *stp = p-&gt;stp;
+<a href='../S/894.html#L716'>stp</a>               716 cbench/openflow/lib/stp.c     bool root = stp_is_root_bridge(stp);
+<a href='../S/894.html#L717'>stp</a>               717 cbench/openflow/lib/stp.c     if (!root &amp;&amp; !stp-&gt;root_port) {
+<a href='../S/894.html#L732'>stp</a>               732 cbench/openflow/lib/stp.c         if (stp-&gt;topology_change) {
+<a href='../S/894.html#L735'>stp</a>               735 cbench/openflow/lib/stp.c         config.root_id = htonll(stp-&gt;designated_root);
+<a href='../S/894.html#L736'>stp</a>               736 cbench/openflow/lib/stp.c         config.root_path_cost = htonl(stp-&gt;root_path_cost);
+<a href='../S/894.html#L737'>stp</a>               737 cbench/openflow/lib/stp.c         config.bridge_id = htonll(stp-&gt;bridge_id);
+<a href='../S/894.html#L742'>stp</a>               742 cbench/openflow/lib/stp.c             config.message_age = htons(stp-&gt;root_port-&gt;message_age_timer.value
+<a href='../S/894.html#L745'>stp</a>               745 cbench/openflow/lib/stp.c         config.max_age = htons(stp-&gt;max_age);
+<a href='../S/894.html#L746'>stp</a>               746 cbench/openflow/lib/stp.c         config.hello_time = htons(stp-&gt;hello_time);
+<a href='../S/894.html#L747'>stp</a>               747 cbench/openflow/lib/stp.c         config.forward_delay = htons(stp-&gt;forward_delay);
+<a href='../S/894.html#L748'>stp</a>               748 cbench/openflow/lib/stp.c         if (ntohs(config.message_age) &lt; stp-&gt;max_age) {
+<a href='../S/894.html#L768'>stp</a>               768 cbench/openflow/lib/stp.c         return (ntohll(config-&gt;bridge_id) != p-&gt;stp-&gt;bridge_id
+<a href='../S/894.html#L788'>stp</a>               788 cbench/openflow/lib/stp.c     stp-&gt;max_age = ntohs(config-&gt;max_age);
+<a href='../S/894.html#L789'>stp</a>               789 cbench/openflow/lib/stp.c     stp-&gt;hello_time = ntohs(config-&gt;hello_time);
+<a href='../S/894.html#L790'>stp</a>               790 cbench/openflow/lib/stp.c     stp-&gt;forward_delay = ntohs(config-&gt;forward_delay);
+<a href='../S/894.html#L791'>stp</a>               791 cbench/openflow/lib/stp.c     stp-&gt;topology_change = config-&gt;flags &amp; htons(STP_CONFIG_TOPOLOGY_CHANGE);
+<a href='../S/894.html#L797'>stp</a>               797 cbench/openflow/lib/stp.c     return (p-&gt;designated_bridge == p-&gt;stp-&gt;bridge_id
+<a href='../S/894.html#L806'>stp</a>               806 cbench/openflow/lib/stp.c     FOR_EACH_ENABLED_PORT (p, stp) {
+<a href='../S/894.html#L816'>stp</a>               816 cbench/openflow/lib/stp.c     struct stp_port *p = stp-&gt;root_port;
+<a href='../S/894.html#L830'>stp</a>               830 cbench/openflow/lib/stp.c     stp_root_selection(stp);
+<a href='../S/894.html#L831'>stp</a>               831 cbench/openflow/lib/stp.c     stp_designated_port_selection(stp);
+<a href='../S/894.html#L859'>stp</a>               859 cbench/openflow/lib/stp.c     FOR_EACH_ENABLED_PORT (p, stp) {
+<a href='../S/894.html#L861'>stp</a>               861 cbench/openflow/lib/stp.c             || p-&gt;designated_root &gt;= stp-&gt;bridge_id) {
+<a href='../S/894.html#L869'>stp</a>               869 cbench/openflow/lib/stp.c     stp-&gt;root_port = root;
+<a href='../S/894.html#L871'>stp</a>               871 cbench/openflow/lib/stp.c         stp-&gt;designated_root = stp-&gt;bridge_id;
+<a href='../S/894.html#L872'>stp</a>               872 cbench/openflow/lib/stp.c         stp-&gt;root_path_cost = 0;
+<a href='../S/894.html#L874'>stp</a>               874 cbench/openflow/lib/stp.c         stp-&gt;designated_root = root-&gt;designated_root;
+<a href='../S/894.html#L875'>stp</a>               875 cbench/openflow/lib/stp.c         stp-&gt;root_path_cost = root-&gt;designated_cost + root-&gt;path_cost;
+<a href='../S/894.html#L884'>stp</a>               884 cbench/openflow/lib/stp.c     FOR_EACH_ENABLED_PORT (p, stp) {
+<a href='../S/894.html#L886'>stp</a>               886 cbench/openflow/lib/stp.c             || p-&gt;designated_root != stp-&gt;designated_root
+<a href='../S/894.html#L887'>stp</a>               887 cbench/openflow/lib/stp.c             || stp-&gt;root_path_cost &lt; p-&gt;designated_cost
+<a href='../S/894.html#L888'>stp</a>               888 cbench/openflow/lib/stp.c             || (stp-&gt;root_path_cost == p-&gt;designated_cost
+<a href='../S/894.html#L889'>stp</a>               889 cbench/openflow/lib/stp.c                 &amp;&amp; (stp-&gt;bridge_id &lt; p-&gt;designated_bridge
+<a href='../S/894.html#L890'>stp</a>               890 cbench/openflow/lib/stp.c                     || (stp-&gt;bridge_id == p-&gt;designated_bridge
+<a href='../S/894.html#L901'>stp</a>               901 cbench/openflow/lib/stp.c     struct stp *stp = p-&gt;stp;
+<a href='../S/894.html#L902'>stp</a>               902 cbench/openflow/lib/stp.c     p-&gt;designated_root = stp-&gt;designated_root;
+<a href='../S/894.html#L903'>stp</a>               903 cbench/openflow/lib/stp.c     p-&gt;designated_cost = stp-&gt;root_path_cost;
+<a href='../S/894.html#L904'>stp</a>               904 cbench/openflow/lib/stp.c     p-&gt;designated_bridge = stp-&gt;bridge_id;
+<a href='../S/894.html#L913'>stp</a>               913 cbench/openflow/lib/stp.c     FOR_EACH_ENABLED_PORT (p, stp) {
+<a href='../S/894.html#L914'>stp</a>               914 cbench/openflow/lib/stp.c         if (p == stp-&gt;root_port) {
+<a href='../S/894.html#L944'>stp</a>               944 cbench/openflow/lib/stp.c                 stp_topology_change_detection(p-&gt;stp);
+<a href='../S/894.html#L957'>stp</a>               957 cbench/openflow/lib/stp.c         if (p &lt; p-&gt;stp-&gt;first_changed_port) {
+<a href='../S/894.html#L958'>stp</a>               958 cbench/openflow/lib/stp.c             p-&gt;stp-&gt;first_changed_port = p;
+<a href='../S/894.html#L967'>stp</a>               967 cbench/openflow/lib/stp.c     if (stp_is_root_bridge(stp)) {
+<a href='../S/894.html#L968'>stp</a>               968 cbench/openflow/lib/stp.c         stp-&gt;topology_change = true;
+<a href='../S/894.html#L969'>stp</a>               969 cbench/openflow/lib/stp.c         stp_start_timer(&amp;stp-&gt;topology_change_timer, 0);
+<a href='../S/894.html#L970'>stp</a>               970 cbench/openflow/lib/stp.c     } else if (!stp-&gt;topology_change_detected) {
+<a href='../S/894.html#L971'>stp</a>               971 cbench/openflow/lib/stp.c         stp_transmit_tcn(stp);
+<a href='../S/894.html#L972'>stp</a>               972 cbench/openflow/lib/stp.c         stp_start_timer(&amp;stp-&gt;tcn_timer, 0);
+<a href='../S/894.html#L974'>stp</a>               974 cbench/openflow/lib/stp.c     stp-&gt;topology_change_detected = true;
+<a href='../S/894.html#L980'>stp</a>               980 cbench/openflow/lib/stp.c     stp-&gt;topology_change_detected = false;
+<a href='../S/894.html#L981'>stp</a>               981 cbench/openflow/lib/stp.c     stp_stop_timer(&amp;stp-&gt;tcn_timer);
+<a href='../S/894.html#L998'>stp</a>               998 cbench/openflow/lib/stp.c                   stp-&gt;name,
+<a href='../S/894.html#L1003'>stp</a>              1003 cbench/openflow/lib/stp.c         bool root = stp_is_root_bridge(stp);
+<a href='../S/894.html#L1006'>stp</a>              1006 cbench/openflow/lib/stp.c             stp_configuration_update(stp);
+<a href='../S/894.html#L1007'>stp</a>              1007 cbench/openflow/lib/stp.c             stp_port_state_selection(stp);
+<a href='../S/894.html#L1008'>stp</a>              1008 cbench/openflow/lib/stp.c             if (!stp_is_root_bridge(stp) &amp;&amp; root) {
+<a href='../S/894.html#L1009'>stp</a>              1009 cbench/openflow/lib/stp.c                 stp_stop_timer(&amp;stp-&gt;hello_timer);
+<a href='../S/894.html#L1010'>stp</a>              1010 cbench/openflow/lib/stp.c                 if (stp-&gt;topology_change_detected) {
+<a href='../S/894.html#L1011'>stp</a>              1011 cbench/openflow/lib/stp.c                     stp_stop_timer(&amp;stp-&gt;topology_change_timer);
+<a href='../S/894.html#L1012'>stp</a>              1012 cbench/openflow/lib/stp.c                     stp_transmit_tcn(stp);
+<a href='../S/894.html#L1013'>stp</a>              1013 cbench/openflow/lib/stp.c                     stp_start_timer(&amp;stp-&gt;tcn_timer, 0);
+<a href='../S/894.html#L1016'>stp</a>              1016 cbench/openflow/lib/stp.c             if (p == stp-&gt;root_port) {
+<a href='../S/894.html#L1017'>stp</a>              1017 cbench/openflow/lib/stp.c                 stp_record_config_timeout_values(stp, config);
+<a href='../S/894.html#L1018'>stp</a>              1018 cbench/openflow/lib/stp.c                 stp_config_bpdu_generation(stp);
+<a href='../S/894.html#L1020'>stp</a>              1020 cbench/openflow/lib/stp.c                     stp_topology_change_acknowledged(stp);
+<a href='../S/894.html#L1034'>stp</a>              1034 cbench/openflow/lib/stp.c             stp_topology_change_detection(stp);
+<a href='../S/894.html#L1043'>stp</a>              1043 cbench/openflow/lib/stp.c     stp_config_bpdu_generation(stp);
+<a href='../S/894.html#L1044'>stp</a>              1044 cbench/openflow/lib/stp.c     stp_start_timer(&amp;stp-&gt;hello_timer, 0);
+<a href='../S/894.html#L1050'>stp</a>              1050 cbench/openflow/lib/stp.c     struct stp *stp = p-&gt;stp;
+<a href='../S/894.html#L1051'>stp</a>              1051 cbench/openflow/lib/stp.c     bool root = stp_is_root_bridge(stp);
+<a href='../S/894.html#L1053'>stp</a>              1053 cbench/openflow/lib/stp.c     stp_configuration_update(stp);
+<a href='../S/894.html#L1054'>stp</a>              1054 cbench/openflow/lib/stp.c     stp_port_state_selection(stp);
+<a href='../S/894.html#L1055'>stp</a>              1055 cbench/openflow/lib/stp.c     if (stp_is_root_bridge(stp) &amp;&amp; !root) {
+<a href='../S/894.html#L1056'>stp</a>              1056 cbench/openflow/lib/stp.c         stp-&gt;max_age = stp-&gt;bridge_max_age;
+<a href='../S/894.html#L1057'>stp</a>              1057 cbench/openflow/lib/stp.c         stp-&gt;hello_time = stp-&gt;bridge_hello_time;
+<a href='../S/894.html#L1058'>stp</a>              1058 cbench/openflow/lib/stp.c         stp-&gt;forward_delay = stp-&gt;bridge_forward_delay;
+<a href='../S/894.html#L1059'>stp</a>              1059 cbench/openflow/lib/stp.c         stp_topology_change_detection(stp);
+<a href='../S/894.html#L1060'>stp</a>              1060 cbench/openflow/lib/stp.c         stp_stop_timer(&amp;stp-&gt;tcn_timer);
+<a href='../S/894.html#L1061'>stp</a>              1061 cbench/openflow/lib/stp.c         stp_config_bpdu_generation(stp);
+<a href='../S/894.html#L1062'>stp</a>              1062 cbench/openflow/lib/stp.c         stp_start_timer(&amp;stp-&gt;hello_timer, 0);
+<a href='../S/894.html#L1071'>stp</a>              1071 cbench/openflow/lib/stp.c     FOR_EACH_ENABLED_PORT (p, stp) {
+<a href='../S/894.html#L1072'>stp</a>              1072 cbench/openflow/lib/stp.c         if (p-&gt;designated_bridge == stp-&gt;bridge_id) {
+<a href='../S/894.html#L1087'>stp</a>              1087 cbench/openflow/lib/stp.c         if (stp_is_designated_for_some_port(p-&gt;stp)) {
+<a href='../S/894.html#L1089'>stp</a>              1089 cbench/openflow/lib/stp.c                 stp_topology_change_detection(p-&gt;stp);
+<a href='../S/894.html#L1098'>stp</a>              1098 cbench/openflow/lib/stp.c     stp_transmit_tcn(stp);
+<a href='../S/894.html#L1099'>stp</a>              1099 cbench/openflow/lib/stp.c     stp_start_timer(&amp;stp-&gt;tcn_timer, 0);
+<a href='../S/894.html#L1105'>stp</a>              1105 cbench/openflow/lib/stp.c     stp-&gt;topology_change_detected = false;
+<a href='../S/894.html#L1106'>stp</a>              1106 cbench/openflow/lib/stp.c     stp-&gt;topology_change = false;
+<a href='../S/894.html#L1134'>stp</a>              1134 cbench/openflow/lib/stp.c     stp-&gt;max_age = stp-&gt;bridge_max_age;
+<a href='../S/894.html#L1135'>stp</a>              1135 cbench/openflow/lib/stp.c     stp-&gt;hello_time = stp-&gt;bridge_hello_time;
+<a href='../S/894.html#L1136'>stp</a>              1136 cbench/openflow/lib/stp.c     stp-&gt;forward_delay = stp-&gt;bridge_forward_delay;
+<a href='../S/894.html#L1137'>stp</a>              1137 cbench/openflow/lib/stp.c     stp_topology_change_detection(stp);
+<a href='../S/894.html#L1138'>stp</a>              1138 cbench/openflow/lib/stp.c     stp_stop_timer(&amp;stp-&gt;tcn_timer);
+<a href='../S/894.html#L1139'>stp</a>              1139 cbench/openflow/lib/stp.c     stp_config_bpdu_generation(stp);
+<a href='../S/894.html#L1140'>stp</a>              1140 cbench/openflow/lib/stp.c     stp_start_timer(&amp;stp-&gt;hello_timer, 0);
+<a href='../S/894.html#L1204'>stp</a>              1204 cbench/openflow/lib/stp.c     ht = clamp(stp-&gt;rq_hello_time, 1000, 10000);
+<a href='../S/894.html#L1205'>stp</a>              1205 cbench/openflow/lib/stp.c     ma = clamp(stp-&gt;rq_max_age, MAX(2 * (ht + 1000), 6000), 40000);
+<a href='../S/894.html#L1206'>stp</a>              1206 cbench/openflow/lib/stp.c     fd = clamp(stp-&gt;rq_forward_delay, ma / 2 + 1000, 30000);
+<a href='../S/894.html#L1208'>stp</a>              1208 cbench/openflow/lib/stp.c     stp-&gt;bridge_hello_time = ms_to_timer(ht);
+<a href='../S/894.html#L1209'>stp</a>              1209 cbench/openflow/lib/stp.c     stp-&gt;bridge_max_age = ms_to_timer(ma);
+<a href='../S/894.html#L1210'>stp</a>              1210 cbench/openflow/lib/stp.c     stp-&gt;bridge_forward_delay = ms_to_timer(fd);
+<a href='../S/894.html#L1212'>stp</a>              1212 cbench/openflow/lib/stp.c     if (stp_is_root_bridge(stp)) {
+<a href='../S/894.html#L1213'>stp</a>              1213 cbench/openflow/lib/stp.c         stp-&gt;max_age = stp-&gt;bridge_max_age;
+<a href='../S/894.html#L1214'>stp</a>              1214 cbench/openflow/lib/stp.c         stp-&gt;hello_time = stp-&gt;bridge_hello_time;
+<a href='../S/894.html#L1215'>stp</a>              1215 cbench/openflow/lib/stp.c         stp-&gt;forward_delay = stp-&gt;bridge_forward_delay;
+<a href='../S/894.html#L1242'>stp</a>              1242 cbench/openflow/lib/stp.c     p-&gt;stp-&gt;send_bpdu(pkt, stp_port_no(p), p-&gt;stp-&gt;aux);
+<a href='../S/897.html#L65'>stp</a>                65 cbench/openflow/lib/stp.h struct stp *stp_create(const char *name, stp_identifier bridge_id,
+<a href='../S/897.html#L109'>stp</a>               109 cbench/openflow/lib/stp.h struct stp *stp_port_get_stp(struct stp_port *);
+<a href='../S/797.html#L53'>stp</a>                53 cbench/openflow/secchan/stp-secchan.c     struct stp *stp;
+<a href='../S/797.html#L68'>stp</a>                68 cbench/openflow/secchan/stp-secchan.c     struct stp_data *stp = stp_;
+<a href='../S/797.html#L94'>stp</a>                94 cbench/openflow/secchan/stp-secchan.c     if (port_watcher_get_config(stp-&gt;pw, port_no) &amp; OFPPC_NO_STP) {
+<a href='../S/797.html#L122'>stp</a>               122 cbench/openflow/secchan/stp-secchan.c         struct stp_port *p = stp_get_port(stp-&gt;stp, port_no);
+<a href='../S/797.html#L132'>stp</a>               132 cbench/openflow/secchan/stp-secchan.c     struct stp_data *stp = stp_;
+<a href='../S/797.html#L134'>stp</a>               134 cbench/openflow/secchan/stp-secchan.c     long long int elapsed = now - stp-&gt;last_tick;
+<a href='../S/797.html#L137'>stp</a>               137 cbench/openflow/secchan/stp-secchan.c     if (!port_watcher_is_ready(stp-&gt;pw)) {
+<a href='../S/797.html#L146'>stp</a>               146 cbench/openflow/secchan/stp-secchan.c     stp_tick(stp-&gt;stp, MIN(INT_MAX, elapsed));
+<a href='../S/797.html#L147'>stp</a>               147 cbench/openflow/secchan/stp-secchan.c     stp-&gt;last_tick = now;
+<a href='../S/797.html#L149'>stp</a>               149 cbench/openflow/secchan/stp-secchan.c     while (stp_get_changed_port(stp-&gt;stp, &amp;p)) {
+<a href='../S/797.html#L157'>stp</a>               157 cbench/openflow/secchan/stp-secchan.c         if (!(port_watcher_get_config(stp-&gt;pw, port_no) &amp; OFPPC_NO_STP)) {
+<a href='../S/797.html#L183'>stp</a>               183 cbench/openflow/secchan/stp-secchan.c             port_watcher_set_flags(stp-&gt;pw, port_no, 
+<a href='../S/797.html#L201'>stp</a>               201 cbench/openflow/secchan/stp-secchan.c     struct stp_data *stp = stp_;
+<a href='../S/797.html#L202'>stp</a>               202 cbench/openflow/secchan/stp-secchan.c     const uint8_t *port_mac = port_watcher_get_hwaddr(stp-&gt;pw, port_no);
+<a href='../S/797.html#L210'>stp</a>               210 cbench/openflow/secchan/stp-secchan.c         rconn_send_with_limit(stp-&gt;local_rconn, opo, &amp;stp-&gt;n_txq, OFPP_MAX);
+<a href='../S/797.html#L229'>stp</a>               229 cbench/openflow/secchan/stp-secchan.c     struct stp_data *stp = stp_;
+<a href='../S/797.html#L236'>stp</a>               236 cbench/openflow/secchan/stp-secchan.c     p = stp_get_port(stp-&gt;stp, port_no);
+<a href='../S/797.html#L260'>stp</a>               260 cbench/openflow/secchan/stp-secchan.c     struct stp_data *stp = stp_;
+<a href='../S/797.html#L262'>stp</a>               262 cbench/openflow/secchan/stp-secchan.c         stp_set_bridge_id(stp-&gt;stp, eth_addr_to_uint64(port-&gt;hw_addr));
+<a href='../S/797.html#L279'>stp</a>               279 cbench/openflow/secchan/stp-secchan.c     struct stp_data *stp;
+<a href='../S/797.html#L281'>stp</a>               281 cbench/openflow/secchan/stp-secchan.c     stp = xcalloc(1, sizeof *stp);
+<a href='../S/797.html#L283'>stp</a>               283 cbench/openflow/secchan/stp-secchan.c     stp-&gt;stp = stp_create("stp", eth_addr_to_uint64(dpid), send_bpdu, stp);
+<a href='../S/797.html#L284'>stp</a>               284 cbench/openflow/secchan/stp-secchan.c     stp-&gt;pw = pw;
+<a href='../S/797.html#L285'>stp</a>               285 cbench/openflow/secchan/stp-secchan.c     stp-&gt;local_rconn = local;
+<a href='../S/797.html#L286'>stp</a>               286 cbench/openflow/secchan/stp-secchan.c     stp-&gt;remote_rconn = remote;
+<a href='../S/797.html#L287'>stp</a>               287 cbench/openflow/secchan/stp-secchan.c     stp-&gt;last_tick = time_msec();
+<a href='../S/797.html#L289'>stp</a>               289 cbench/openflow/secchan/stp-secchan.c     port_watcher_register_callback(pw, stp_port_changed_cb, stp);
+<a href='../S/797.html#L291'>stp</a>               291 cbench/openflow/secchan/stp-secchan.c                                               stp);
+<a href='../S/797.html#L292'>stp</a>               292 cbench/openflow/secchan/stp-secchan.c     add_hook(secchan, &amp;stp_hook_class, stp);
+<a href='../S/252.html#L55'>stp</a>                55 cbench/openflow/tests/test-stp.c     struct stp *stp;
+<a href='../S/252.html#L136'>stp</a>               136 cbench/openflow/tests/test-stp.c     b-&gt;stp = stp_create(name, id, send_bpdu, b);
+<a href='../S/252.html#L194'>stp</a>               194 cbench/openflow/tests/test-stp.c     struct stp_port *p = stp_get_port(b-&gt;stp, port_no);
+<a href='../S/252.html#L209'>stp</a>               209 cbench/openflow/tests/test-stp.c         struct stp *stp = b-&gt;stp;
+<a href='../S/252.html#L212'>stp</a>               212 cbench/openflow/tests/test-stp.c         printf("%s:", stp_get_name(stp));
+<a href='../S/252.html#L213'>stp</a>               213 cbench/openflow/tests/test-stp.c         if (stp_is_root_bridge(stp)) {
+<a href='../S/252.html#L218'>stp</a>               218 cbench/openflow/tests/test-stp.c             struct stp_port *p = stp_get_port(stp, j);
+<a href='../S/252.html#L228'>stp</a>               228 cbench/openflow/tests/test-stp.c             if (p == stp_get_root_port(stp)) {
+<a href='../S/252.html#L229'>stp</a>               229 cbench/openflow/tests/test-stp.c                 printf(" (root port, root_path_cost=%u)", stp_get_root_path_cost(stp));
+<a href='../S/252.html#L250'>stp</a>               250 cbench/openflow/tests/test-stp.c     printf("%s\n", stp_get_name(b-&gt;stp));
+<a href='../S/252.html#L253'>stp</a>               253 cbench/openflow/tests/test-stp.c         struct stp_port *p = stp_get_port(b-&gt;stp, i);
+<a href='../S/252.html#L294'>stp</a>               294 cbench/openflow/tests/test-stp.c         struct stp *stp = b-&gt;stp;
+<a href='../S/252.html#L295'>stp</a>               295 cbench/openflow/tests/test-stp.c         if (stp_is_root_bridge(stp)) {
+<a href='../S/252.html#L311'>stp</a>               311 cbench/openflow/tests/test-stp.c             stp_tick(tc-&gt;bridges[i]-&gt;stp, granularity);
+<a href='../S/252.html#L319'>stp</a>               319 cbench/openflow/tests/test-stp.c                     stp_received_bpdu(stp_get_port(b-&gt;stp, bpdu-&gt;port_no),
+<a href='../S/252.html#L505'>stp</a>               505 cbench/openflow/tests/test-stp.c                 stp_set_bridge_priority(bridge-&gt;stp, must_get_int());
+<a href='../S/252.html#L510'>stp</a>               510 cbench/openflow/tests/test-stp.c                     struct stp_port *p = stp_get_port(bridge-&gt;stp, port_no);
+<a href='../S/252.html#L553'>stp</a>               553 cbench/openflow/tests/test-stp.c             struct stp *stp;
+<a href='../S/252.html#L561'>stp</a>               561 cbench/openflow/tests/test-stp.c             stp = b-&gt;stp;
+<a href='../S/252.html#L574'>stp</a>               574 cbench/openflow/tests/test-stp.c                 if (stp_get_designated_root(stp) != rootid) {
+<a href='../S/252.html#L576'>stp</a>               576 cbench/openflow/tests/test-stp.c                          stp_get_name(stp), stp_get_designated_root(stp),
+<a href='../S/252.html#L582'>stp</a>               582 cbench/openflow/tests/test-stp.c                 if (stp_get_root_path_cost(stp)) {
+<a href='../S/252.html#L584'>stp</a>               584 cbench/openflow/tests/test-stp.c                          stp_get_name(stp), stp_get_root_path_cost(stp));
+<a href='../S/252.html#L586'>stp</a>               586 cbench/openflow/tests/test-stp.c                 if (!stp_is_root_bridge(stp)) {
+<a href='../S/252.html#L588'>stp</a>               588 cbench/openflow/tests/test-stp.c                          stp_get_name(stp),
+<a href='../S/252.html#L589'>stp</a>               589 cbench/openflow/tests/test-stp.c                          stp_get_designated_root(stp), stp_get_bridge_id(stp));
+<a href='../S/252.html#L592'>stp</a>               592 cbench/openflow/tests/test-stp.c                     struct stp_port *p = stp_get_port(stp, port_no);
+<a href='../S/252.html#L596'>stp</a>               596 cbench/openflow/tests/test-stp.c                              stp_get_name(b-&gt;stp), port_no,
+<a href='../S/252.html#L602'>stp</a>               602 cbench/openflow/tests/test-stp.c                     struct stp_port *p = stp_get_port(stp, port_no);
+<a href='../S/252.html#L621'>stp</a>               621 cbench/openflow/tests/test-stp.c                              stp_get_name(stp), port_no,
+<a href='../S/252.html#L626'>stp</a>               626 cbench/openflow/tests/test-stp.c                         struct stp_port *root_port = stp_get_root_port(stp);
+<a href='../S/252.html#L631'>stp</a>               631 cbench/openflow/tests/test-stp.c                                      stp_get_name(stp), port_no);
+<a href='../S/252.html#L634'>stp</a>               634 cbench/openflow/tests/test-stp.c                                          stp_get_name(stp));
+<a href='../S/252.html#L637'>stp</a>               637 cbench/openflow/tests/test-stp.c                                          stp_get_name(stp),
+<a href='../S/252.html#L641'>stp</a>               641 cbench/openflow/tests/test-stp.c                                        != stp_get_root_path_cost(stp)) {
+<a href='../S/252.html#L643'>stp</a>               643 cbench/openflow/tests/test-stp.c                                      stp_get_name(stp),
+<a href='../S/252.html#L644'>stp</a>               644 cbench/openflow/tests/test-stp.c                                      stp_get_root_path_cost(stp),
+<a href='../S/252.html#L650'>stp</a>               650 cbench/openflow/tests/test-stp.c                                  stp_get_name(stp), port_no);
+</pre>
+</body>
+</html>

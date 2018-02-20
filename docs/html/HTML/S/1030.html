@@ -1,0 +1,124 @@
+<html>
+<head>
+<title>events/include/event_direct_raise.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1157.html'>events</a>/<a href='../files/1158.html'>include</a>/event_direct_raise.h</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L10'>[^]</a>[v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/637.html' title='Multiple included from 10 places.'>INCLUDED FROM</a></h2>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L10' title='Defined at 10.'>FUNC_NAME</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright 2015-2018 NSSLab, KAIST</font></i>
+<a name='L3'>   3 <i><font color='green'> */</font></i>
+<a name='L4'>   4 
+<a name='L5'>   5 <i><font color='green'>/**</font></i>
+<a name='L6'>   6 <i><font color='green'> * \file</font></i>
+<a name='L7'>   7 <i><font color='green'> * \author Jaehyun Nam &lt;namjh@kaist.ac.kr&gt;</font></i>
+<a name='L8'>   8 <i><font color='green'> */</font></i>
+<a name='L9'>   9 
+<a name='L10'>  10 <b>static</b> <b>int</b> FUNC_NAME(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>, <b>const</b> <a href='../D/1878.html' title='Multiple defined in 50 places.'>FUNC_TYPE</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>)
+<a name='L11'>  11 <font color='red'>{</font>
+<a name='L12'>  12     <b>int</b> <a href='../Y/2896.html' title='Multiple used in 30 places.'>ev_num</a> = <a href='../Y/2892.html' title='Multiple used in 10 places.'>ev_ctx</a>-&gt;<a href='../Y/2896.html' title='Multiple used in 30 places.'>ev_num</a>[<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>];
+<a name='L13'>  13     <a href='../D/7198.html' title='Multiple defined in 6 places.'>compnt_t</a> **<a href='../Y/2894.html' title='Multiple used in 27 places.'>ev_list</a> = <a href='../Y/2892.html' title='Multiple used in 10 places.'>ev_ctx</a>-&gt;<a href='../Y/2894.html' title='Multiple used in 27 places.'>ev_list</a>[<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>];
+<a name='L14'>  14 
+<a name='L15'>  15     <b>if</b> (<a href='../Y/2894.html' title='Multiple used in 27 places.'>ev_list</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>)
+<a name='L16'>  16         <b>return</b> -1;
+<a name='L17'>  17 
+<a name='L18'>  18     <a href='../D/7743.html' title='Multiple defined in 7 places.'>event_t</a> <a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>;
+<a name='L19'>  19 
+<a name='L20'>  20     <a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>.<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a> = <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>;
+<a name='L21'>  21     <a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>.<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> = <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;
+<a name='L22'>  22     <a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a> = <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;
+<a name='L23'>  23     <a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>.<a href='../Y/5873.html' title='Multiple used in 287 places.'>prev</a> = <a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>.<a href='../Y/4066.html' title='Multiple used in 36 places.'>last</a> = 0;
+<a name='L24'>  24     <a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>.<a href='../Y/1869.html' title='Multiple used in 20 places.'>checksum</a> = 0;
+<a name='L25'>  25     <a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>.<a href='../D/1876.html' title='Multiple defined in 50 places.'>FUNC_DATA</a> = <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L26'>  26 
+<a name='L27'>  27     <a href='../Y/2892.html' title='Multiple used in 10 places.'>ev_ctx</a>-&gt;<a href='../Y/4975.html' title='Multiple used in 18 places.'>num_events</a>[<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>]++;
+<a name='L28'>  28 
+<a name='L29'>  29     <a href='../D/7198.html' title='Multiple defined in 6 places.'>compnt_t</a> *<a href='../Y/5458.html' title='Multiple used in 4 places.'>one_by_one</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L30'>  30 
+<a name='L31'>  31     <b>int</b> <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>;
+<a name='L32'>  32     <b>for</b> (<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>=0; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>&lt;<a href='../Y/2896.html' title='Multiple used in 30 places.'>ev_num</a>; <a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>++) <font color='red'>{</font>
+<a name='L33'>  33         <a href='../D/7198.html' title='Multiple defined in 6 places.'>compnt_t</a> *<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> = <a href='../Y/2894.html' title='Multiple used in 27 places.'>ev_list</a>[<a href='../Y/3700.html' title='Multiple used in 2939 places.'>i</a>];
+<a name='L34'>  34 
+<a name='L35'>  35         <b>if</b> (!<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>) <b>continue</b>;
+<a name='L36'>  36         <b>else</b> <b>if</b> (!<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>) <b>continue</b>; <i><font color='green'>// not activated yet</font></i>
+<a name='L37'>  37 
+<a name='L38'>  38         <b>if</b> (<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/6457.html' title='Multiple used in 132 places.'>role</a> == <a href='../S/926.html#L53' title='Defined at 53 in src/include/component.h.'>COMPNT_SECURITY_V2</a>) <font color='red'>{</font>
+<a name='L39'>  39             <a href='../Y/5458.html' title='Multiple used in 4 places.'>one_by_one</a> = <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>;
+<a name='L40'>  40         <font color='red'>}</font>
+<a name='L41'>  41 
+<a name='L42'>  42 <font color='darkred'>#ifdef</font> <a href='../D/3261.html' title='Multiple defined in 50 places.'>ODP_FUNC</a>
+<a name='L43'>  43         <b>if</b> (<a href='../D/3261.html' title='Multiple defined in 50 places.'>ODP_FUNC</a>(<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/5041.html' title='Multiple used in 147 places.'>odp</a>, <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>)) <b>continue</b>;
+<a name='L44'>  44 <font color='darkred'>#endif</font> <i><font color='green'>/* ODP_FUNC */</font></i>
+<a name='L45'>  45 
+<a name='L46'>  46         <b>if</b> (<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/5714.html' title='Multiple used in 57 places.'>perm</a> &amp; <a href='../S/926.html#L60' title='Defined at 60 in src/include/component.h.'>COMPNT_WRITE</a>) <font color='red'>{</font>
+<a name='L47'>  47             <b>if</b> (<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/6798.html' title='Multiple used in 39 places.'>site</a> == <a href='../S/926.html#L37' title='Defined at 37 in src/include/component.h.'>COMPNT_INTERNAL</a>) <font color='red'>{</font> <i><font color='green'>// internal site</font></i>
+<a name='L48'>  48                 <a href='../D/7740.html' title='Multiple defined in 7 places.'>event_out_t</a> *<a href='../Y/2897.html' title='Multiple used in 49 places.'>ev_out</a> = (<a href='../D/7740.html' title='Multiple defined in 7 places.'>event_out_t</a> *)&amp;<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>;
+<a name='L49'>  49 
+<a name='L50'>  50                 <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/4975.html' title='Multiple used in 18 places.'>num_events</a>[<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>]++;
+<a name='L51'>  51 
+<a name='L52'>  52                 <b>int</b> <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(&amp;<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>, <a href='../Y/2897.html' title='Multiple used in 49 places.'>ev_out</a>);
+<a name='L53'>  53                 <b>if</b> (<a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> &amp;&amp; <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/5714.html' title='Multiple used in 57 places.'>perm</a> &amp; <a href='../S/926.html#L61' title='Defined at 61 in src/include/component.h.'>COMPNT_EXECUTE</a>) <font color='red'>{</font>
+<a name='L54'>  54                     <b>break</b>;
+<a name='L55'>  55                 <font color='red'>}</font>
+<a name='L56'>  56 
+<a name='L57'>  57                 <a href='../Y/2897.html' title='Multiple used in 49 places.'>ev_out</a>-&gt;<a href='../Y/1869.html' title='Multiple used in 20 places.'>checksum</a> = 0;
+<a name='L58'>  58             <font color='red'>}</font>
+<a name='L59'>  59         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L60'>  60             <b>if</b> (<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/6798.html' title='Multiple used in 39 places.'>site</a> == <a href='../S/926.html#L37' title='Defined at 37 in src/include/component.h.'>COMPNT_INTERNAL</a>) <font color='red'>{</font> <i><font color='green'>// internal site</font></i>
+<a name='L61'>  61                 <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/4975.html' title='Multiple used in 18 places.'>num_events</a>[<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>]++;
+<a name='L62'>  62 
+<a name='L63'>  63                 <b>int</b> <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(&amp;<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>);
+<a name='L64'>  64                 <b>if</b> (<a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> &amp;&amp; <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/5714.html' title='Multiple used in 57 places.'>perm</a> &amp; <a href='../S/926.html#L61' title='Defined at 61 in src/include/component.h.'>COMPNT_EXECUTE</a>) <font color='red'>{</font>
+<a name='L65'>  65                     <b>break</b>;
+<a name='L66'>  66                 <font color='red'>}</font>
+<a name='L67'>  67             <font color='red'>}</font>
+<a name='L68'>  68         <font color='red'>}</font>
+<a name='L69'>  69 
+<a name='L70'>  70         <b>if</b> (<a href='../Y/5458.html' title='Multiple used in 4 places.'>one_by_one</a>) <font color='red'>{</font>
+<a name='L71'>  71             <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> = <a href='../Y/5458.html' title='Multiple used in 4 places.'>one_by_one</a>;
+<a name='L72'>  72 
+<a name='L73'>  73             <b>if</b> (<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/5714.html' title='Multiple used in 57 places.'>perm</a> &amp; <a href='../S/926.html#L60' title='Defined at 60 in src/include/component.h.'>COMPNT_WRITE</a>) <font color='red'>{</font>
+<a name='L74'>  74                 <b>if</b> (<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/6798.html' title='Multiple used in 39 places.'>site</a> == <a href='../S/926.html#L37' title='Defined at 37 in src/include/component.h.'>COMPNT_INTERNAL</a>) <font color='red'>{</font> <i><font color='green'>// internal site</font></i>
+<a name='L75'>  75                     <a href='../D/7740.html' title='Multiple defined in 7 places.'>event_out_t</a> *<a href='../Y/2897.html' title='Multiple used in 49 places.'>ev_out</a> = (<a href='../D/7740.html' title='Multiple defined in 7 places.'>event_out_t</a> *)&amp;<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>;
+<a name='L76'>  76 
+<a name='L77'>  77                     <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/4975.html' title='Multiple used in 18 places.'>num_events</a>[<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>]++;
+<a name='L78'>  78 
+<a name='L79'>  79                     <b>int</b> <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(&amp;<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>, <a href='../Y/2897.html' title='Multiple used in 49 places.'>ev_out</a>);
+<a name='L80'>  80                     <b>if</b> (<a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> &amp;&amp; <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/5714.html' title='Multiple used in 57 places.'>perm</a> &amp; <a href='../S/926.html#L61' title='Defined at 61 in src/include/component.h.'>COMPNT_EXECUTE</a>) <font color='red'>{</font>
+<a name='L81'>  81                         <b>break</b>;
+<a name='L82'>  82                     <font color='red'>}</font>
+<a name='L83'>  83                 <font color='red'>}</font>
+<a name='L84'>  84             <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L85'>  85                 <b>if</b> (<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/6798.html' title='Multiple used in 39 places.'>site</a> == <a href='../S/926.html#L37' title='Defined at 37 in src/include/component.h.'>COMPNT_INTERNAL</a>) <font color='red'>{</font> <i><font color='green'>// internal site</font></i>
+<a name='L86'>  86                     <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/4975.html' title='Multiple used in 18 places.'>num_events</a>[<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>]++;
+<a name='L87'>  87 
+<a name='L88'>  88                     <b>int</b> <a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> = <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/3537.html' title='Multiple used in 150 places.'>handler</a>(&amp;<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>);
+<a name='L89'>  89                     <b>if</b> (<a href='../Y/6432.html' title='Multiple used in 271 places.'>ret</a> &amp;&amp; <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/5714.html' title='Multiple used in 57 places.'>perm</a> &amp; <a href='../S/926.html#L61' title='Defined at 61 in src/include/component.h.'>COMPNT_EXECUTE</a>) <font color='red'>{</font>
+<a name='L90'>  90                         <b>break</b>;
+<a name='L91'>  91                     <font color='red'>}</font>
+<a name='L92'>  92                 <font color='red'>}</font>
+<a name='L93'>  93             <font color='red'>}</font>
+<a name='L94'>  94         <font color='red'>}</font>
+<a name='L95'>  95     <font color='red'>}</font>
+<a name='L96'>  96 
+<a name='L97'>  97     <b>return</b> 0;
+<a name='L98'>  98 <font color='red'>}</font>
+<a name='L99'>  99 
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^]<a href='#L10'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

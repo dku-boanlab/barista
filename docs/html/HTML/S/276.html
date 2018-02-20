@@ -1,0 +1,491 @@
+<html>
+<head>
+<title>cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1126.html'>datapath</a>/<a href='../files/1128.html'>hwtable_nf2</a>/nf2_flowtable.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L91'>[^]</a><a href='#L440'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L91' title='Defined at 91.'>nf2_lookup_flowtable</a>
+<li><a href='#L106' title='Defined at 106.'>nf2_install_flow</a>
+<li><a href='#L130' title='Defined at 130.'>nf2_modify_flow</a>
+<li><a href='#L154' title='Defined at 154.'>nf2_has_conflict</a>
+<li><a href='#L170' title='Defined at 170.'>deferred_uninstall_callback</a>
+<li><a href='#L178' title='Defined at 178.'>do_deferred_uninstall</a>
+<li><a href='#L184' title='Defined at 184.'>do_uninstall</a>
+<li><a href='#L201' title='Defined at 201.'>nf2_uninstall_flow</a>
+<li><a href='#L240' title='Defined at 240.'>nf2_flow_timeout</a>
+<li><a href='#L285' title='Defined at 285.'>nf2_destroy_flowtable</a>
+<li><a href='#L317' title='Defined at 317.'>nf2_iterate_flowtable</a>
+<li><a href='#L342' title='Defined at 342.'>get_lookup_stats</a>
+<li><a href='#L358' title='Defined at 358.'>get_lookup_matched_stats</a>
+<li><a href='#L373' title='Defined at 373.'>nf2_get_flowstats</a>
+<li><a href='#L386' title='Defined at 386.'>nf2_create_flowtable</a>
+<li><a href='#L433' title='Defined at 433.'>nf2_startup</a>
+<li><a href='#L440' title='Defined at 440.'>nf2_cleanup</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*-</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright (c) 2008, 2009</font></i>
+<a name='L3'>   3 <i><font color='green'> *      The Board of Trustees of The Leland Stanford Junior University</font></i>
+<a name='L4'>   4 <i><font color='green'> *</font></i>
+<a name='L5'>   5 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L6'>   6 <i><font color='green'> * (Software) available for public use and benefit with the expectation that</font></i>
+<a name='L7'>   7 <i><font color='green'> * others will use, modify and enhance the Software and contribute those</font></i>
+<a name='L8'>   8 <i><font color='green'> * enhancements back to the community. However, since we would like to make the</font></i>
+<a name='L9'>   9 <i><font color='green'> * Software available for broadest use, with as few restrictions as possible</font></i>
+<a name='L10'>  10 <i><font color='green'> * permission is hereby granted, free of charge, to any person obtaining a copy</font></i>
+<a name='L11'>  11 <i><font color='green'> * of this Software to deal in the Software under the copyrights without</font></i>
+<a name='L12'>  12 <i><font color='green'> * restriction, including without limitation the rights to use, copy, modify,</font></i>
+<a name='L13'>  13 <i><font color='green'> * merge, publish, distribute, sublicense, and/or sell copies of the Software,</font></i>
+<a name='L14'>  14 <i><font color='green'> * and to permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> *</font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be included in</font></i>
+<a name='L18'>  18 <i><font color='green'> * all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</font></i>
+<a name='L21'>  21 <i><font color='green'> * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</font></i>
+<a name='L22'>  22 <i><font color='green'> * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE</font></i>
+<a name='L23'>  23 <i><font color='green'> * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</font></i>
+<a name='L24'>  24 <i><font color='green'> * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING</font></i>
+<a name='L25'>  25 <i><font color='green'> * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS</font></i>
+<a name='L26'>  26 <i><font color='green'> * IN THE SOFTWARE.</font></i>
+<a name='L27'>  27 <i><font color='green'> *</font></i>
+<a name='L28'>  28 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L29'>  29 <i><font color='green'> * advertising or publicity pertaining to the Software or any derivatives</font></i>
+<a name='L30'>  30 <i><font color='green'> * without specific, written prior permission.</font></i>
+<a name='L31'>  31 <i><font color='green'> */</font></i>
+<a name='L32'>  32 
+<a name='L33'>  33 <font color='darkred'>#include</font> &lt;linux/module.h&gt;
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;linux/rcupdate.h&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> &lt;<a href='323.html'>linux/rculist.h</a>&gt;
+<a name='L36'>  36 <font color='darkred'>#include</font> &lt;<a href='374.html'>linux/slab.h</a>&gt;
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;<a href='916.html'>linux/list.h</a>&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;linux/delay.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> &lt;<a href='312.html'>linux/if_arp.h</a>&gt;
+<a name='L40'>  40 
+<a name='L41'>  41 <font color='darkred'>#include</font> "<a href='../I/86.html'>chain.h</a>"
+<a name='L42'>  42 <font color='darkred'>#include</font> "<a href='../I/148.html'>table.h</a>"
+<a name='L43'>  43 <font color='darkred'>#include</font> "<a href='../I/98.html'>flow.h</a>"
+<a name='L44'>  44 <font color='darkred'>#include</font> "<a href='../I/91.html'>datapath.h</a>"
+<a name='L45'>  45 
+<a name='L46'>  46 <font color='darkred'>#include</font> "<a href='278.html'>hwtable_nf2/nf2_reg.h</a>"
+<a name='L47'>  47 <font color='darkred'>#include</font> "<a href='273.html'>hwtable_nf2/nf2_flowtable.h</a>"
+<a name='L48'>  48 <font color='darkred'>#include</font> "<a href='272.html'>hwtable_nf2/nf2_openflow.h</a>"
+<a name='L49'>  49 <font color='darkred'>#include</font> "<a href='../I/107.html'>hwtable_nf2/nf2_lib.h</a>"
+<a name='L50'>  50 <font color='darkred'>#include</font> "<a href='277.html'>hwtable_nf2/nf2_procfs.h</a>"
+<a name='L51'>  51 
+<a name='L52'>  52 <b>struct</b> <a href='../R/3652.html' title='Multiple refered from 20 places.'>nf2_flowtable</a> <font color='red'>{</font>
+<a name='L53'>  53         <b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>;
+<a name='L54'>  54         <a href='../Y/6922.html' title='Multiple used in 3 places.'>spinlock_t</a> <a href='../Y/4206.html' title='Multiple used in 348 places.'>lock</a>;
+<a name='L55'>  55         <b>unsigned</b> <b>int</b> <a href='../Y/4370.html' title='Multiple used in 32 places.'>max_flows</a>;
+<a name='L56'>  56         <a href='../Y/1516.html' title='Multiple used in 2 places.'>atomic_t</a> <a href='../Y/4977.html' title='Multiple used in 30 places.'>num_flows</a>;
+<a name='L57'>  57         <b>struct</b> <a href='../Y/4165.html' title='Multiple used in 24 places.'>list_head</a> <a href='../Y/3174.html' title='Multiple used in 129 places.'>flows</a>;
+<a name='L58'>  58         <b>struct</b> <a href='../Y/4165.html' title='Multiple used in 24 places.'>list_head</a> <a href='../Y/3959.html' title='Multiple used in 23 places.'>iter_flows</a>;
+<a name='L59'>  59         <b>unsigned</b> <b>long</b> <b>int</b> <a href='../Y/4817.html' title='Multiple used in 15 places.'>next_serial</a>;
+<a name='L60'>  60 <font color='red'>}</font>;
+<a name='L61'>  61 
+<a name='L62'>  62 <b>static</b> <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a> *<a href='../D/8542.html' title='Multiple defined in 2 places.'>nf2_lookup_flowtable</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *,
+<a name='L63'>  63                                             <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *);
+<a name='L64'>  64 <b>static</b> <b>int</b> <a href='../D/8540.html' title='Multiple defined in 2 places.'>nf2_install_flow</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *, <b>struct</b> <a href='../Y/7178.html' title='Multiple used in 120 places.'>sw_flow</a> *);
+<a name='L65'>  65 <b>static</b> <b>int</b> <a href='../D/8545.html' title='Multiple defined in 2 places.'>nf2_modify_flow</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *, <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *,
+<a name='L66'>  66                            <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a>, <b>int</b>, <b>const</b> <b>struct</b> <a href='../Y/5088.html' title='Multiple used in 65 places.'>ofp_action_header</a> *,
+<a name='L67'>  67                            <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a>);
+<a name='L68'>  68 <b>static</b> <b>void</b> <a href='../S/276.html#L170' title='Defined at 170 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>deferred_uninstall_callback</a>(<b>struct</b> <a href='../Y/6267.html' title='Multiple used in 6 places.'>rcu_head</a> *);
+<a name='L69'>  69 <b>static</b> <b>void</b> <a href='../S/276.html#L178' title='Defined at 178 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>do_deferred_uninstall</a>(<b>struct</b> <a href='../Y/7178.html' title='Multiple used in 120 places.'>sw_flow</a> *);
+<a name='L70'>  70 <b>static</b> <b>int</b> <a href='../D/7502.html' title='Multiple defined in 3 places.'>do_uninstall</a>(<b>struct</b> <a href='../Y/2280.html' title='Multiple used in 184 places.'>datapath</a> *, <b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *, <b>struct</b> <a href='../Y/7178.html' title='Multiple used in 120 places.'>sw_flow</a> *,
+<a name='L71'>  71                         <b>enum</b> <a href='../Y/5155.html' title='Multiple used in 10 places.'>ofp_flow_removed_reason</a>);
+<a name='L72'>  72 <b>static</b> <b>int</b> <a href='../D/8537.html' title='Multiple defined in 2 places.'>nf2_has_conflict</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *, <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *,
+<a name='L73'>  73                             <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a>, <b>int</b>);
+<a name='L74'>  74 <b>static</b> <b>int</b> <a href='../D/8564.html' title='Multiple defined in 2 places.'>nf2_uninstall_flow</a>(<b>struct</b> <a href='../Y/2280.html' title='Multiple used in 184 places.'>datapath</a> *, <b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *,
+<a name='L75'>  75                               <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a>,
+<a name='L76'>  76                               <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a>, <b>int</b>);
+<a name='L77'>  77 <b>static</b> <b>int</b> <a href='../D/8516.html' title='Multiple defined in 2 places.'>nf2_flow_timeout</a>(<b>struct</b> <a href='../Y/2280.html' title='Multiple used in 184 places.'>datapath</a> *, <b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *);
+<a name='L78'>  78 <b>static</b> <b>void</b> <a href='../D/8512.html' title='Multiple defined in 2 places.'>nf2_destroy_flowtable</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *);
+<a name='L79'>  79 <b>static</b> <b>int</b> <a href='../D/8541.html' title='Multiple defined in 2 places.'>nf2_iterate_flowtable</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *,
+<a name='L80'>  80                                  <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *,
+<a name='L81'>  81                                  <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a>, <b>struct</b> <a href='../Y/7188.html' title='Multiple used in 13 places.'>sw_table_position</a> *,
+<a name='L82'>  82                                  <b>int</b> (*)(<b>struct</b> <a href='../Y/7178.html' title='Multiple used in 120 places.'>sw_flow</a> *, <b>void</b> *), <b>void</b> *);
+<a name='L83'>  83 <b>unsigned</b> <b>long</b> <b>int</b> <a href='../S/276.html#L358' title='Defined at 358 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>get_lookup_matched_stats</a>(<b>void</b>);
+<a name='L84'>  84 <b>unsigned</b> <b>long</b> <b>int</b> <a href='../S/276.html#L342' title='Defined at 342 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>get_lookup_stats</a>(<b>void</b>);
+<a name='L85'>  85 <b>static</b> <b>void</b> <a href='../D/8525.html' title='Multiple defined in 2 places.'>nf2_get_flowstats</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *, <b>struct</b> <a href='../Y/7189.html' title='Multiple used in 13 places.'>sw_table_stats</a> *);
+<a name='L86'>  86 <b>static</b> <b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *<a href='../S/276.html#L386' title='Defined at 386 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>nf2_create_flowtable</a>(<b>void</b>);
+<a name='L87'>  87 <b>static</b> <b>int</b> <a href='../Y/1166.html' title='Multiple used in 9 places.'>__init</a> <a href='../S/276.html#L433' title='Defined at 433 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>nf2_startup</a>(<b>void</b>);
+<a name='L88'>  88 <b>static</b> <b>void</b> <a href='../S/276.html#L440' title='Defined at 440 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>nf2_cleanup</a>(<b>void</b>);
+<a name='L89'>  89 
+<a name='L90'>  90 <b>static</b> <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a> *
+<a name='L91'>  91 <a href='../R/3677.html' title='Multiple refered from 4 places.'>nf2_lookup_flowtable</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>, <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>)
+<a name='L92'>  92 <font color='red'>{</font>
+<a name='L93'>  93         <b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a> = (<b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *)<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>;
+<a name='L94'>  94         <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a> *<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>;
+<a name='L95'>  95 
+<a name='L96'>  96         <a href='../Y/4162.html' title='Multiple used in 18 places.'>list_for_each_entry</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>, &amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/3174.html' title='Multiple used in 129 places.'>flows</a>, <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>) <font color='red'>{</font>
+<a name='L97'>  97                 <b>if</b> (<a href='../D/7849.html' title='Multiple defined in 2 places.'>flow_matches_1wild</a>(<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>, &amp;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>)) <font color='red'>{</font>
+<a name='L98'>  98                         <b>return</b> <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>;
+<a name='L99'>  99                 <font color='red'>}</font>
+<a name='L100'> 100         <font color='red'>}</font>
+<a name='L101'> 101 
+<a name='L102'> 102         <b>return</b> <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L103'> 103 <font color='red'>}</font>
+<a name='L104'> 104 
+<a name='L105'> 105 <b>static</b> <b>int</b>
+<a name='L106'> 106 <a href='../R/3675.html' title='Multiple refered from 4 places.'>nf2_install_flow</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>, <b>struct</b> <a href='../Y/7178.html' title='Multiple used in 120 places.'>sw_flow</a> *<a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a>)
+<a name='L107'> 107 <font color='red'>{</font>
+<a name='L108'> 108         <b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a> = (<b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *)<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>;
+<a name='L109'> 109 
+<a name='L110'> 110         <i><font color='green'>/* Delete flows that match exactly. */</font></i>
+<a name='L111'> 111         <a href='../D/8564.html' title='Multiple defined in 2 places.'>nf2_uninstall_flow</a>(<a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>, &amp;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>, <a href='../D/3587.html' title='Multiple defined in 2 places.'>OFPP_NONE</a>,
+<a name='L112'> 112                            <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>, <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>);
+<a name='L113'> 113 
+<a name='L114'> 114         <b>if</b> (<a href='../D/8502.html' title='Multiple defined in 2 places.'>nf2_are_actions_supported</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>)) <font color='red'>{</font>
+<a name='L115'> 115                 <b>if</b> (<a href='../D/8503.html' title='Multiple defined in 2 places.'>nf2_build_and_write_flow</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>)) <font color='red'>{</font>
+<a name='L116'> 116                         <b>return</b> 0;
+<a name='L117'> 117                 <font color='red'>}</font>
+<a name='L118'> 118         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L119'> 119                 <i><font color='green'>/* Unsupported actions or no netdevice. */</font></i>
+<a name='L120'> 120                 <b>return</b> 0;
+<a name='L121'> 121         <font color='red'>}</font>
+<a name='L122'> 122 
+<a name='L123'> 123         atomic_inc(&amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/4977.html' title='Multiple used in 30 places.'>num_flows</a>);
+<a name='L124'> 124         <a href='../Y/4154.html' title='Multiple used in 4 places.'>list_add_rcu</a>(&amp;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>, &amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/3174.html' title='Multiple used in 129 places.'>flows</a>);
+<a name='L125'> 125         <a href='../Y/4154.html' title='Multiple used in 4 places.'>list_add_rcu</a>(&amp;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/3960.html' title='Multiple used in 26 places.'>iter_node</a>, &amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/3959.html' title='Multiple used in 23 places.'>iter_flows</a>);
+<a name='L126'> 126         <b>return</b> 1;
+<a name='L127'> 127 <font color='red'>}</font>
+<a name='L128'> 128 
+<a name='L129'> 129 <b>static</b> <b>int</b>
+<a name='L130'> 130 <a href='../R/3680.html' title='Multiple refered from 4 places.'>nf2_modify_flow</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>, <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>,
+<a name='L131'> 131                 <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>, <b>int</b> <a href='../Y/7092.html' title='Multiple used in 128 places.'>strict</a>,
+<a name='L132'> 132                 <b>const</b> <b>struct</b> <a href='../Y/5088.html' title='Multiple used in 65 places.'>ofp_action_header</a> *<a href='../Y/1294.html' title='Multiple used in 157 places.'>actions</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/1295.html' title='Multiple used in 192 places.'>actions_len</a>)
+<a name='L133'> 133 <font color='red'>{</font>
+<a name='L134'> 134         <b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a> = (<b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *)<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>;
+<a name='L135'> 135         <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a> *<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>;
+<a name='L136'> 136         <b>unsigned</b> <b>int</b> <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a> = 0;
+<a name='L137'> 137 
+<a name='L138'> 138         <a href='../Y/4162.html' title='Multiple used in 18 places.'>list_for_each_entry</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>, &amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/3174.html' title='Multiple used in 129 places.'>flows</a>, <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>) <font color='red'>{</font>
+<a name='L139'> 139                 <b>if</b> (<a href='../D/7852.html' title='Multiple defined in 2 places.'>flow_matches_desc</a>(&amp;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>, <a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>, <a href='../Y/7092.html' title='Multiple used in 128 places.'>strict</a>)
+<a name='L140'> 140                     &amp;&amp; (!<a href='../Y/7092.html' title='Multiple used in 128 places.'>strict</a> || <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a> == <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>)) <font color='red'>{</font>
+<a name='L141'> 141                         <a href='../D/7866.html' title='Multiple defined in 2 places.'>flow_replace_acts</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>, <a href='../Y/1294.html' title='Multiple used in 157 places.'>actions</a>, <a href='../Y/1295.html' title='Multiple used in 192 places.'>actions_len</a>);
+<a name='L142'> 142                         <b>if</b> (<a href='../D/8502.html' title='Multiple defined in 2 places.'>nf2_are_actions_supported</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>)) <font color='red'>{</font>
+<a name='L143'> 143                                 <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a> += <a href='../D/8544.html' title='Multiple defined in 2 places.'>nf2_modify_acts</a>(<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>, <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>);
+<a name='L144'> 144                         <font color='red'>}</font>
+<a name='L145'> 145                 <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L146'> 146                         <b>return</b> 0;
+<a name='L147'> 147                 <font color='red'>}</font>
+<a name='L148'> 148         <font color='red'>}</font>
+<a name='L149'> 149 
+<a name='L150'> 150         <b>return</b> <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>;
+<a name='L151'> 151 <font color='red'>}</font>
+<a name='L152'> 152 
+<a name='L153'> 153 <b>static</b> <b>int</b>
+<a name='L154'> 154 <a href='../R/3672.html' title='Multiple refered from 4 places.'>nf2_has_conflict</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>, <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>,
+<a name='L155'> 155                  <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>, <b>int</b> <a href='../Y/7092.html' title='Multiple used in 128 places.'>strict</a>)
+<a name='L156'> 156 <font color='red'>{</font>
+<a name='L157'> 157         <b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a> = (<b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *)<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>;
+<a name='L158'> 158         <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a> *<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>;
+<a name='L159'> 159 
+<a name='L160'> 160         <a href='../Y/4162.html' title='Multiple used in 18 places.'>list_for_each_entry</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>, &amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/3174.html' title='Multiple used in 129 places.'>flows</a>, <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>) <font color='red'>{</font>
+<a name='L161'> 161                 <b>if</b> (<a href='../D/7852.html' title='Multiple defined in 2 places.'>flow_matches_desc</a>(&amp;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>, <a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>, <a href='../Y/7092.html' title='Multiple used in 128 places.'>strict</a>)
+<a name='L162'> 162                     &amp;&amp; (<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a> == <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>)) <font color='red'>{</font>
+<a name='L163'> 163                         <b>return</b> <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>;
+<a name='L164'> 164                 <font color='red'>}</font>
+<a name='L165'> 165         <font color='red'>}</font>
+<a name='L166'> 166         <b>return</b> <a href='../Y/2997.html' title='Multiple used in 198 places.'>false</a>;
+<a name='L167'> 167 <font color='red'>}</font>
+<a name='L168'> 168 
+<a name='L169'> 169 <b>static</b> <b>void</b>
+<a name='L170'> 170 <a href='../R/2572.html' title='Multiple refered from 2 places.'>deferred_uninstall_callback</a>(<b>struct</b> <a href='../Y/6267.html' title='Multiple used in 6 places.'>rcu_head</a> *<a href='../Y/6264.html' title='Multiple used in 12 places.'>rcu</a>)
+<a name='L171'> 171 <font color='red'>{</font>
+<a name='L172'> 172         <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a> *<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a> = <a href='../Y/2104.html' title='Multiple used in 5 places.'>container_of</a>(<a href='../Y/6264.html' title='Multiple used in 12 places.'>rcu</a>, <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a>, <a href='../Y/6264.html' title='Multiple used in 12 places.'>rcu</a>);
+<a name='L173'> 173 
+<a name='L174'> 174         <a href='../D/7843.html' title='Multiple defined in 2 places.'>flow_free</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>);
+<a name='L175'> 175 <font color='red'>}</font>
+<a name='L176'> 176 
+<a name='L177'> 177 <b>static</b> <b>void</b>
+<a name='L178'> 178 <a href='../R/2713.html' title='Multiple refered from 2 places.'>do_deferred_uninstall</a>(<b>struct</b> <a href='../Y/7178.html' title='Multiple used in 120 places.'>sw_flow</a> *<a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a>)
+<a name='L179'> 179 <font color='red'>{</font>
+<a name='L180'> 180         <a href='../Y/1773.html' title='Multiple used in 3 places.'>call_rcu</a>(&amp;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/6264.html' title='Multiple used in 12 places.'>rcu</a>, <a href='../S/276.html#L170' title='Defined at 170 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>deferred_uninstall_callback</a>);
+<a name='L181'> 181 <font color='red'>}</font>
+<a name='L182'> 182 
+<a name='L183'> 183 <b>static</b> <b>int</b>
+<a name='L184'> 184 <a href='../R/2762.html' title='Multiple refered from 9 places.'>do_uninstall</a>(<b>struct</b> <a href='../Y/2280.html' title='Multiple used in 184 places.'>datapath</a> *<a href='../Y/2536.html' title='Multiple used in 17 places.'>dpinst</a>, <b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>,
+<a name='L185'> 185              <b>struct</b> <a href='../Y/7178.html' title='Multiple used in 120 places.'>sw_flow</a> *<a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a>, <b>enum</b> <a href='../Y/5155.html' title='Multiple used in 10 places.'>ofp_flow_removed_reason</a> <a href='../Y/6294.html' title='Multiple used in 94 places.'>reason</a>)
+<a name='L186'> 186 <font color='red'>{</font>
+<a name='L187'> 187         <b>if</b> (<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a> &amp;&amp; <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/5911.html' title='Multiple used in 123 places.'>private</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L188'> 188                 <b>if</b> (<a href='../Y/2536.html' title='Multiple used in 17 places.'>dpinst</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>)
+<a name='L189'> 189                         <a href='../D/7551.html' title='Multiple defined in 2 places.'>dp_send_flow_end</a>(<a href='../Y/2536.html' title='Multiple used in 17 places.'>dpinst</a>, <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>, <a href='../Y/6294.html' title='Multiple used in 94 places.'>reason</a>);
+<a name='L190'> 190                 <a href='../Y/4159.html' title='Multiple used in 7 places.'>list_del_rcu</a>(&amp;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L191'> 191                 <a href='../Y/4159.html' title='Multiple used in 7 places.'>list_del_rcu</a>(&amp;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/3960.html' title='Multiple used in 26 places.'>iter_node</a>);
+<a name='L192'> 192                 <a href='../D/8510.html' title='Multiple defined in 2 places.'>nf2_delete_private</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/5911.html' title='Multiple used in 123 places.'>private</a>);
+<a name='L193'> 193                 <a href='../S/276.html#L178' title='Defined at 178 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>do_deferred_uninstall</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>);
+<a name='L194'> 194                 <b>return</b> 1;
+<a name='L195'> 195         <font color='red'>}</font>
+<a name='L196'> 196 
+<a name='L197'> 197         <b>return</b> 0;
+<a name='L198'> 198 <font color='red'>}</font>
+<a name='L199'> 199 
+<a name='L200'> 200 <b>static</b> <b>int</b>
+<a name='L201'> 201 <a href='../R/3698.html' title='Multiple refered from 6 places.'>nf2_uninstall_flow</a>(<b>struct</b> <a href='../Y/2280.html' title='Multiple used in 184 places.'>datapath</a> *<a href='../Y/2536.html' title='Multiple used in 17 places.'>dpinst</a>, <b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>,
+<a name='L202'> 202                    <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5548.html' title='Multiple used in 164 places.'>out_port</a>,
+<a name='L203'> 203                    <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>, <b>int</b> <a href='../Y/7092.html' title='Multiple used in 128 places.'>strict</a>)
+<a name='L204'> 204 <font color='red'>{</font>
+<a name='L205'> 205         <b>struct</b> <a href='../Y/4699.html' title='Multiple used in 110 places.'>net_device</a> *<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>;
+<a name='L206'> 206         <b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a> = (<b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *)<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>;
+<a name='L207'> 207         <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a> *<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>;
+<a name='L208'> 208         <b>struct</b> <a href='../D/8515.html' title='Multiple defined in 2 places.'>nf2_flow</a> *<a href='../Y/4861.html' title='Multiple used in 32 places.'>nf2flow</a>;
+<a name='L209'> 209         <b>unsigned</b> <b>int</b> <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a> = 0;
+<a name='L210'> 210 
+<a name='L211'> 211         <a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a> = <a href='../D/8529.html' title='Multiple defined in 2 places.'>nf2_get_net_device</a>();
+<a name='L212'> 212         <b>if</b> (<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>)
+<a name='L213'> 213                 <b>return</b> 0;
+<a name='L214'> 214 
+<a name='L215'> 215         <a href='../Y/4162.html' title='Multiple used in 18 places.'>list_for_each_entry</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>, &amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/3174.html' title='Multiple used in 129 places.'>flows</a>, <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>) <font color='red'>{</font>
+<a name='L216'> 216                 <b>if</b> (<a href='../D/7852.html' title='Multiple defined in 2 places.'>flow_matches_desc</a>(&amp;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>, <a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>, <a href='../Y/7092.html' title='Multiple used in 128 places.'>strict</a>)
+<a name='L217'> 217                     &amp;&amp; (!<a href='../Y/7092.html' title='Multiple used in 128 places.'>strict</a> || <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a> == <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>)
+<a name='L218'> 218                     &amp;&amp; <a href='../D/7844.html' title='Multiple defined in 2 places.'>flow_has_out_port</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>, <a href='../Y/5548.html' title='Multiple used in 164 places.'>out_port</a>)) <font color='red'>{</font>
+<a name='L219'> 219                         <a href='../Y/4861.html' title='Multiple used in 32 places.'>nf2flow</a> = <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/5911.html' title='Multiple used in 123 places.'>private</a>;
+<a name='L220'> 220                         <b>if</b> (<a href='../Y/4861.html' title='Multiple used in 32 places.'>nf2flow</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L221'> 221                                 <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/5595.html' title='Multiple used in 48 places.'>packet_count</a>
+<a name='L222'> 222                                         += <a href='../D/8530.html' title='Multiple defined in 2 places.'>nf2_get_packet_count</a>(<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>,
+<a name='L223'> 223                                                                 <a href='../Y/4861.html' title='Multiple used in 32 places.'>nf2flow</a>);
+<a name='L224'> 224                                 <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/1732.html' title='Multiple used in 68 places.'>byte_count</a> += <a href='../D/8521.html' title='Multiple defined in 2 places.'>nf2_get_byte_count</a>(<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>,
+<a name='L225'> 225                                                                        <a href='../Y/4861.html' title='Multiple used in 32 places.'>nf2flow</a>);
+<a name='L226'> 226                         <font color='red'>}</font>
+<a name='L227'> 227                         <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a> += <a href='../D/7502.html' title='Multiple defined in 3 places.'>do_uninstall</a>(<a href='../Y/2536.html' title='Multiple used in 17 places.'>dpinst</a>, <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>,
+<a name='L228'> 228                                               <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>, <a href='../D/3608.html' title='Multiple defined in 3 places.'>OFPRR_DELETE</a>);
+<a name='L229'> 229                 <font color='red'>}</font>
+<a name='L230'> 230         <font color='red'>}</font>
+<a name='L231'> 231         <b>if</b> (<a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a> != 0)
+<a name='L232'> 232                 <a href='../Y/1515.html' title='Multiple used in 4 places.'>atomic_sub</a>(<a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>, &amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/4977.html' title='Multiple used in 30 places.'>num_flows</a>);
+<a name='L233'> 233 
+<a name='L234'> 234         <a href='../D/8518.html' title='Multiple defined in 2 places.'>nf2_free_net_device</a>(<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>);
+<a name='L235'> 235 
+<a name='L236'> 236         <b>return</b> <a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>;
+<a name='L237'> 237 <font color='red'>}</font>
+<a name='L238'> 238 
+<a name='L239'> 239 <b>static</b> <b>int</b>
+<a name='L240'> 240 <a href='../R/3651.html' title='Multiple refered from 4 places.'>nf2_flow_timeout</a>(<b>struct</b> <a href='../Y/2280.html' title='Multiple used in 184 places.'>datapath</a> *<a href='../Y/2536.html' title='Multiple used in 17 places.'>dpinst</a>, <b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>)
+<a name='L241'> 241 <font color='red'>{</font>
+<a name='L242'> 242         <b>struct</b> <a href='../Y/4699.html' title='Multiple used in 110 places.'>net_device</a> *<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>;
+<a name='L243'> 243         <b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a> = (<b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *)<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>;
+<a name='L244'> 244         <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a> *<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>;
+<a name='L245'> 245         <b>struct</b> <a href='../D/8515.html' title='Multiple defined in 2 places.'>nf2_flow</a> *<a href='../Y/4861.html' title='Multiple used in 32 places.'>nf2flow</a>;
+<a name='L246'> 246         <b>int</b> <a href='../Y/5005.html' title='Multiple used in 14 places.'>num_uninst_flows</a> = 0;
+<a name='L247'> 247         <a href='../Y/7623.html' title='Multiple used in 568 places.'>uint64_t</a> <a href='../Y/4979.html' title='Multiple used in 11 places.'>num_forw_packets</a> = 0;
+<a name='L248'> 248         <b>int</b> <a href='../Y/6294.html' title='Multiple used in 94 places.'>reason</a>;
+<a name='L249'> 249 
+<a name='L250'> 250         <a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a> = <a href='../D/8529.html' title='Multiple defined in 2 places.'>nf2_get_net_device</a>();
+<a name='L251'> 251         <b>if</b> (<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>)
+<a name='L252'> 252                 <b>return</b> <a href='../Y/5005.html' title='Multiple used in 14 places.'>num_uninst_flows</a>;
+<a name='L253'> 253 
+<a name='L254'> 254         <a href='../S/310.html#L27' title='Defined at 27 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/mutex.h.'>mutex_lock</a>(&amp;<a href='../Y/2525.html' title='Multiple used in 22 places.'>dp_mutex</a>);
+<a name='L255'> 255         <a href='../Y/4162.html' title='Multiple used in 18 places.'>list_for_each_entry</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>, &amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/3174.html' title='Multiple used in 129 places.'>flows</a>, <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>) <font color='red'>{</font>
+<a name='L256'> 256                 <a href='../Y/4861.html' title='Multiple used in 32 places.'>nf2flow</a> = <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/5911.html' title='Multiple used in 123 places.'>private</a>;
+<a name='L257'> 257                 <b>if</b> (<a href='../Y/4861.html' title='Multiple used in 32 places.'>nf2flow</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L258'> 258                         <a href='../Y/4979.html' title='Multiple used in 11 places.'>num_forw_packets</a> = <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/5595.html' title='Multiple used in 48 places.'>packet_count</a>
+<a name='L259'> 259                                 + <a href='../D/8530.html' title='Multiple defined in 2 places.'>nf2_get_packet_count</a>(<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>, <a href='../Y/4861.html' title='Multiple used in 32 places.'>nf2flow</a>);
+<a name='L260'> 260                         <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/1732.html' title='Multiple used in 68 places.'>byte_count</a> += <a href='../D/8521.html' title='Multiple defined in 2 places.'>nf2_get_byte_count</a>(<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>, <a href='../Y/4861.html' title='Multiple used in 32 places.'>nf2flow</a>);
+<a name='L261'> 261                 <font color='red'>}</font>
+<a name='L262'> 262                 <b>if</b> (<a href='../Y/4979.html' title='Multiple used in 11 places.'>num_forw_packets</a> &gt; <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/5595.html' title='Multiple used in 48 places.'>packet_count</a>
+<a name='L263'> 263                     &amp;&amp; <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../S/935.html#L773' title='Defined at 773 in src/cli.c.'>idle_timeout</a> != <a href='../D/3756.html' title='Multiple defined in 3 places.'>OFP_FLOW_PERMANENT</a>) <font color='red'>{</font>
+<a name='L264'> 264                         <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/5595.html' title='Multiple used in 48 places.'>packet_count</a> = <a href='../Y/4979.html' title='Multiple used in 11 places.'>num_forw_packets</a>;
+<a name='L265'> 265                         <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/7677.html' title='Multiple used in 32 places.'>used</a> = <a href='../Y/3383.html' title='Multiple used in 9 places.'>get_jiffies_64</a>();
+<a name='L266'> 266                 <font color='red'>}</font>
+<a name='L267'> 267                 <a href='../Y/6294.html' title='Multiple used in 94 places.'>reason</a> = <a href='../D/7880.html' title='Multiple defined in 2 places.'>flow_timeout</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>);
+<a name='L268'> 268                 <b>if</b> (<a href='../Y/6294.html' title='Multiple used in 94 places.'>reason</a> &gt;= 0) <font color='red'>{</font>
+<a name='L269'> 269                         <a href='../Y/5005.html' title='Multiple used in 14 places.'>num_uninst_flows</a> += <a href='../D/7502.html' title='Multiple defined in 3 places.'>do_uninstall</a>(<a href='../Y/2536.html' title='Multiple used in 17 places.'>dpinst</a>, <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>,
+<a name='L270'> 270                                                          <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>, <a href='../Y/6294.html' title='Multiple used in 94 places.'>reason</a>);
+<a name='L271'> 271                 <font color='red'>}</font>
+<a name='L272'> 272         <font color='red'>}</font>
+<a name='L273'> 273         <a href='../S/310.html#L49' title='Defined at 49 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/mutex.h.'>mutex_unlock</a>(&amp;<a href='../Y/2525.html' title='Multiple used in 22 places.'>dp_mutex</a>);
+<a name='L274'> 274 
+<a name='L275'> 275         <a href='../D/8507.html' title='Multiple defined in 2 places.'>nf2_clear_watchdog</a>(<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>);
+<a name='L276'> 276 
+<a name='L277'> 277         <a href='../D/8518.html' title='Multiple defined in 2 places.'>nf2_free_net_device</a>(<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>);
+<a name='L278'> 278 
+<a name='L279'> 279         <b>if</b> (<a href='../Y/5005.html' title='Multiple used in 14 places.'>num_uninst_flows</a> != 0)
+<a name='L280'> 280                 <a href='../Y/1515.html' title='Multiple used in 4 places.'>atomic_sub</a>(<a href='../Y/5005.html' title='Multiple used in 14 places.'>num_uninst_flows</a>, &amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/4977.html' title='Multiple used in 30 places.'>num_flows</a>);
+<a name='L281'> 281         <b>return</b> <a href='../Y/5005.html' title='Multiple used in 14 places.'>num_uninst_flows</a>;
+<a name='L282'> 282 <font color='red'>}</font>
+<a name='L283'> 283 
+<a name='L284'> 284 <b>static</b> <b>void</b>
+<a name='L285'> 285 <a href='../R/3647.html' title='Multiple refered from 4 places.'>nf2_destroy_flowtable</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>)
+<a name='L286'> 286 <font color='red'>{</font>
+<a name='L287'> 287         <b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a> = (<b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *)<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>;
+<a name='L288'> 288         <b>struct</b> <a href='../D/8515.html' title='Multiple defined in 2 places.'>nf2_flow</a> *<a href='../Y/4861.html' title='Multiple used in 32 places.'>nf2flow</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L289'> 289 
+<a name='L290'> 290         <b>if</b> (<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>)
+<a name='L291'> 291                 <b>return</b>;
+<a name='L292'> 292 
+<a name='L293'> 293         <b>while</b> (!<a href='../Y/4160.html' title='Multiple used in 8 places.'>list_empty</a>(&amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/3174.html' title='Multiple used in 129 places.'>flows</a>)) <font color='red'>{</font>
+<a name='L294'> 294                 <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a> *<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a> = <a href='../Y/4161.html' title='Multiple used in 10 places.'>list_entry</a>(<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/3174.html' title='Multiple used in 129 places.'>flows</a>.<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>,
+<a name='L295'> 295                                                   <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a>, <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L296'> 296 
+<a name='L297'> 297                 <a href='../Y/4157.html' title='Multiple used in 6 places.'>list_del</a>(&amp;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L298'> 298                 <b>if</b> (<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/5911.html' title='Multiple used in 123 places.'>private</a>) <font color='red'>{</font>
+<a name='L299'> 299                         <a href='../Y/4861.html' title='Multiple used in 32 places.'>nf2flow</a> = (<b>struct</b> <a href='../D/8515.html' title='Multiple defined in 2 places.'>nf2_flow</a> *)<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/5911.html' title='Multiple used in 123 places.'>private</a>;
+<a name='L300'> 300 
+<a name='L301'> 301                         <b>if</b> (<a href='../Y/4861.html' title='Multiple used in 32 places.'>nf2flow</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> == <a href='../D/3118.html' title='Multiple defined in 2 places.'>NF2_TABLE_EXACT</a>) <font color='red'>{</font>
+<a name='L302'> 302                                 <a href='../D/8498.html' title='Multiple defined in 2 places.'>nf2_add_free_exact</a>(<a href='../Y/4861.html' title='Multiple used in 32 places.'>nf2flow</a>);
+<a name='L303'> 303                         <font color='red'>}</font> <b>else</b> <b>if</b> (<a href='../Y/4861.html' title='Multiple used in 32 places.'>nf2flow</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> == <a href='../D/3119.html' title='Multiple defined in 2 places.'>NF2_TABLE_WILDCARD</a>) <font color='red'>{</font>
+<a name='L304'> 304                                 <a href='../D/8499.html' title='Multiple defined in 2 places.'>nf2_add_free_wildcard</a>(<a href='../Y/4861.html' title='Multiple used in 32 places.'>nf2flow</a>);
+<a name='L305'> 305                         <font color='red'>}</font>
+<a name='L306'> 306                         <a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/5911.html' title='Multiple used in 123 places.'>private</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L307'> 307                 <font color='red'>}</font>
+<a name='L308'> 308                 <a href='../D/7843.html' title='Multiple defined in 2 places.'>flow_free</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>);
+<a name='L309'> 309         <font color='red'>}</font>
+<a name='L310'> 310         <a href='../Y/4017.html' title='Multiple used in 20 places.'>kfree</a>(<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>);
+<a name='L311'> 311 
+<a name='L312'> 312         <a href='../D/8511.html' title='Multiple defined in 2 places.'>nf2_destroy_exact_freelist</a>();
+<a name='L313'> 313         <a href='../D/8513.html' title='Multiple defined in 2 places.'>nf2_destroy_wildcard_freelist</a>();
+<a name='L314'> 314 <font color='red'>}</font>
+<a name='L315'> 315 
+<a name='L316'> 316 <b>static</b> <b>int</b>
+<a name='L317'> 317 <a href='../R/3676.html' title='Multiple refered from 4 places.'>nf2_iterate_flowtable</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>, <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>,
+<a name='L318'> 318                       <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5548.html' title='Multiple used in 164 places.'>out_port</a>, <b>struct</b> <a href='../Y/7188.html' title='Multiple used in 13 places.'>sw_table_position</a> *<a href='../Y/5843.html' title='Multiple used in 69 places.'>position</a>,
+<a name='L319'> 319                       <b>int</b> (*<a href='../Y/1775.html' title='Multiple used in 63 places.'>callback</a>) (<b>struct</b> <a href='../Y/7178.html' title='Multiple used in 120 places.'>sw_flow</a> *, <b>void</b> *), <b>void</b> *<a href='../Y/5911.html' title='Multiple used in 123 places.'>private</a>)
+<a name='L320'> 320 <font color='red'>{</font>
+<a name='L321'> 321         <b>unsigned</b> <b>long</b> <a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a>;
+<a name='L322'> 322         <b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a> = (<b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *)<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>;
+<a name='L323'> 323         <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a> *<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>;
+<a name='L324'> 324         <b>int</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> = 0;
+<a name='L325'> 325 
+<a name='L326'> 326         <a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a> = ~<a href='../Y/5843.html' title='Multiple used in 69 places.'>position</a>-&gt;<a href='../Y/5911.html' title='Multiple used in 123 places.'>private</a>[0];
+<a name='L327'> 327         <a href='../Y/4162.html' title='Multiple used in 18 places.'>list_for_each_entry</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>, &amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/3959.html' title='Multiple used in 23 places.'>iter_flows</a>, <a href='../Y/3960.html' title='Multiple used in 26 places.'>iter_node</a>) <font color='red'>{</font>
+<a name='L328'> 328                 <b>if</b> (<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/6672.html' title='Multiple used in 23 places.'>serial</a> &lt;= <a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a> &amp;&amp; <a href='../D/7851.html' title='Multiple defined in 2 places.'>flow_matches_2wild</a>(<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>, &amp;<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>)
+<a name='L329'> 329                     &amp;&amp; <a href='../D/7844.html' title='Multiple defined in 2 places.'>flow_has_out_port</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>, <a href='../Y/5548.html' title='Multiple used in 164 places.'>out_port</a>)) <font color='red'>{</font>
+<a name='L330'> 330                         <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> = <a href='../Y/1775.html' title='Multiple used in 63 places.'>callback</a>(<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>, <a href='../Y/5911.html' title='Multiple used in 123 places.'>private</a>);
+<a name='L331'> 331                         <b>if</b> (<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> != 0) <font color='red'>{</font>
+<a name='L332'> 332                                 <a href='../Y/5843.html' title='Multiple used in 69 places.'>position</a>-&gt;<a href='../Y/5911.html' title='Multiple used in 123 places.'>private</a>[0] = ~<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>-&gt;<a href='../Y/6672.html' title='Multiple used in 23 places.'>serial</a>;
+<a name='L333'> 333                                 <b>return</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L334'> 334                         <font color='red'>}</font>
+<a name='L335'> 335                 <font color='red'>}</font>
+<a name='L336'> 336         <font color='red'>}</font>
+<a name='L337'> 337 
+<a name='L338'> 338         <b>return</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L339'> 339 <font color='red'>}</font>
+<a name='L340'> 340 
+<a name='L341'> 341 <b>unsigned</b> <b>long</b> <b>int</b>
+<a name='L342'> 342 <a href='../R/3169.html' title='Multiple refered from 3 places.'>get_lookup_stats</a>(<b>void</b>)
+<a name='L343'> 343 <font color='red'>{</font>
+<a name='L344'> 344         <b>struct</b> <a href='../Y/4699.html' title='Multiple used in 110 places.'>net_device</a> *<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>;
+<a name='L345'> 345         <b>unsigned</b> <b>long</b> <b>int</b> <a href='../Y/5000.html' title='Multiple used in 5 places.'>num_searched</a> = 0;
+<a name='L346'> 346 
+<a name='L347'> 347         <a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a> = <a href='../D/8529.html' title='Multiple defined in 2 places.'>nf2_get_net_device</a>();
+<a name='L348'> 348         <b>if</b> (<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>)
+<a name='L349'> 349                 <b>return</b> <a href='../Y/5000.html' title='Multiple used in 5 places.'>num_searched</a>;
+<a name='L350'> 350 
+<a name='L351'> 351         <a href='../Y/5000.html' title='Multiple used in 5 places.'>num_searched</a> = <a href='../D/8528.html' title='Multiple defined in 2 places.'>nf2_get_missed_count</a>(<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>);
+<a name='L352'> 352         <a href='../D/8518.html' title='Multiple defined in 2 places.'>nf2_free_net_device</a>(<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>);
+<a name='L353'> 353         <a href='../Y/5000.html' title='Multiple used in 5 places.'>num_searched</a> += <a href='../S/276.html#L358' title='Defined at 358 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>get_lookup_matched_stats</a>();
+<a name='L354'> 354         <b>return</b> <a href='../Y/5000.html' title='Multiple used in 5 places.'>num_searched</a>;
+<a name='L355'> 355 <font color='red'>}</font>
+<a name='L356'> 356 
+<a name='L357'> 357 <b>unsigned</b> <b>long</b> <b>int</b>
+<a name='L358'> 358 <a href='../R/3168.html' title='Multiple refered from 4 places.'>get_lookup_matched_stats</a>(<b>void</b>)
+<a name='L359'> 359 <font color='red'>{</font>
+<a name='L360'> 360         <b>struct</b> <a href='../Y/4699.html' title='Multiple used in 110 places.'>net_device</a> *<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>;
+<a name='L361'> 361         <b>unsigned</b> <b>long</b> <b>int</b> <a href='../Y/4987.html' title='Multiple used in 8 places.'>num_matched</a> = 0;
+<a name='L362'> 362 
+<a name='L363'> 363         <a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a> = <a href='../D/8529.html' title='Multiple defined in 2 places.'>nf2_get_net_device</a>();
+<a name='L364'> 364         <b>if</b> (<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>)
+<a name='L365'> 365                 <b>return</b> <a href='../Y/4987.html' title='Multiple used in 8 places.'>num_matched</a>;
+<a name='L366'> 366 
+<a name='L367'> 367         <a href='../Y/4987.html' title='Multiple used in 8 places.'>num_matched</a> = <a href='../D/8527.html' title='Multiple defined in 2 places.'>nf2_get_matched_count</a>(<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>);
+<a name='L368'> 368         <a href='../D/8518.html' title='Multiple defined in 2 places.'>nf2_free_net_device</a>(<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>);
+<a name='L369'> 369         <b>return</b> <a href='../Y/4987.html' title='Multiple used in 8 places.'>num_matched</a>;
+<a name='L370'> 370 <font color='red'>}</font>
+<a name='L371'> 371 
+<a name='L372'> 372 <b>static</b> <b>void</b>
+<a name='L373'> 373 <a href='../R/3660.html' title='Multiple refered from 4 places.'>nf2_get_flowstats</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>, <b>struct</b> <a href='../Y/7189.html' title='Multiple used in 13 places.'>sw_table_stats</a> *<a href='../Y/7023.html' title='Multiple used in 238 places.'>stats</a>)
+<a name='L374'> 374 <font color='red'>{</font>
+<a name='L375'> 375         <b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a> = (<b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *)<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>;
+<a name='L376'> 376 
+<a name='L377'> 377         <a href='../Y/7023.html' title='Multiple used in 238 places.'>stats</a>-&gt;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a> = "nf2";
+<a name='L378'> 378         <a href='../Y/7023.html' title='Multiple used in 238 places.'>stats</a>-&gt;<a href='../Y/7877.html' title='Multiple used in 308 places.'>wildcards</a> = <a href='../D/4023.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_TABLE_SIZE</a> - 8;
+<a name='L379'> 379         <a href='../Y/7023.html' title='Multiple used in 238 places.'>stats</a>-&gt;<a href='../Y/4588.html' title='Multiple used in 45 places.'>n_flows</a> = <a href='../Y/1513.html' title='Multiple used in 2 places.'>atomic_read</a>(&amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/4977.html' title='Multiple used in 30 places.'>num_flows</a>);
+<a name='L380'> 380         <a href='../Y/7023.html' title='Multiple used in 238 places.'>stats</a>-&gt;<a href='../Y/4370.html' title='Multiple used in 32 places.'>max_flows</a> = <a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/4370.html' title='Multiple used in 32 places.'>max_flows</a>;
+<a name='L381'> 381         <a href='../Y/7023.html' title='Multiple used in 238 places.'>stats</a>-&gt;<a href='../Y/4600.html' title='Multiple used in 22 places.'>n_lookup</a> = <a href='../S/276.html#L342' title='Defined at 342 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>get_lookup_stats</a>();
+<a name='L382'> 382         <a href='../Y/7023.html' title='Multiple used in 238 places.'>stats</a>-&gt;<a href='../Y/4601.html' title='Multiple used in 23 places.'>n_matched</a> = <a href='../S/276.html#L358' title='Defined at 358 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>get_lookup_matched_stats</a>();
+<a name='L383'> 383 <font color='red'>}</font>
+<a name='L384'> 384 
+<a name='L385'> 385 <b>static</b> <b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *
+<a name='L386'> 386 <a href='../R/3643.html' title='Multiple refered from 2 places.'>nf2_create_flowtable</a>(<b>void</b>)
+<a name='L387'> 387 <font color='red'>{</font>
+<a name='L388'> 388         <b>struct</b> <a href='../Y/4699.html' title='Multiple used in 110 places.'>net_device</a> *<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>;
+<a name='L389'> 389         <b>struct</b> <a href='../D/8517.html' title='Multiple defined in 2 places.'>nf2_flowtable</a> *<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>;
+<a name='L390'> 390         <b>struct</b> <a href='../D/9777.html' title='Multiple defined in 2 places.'>sw_table</a> *<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>;
+<a name='L391'> 391 
+<a name='L392'> 392         <a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a> = <a href='../D/8529.html' title='Multiple defined in 2 places.'>nf2_get_net_device</a>();
+<a name='L393'> 393         <b>if</b> (<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>)
+<a name='L394'> 394                 <b>return</b> <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L395'> 395 
+<a name='L396'> 396         <a href='../D/8562.html' title='Multiple defined in 2 places.'>nf2_reset_card</a>(<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>);
+<a name='L397'> 397         <a href='../D/8518.html' title='Multiple defined in 2 places.'>nf2_free_net_device</a>(<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>);
+<a name='L398'> 398 
+<a name='L399'> 399         <a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a> = <a href='../Y/4032.html' title='Multiple used in 15 places.'>kzalloc</a>(<b>sizeof</b>(*<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>), <a href='../Y/379.html' title='Multiple used in 13 places.'>GFP_KERNEL</a>);
+<a name='L400'> 400         <b>if</b> (<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L401'> 401                 <a href='../D/8518.html' title='Multiple defined in 2 places.'>nf2_free_net_device</a>(<a href='../S/851.html#L98' title='Defined at 98 in cbench/openflow/lib/netdev.c.'>netdev</a>);
+<a name='L402'> 402                 <b>return</b> <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L403'> 403         <font color='red'>}</font>
+<a name='L404'> 404 
+<a name='L405'> 405         <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a> = &amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>;
+<a name='L406'> 406         <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>-&gt;<a href='../Y/4600.html' title='Multiple used in 22 places.'>n_lookup</a> = (<b>unsigned</b> <b>long</b> <b>long</b>)<a href='../S/276.html#L342' title='Defined at 342 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>get_lookup_stats</a>();
+<a name='L407'> 407         <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>-&gt;<a href='../Y/4601.html' title='Multiple used in 23 places.'>n_matched</a> = (<b>unsigned</b> <b>long</b> <b>long</b>)<a href='../S/276.html#L358' title='Defined at 358 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>get_lookup_matched_stats</a>();
+<a name='L408'> 408         <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>-&gt;<a href='../Y/4243.html' title='Multiple used in 16 places.'>lookup</a> = <a href='../D/8542.html' title='Multiple defined in 2 places.'>nf2_lookup_flowtable</a>;
+<a name='L409'> 409         <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>-&gt;<a href='../Y/3843.html' title='Multiple used in 16 places.'>insert</a> = <a href='../D/8540.html' title='Multiple defined in 2 places.'>nf2_install_flow</a>;
+<a name='L410'> 410         <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>-&gt;<a href='../Y/4488.html' title='Multiple used in 19 places.'>modify</a> = <a href='../D/8545.html' title='Multiple defined in 2 places.'>nf2_modify_flow</a>;
+<a name='L411'> 411         <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>-&gt;<a href='../Y/3558.html' title='Multiple used in 12 places.'>has_conflict</a> = <a href='../D/8537.html' title='Multiple defined in 2 places.'>nf2_has_conflict</a>;
+<a name='L412'> 412         <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>-&gt;<a href='../Y/2320.html' title='Multiple used in 25 places.'>delete</a> = <a href='../D/8564.html' title='Multiple defined in 2 places.'>nf2_uninstall_flow</a>;
+<a name='L413'> 413         <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>-&gt;<a href='../D/9898.html' title='Multiple defined in 2 places.'>timeout</a> = <a href='../D/8516.html' title='Multiple defined in 2 places.'>nf2_flow_timeout</a>;
+<a name='L414'> 414         <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>-&gt;<a href='../D/7308.html' title='Multiple defined in 12 places.'>destroy</a> = <a href='../D/8512.html' title='Multiple defined in 2 places.'>nf2_destroy_flowtable</a>;
+<a name='L415'> 415         <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>-&gt;<a href='../Y/3961.html' title='Multiple used in 22 places.'>iterate</a> = <a href='../D/8541.html' title='Multiple defined in 2 places.'>nf2_iterate_flowtable</a>;
+<a name='L416'> 416         <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>-&gt;<a href='../Y/7023.html' title='Multiple used in 238 places.'>stats</a> = <a href='../D/8525.html' title='Multiple defined in 2 places.'>nf2_get_flowstats</a>;
+<a name='L417'> 417 <font color='darkred'>#define</font> <a href='../R/1520.html' title='Multiple refered from 4 places.'>RESERVED_FOR_CPU2NETFPGA</a>        8
+<a name='L418'> 418         <a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/4370.html' title='Multiple used in 32 places.'>max_flows</a> = <a href='../D/3869.html' title='Multiple defined in 2 places.'>OPENFLOW_NF2_EXACT_TABLE_SIZE</a>
+<a name='L419'> 419                 + <a href='../D/4023.html' title='Multiple defined in 2 places.'>OPENFLOW_WILDCARD_TABLE_SIZE</a> - <a href='../D/5126.html' title='Multiple defined in 2 places.'>RESERVED_FOR_CPU2NETFPGA</a>;
+<a name='L420'> 420         <a href='../Y/1514.html' title='Multiple used in 2 places.'>atomic_set</a>(&amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/4977.html' title='Multiple used in 30 places.'>num_flows</a>, 0);
+<a name='L421'> 421         <a href='../Y/458.html' title='Multiple used in 11 places.'>INIT_LIST_HEAD</a>(&amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/3174.html' title='Multiple used in 129 places.'>flows</a>);
+<a name='L422'> 422         <a href='../Y/458.html' title='Multiple used in 11 places.'>INIT_LIST_HEAD</a>(&amp;<a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/3959.html' title='Multiple used in 23 places.'>iter_flows</a>);
+<a name='L423'> 423         <a href='../Y/4862.html' title='Multiple used in 73 places.'>nf2flowtab</a>-&gt;<a href='../Y/4817.html' title='Multiple used in 15 places.'>next_serial</a> = 0;
+<a name='L424'> 424 
+<a name='L425'> 425         <a href='../D/8539.html' title='Multiple defined in 2 places.'>nf2_init_wildcard_freelist</a>();
+<a name='L426'> 426         <a href='../D/8568.html' title='Multiple defined in 2 places.'>nf2_write_static_wildcard</a>();
+<a name='L427'> 427         <a href='../D/8538.html' title='Multiple defined in 2 places.'>nf2_init_exact_freelist</a>();
+<a name='L428'> 428 
+<a name='L429'> 429         <b>return</b> <a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>;
+<a name='L430'> 430 <font color='red'>}</font>
+<a name='L431'> 431 
+<a name='L432'> 432 <b>static</b> <b>int</b> <a href='../Y/1166.html' title='Multiple used in 9 places.'>__init</a>
+<a name='L433'> 433 <a href='../S/276.html#L87' title='Refered from 87 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>nf2_startup</a>(<b>void</b>)
+<a name='L434'> 434 <font color='red'>{</font>
+<a name='L435'> 435         <a href='../S/274.html#L223' title='Defined at 223 in cbench/openflow/datapath/hwtable_nf2/nf2_procfs.c.'>nf2_create_procfs</a>();
+<a name='L436'> 436         <b>return</b> <a href='../S/331.html#L248' title='Defined at 248 in cbench/openflow/datapath/chain.c.'>chain_set_hw_hook</a>(<a href='../S/276.html#L386' title='Defined at 386 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>nf2_create_flowtable</a>, <a href='../D/5583.html' title='Multiple defined in 45 places.'>THIS_MODULE</a>);
+<a name='L437'> 437 <font color='red'>}</font>
+<a name='L438'> 438 
+<a name='L439'> 439 <b>static</b> <b>void</b>
+<a name='L440'> 440 <a href='../S/276.html#L88' title='Refered from 88 in cbench/openflow/datapath/hwtable_nf2/nf2_flowtable.c.'>nf2_cleanup</a>(<b>void</b>)
+<a name='L441'> 441 <font color='red'>{</font>
+<a name='L442'> 442         <a href='../S/274.html#L237' title='Defined at 237 in cbench/openflow/datapath/hwtable_nf2/nf2_procfs.c.'>nf2_remove_procfs</a>();
+<a name='L443'> 443         <a href='../S/331.html#L265' title='Defined at 265 in cbench/openflow/datapath/chain.c.'>chain_clear_hw_hook</a>();
+<a name='L444'> 444 <font color='red'>}</font>
+<a name='L445'> 445 
+<a name='L446'> 446 module_init(nf2_startup);
+<a name='L447'> 447 module_exit(nf2_cleanup);
+<a name='L448'> 448 
+<a name='L449'> 449 MODULE_DESCRIPTION("NetFPGA Fastpath Extension for OpenFlow Switch");
+<a name='L450'> 450 MODULE_AUTHOR("Copyright (c) 2008, 2009 "
+<a name='L451'> 451               "The Board of Trustees of The Leland Stanford Junior University");
+<a name='L452'> 452 MODULE_LICENSE("GPL");
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L91'>[^]</a><a href='#L440'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

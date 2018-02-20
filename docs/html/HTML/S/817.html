@@ -1,0 +1,344 @@
+<html>
+<head>
+<title>cbench/openflow/lib/daemon.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/daemon.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L60'>[^]</a><a href='#L256'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L60' title='Defined at 60.'>make_pidfile_name</a>
+<li><a href='#L74' title='Defined at 74.'>set_pidfile</a>
+<li><a href='#L84' title='Defined at 84.'>get_pidfile</a>
+<li><a href='#L93' title='Defined at 93.'>ignore_existing_pidfile</a>
+<li><a href='#L101' title='Defined at 101.'>set_detach</a>
+<li><a href='#L110' title='Defined at 110.'>already_running</a>
+<li><a href='#L133' title='Defined at 133.'>die_if_already_running</a>
+<li><a href='#L151' title='Defined at 151.'>make_pidfile</a>
+<li><a href='#L203' title='Defined at 203.'>daemonize</a>
+<li><a href='#L243' title='Defined at 243.'>daemon_usage</a>
+<li><a href='#L256' title='Defined at 256.'>read_pidfile</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008, 2009 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> *</font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> *</font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> "<a href='876.html'>daemon.h</a>"
+<a name='L36'>  36 <font color='darkred'>#include</font> &lt;errno.h&gt;
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;fcntl.h&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;stdlib.h&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> &lt;string.h&gt;
+<a name='L40'>  40 <font color='darkred'>#include</font> &lt;unistd.h&gt;
+<a name='L41'>  41 <font color='darkred'>#include</font> "<a href='888.html'>fatal-signal.h</a>"
+<a name='L42'>  42 <font color='darkred'>#include</font> "<a href='858.html'>dirs.h</a>"
+<a name='L43'>  43 <font color='darkred'>#include</font> "<a href='../I/69.html'>util.h</a>"
+<a name='L44'>  44 
+<a name='L45'>  45 <font color='darkred'>#define</font> <a href='../R/1643.html' title='Multiple refered from 13 places.'>THIS_MODULE</a> VLM_daemon
+<a name='L46'>  46 <font color='darkred'>#include</font> "<a href='859.html'>vlog.h</a>"
+<a name='L47'>  47 
+<a name='L48'>  48 <i><font color='green'>/* Should we run in the background? */</font></i>
+<a name='L49'>  49 <b>static</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/2355.html' title='Multiple used in 3 places.'>detach</a>;
+<a name='L50'>  50 
+<a name='L51'>  51 <i><font color='green'>/* Name of pidfile (null if none). */</font></i>
+<a name='L52'>  52 <b>static</b> <b>char</b> *<a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>;
+<a name='L53'>  53 
+<a name='L54'>  54 <i><font color='green'>/* Create pidfile even if one already exists and is locked? */</font></i>
+<a name='L55'>  55 <b>static</b> <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/3193.html' title='Multiple used in 9 places.'>force</a>;
+<a name='L56'>  56 
+<a name='L57'>  57 <i><font color='green'>/* Returns the file name that would be used for a pidfile if 'name' were</font></i>
+<a name='L58'>  58 <i><font color='green'> * provided to set_pidfile().  The caller must free the returned string. */</font></i>
+<a name='L59'>  59 <b>char</b> *
+<a name='L60'>  60 <a href='../R/3494.html' title='Multiple refered from 4 places.'>make_pidfile_name</a>(<b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>) 
+<a name='L61'>  61 <font color='red'>{</font>
+<a name='L62'>  62     <b>return</b> (!<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a> ? <a href='../S/878.html#L129' title='Defined at 129 in cbench/openflow/lib/util.c.'>xasprintf</a>("%s/%s.pid", <a href='../Y/5323.html' title='Multiple used in 6 places.'>ofp_rundir</a>, <a href='../Y/5944.html' title='Multiple used in 28 places.'>program_name</a>)
+<a name='L63'>  63             : *<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a> == '/' ? <a href='../S/878.html#L98' title='Defined at 98 in cbench/openflow/lib/util.c.'>xstrdup</a>(<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>)
+<a name='L64'>  64             : <a href='../S/878.html#L129' title='Defined at 129 in cbench/openflow/lib/util.c.'>xasprintf</a>("%s/%s", <a href='../Y/5323.html' title='Multiple used in 6 places.'>ofp_rundir</a>, <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>));
+<a name='L65'>  65 <font color='red'>}</font>
+<a name='L66'>  66 
+<a name='L67'>  67 <i><font color='green'>/* Sets up a following call to daemonize() to create a pidfile named 'name'.</font></i>
+<a name='L68'>  68 <i><font color='green'> * If 'name' begins with '/', then it is treated as an absolute path.</font></i>
+<a name='L69'>  69 <i><font color='green'> * Otherwise, it is taken relative to RUNDIR, which is $(prefix)/var/run by</font></i>
+<a name='L70'>  70 <i><font color='green'> * default.</font></i>
+<a name='L71'>  71 <i><font color='green'> *</font></i>
+<a name='L72'>  72 <i><font color='green'> * If 'name' is null, then program_name followed by ".pid" is used. */</font></i>
+<a name='L73'>  73 <b>void</b>
+<a name='L74'>  74 <a href='../R/4433.html' title='Multiple refered from 3 places.'>set_pidfile</a>(<b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>)
+<a name='L75'>  75 <font color='red'>{</font>
+<a name='L76'>  76     <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>);
+<a name='L77'>  77     <a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a> = <a href='../S/817.html#L60' title='Defined at 60 in cbench/openflow/lib/daemon.c.'>make_pidfile_name</a>(<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>);
+<a name='L78'>  78 <font color='red'>}</font>
+<a name='L79'>  79 
+<a name='L80'>  80 <i><font color='green'>/* Returns an absolute path to the configured pidfile, or a null pointer if no</font></i>
+<a name='L81'>  81 <i><font color='green'> * pidfile is configured.  The caller must not modify or free the returned</font></i>
+<a name='L82'>  82 <i><font color='green'> * string. */</font></i>
+<a name='L83'>  83 <b>const</b> <b>char</b> *
+<a name='L84'>  84 <a href='../R/3181.html' title='Multiple refered from 3 places.'>get_pidfile</a>(<b>void</b>)
+<a name='L85'>  85 <font color='red'>{</font>
+<a name='L86'>  86     <b>return</b> <a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>;
+<a name='L87'>  87 <font color='red'>}</font>
+<a name='L88'>  88 
+<a name='L89'>  89 <i><font color='green'>/* Normally, die_if_already_running() will terminate the program with a message</font></i>
+<a name='L90'>  90 <i><font color='green'> * if a locked pidfile already exists.  If this function is called,</font></i>
+<a name='L91'>  91 <i><font color='green'> * die_if_already_running() will merely log a warning. */</font></i>
+<a name='L92'>  92 <b>void</b>
+<a name='L93'>  93 <a href='../R/3272.html' title='Multiple refered from 3 places.'>ignore_existing_pidfile</a>(<b>void</b>)
+<a name='L94'>  94 <font color='red'>{</font>
+<a name='L95'>  95     <a href='../Y/3193.html' title='Multiple used in 9 places.'>force</a> = <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>;
+<a name='L96'>  96 <font color='red'>}</font>
+<a name='L97'>  97 
+<a name='L98'>  98 <i><font color='green'>/* Sets up a following call to daemonize() to detach from the foreground</font></i>
+<a name='L99'>  99 <i><font color='green'> * session, running this process in the background.  */</font></i>
+<a name='L100'> 100 <b>void</b>
+<a name='L101'> 101 <a href='../R/4425.html' title='Multiple refered from 3 places.'>set_detach</a>(<b>void</b>)
+<a name='L102'> 102 <font color='red'>{</font>
+<a name='L103'> 103     <a href='../Y/2355.html' title='Multiple used in 3 places.'>detach</a> = <a href='../Y/7480.html' title='Multiple used in 168 places.'>true</a>;
+<a name='L104'> 104 <font color='red'>}</font>
+<a name='L105'> 105 
+<a name='L106'> 106 <i><font color='green'>/* If a pidfile has been configured and that pidfile already exists and is</font></i>
+<a name='L107'> 107 <i><font color='green'> * locked by a running process, returns the pid of the running process.</font></i>
+<a name='L108'> 108 <i><font color='green'> * Otherwise, returns 0. */</font></i>
+<a name='L109'> 109 <b>static</b> <a href='../Y/5732.html' title='Multiple used in 12 places.'>pid_t</a>
+<a name='L110'> 110 <a href='../S/817.html#L135' title='Refered from 135 in cbench/openflow/lib/daemon.c.'>already_running</a>(<b>void</b>)
+<a name='L111'> 111 <font color='red'>{</font>
+<a name='L112'> 112     <a href='../Y/5732.html' title='Multiple used in 12 places.'>pid_t</a> <a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a> = 0;
+<a name='L113'> 113     <b>if</b> (<a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>) <font color='red'>{</font>
+<a name='L114'> 114         <b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a> = <a href='../Y/5465.html' title='Multiple used in 21 places.'>open</a>(<a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>, <a href='../Y/636.html' title='Multiple used in 4 places.'>O_RDWR</a>);
+<a name='L115'> 115         <b>if</b> (<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a> &gt;= 0) <font color='red'>{</font>
+<a name='L116'> 116             <b>struct</b> <a href='../Y/3127.html' title='Multiple used in 3 places.'>flock</a> <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>;
+<a name='L117'> 117             <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4057.html' title='Multiple used in 5 places.'>l_type</a> = <a href='../Y/347.html' title='Multiple used in 3 places.'>F_WRLCK</a>;
+<a name='L118'> 118             <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4058.html' title='Multiple used in 3 places.'>l_whence</a> = <a href='../Y/764.html' title='Multiple used in 4 places.'>SEEK_SET</a>;
+<a name='L119'> 119             <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4056.html' title='Multiple used in 3 places.'>l_start</a> = 0;
+<a name='L120'> 120             <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4054.html' title='Multiple used in 3 places.'>l_len</a> = 0;
+<a name='L121'> 121             <b>if</b> (<a href='../Y/3013.html' title='Multiple used in 29 places.'>fcntl</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/342.html' title='Multiple used in 2 places.'>F_GETLK</a>, &amp;<a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>) != -1 &amp;&amp; <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4057.html' title='Multiple used in 5 places.'>l_type</a> != <a href='../Y/346.html' title='Multiple used in 2 places.'>F_UNLCK</a>) <font color='red'>{</font>
+<a name='L122'> 122                 <a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a> = <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4055.html' title='Multiple used in 4 places.'>l_pid</a>;
+<a name='L123'> 123             <font color='red'>}</font>
+<a name='L124'> 124             <a href='../Y/1918.html' title='Multiple used in 102 places.'>close</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>);
+<a name='L125'> 125         <font color='red'>}</font>
+<a name='L126'> 126     <font color='red'>}</font>
+<a name='L127'> 127     <b>return</b> <a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>;
+<a name='L128'> 128 <font color='red'>}</font>
+<a name='L129'> 129 
+<a name='L130'> 130 <i><font color='green'>/* If a locked pidfile exists, issue a warning message and, unless</font></i>
+<a name='L131'> 131 <i><font color='green'> * ignore_existing_pidfile() has been called, terminate the program. */</font></i>
+<a name='L132'> 132 <b>void</b>
+<a name='L133'> 133 <a href='../R/2649.html' title='Multiple refered from 5 places.'>die_if_already_running</a>(<b>void</b>)
+<a name='L134'> 134 <font color='red'>{</font>
+<a name='L135'> 135     <a href='../Y/5732.html' title='Multiple used in 12 places.'>pid_t</a> <a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a> = <a href='../S/817.html#L110' title='Defined at 110 in cbench/openflow/lib/daemon.c.'>already_running</a>();
+<a name='L136'> 136     <b>if</b> (<a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>) <font color='red'>{</font>
+<a name='L137'> 137         <b>if</b> (!<a href='../Y/3193.html' title='Multiple used in 9 places.'>force</a>) <font color='red'>{</font>
+<a name='L138'> 138             <a href='../S/878.html#L153' title='Defined at 153 in cbench/openflow/lib/util.c.'>ofp_fatal</a>(0, "%s: already running as pid %ld",
+<a name='L139'> 139                       <a href='../S/817.html#L84' title='Defined at 84 in cbench/openflow/lib/daemon.c.'>get_pidfile</a>(), (<b>long</b> <b>int</b>) <a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>);
+<a name='L140'> 140         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L141'> 141             <a href='../S/859.html#L151' title='Defined at 151 in cbench/openflow/lib/vlog.h.'>VLOG_WARN</a>("%s: %s already running as pid %ld",
+<a name='L142'> 142                       <a href='../S/817.html#L84' title='Defined at 84 in cbench/openflow/lib/daemon.c.'>get_pidfile</a>(), <a href='../Y/5944.html' title='Multiple used in 28 places.'>program_name</a>, (<b>long</b> <b>int</b>) <a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>);
+<a name='L143'> 143         <font color='red'>}</font>
+<a name='L144'> 144     <font color='red'>}</font>
+<a name='L145'> 145 <font color='red'>}</font>
+<a name='L146'> 146 
+<a name='L147'> 147 <i><font color='green'>/* If a pidfile has been configured, creates it and stores the running process'</font></i>
+<a name='L148'> 148 <i><font color='green'> * pid init.  Ensures that the pidfile will be deleted when the process</font></i>
+<a name='L149'> 149 <i><font color='green'> * exits. */</font></i>
+<a name='L150'> 150 <b>static</b> <b>void</b>
+<a name='L151'> 151 <a href='../R/3493.html' title='Multiple refered from 2 places.'>make_pidfile</a>(<b>void</b>)
+<a name='L152'> 152 <font color='red'>{</font>
+<a name='L153'> 153     <b>if</b> (<a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>) <font color='red'>{</font>
+<a name='L154'> 154         <i><font color='green'>/* Create pidfile via temporary file, so that observers never see an</font></i>
+<a name='L155'> 155 <i><font color='green'>         * empty pidfile or an unlocked pidfile. */</font></i>
+<a name='L156'> 156         <b>long</b> <b>int</b> <a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a> = <a href='../Y/3426.html' title='Multiple used in 12 places.'>getpid</a>();
+<a name='L157'> 157         <b>char</b> *<a href='../Y/7403.html' title='Multiple used in 12 places.'>tmpfile</a>;
+<a name='L158'> 158         <b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>;
+<a name='L159'> 159 
+<a name='L160'> 160         <a href='../Y/7403.html' title='Multiple used in 12 places.'>tmpfile</a> = <a href='../S/878.html#L129' title='Defined at 129 in cbench/openflow/lib/util.c.'>xasprintf</a>("%s.tmp%ld", <a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>, <a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>);
+<a name='L161'> 161         <a href='../S/891.html#L194' title='Defined at 194 in cbench/openflow/lib/fatal-signal.c.'>fatal_signal_add_file_to_unlink</a>(<a href='../Y/7403.html' title='Multiple used in 12 places.'>tmpfile</a>);
+<a name='L162'> 162         <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a> = <a href='../Y/5465.html' title='Multiple used in 21 places.'>open</a>(<a href='../Y/7403.html' title='Multiple used in 12 places.'>tmpfile</a>, <a href='../Y/632.html' title='Multiple used in 2 places.'>O_CREAT</a> | <a href='../Y/638.html' title='Multiple used in 3 places.'>O_WRONLY</a> | O_TRUNC, 0666);
+<a name='L163'> 163         <b>if</b> (<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a> &gt;= 0) <font color='red'>{</font>
+<a name='L164'> 164             <b>struct</b> <a href='../Y/3127.html' title='Multiple used in 3 places.'>flock</a> <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>;
+<a name='L165'> 165             <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4057.html' title='Multiple used in 5 places.'>l_type</a> = <a href='../Y/347.html' title='Multiple used in 3 places.'>F_WRLCK</a>;
+<a name='L166'> 166             <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4058.html' title='Multiple used in 3 places.'>l_whence</a> = <a href='../Y/764.html' title='Multiple used in 4 places.'>SEEK_SET</a>;
+<a name='L167'> 167             <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4056.html' title='Multiple used in 3 places.'>l_start</a> = 0;
+<a name='L168'> 168             <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4054.html' title='Multiple used in 3 places.'>l_len</a> = 0;
+<a name='L169'> 169             <b>if</b> (<a href='../Y/3013.html' title='Multiple used in 29 places.'>fcntl</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, F_SETLK, &amp;<a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>) != -1) <font color='red'>{</font>
+<a name='L170'> 170                 <b>char</b> *<a href='../Y/7318.html' title='Multiple used in 13 places.'>text</a> = <a href='../S/878.html#L129' title='Defined at 129 in cbench/openflow/lib/util.c.'>xasprintf</a>("%ld\n", <a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>);
+<a name='L171'> 171                 <b>if</b> (<a href='../Y/7898.html' title='Multiple used in 44 places.'>write</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <a href='../Y/7318.html' title='Multiple used in 13 places.'>text</a>, <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../Y/7318.html' title='Multiple used in 13 places.'>text</a>)) == <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../Y/7318.html' title='Multiple used in 13 places.'>text</a>)) <font color='red'>{</font>
+<a name='L172'> 172                     <a href='../S/891.html#L194' title='Defined at 194 in cbench/openflow/lib/fatal-signal.c.'>fatal_signal_add_file_to_unlink</a>(<a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>);
+<a name='L173'> 173                     <b>if</b> (<a href='../Y/6379.html' title='Multiple used in 3 places.'>rename</a>(<a href='../Y/7403.html' title='Multiple used in 12 places.'>tmpfile</a>, <a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>) &lt; 0) <font color='red'>{</font>
+<a name='L174'> 174                         <a href='../S/859.html#L150' title='Defined at 150 in cbench/openflow/lib/vlog.h.'>VLOG_ERR</a>("failed to rename \"%s\" to \"%s\": %s",
+<a name='L175'> 175                                  <a href='../Y/7403.html' title='Multiple used in 12 places.'>tmpfile</a>, <a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>, <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>));
+<a name='L176'> 176                         <a href='../S/891.html#L213' title='Defined at 213 in cbench/openflow/lib/fatal-signal.c.'>fatal_signal_remove_file_to_unlink</a>(<a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>);
+<a name='L177'> 177                         <a href='../Y/1918.html' title='Multiple used in 102 places.'>close</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>);
+<a name='L178'> 178                     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L179'> 179                         <i><font color='green'>/* Keep 'fd' open to retain the lock. */</font></i>
+<a name='L180'> 180                     <font color='red'>}</font>
+<a name='L181'> 181                     <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/7318.html' title='Multiple used in 13 places.'>text</a>);
+<a name='L182'> 182                 <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L183'> 183                     <a href='../S/859.html#L150' title='Defined at 150 in cbench/openflow/lib/vlog.h.'>VLOG_ERR</a>("%s: write failed: %s", <a href='../Y/7403.html' title='Multiple used in 12 places.'>tmpfile</a>, <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>));
+<a name='L184'> 184                     <a href='../Y/1918.html' title='Multiple used in 102 places.'>close</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>);
+<a name='L185'> 185                 <font color='red'>}</font>
+<a name='L186'> 186             <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L187'> 187                 <a href='../S/859.html#L150' title='Defined at 150 in cbench/openflow/lib/vlog.h.'>VLOG_ERR</a>("%s: fcntl failed: %s", <a href='../Y/7403.html' title='Multiple used in 12 places.'>tmpfile</a>, <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>));
+<a name='L188'> 188                 <a href='../Y/1918.html' title='Multiple used in 102 places.'>close</a>(<a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>);
+<a name='L189'> 189             <font color='red'>}</font>
+<a name='L190'> 190         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L191'> 191             <a href='../S/859.html#L150' title='Defined at 150 in cbench/openflow/lib/vlog.h.'>VLOG_ERR</a>("%s: create failed: %s", <a href='../Y/7403.html' title='Multiple used in 12 places.'>tmpfile</a>, <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>));
+<a name='L192'> 192         <font color='red'>}</font>
+<a name='L193'> 193         <a href='../S/891.html#L213' title='Defined at 213 in cbench/openflow/lib/fatal-signal.c.'>fatal_signal_remove_file_to_unlink</a>(<a href='../Y/7403.html' title='Multiple used in 12 places.'>tmpfile</a>);
+<a name='L194'> 194         <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/7403.html' title='Multiple used in 12 places.'>tmpfile</a>);
+<a name='L195'> 195     <font color='red'>}</font>
+<a name='L196'> 196     <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>);
+<a name='L197'> 197     <a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L198'> 198 <font color='red'>}</font>
+<a name='L199'> 199 
+<a name='L200'> 200 <i><font color='green'>/* If configured with set_pidfile() or set_detach(), creates the pid file and</font></i>
+<a name='L201'> 201 <i><font color='green'> * detaches from the foreground session.  */</font></i>
+<a name='L202'> 202 <b>void</b>
+<a name='L203'> 203 <a href='../R/2542.html' title='Multiple refered from 6 places.'>daemonize</a>(<b>void</b>)
+<a name='L204'> 204 <font color='red'>{</font>
+<a name='L205'> 205     <b>if</b> (<a href='../Y/2355.html' title='Multiple used in 3 places.'>detach</a>) <font color='red'>{</font>
+<a name='L206'> 206         <b>char</b> <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a> = 0;
+<a name='L207'> 207         <b>int</b> <a href='../Y/3023.html' title='Multiple used in 32 places.'>fds</a>[2];
+<a name='L208'> 208         <b>if</b> (<a href='../Y/5735.html' title='Multiple used in 7 places.'>pipe</a>(<a href='../Y/3023.html' title='Multiple used in 32 places.'>fds</a>) &lt; 0) <font color='red'>{</font>
+<a name='L209'> 209             <a href='../S/878.html#L153' title='Defined at 153 in cbench/openflow/lib/util.c.'>ofp_fatal</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>, "pipe failed");
+<a name='L210'> 210         <font color='red'>}</font>
+<a name='L211'> 211 
+<a name='L212'> 212         <b>switch</b> (<a href='../Y/3197.html' title='Multiple used in 4 places.'>fork</a>()) <font color='red'>{</font>
+<a name='L213'> 213         <b>default</b>:
+<a name='L214'> 214             <i><font color='green'>/* Parent process: wait for child to create pidfile, then exit. */</font></i>
+<a name='L215'> 215             <a href='../Y/1918.html' title='Multiple used in 102 places.'>close</a>(<a href='../Y/3023.html' title='Multiple used in 32 places.'>fds</a>[1]);
+<a name='L216'> 216             <a href='../S/891.html#L249' title='Defined at 249 in cbench/openflow/lib/fatal-signal.c.'>fatal_signal_fork</a>();
+<a name='L217'> 217             <b>if</b> (<a href='../Y/6277.html' title='Multiple used in 17 places.'>read</a>(<a href='../Y/3023.html' title='Multiple used in 32 places.'>fds</a>[0], &amp;<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>, 1) != 1) <font color='red'>{</font>
+<a name='L218'> 218                 <a href='../S/878.html#L153' title='Defined at 153 in cbench/openflow/lib/util.c.'>ofp_fatal</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>, "daemon child failed to signal startup");
+<a name='L219'> 219             <font color='red'>}</font>
+<a name='L220'> 220             <a href='../Y/2943.html' title='Multiple used in 74 places.'>exit</a>(0);
+<a name='L221'> 221 
+<a name='L222'> 222         <b>case</b> 0:
+<a name='L223'> 223             <i><font color='green'>/* Child process. */</font></i>
+<a name='L224'> 224             <a href='../Y/1918.html' title='Multiple used in 102 places.'>close</a>(<a href='../Y/3023.html' title='Multiple used in 32 places.'>fds</a>[0]);
+<a name='L225'> 225             <a href='../S/817.html#L151' title='Defined at 151 in cbench/openflow/lib/daemon.c.'>make_pidfile</a>();
+<a name='L226'> 226             <a href='../Y/7898.html' title='Multiple used in 44 places.'>write</a>(<a href='../Y/3023.html' title='Multiple used in 32 places.'>fds</a>[1], &amp;<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>, 1);
+<a name='L227'> 227             <a href='../Y/1918.html' title='Multiple used in 102 places.'>close</a>(<a href='../Y/3023.html' title='Multiple used in 32 places.'>fds</a>[1]);
+<a name='L228'> 228             <a href='../Y/6712.html' title='Multiple used in 2 places.'>setsid</a>();
+<a name='L229'> 229             chdir("/");
+<a name='L230'> 230             <b>break</b>;
+<a name='L231'> 231 
+<a name='L232'> 232         <b>case</b> -1:
+<a name='L233'> 233             <i><font color='green'>/* Error. */</font></i>
+<a name='L234'> 234             <a href='../S/878.html#L153' title='Defined at 153 in cbench/openflow/lib/util.c.'>ofp_fatal</a>(<a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>, "could not fork");
+<a name='L235'> 235             <b>break</b>;
+<a name='L236'> 236         <font color='red'>}</font>
+<a name='L237'> 237     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L238'> 238         <a href='../S/817.html#L151' title='Defined at 151 in cbench/openflow/lib/daemon.c.'>make_pidfile</a>();
+<a name='L239'> 239     <font color='red'>}</font>
+<a name='L240'> 240 <font color='red'>}</font>
+<a name='L241'> 241 
+<a name='L242'> 242 <b>void</b>
+<a name='L243'> 243 <a href='../R/2541.html' title='Multiple refered from 3 places.'>daemon_usage</a>(<b>void</b>)
+<a name='L244'> 244 <font color='red'>{</font>
+<a name='L245'> 245     <a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>(
+<a name='L246'> 246         "\nDaemon options:\n"
+<a name='L247'> 247         "  -D, --detach            run in background as daemon\n"
+<a name='L248'> 248         "  -P, --pidfile[=FILE]    create pidfile (default: %s/%s.pid)\n"
+<a name='L249'> 249         "  -f, --force             with -P, start even if already running\n",
+<a name='L250'> 250         <a href='../Y/5323.html' title='Multiple used in 6 places.'>ofp_rundir</a>, <a href='../Y/5944.html' title='Multiple used in 28 places.'>program_name</a>);
+<a name='L251'> 251 <font color='red'>}</font>
+<a name='L252'> 252 
+<a name='L253'> 253 <i><font color='green'>/* Opens and reads a PID from 'pidfile'.  Returns the nonnegative PID if</font></i>
+<a name='L254'> 254 <i><font color='green'> * successful, otherwise a negative errno value. */</font></i>
+<a name='L255'> 255 <a href='../Y/5732.html' title='Multiple used in 12 places.'>pid_t</a>
+<a name='L256'> 256 <a href='../R/4314.html' title='Multiple refered from 3 places.'>read_pidfile</a>(<b>const</b> <b>char</b> *<a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>)
+<a name='L257'> 257 <font color='red'>{</font>
+<a name='L258'> 258     <b>char</b> <a href='../Y/4135.html' title='Multiple used in 66 places.'>line</a>[128];
+<a name='L259'> 259     <b>struct</b> <a href='../Y/3127.html' title='Multiple used in 3 places.'>flock</a> <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>;
+<a name='L260'> 260     <a href='../Y/328.html' title='Multiple used in 113 places.'>FILE</a> *<a href='../Y/3043.html' title='Multiple used in 106 places.'>file</a>;
+<a name='L261'> 261     <b>int</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L262'> 262 
+<a name='L263'> 263     <a href='../Y/3043.html' title='Multiple used in 106 places.'>file</a> = <a href='../Y/3190.html' title='Multiple used in 43 places.'>fopen</a>(<a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>, "r");
+<a name='L264'> 264     <b>if</b> (!<a href='../Y/3043.html' title='Multiple used in 106 places.'>file</a>) <font color='red'>{</font>
+<a name='L265'> 265         <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> = <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>;
+<a name='L266'> 266         <a href='../S/859.html#L151' title='Defined at 151 in cbench/openflow/lib/vlog.h.'>VLOG_WARN</a>("%s: open: %s", <a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>, <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>));
+<a name='L267'> 267         <b>goto</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L268'> 268     <font color='red'>}</font>
+<a name='L269'> 269 
+<a name='L270'> 270     <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4057.html' title='Multiple used in 5 places.'>l_type</a> = <a href='../Y/347.html' title='Multiple used in 3 places.'>F_WRLCK</a>;
+<a name='L271'> 271     <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4058.html' title='Multiple used in 3 places.'>l_whence</a> = <a href='../Y/764.html' title='Multiple used in 4 places.'>SEEK_SET</a>;
+<a name='L272'> 272     <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4056.html' title='Multiple used in 3 places.'>l_start</a> = 0;
+<a name='L273'> 273     <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4054.html' title='Multiple used in 3 places.'>l_len</a> = 0;
+<a name='L274'> 274     <b>if</b> (<a href='../Y/3013.html' title='Multiple used in 29 places.'>fcntl</a>(<a href='../Y/3056.html' title='Multiple used in 6 places.'>fileno</a>(<a href='../Y/3043.html' title='Multiple used in 106 places.'>file</a>), <a href='../Y/342.html' title='Multiple used in 2 places.'>F_GETLK</a>, &amp;<a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>)) <font color='red'>{</font>
+<a name='L275'> 275         <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> = <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>;
+<a name='L276'> 276         <a href='../S/859.html#L151' title='Defined at 151 in cbench/openflow/lib/vlog.h.'>VLOG_WARN</a>("%s: fcntl: %s", <a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>, <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>));
+<a name='L277'> 277         <b>goto</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L278'> 278     <font color='red'>}</font>
+<a name='L279'> 279     <b>if</b> (<a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4057.html' title='Multiple used in 5 places.'>l_type</a> == <a href='../Y/346.html' title='Multiple used in 2 places.'>F_UNLCK</a>) <font color='red'>{</font>
+<a name='L280'> 280         <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> = <a href='../Y/298.html' title='Multiple used in 19 places.'>ESRCH</a>;
+<a name='L281'> 281         <a href='../S/859.html#L151' title='Defined at 151 in cbench/openflow/lib/vlog.h.'>VLOG_WARN</a>("%s: pid file is not locked", <a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>);
+<a name='L282'> 282         <b>goto</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L283'> 283     <font color='red'>}</font>
+<a name='L284'> 284 
+<a name='L285'> 285     <b>if</b> (!<a href='../Y/3031.html' title='Multiple used in 17 places.'>fgets</a>(<a href='../Y/4135.html' title='Multiple used in 66 places.'>line</a>, <b>sizeof</b> <a href='../Y/4135.html' title='Multiple used in 66 places.'>line</a>, <a href='../Y/3043.html' title='Multiple used in 106 places.'>file</a>)) <font color='red'>{</font>
+<a name='L286'> 286         <b>if</b> (<a href='../Y/3027.html' title='Multiple used in 7 places.'>ferror</a>(<a href='../Y/3043.html' title='Multiple used in 106 places.'>file</a>)) <font color='red'>{</font>
+<a name='L287'> 287             <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> = <a href='../Y/2760.html' title='Multiple used in 228 places.'>errno</a>;
+<a name='L288'> 288             <a href='../S/859.html#L151' title='Defined at 151 in cbench/openflow/lib/vlog.h.'>VLOG_WARN</a>("%s: read: %s", <a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>, <a href='../Y/7090.html' title='Multiple used in 143 places.'>strerror</a>(<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>));
+<a name='L289'> 289         <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L290'> 290             <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> = <a href='../Y/298.html' title='Multiple used in 19 places.'>ESRCH</a>;
+<a name='L291'> 291             <a href='../S/859.html#L151' title='Defined at 151 in cbench/openflow/lib/vlog.h.'>VLOG_WARN</a>("%s: read: unexpected end of file", <a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>);
+<a name='L292'> 292         <font color='red'>}</font>
+<a name='L293'> 293         <b>goto</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L294'> 294     <font color='red'>}</font>
+<a name='L295'> 295 
+<a name='L296'> 296     <b>if</b> (<a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4055.html' title='Multiple used in 4 places.'>l_pid</a> != <a href='../Y/7113.html' title='Multiple used in 6 places.'>strtoul</a>(<a href='../Y/4135.html' title='Multiple used in 66 places.'>line</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, 10)) <font color='red'>{</font>
+<a name='L297'> 297         <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> = <a href='../Y/298.html' title='Multiple used in 19 places.'>ESRCH</a>;
+<a name='L298'> 298         <a href='../S/859.html#L151' title='Defined at 151 in cbench/openflow/lib/vlog.h.'>VLOG_WARN</a>("l_pid (%ld) != %s pid (%s)",
+<a name='L299'> 299                    (<b>long</b> <b>int</b>) <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4055.html' title='Multiple used in 4 places.'>l_pid</a>, <a href='../Y/5733.html' title='Multiple used in 28 places.'>pidfile</a>, <a href='../Y/4135.html' title='Multiple used in 66 places.'>line</a>);
+<a name='L300'> 300         <b>goto</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L301'> 301     <font color='red'>}</font>
+<a name='L302'> 302 
+<a name='L303'> 303     <a href='../Y/3012.html' title='Multiple used in 34 places.'>fclose</a>(<a href='../Y/3043.html' title='Multiple used in 106 places.'>file</a>);
+<a name='L304'> 304     <b>return</b> <a href='../Y/4105.html' title='Multiple used in 23 places.'>lck</a>.<a href='../Y/4055.html' title='Multiple used in 4 places.'>l_pid</a>;
+<a name='L305'> 305 
+<a name='L306'> 306 <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>:
+<a name='L307'> 307     <b>if</b> (<a href='../Y/3043.html' title='Multiple used in 106 places.'>file</a>) <font color='red'>{</font>
+<a name='L308'> 308         <a href='../Y/3012.html' title='Multiple used in 34 places.'>fclose</a>(<a href='../Y/3043.html' title='Multiple used in 106 places.'>file</a>);
+<a name='L309'> 309     <font color='red'>}</font>
+<a name='L310'> 310     <b>return</b> -<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L311'> 311 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L60'>[^]</a><a href='#L256'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

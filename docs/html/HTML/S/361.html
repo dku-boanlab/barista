@@ -1,0 +1,260 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column-utils.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/column-utils.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='446.html#L45' title='Included from 45 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/packet.h.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* column-utils.h</font></i>
+<a name='L2'>   2 <i><font color='green'> * Definitions for column utility structures and routines</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * $Id: column-utils.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L5'>   5 <i><font color='green'> *</font></i>
+<a name='L6'>   6 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L7'>   7 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L8'>   8 <i><font color='green'> * Copyright 1998 Gerald Combs</font></i>
+<a name='L9'>   9 <i><font color='green'> *</font></i>
+<a name='L10'>  10 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L11'>  11 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L12'>  12 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L13'>  13 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L14'>  14 <i><font color='green'> *</font></i>
+<a name='L15'>  15 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L16'>  16 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L17'>  17 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L18'>  18 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L21'>  21 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L22'>  22 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L23'>  23 <i><font color='green'> */</font></i>
+<a name='L24'>  24 
+<a name='L25'>  25 <font color='darkred'>#ifndef</font> <a href='../S/361.html#L26' title='Defined at 26 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column-utils.h.'>__COLUMN_UTILS_H__</a>
+<a name='L26'>  26 <font color='darkred'>#define</font> <a href='../S/361.html#L25' title='Refered from 25 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column-utils.h.'>__COLUMN_UTILS_H__</a>
+<a name='L27'>  27 
+<a name='L28'>  28 <font color='darkred'>#include</font> &lt;glib.h&gt;
+<a name='L29'>  29 
+<a name='L30'>  30 <font color='darkred'>#include</font> "<a href='451.html'>gnuc_format_check.h</a>"
+<a name='L31'>  31 <font color='darkred'>#include</font> "<a href='502.html'>column_info.h</a>"
+<a name='L32'>  32 <font color='darkred'>#include</font> "<a href='441.html'>packet_info.h</a>"
+<a name='L33'>  33 <font color='darkred'>#include</font> &lt;<a href='501.html'>epan/epan.h</a>&gt;
+<a name='L34'>  34 
+<a name='L35'>  35 <font color='darkred'>#ifdef</font> <a href='../Y/1158.html' title='Multiple used in 106 places.'>__cplusplus</a>
+<a name='L36'>  36 <b>extern</b> "C" <font color='red'>{</font>
+<a name='L37'>  37 <font color='darkred'>#endif</font> <i><font color='green'>/* __cplusplus */</font></i>
+<a name='L38'>  38 
+<a name='L39'>  39 <i><font color='green'>/** Maximum length of columns (except COL_INFO).</font></i>
+<a name='L40'>  40 <i><font color='green'> * Internal, don't use this in dissectors!</font></i>
+<a name='L41'>  41 <i><font color='green'> */</font></i>
+<a name='L42'>  42 
+<a name='L43'>  43 <font color='darkred'>#define</font> COL_MAX_LEN 256
+<a name='L44'>  44 <i><font color='green'>/** Maximum length of info columns (COL_INFO only).</font></i>
+<a name='L45'>  45 <i><font color='green'> * Internal, don't use this in dissectors!</font></i>
+<a name='L46'>  46 <i><font color='green'> */</font></i>
+<a name='L47'>  47 <font color='darkred'>#define</font> COL_MAX_INFO_LEN 4096
+<a name='L48'>  48 
+<a name='L49'>  49 
+<a name='L50'>  50 <i><font color='green'>/** Allocate all the data structures for constructing column data, given</font></i>
+<a name='L51'>  51 <i><font color='green'> * the number of columns.</font></i>
+<a name='L52'>  52 <i><font color='green'> *</font></i>
+<a name='L53'>  53 <i><font color='green'> * Internal, don't use this in dissectors!</font></i>
+<a name='L54'>  54 <i><font color='green'> */</font></i>
+<a name='L55'>  55 <b>extern</b> <b>void</b>     col_setup(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/4965.html' title='Multiple used in 3 places.'>num_cols</a>);
+<a name='L56'>  56 
+<a name='L57'>  57 <i><font color='green'>/** Initialize the data structures for constructing column data.</font></i>
+<a name='L58'>  58 <i><font color='green'> *</font></i>
+<a name='L59'>  59 <i><font color='green'> * Internal, don't use this in dissectors!</font></i>
+<a name='L60'>  60 <i><font color='green'> */</font></i>
+<a name='L61'>  61 <b>extern</b> <b>void</b>     col_init(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>);
+<a name='L62'>  62 
+<a name='L63'>  63 <i><font color='green'>/** Set the format of the "variable time format".</font></i>
+<a name='L64'>  64 <i><font color='green'> *</font></i>
+<a name='L65'>  65 <i><font color='green'> * Internal, don't use this in dissectors!</font></i>
+<a name='L66'>  66 <i><font color='green'> */</font></i>
+<a name='L67'>  67 <b>extern</b> <b>void</b>     col_set_cls_time(<a href='../S/482.html#L62' title='Defined at 62 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/frame_data.h.'>frame_data</a> *, <a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1968.html' title='Multiple used in 16 places.'>col</a>);
+<a name='L68'>  68 
+<a name='L69'>  69 <i><font color='green'>/** Fill in all columns of the given packet.</font></i>
+<a name='L70'>  70 <i><font color='green'> *</font></i>
+<a name='L71'>  71 <i><font color='green'> * Internal, don't use this in dissectors!</font></i>
+<a name='L72'>  72 <i><font color='green'> */</font></i>
+<a name='L73'>  73 <b>extern</b> <b>void</b>     col_fill_in(<a href='../S/441.html#L182' title='Defined at 182 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/packet_info.h.'>packet_info</a> *<a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>);
+<a name='L74'>  74 
+<a name='L75'>  75 <i><font color='green'>/* Utility routines used by packet*.c */</font></i>
+<a name='L76'>  76 
+<a name='L77'>  77 <i><font color='green'>/** Are the columns writable?</font></i>
+<a name='L78'>  78 <i><font color='green'> *</font></i>
+<a name='L79'>  79 <i><font color='green'> * @param cinfo the current packet row</font></i>
+<a name='L80'>  80 <i><font color='green'> * @return TRUE if it's writable, FALSE if not</font></i>
+<a name='L81'>  81 <i><font color='green'> */</font></i>
+<a name='L82'>  82 <b>extern</b> <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/1989.html' title='Multiple used in 2 places.'>col_get_writable</a>(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>);
+<a name='L83'>  83 
+<a name='L84'>  84 <i><font color='green'>/** Set the columns writable. </font></i>
+<a name='L85'>  85 <i><font color='green'> *</font></i>
+<a name='L86'>  86 <i><font color='green'> * @param cinfo the current packet row</font></i>
+<a name='L87'>  87 <i><font color='green'> * @param writable TRUE if it's writable, FALSE if not</font></i>
+<a name='L88'>  88 <i><font color='green'> */</font></i>
+<a name='L89'>  89 <b>extern</b> <b>void</b>     <a href='../Y/1999.html' title='Multiple used in 3 places.'>col_set_writable</a>(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/7897.html' title='Multiple used in 2 places.'>writable</a>);
+<a name='L90'>  90 
+<a name='L91'>  91 <i><font color='green'>/** Check if the given column be filled with data.</font></i>
+<a name='L92'>  92 <i><font color='green'> *</font></i>
+<a name='L93'>  93 <i><font color='green'> * @param cinfo the current packet row</font></i>
+<a name='L94'>  94 <i><font color='green'> * @param col the column to use, e.g. COL_INFO</font></i>
+<a name='L95'>  95 <i><font color='green'> */</font></i>
+<a name='L96'>  96 <b>extern</b> <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a>     <a href='../Y/1868.html' title='Multiple used in 6 places.'>check_col</a>(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1968.html' title='Multiple used in 16 places.'>col</a>);
+<a name='L97'>  97 
+<a name='L98'>  98 <i><font color='green'>/** Sets a fence for the current column content, </font></i>
+<a name='L99'>  99 <i><font color='green'> * so this content won't be affected by further col_... function calls. </font></i>
+<a name='L100'> 100 <i><font color='green'> *</font></i>
+<a name='L101'> 101 <i><font color='green'> * This can be useful if a protocol is more than once in a single packet,</font></i>
+<a name='L102'> 102 <i><font color='green'> * e.g. multiple HTTP calls in a single TCP packet.</font></i>
+<a name='L103'> 103 <i><font color='green'> *</font></i>
+<a name='L104'> 104 <i><font color='green'> * @param cinfo the current packet row</font></i>
+<a name='L105'> 105 <i><font color='green'> * @param col the column to use, e.g. COL_INFO</font></i>
+<a name='L106'> 106 <i><font color='green'> */</font></i>
+<a name='L107'> 107 <b>extern</b> <b>void</b>     <a href='../Y/1996.html' title='Multiple used in 3 places.'>col_set_fence</a>(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1968.html' title='Multiple used in 16 places.'>col</a>);
+<a name='L108'> 108 
+<a name='L109'> 109 <i><font color='green'>/** Clears the text of a column element.</font></i>
+<a name='L110'> 110 <i><font color='green'> *</font></i>
+<a name='L111'> 111 <i><font color='green'> * @param cinfo the current packet row</font></i>
+<a name='L112'> 112 <i><font color='green'> * @param col the column to use, e.g. COL_INFO</font></i>
+<a name='L113'> 113 <i><font color='green'> */</font></i>
+<a name='L114'> 114 <b>extern</b> <b>void</b>     <a href='../Y/1976.html' title='Multiple used in 2 places.'>col_clear</a>(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1968.html' title='Multiple used in 16 places.'>col</a>);
+<a name='L115'> 115 
+<a name='L116'> 116 <i><font color='green'>/** Set (replace) the text of a column element, the text won't be copied.</font></i>
+<a name='L117'> 117 <i><font color='green'> *</font></i>
+<a name='L118'> 118 <i><font color='green'> * Usually used to set const strings!</font></i>
+<a name='L119'> 119 <i><font color='green'> *</font></i>
+<a name='L120'> 120 <i><font color='green'> * @param cinfo the current packet row</font></i>
+<a name='L121'> 121 <i><font color='green'> * @param col the column to use, e.g. COL_INFO</font></i>
+<a name='L122'> 122 <i><font color='green'> * @param str the string to set</font></i>
+<a name='L123'> 123 <i><font color='green'> */</font></i>
+<a name='L124'> 124 <b>extern</b> <b>void</b>     <a href='../Y/1997.html' title='Multiple used in 2 places.'>col_set_str</a>(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1968.html' title='Multiple used in 16 places.'>col</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> * <a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>);
+<a name='L125'> 125 
+<a name='L126'> 126 <i><font color='green'>/** Add (replace) the text of a column element, the text will be copied.</font></i>
+<a name='L127'> 127 <i><font color='green'> *</font></i>
+<a name='L128'> 128 <i><font color='green'> * @param cinfo the current packet row</font></i>
+<a name='L129'> 129 <i><font color='green'> * @param col the column to use, e.g. COL_INFO</font></i>
+<a name='L130'> 130 <i><font color='green'> * @param str the string to add</font></i>
+<a name='L131'> 131 <i><font color='green'> */</font></i>
+<a name='L132'> 132 <b>extern</b> <b>void</b>     col_add_str(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1968.html' title='Multiple used in 16 places.'>col</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>);
+<a name='L133'> 133 
+<a name='L134'> 134 <i><font color='green'>/** Add (replace) the text of a column element, the text will be formatted and copied.</font></i>
+<a name='L135'> 135 <i><font color='green'> *</font></i>
+<a name='L136'> 136 <i><font color='green'> * Same function as col_add_str() but using a printf-like format string.</font></i>
+<a name='L137'> 137 <i><font color='green'> *</font></i>
+<a name='L138'> 138 <i><font color='green'> * @param cinfo the current packet row</font></i>
+<a name='L139'> 139 <i><font color='green'> * @param col the column to use, e.g. COL_INFO</font></i>
+<a name='L140'> 140 <i><font color='green'> * @param format the format string</font></i>
+<a name='L141'> 141 <i><font color='green'> * @param ... the variable number of parameters</font></i>
+<a name='L142'> 142 <i><font color='green'> */</font></i>
+<a name='L143'> 143 <b>extern</b> <b>void</b>     <a href='../Y/1969.html' title='Multiple used in 3 places.'>col_add_fstr</a>(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1968.html' title='Multiple used in 16 places.'>col</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...)
+<a name='L144'> 144     <a href='../D/1937.html' title='Multiple defined in 2 places.'>GNUC_FORMAT_CHECK</a>(<a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>, 3, 4);
+<a name='L145'> 145 
+<a name='L146'> 146 <i><font color='green'>/* For internal Wireshark use only.  Not to be called from dissectors. */</font></i>
+<a name='L147'> 147 <b>void</b> col_custom_set_fstr(<a href='../S/488.html#L162' title='Defined at 162 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>header_field_info</a> *<a href='../Y/3636.html' title='Multiple used in 9 places.'>hfinfo</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...)
+<a name='L148'> 148     <a href='../D/1937.html' title='Multiple defined in 2 places.'>GNUC_FORMAT_CHECK</a>(<a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>, 2, 3);
+<a name='L149'> 149 
+<a name='L150'> 150 <i><font color='green'>/* For internal Wireshark use only.  Not to be called from dissectors. */</font></i>
+<a name='L151'> 151 <b>void</b> col_custom_prime_edt(<a href='../S/501.html#L32' title='Defined at 32 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/epan.h.'>epan_dissect_t</a> *<a href='../Y/2632.html' title='Multiple used in 21 places.'>edt</a>, <a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>);
+<a name='L152'> 152 
+<a name='L153'> 153 <i><font color='green'>/* For internal Wireshark use only.  Not to be called from dissectors. */</font></i>
+<a name='L154'> 154 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> have_custom_cols(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>);
+<a name='L155'> 155 
+<a name='L156'> 156 <i><font color='green'>/** Append the given text to a column element, the text will be copied.</font></i>
+<a name='L157'> 157 <i><font color='green'> *</font></i>
+<a name='L158'> 158 <i><font color='green'> * @param cinfo the current packet row</font></i>
+<a name='L159'> 159 <i><font color='green'> * @param col the column to use, e.g. COL_INFO</font></i>
+<a name='L160'> 160 <i><font color='green'> * @param str the string to append</font></i>
+<a name='L161'> 161 <i><font color='green'> */</font></i>
+<a name='L162'> 162 <b>extern</b> <b>void</b>     <a href='../Y/1974.html' title='Multiple used in 3 places.'>col_append_str</a>(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1968.html' title='Multiple used in 16 places.'>col</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>);
+<a name='L163'> 163 
+<a name='L164'> 164 <i><font color='green'>/** Append the given text to a column element, the text will be formatted and copied.</font></i>
+<a name='L165'> 165 <i><font color='green'> *</font></i>
+<a name='L166'> 166 <i><font color='green'> * Same function as col_append_str() but using a printf-like format string.</font></i>
+<a name='L167'> 167 <i><font color='green'> *</font></i>
+<a name='L168'> 168 <i><font color='green'> * @param cinfo the current packet row</font></i>
+<a name='L169'> 169 <i><font color='green'> * @param col the column to use, e.g. COL_INFO</font></i>
+<a name='L170'> 170 <i><font color='green'> * @param format the format string</font></i>
+<a name='L171'> 171 <i><font color='green'> * @param ... the variable number of parameters</font></i>
+<a name='L172'> 172 <i><font color='green'> */</font></i>
+<a name='L173'> 173 <b>extern</b> <b>void</b>     col_append_fstr(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1968.html' title='Multiple used in 16 places.'>col</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...)
+<a name='L174'> 174     <a href='../D/1937.html' title='Multiple defined in 2 places.'>GNUC_FORMAT_CHECK</a>(<a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>, 3, 4);
+<a name='L175'> 175 
+<a name='L176'> 176 <i><font color='green'>/** Prepend the given text to a column element, the text will be formatted and copied.</font></i>
+<a name='L177'> 177 <i><font color='green'> *</font></i>
+<a name='L178'> 178 <i><font color='green'> * @param cinfo the current packet row</font></i>
+<a name='L179'> 179 <i><font color='green'> * @param col the column to use, e.g. COL_INFO</font></i>
+<a name='L180'> 180 <i><font color='green'> * @param format the format string</font></i>
+<a name='L181'> 181 <i><font color='green'> * @param ... the variable number of parameters</font></i>
+<a name='L182'> 182 <i><font color='green'> */</font></i>
+<a name='L183'> 183 <b>extern</b> <b>void</b>     col_prepend_fstr(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1968.html' title='Multiple used in 16 places.'>col</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...)
+<a name='L184'> 184     <a href='../D/1937.html' title='Multiple defined in 2 places.'>GNUC_FORMAT_CHECK</a>(<a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>, 3, 4);
+<a name='L185'> 185 
+<a name='L186'> 186 <i><font color='green'>/**Prepend the given text to a column element, the text will be formatted and copied.</font></i>
+<a name='L187'> 187 <i><font color='green'> * This function is similar to col_prepend_fstr() but this function will</font></i>
+<a name='L188'> 188 <i><font color='green'> * unconditionally set a fence to the end of the prepended data even if there</font></i>
+<a name='L189'> 189 <i><font color='green'> * were no fence before.</font></i>
+<a name='L190'> 190 <i><font color='green'> * The col_prepend_fstr() will only prepend the data before the fence IFF</font></i>
+<a name='L191'> 191 <i><font color='green'> * there is already a fence created. This function will create a fence in case</font></i>
+<a name='L192'> 192 <i><font color='green'> * it does not yet exist.</font></i>
+<a name='L193'> 193 <i><font color='green'> */</font></i>
+<a name='L194'> 194 <b>extern</b> <b>void</b>     col_prepend_fence_fstr(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1968.html' title='Multiple used in 16 places.'>col</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...)
+<a name='L195'> 195     <a href='../D/1937.html' title='Multiple defined in 2 places.'>GNUC_FORMAT_CHECK</a>(<a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>, 3, 4);
+<a name='L196'> 196 
+<a name='L197'> 197 <i><font color='green'>/** Append the given text (prepended by a separator) to a column element.</font></i>
+<a name='L198'> 198 <i><font color='green'> *</font></i>
+<a name='L199'> 199 <i><font color='green'> * Much like col_append_str() but will prepend the given separator if the column isn't empty.</font></i>
+<a name='L200'> 200 <i><font color='green'> *</font></i>
+<a name='L201'> 201 <i><font color='green'> * @param cinfo the current packet row</font></i>
+<a name='L202'> 202 <i><font color='green'> * @param col the column to use, e.g. COL_INFO</font></i>
+<a name='L203'> 203 <i><font color='green'> * @param sep the separator string or NULL for default: ", "</font></i>
+<a name='L204'> 204 <i><font color='green'> * @param str the string to append</font></i>
+<a name='L205'> 205 <i><font color='green'> */</font></i>
+<a name='L206'> 206 <b>extern</b> <b>void</b>     col_append_sep_str(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1968.html' title='Multiple used in 16 places.'>col</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/6667.html' title='Multiple used in 2 places.'>sep</a>,
+<a name='L207'> 207                 <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>);
+<a name='L208'> 208 
+<a name='L209'> 209 <i><font color='green'>/** Append the given text (prepended by a separator) to a column element.</font></i>
+<a name='L210'> 210 <i><font color='green'> *</font></i>
+<a name='L211'> 211 <i><font color='green'> * Much like col_append_fstr() but will prepend the given separator if the column isn't empty.</font></i>
+<a name='L212'> 212 <i><font color='green'> *</font></i>
+<a name='L213'> 213 <i><font color='green'> * @param cinfo the current packet row</font></i>
+<a name='L214'> 214 <i><font color='green'> * @param col the column to use, e.g. COL_INFO</font></i>
+<a name='L215'> 215 <i><font color='green'> * @param sep the separator string or NULL for default: ", "</font></i>
+<a name='L216'> 216 <i><font color='green'> * @param format the format string</font></i>
+<a name='L217'> 217 <i><font color='green'> * @param ... the variable number of parameters</font></i>
+<a name='L218'> 218 <i><font color='green'> */</font></i>
+<a name='L219'> 219 <b>extern</b> <b>void</b>     col_append_sep_fstr(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1968.html' title='Multiple used in 16 places.'>col</a>, <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/6667.html' title='Multiple used in 2 places.'>sep</a>,
+<a name='L220'> 220                 <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a>, ...)
+<a name='L221'> 221     <a href='../D/1937.html' title='Multiple defined in 2 places.'>GNUC_FORMAT_CHECK</a>(<a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>, 4, 5);
+<a name='L222'> 222 
+<a name='L223'> 223 <i><font color='green'>/** Set the given (relative) time to a column element.</font></i>
+<a name='L224'> 224 <i><font color='green'> *</font></i>
+<a name='L225'> 225 <i><font color='green'> * Used by multiple dissectors to set the time in the columns</font></i>
+<a name='L226'> 226 <i><font color='green'> * COL_REL_CONV_TIME and COL_DELTA_CONV_TIME</font></i>
+<a name='L227'> 227 <i><font color='green'> * </font></i>
+<a name='L228'> 228 <i><font color='green'> * @param cinfo         the current packet row</font></i>
+<a name='L229'> 229 <i><font color='green'> * @param col           the column to use, e.g. COL_INFO</font></i>
+<a name='L230'> 230 <i><font color='green'> * @param ts            the time to set in the column</font></i>
+<a name='L231'> 231 <i><font color='green'> * @param fieldname     the fieldname to use for creating a filter (when </font></i>
+<a name='L232'> 232 <i><font color='green'> *                        applying/preparing/copying as filter)</font></i>
+<a name='L233'> 233 <i><font color='green'> */</font></i>
+<a name='L234'> 234 <b>extern</b> <b>void</b>     col_set_time(<a href='../S/502.html#L56' title='Defined at 56 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/column_info.h.'>column_info</a> *<a href='../Y/1877.html' title='Multiple used in 44 places.'>cinfo</a>, <b>int</b> <a href='../Y/1968.html' title='Multiple used in 16 places.'>col</a>,
+<a name='L235'> 235                         <a href='../S/438.html#L35' title='Defined at 35 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/nstime.h.'>nstime_t</a> *<a href='../Y/7493.html' title='Multiple used in 120 places.'>ts</a>, <b>char</b> *fieldname);
+<a name='L236'> 236 
+<a name='L237'> 237 <font color='darkred'>#ifdef</font> <a href='../Y/1158.html' title='Multiple used in 106 places.'>__cplusplus</a>
+<a name='L238'> 238 <font color='red'>}</font>
+<a name='L239'> 239 <font color='darkred'>#endif</font> <i><font color='green'>/* __cplusplus */</font></i>
+<a name='L240'> 240 
+<a name='L241'> 241 <font color='darkred'>#endif</font> <i><font color='green'>/* __COLUMN_UTILS_H__ */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

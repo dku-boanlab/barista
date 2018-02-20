@@ -1,0 +1,141 @@
+<html>
+<head>
+<title>cbench/openflow/lib/shash.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/shash.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L40'>[^]</a><a href='#L107'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L40' title='Defined at 40.'>hash_name</a>
+<li><a href='#L46' title='Defined at 46.'>shash_init</a>
+<li><a href='#L52' title='Defined at 52.'>shash_destroy</a>
+<li><a href='#L61' title='Defined at 61.'>shash_clear</a>
+<li><a href='#L75' title='Defined at 75.'>shash_add</a>
+<li><a href='#L84' title='Defined at 84.'>shash_delete</a>
+<li><a href='#L93' title='Defined at 93.'>shash_find</a>
+<li><a href='#L107' title='Defined at 107.'>shash_find_data</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2009 The Board of Trustees of The Leland Stanford Junior</font></i>
+<a name='L2'>   2 <i><font color='green'> * University</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> *</font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> *</font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> "<a href='857.html'>shash.h</a>"
+<a name='L36'>  36 <font color='darkred'>#include</font> &lt;assert.h&gt;
+<a name='L37'>  37 <font color='darkred'>#include</font> "<a href='../I/207.html'>hash.h</a>"
+<a name='L38'>  38 
+<a name='L39'>  39 <b>static</b> <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a>
+<a name='L40'>  40 <a href='../R/3197.html' title='Multiple refered from 2 places.'>hash_name</a>(<b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>)
+<a name='L41'>  41 <font color='red'>{</font>
+<a name='L42'>  42     <b>return</b> <a href='../S/813.html#L99' title='Defined at 99 in cbench/openflow/lib/hash.c.'>hash_bytes</a>(<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>, <a href='../Y/7098.html' title='Multiple used in 203 places.'>strlen</a>(<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>), 0);
+<a name='L43'>  43 <font color='red'>}</font>
+<a name='L44'>  44 
+<a name='L45'>  45 <b>void</b>
+<a name='L46'>  46 <a href='../R/4453.html' title='Multiple refered from 2 places.'>shash_init</a>(<b>struct</b> <a href='../Y/6738.html' title='Multiple used in 14 places.'>shash</a> *<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>)
+<a name='L47'>  47 <font color='red'>{</font>
+<a name='L48'>  48     <a href='../S/847.html#L42' title='Defined at 42 in cbench/openflow/lib/hmap.c.'>hmap_init</a>(&amp;<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>-&gt;<a href='../Y/4329.html' title='Multiple used in 8 places.'>map</a>);
+<a name='L49'>  49 <font color='red'>}</font>
+<a name='L50'>  50 
+<a name='L51'>  51 <b>void</b>
+<a name='L52'>  52 <a href='../S/857.html#L52' title='Refered from 52 in cbench/openflow/lib/shash.h.'>shash_destroy</a>(<b>struct</b> <a href='../Y/6738.html' title='Multiple used in 14 places.'>shash</a> *<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>)
+<a name='L53'>  53 <font color='red'>{</font>
+<a name='L54'>  54     <b>if</b> (<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>) <font color='red'>{</font>
+<a name='L55'>  55         <a href='../S/886.html#L61' title='Defined at 61 in cbench/openflow/lib/shash.c.'>shash_clear</a>(<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>);
+<a name='L56'>  56         <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>);
+<a name='L57'>  57     <font color='red'>}</font>
+<a name='L58'>  58 <font color='red'>}</font>
+<a name='L59'>  59 
+<a name='L60'>  60 <b>void</b>
+<a name='L61'>  61 <a href='../R/4448.html' title='Multiple refered from 3 places.'>shash_clear</a>(<b>struct</b> <a href='../Y/6738.html' title='Multiple used in 14 places.'>shash</a> *<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>)
+<a name='L62'>  62 <font color='red'>{</font>
+<a name='L63'>  63     <b>struct</b> <a href='../S/857.html#L39' title='Defined at 39 in cbench/openflow/lib/shash.h.'>shash_node</a> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>, *<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L64'>  64 
+<a name='L65'>  65     <a href='../S/913.html#L105' title='Defined at 105 in cbench/openflow/lib/hmap.h.'>HMAP_FOR_EACH_SAFE</a> (<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>, <a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>, <b>struct</b> <a href='../S/857.html#L39' title='Defined at 39 in cbench/openflow/lib/shash.h.'>shash_node</a>, <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>, &amp;<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>-&gt;<a href='../Y/4329.html' title='Multiple used in 8 places.'>map</a>) <font color='red'>{</font>
+<a name='L66'>  66         <a href='../S/913.html#L158' title='Defined at 158 in cbench/openflow/lib/hmap.h.'>hmap_remove</a>(&amp;<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>-&gt;<a href='../Y/4329.html' title='Multiple used in 8 places.'>map</a>, &amp;<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>-&gt;<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L67'>  67         <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>-&gt;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>);
+<a name='L68'>  68         <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L69'>  69     <font color='red'>}</font>
+<a name='L70'>  70 <font color='red'>}</font>
+<a name='L71'>  71 
+<a name='L72'>  72 <i><font color='green'>/* It is the caller's responsible to avoid duplicate names, if that is</font></i>
+<a name='L73'>  73 <i><font color='green'> * desirable. */</font></i>
+<a name='L74'>  74 <b>void</b>
+<a name='L75'>  75 <a href='../R/4447.html' title='Multiple refered from 2 places.'>shash_add</a>(<b>struct</b> <a href='../Y/6738.html' title='Multiple used in 14 places.'>shash</a> *<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>, <b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>, <b>void</b> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>)
+<a name='L76'>  76 <font color='red'>{</font>
+<a name='L77'>  77     <b>struct</b> <a href='../S/857.html#L39' title='Defined at 39 in cbench/openflow/lib/shash.h.'>shash_node</a> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a> = <a href='../D/10153.html' title='Multiple defined in 2 places.'>xmalloc</a>(<b>sizeof</b> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L78'>  78     <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>-&gt;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a> = <a href='../S/878.html#L98' title='Defined at 98 in cbench/openflow/lib/util.c.'>xstrdup</a>(<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>);
+<a name='L79'>  79     <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L80'>  80     <a href='../S/913.html#L147' title='Defined at 147 in cbench/openflow/lib/hmap.h.'>hmap_insert</a>(&amp;<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>-&gt;<a href='../Y/4329.html' title='Multiple used in 8 places.'>map</a>, &amp;<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>-&gt;<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>, <a href='../S/886.html#L40' title='Defined at 40 in cbench/openflow/lib/shash.c.'>hash_name</a>(<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>));
+<a name='L81'>  81 <font color='red'>}</font>
+<a name='L82'>  82 
+<a name='L83'>  83 <b>void</b>
+<a name='L84'>  84 <a href='../S/857.html#L55' title='Refered from 55 in cbench/openflow/lib/shash.h.'>shash_delete</a>(<b>struct</b> <a href='../Y/6738.html' title='Multiple used in 14 places.'>shash</a> *<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>, <b>struct</b> <a href='../Y/6739.html' title='Multiple used in 2 places.'>shash_node</a> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>)
+<a name='L85'>  85 <font color='red'>{</font>
+<a name='L86'>  86     <a href='../S/913.html#L158' title='Defined at 158 in cbench/openflow/lib/hmap.h.'>hmap_remove</a>(&amp;<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>-&gt;<a href='../Y/4329.html' title='Multiple used in 8 places.'>map</a>, &amp;<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>-&gt;<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L87'>  87     <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>-&gt;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>);
+<a name='L88'>  88     <a href='../Y/3233.html' title='Multiple used in 336 places.'>free</a>(<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>);
+<a name='L89'>  89 <font color='red'>}</font>
+<a name='L90'>  90 
+<a name='L91'>  91 <i><font color='green'>/* If there are duplicates, returns a random element. */</font></i>
+<a name='L92'>  92 <b>struct</b> <a href='../S/857.html#L39' title='Defined at 39 in cbench/openflow/lib/shash.h.'>shash_node</a> *
+<a name='L93'>  93 <a href='../R/4451.html' title='Multiple refered from 2 places.'>shash_find</a>(<b>const</b> <b>struct</b> <a href='../Y/6738.html' title='Multiple used in 14 places.'>shash</a> *<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>, <b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>)
+<a name='L94'>  94 <font color='red'>{</font>
+<a name='L95'>  95     <b>struct</b> <a href='../S/857.html#L39' title='Defined at 39 in cbench/openflow/lib/shash.h.'>shash_node</a> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>;
+<a name='L96'>  96 
+<a name='L97'>  97     <a href='../S/913.html#L83' title='Defined at 83 in cbench/openflow/lib/hmap.h.'>HMAP_FOR_EACH_WITH_HASH</a> (<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>, <b>struct</b> <a href='../S/857.html#L39' title='Defined at 39 in cbench/openflow/lib/shash.h.'>shash_node</a>, <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>,
+<a name='L98'>  98                              <a href='../S/886.html#L40' title='Defined at 40 in cbench/openflow/lib/shash.c.'>hash_name</a>(<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>), &amp;<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>-&gt;<a href='../Y/4329.html' title='Multiple used in 8 places.'>map</a>) <font color='red'>{</font>
+<a name='L99'>  99         <b>if</b> (!<a href='../Y/7082.html' title='Multiple used in 371 places.'>strcmp</a>(<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>-&gt;<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>, <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>)) <font color='red'>{</font>
+<a name='L100'> 100             <b>return</b> <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>;
+<a name='L101'> 101         <font color='red'>}</font>
+<a name='L102'> 102     <font color='red'>}</font>
+<a name='L103'> 103     <b>return</b> <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L104'> 104 <font color='red'>}</font>
+<a name='L105'> 105 
+<a name='L106'> 106 <b>void</b> *
+<a name='L107'> 107 <a href='../R/4452.html' title='Multiple refered from 2 places.'>shash_find_data</a>(<b>const</b> <b>struct</b> <a href='../Y/6738.html' title='Multiple used in 14 places.'>shash</a> *<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>, <b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>)
+<a name='L108'> 108 <font color='red'>{</font>
+<a name='L109'> 109     <b>struct</b> <a href='../S/857.html#L39' title='Defined at 39 in cbench/openflow/lib/shash.h.'>shash_node</a> *<a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a> = <a href='../S/886.html#L93' title='Defined at 93 in cbench/openflow/lib/shash.c.'>shash_find</a>(<a href='../Y/6736.html' title='Multiple used in 17 places.'>sh</a>, <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>);
+<a name='L110'> 110     <b>return</b> <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a> ? <a href='../Y/4917.html' title='Multiple used in 268 places.'>node</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> : <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L111'> 111 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L40'>[^]</a><a href='#L107'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

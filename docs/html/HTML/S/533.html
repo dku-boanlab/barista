@@ -1,0 +1,963 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1154.html'>wiretap</a>/wtap.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/587.html' title='Multiple included from 6 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* wtap.h</font></i>
+<a name='L2'>   2 <i><font color='green'> *</font></i>
+<a name='L3'>   3 <i><font color='green'> * $Id: wtap.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L4'>   4 <i><font color='green'> *</font></i>
+<a name='L5'>   5 <i><font color='green'> * Wiretap Library</font></i>
+<a name='L6'>   6 <i><font color='green'> * Copyright (c) 1998 by Gilbert Ramirez &lt;gram@alumni.rice.edu&gt;</font></i>
+<a name='L7'>   7 <i><font color='green'> *</font></i>
+<a name='L8'>   8 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L9'>   9 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L10'>  10 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L11'>  11 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L12'>  12 <i><font color='green'> *</font></i>
+<a name='L13'>  13 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L14'>  14 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L15'>  15 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L16'>  16 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L17'>  17 <i><font color='green'> *</font></i>
+<a name='L18'>  18 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L19'>  19 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L20'>  20 <i><font color='green'> * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</font></i>
+<a name='L21'>  21 <i><font color='green'> */</font></i>
+<a name='L22'>  22 
+<a name='L23'>  23 <font color='darkred'>#ifndef</font> <a href='../S/533.html#L24' title='Defined at 24 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>__WTAP_H__</a>
+<a name='L24'>  24 <font color='darkred'>#define</font> <a href='../S/533.html#L23' title='Refered from 23 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>__WTAP_H__</a>
+<a name='L25'>  25 
+<a name='L26'>  26 <font color='darkred'>#ifdef</font> <a href='../S/588.html#L241' title='Defined at 241 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/config.h.'>HAVE_SYS_TIME_H</a>
+<a name='L27'>  27 <font color='darkred'>#include</font> &lt;sys/time.h&gt;
+<a name='L28'>  28 <font color='darkred'>#endif</font>
+<a name='L29'>  29 
+<a name='L30'>  30 <font color='darkred'>#ifdef</font> <a href='../Y/425.html' title='Multiple used in 2 places.'>HAVE_WINSOCK2_H</a>
+<a name='L31'>  31 <font color='darkred'># include</font> &lt;winsock2.h&gt;
+<a name='L32'>  32 <font color='darkred'>#endif</font>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;glib.h&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> &lt;stdio.h&gt;
+<a name='L36'>  36 <font color='darkred'>#include</font> &lt;time.h&gt;
+<a name='L37'>  37 
+<a name='L38'>  38 <font color='darkred'>#ifdef</font> <a href='../Y/1158.html' title='Multiple used in 106 places.'>__cplusplus</a>
+<a name='L39'>  39 <b>extern</b> "C" <font color='red'>{</font>
+<a name='L40'>  40 <font color='darkred'>#endif</font> <i><font color='green'>/* __cplusplus */</font></i>
+<a name='L41'>  41 
+<a name='L42'>  42 <i><font color='green'>/* Encapsulation types. Choose names that truly reflect</font></i>
+<a name='L43'>  43 <i><font color='green'> * what is contained in the packet trace file.</font></i>
+<a name='L44'>  44 <i><font color='green'> *</font></i>
+<a name='L45'>  45 <i><font color='green'> * WTAP_ENCAP_PER_PACKET is a value passed to "wtap_dump_open()" or</font></i>
+<a name='L46'>  46 <i><font color='green'> * "wtap_dump_fd_open()" to indicate that there is no single encapsulation</font></i>
+<a name='L47'>  47 <i><font color='green'> * type for all packets in the file; this may cause those routines to</font></i>
+<a name='L48'>  48 <i><font color='green'> * fail if the capture file format being written can't support that.</font></i>
+<a name='L49'>  49 <i><font color='green'> * It's also returned by "wtap_file_encap()" for capture files that</font></i>
+<a name='L50'>  50 <i><font color='green'> * don't have a single encapsulation type for all packets in the file.</font></i>
+<a name='L51'>  51 <i><font color='green'> *</font></i>
+<a name='L52'>  52 <i><font color='green'> * WTAP_ENCAP_UNKNOWN is returned by "wtap_pcap_encap_to_wtap_encap()"</font></i>
+<a name='L53'>  53 <i><font color='green'> * if it's handed an unknown encapsulation.</font></i>
+<a name='L54'>  54 <i><font color='green'> *</font></i>
+<a name='L55'>  55 <i><font color='green'> * WTAP_ENCAP_FDDI_BITSWAPPED is for FDDI captures on systems where the</font></i>
+<a name='L56'>  56 <i><font color='green'> * MAC addresses you get from the hardware are bit-swapped.  Ideally,</font></i>
+<a name='L57'>  57 <i><font color='green'> * the driver would tell us that, but I know of none that do, so, for</font></i>
+<a name='L58'>  58 <i><font color='green'> * now, we base it on the machine on which we're *reading* the</font></i>
+<a name='L59'>  59 <i><font color='green'> * capture, rather than on the machine on which the capture was taken</font></i>
+<a name='L60'>  60 <i><font color='green'> * (they're probably likely to be the same).  We assume that they're</font></i>
+<a name='L61'>  61 <i><font color='green'> * bit-swapped on everything except for systems running Ultrix, Alpha</font></i>
+<a name='L62'>  62 <i><font color='green'> * systems, and BSD/OS systems (that's what "tcpdump" does; I guess</font></i>
+<a name='L63'>  63 <i><font color='green'> * Digital decided to bit-swap addresses in the hardware or in the</font></i>
+<a name='L64'>  64 <i><font color='green'> * driver, and I guess BSDI bit-swapped them in the driver, given that</font></i>
+<a name='L65'>  65 <i><font color='green'> * BSD/OS generally runs on Boring Old PC's).  If we create a wiretap</font></i>
+<a name='L66'>  66 <i><font color='green'> * save file format, we'd use the WTAP_ENCAP values to flag the</font></i>
+<a name='L67'>  67 <i><font color='green'> * encapsulation of a packet, so there we'd at least be able to base</font></i>
+<a name='L68'>  68 <i><font color='green'> * it on the machine on which the capture was taken.</font></i>
+<a name='L69'>  69 <i><font color='green'> *</font></i>
+<a name='L70'>  70 <i><font color='green'> * WTAP_ENCAP_LINUX_ATM_CLIP is the encapsulation you get with the</font></i>
+<a name='L71'>  71 <i><font color='green'> * ATM on Linux code from &lt;http://linux-atm.sourceforge.net/&gt;;</font></i>
+<a name='L72'>  72 <i><font color='green'> * that code adds a DLT_ATM_CLIP DLT_ code of 19, and that</font></i>
+<a name='L73'>  73 <i><font color='green'> * encapsulation isn't the same as the DLT_ATM_RFC1483 encapsulation</font></i>
+<a name='L74'>  74 <i><font color='green'> * presumably used on some BSD systems, which we turn into</font></i>
+<a name='L75'>  75 <i><font color='green'> * WTAP_ENCAP_ATM_RFC1483.</font></i>
+<a name='L76'>  76 <i><font color='green'> *</font></i>
+<a name='L77'>  77 <i><font color='green'> * WTAP_ENCAP_NULL corresponds to DLT_NULL from "libpcap".  This</font></i>
+<a name='L78'>  78 <i><font color='green'> * corresponds to</font></i>
+<a name='L79'>  79 <i><font color='green'> *</font></i>
+<a name='L80'>  80 <i><font color='green'> *      1) PPP-over-HDLC encapsulation, at least with some versions</font></i>
+<a name='L81'>  81 <i><font color='green'> *         of ISDN4BSD (but not the current ones, it appears, unless</font></i>
+<a name='L82'>  82 <i><font color='green'> *         I've missed something);</font></i>
+<a name='L83'>  83 <i><font color='green'> *</font></i>
+<a name='L84'>  84 <i><font color='green'> *      2) a 4-byte header containing the AF_ address family, in</font></i>
+<a name='L85'>  85 <i><font color='green'> *         the byte order of the machine that saved the capture,</font></i>
+<a name='L86'>  86 <i><font color='green'> *         for the packet, as used on many BSD systems for the</font></i>
+<a name='L87'>  87 <i><font color='green'> *         loopback device and some other devices, or a 4-byte header</font></i>
+<a name='L88'>  88 <i><font color='green'> *         containing the AF_ address family in network byte order,</font></i>
+<a name='L89'>  89 <i><font color='green'> *         as used on recent OpenBSD systems for the loopback device;</font></i>
+<a name='L90'>  90 <i><font color='green'> *</font></i>
+<a name='L91'>  91 <i><font color='green'> *      3) a 4-byte header containing 2 octets of 0 and an Ethernet</font></i>
+<a name='L92'>  92 <i><font color='green'> *         type in the byte order from an Ethernet header, that being</font></i>
+<a name='L93'>  93 <i><font color='green'> *         what older versions of "libpcap" on Linux turn the Ethernet</font></i>
+<a name='L94'>  94 <i><font color='green'> *         header for loopback interfaces into (0.6.0 and later versions</font></i>
+<a name='L95'>  95 <i><font color='green'> *         leave the Ethernet header alone and make it DLT_EN10MB). */</font></i>
+<a name='L96'>  96 <font color='darkred'>#define</font> WTAP_ENCAP_PER_PACKET                   -1
+<a name='L97'>  97 <font color='darkred'>#define</font> WTAP_ENCAP_UNKNOWN                      0
+<a name='L98'>  98 <font color='darkred'>#define</font> WTAP_ENCAP_ETHERNET                     1
+<a name='L99'>  99 <font color='darkred'>#define</font> WTAP_ENCAP_TOKEN_RING                   2
+<a name='L100'> 100 <font color='darkred'>#define</font> WTAP_ENCAP_SLIP                         3
+<a name='L101'> 101 <font color='darkred'>#define</font> WTAP_ENCAP_PPP                          4
+<a name='L102'> 102 <font color='darkred'>#define</font> WTAP_ENCAP_FDDI                         5
+<a name='L103'> 103 <font color='darkred'>#define</font> WTAP_ENCAP_FDDI_BITSWAPPED              6
+<a name='L104'> 104 <font color='darkred'>#define</font> WTAP_ENCAP_RAW_IP                       7
+<a name='L105'> 105 <font color='darkred'>#define</font> WTAP_ENCAP_ARCNET                       8
+<a name='L106'> 106 <font color='darkred'>#define</font> WTAP_ENCAP_ARCNET_LINUX                 9
+<a name='L107'> 107 <font color='darkred'>#define</font> WTAP_ENCAP_ATM_RFC1483                  10
+<a name='L108'> 108 <font color='darkred'>#define</font> WTAP_ENCAP_LINUX_ATM_CLIP               11
+<a name='L109'> 109 <font color='darkred'>#define</font> WTAP_ENCAP_LAPB                         12
+<a name='L110'> 110 <font color='darkred'>#define</font> WTAP_ENCAP_ATM_PDUS                     13
+<a name='L111'> 111 <font color='darkred'>#define</font> WTAP_ENCAP_ATM_PDUS_UNTRUNCATED         14
+<a name='L112'> 112 <font color='darkred'>#define</font> WTAP_ENCAP_NULL                         15
+<a name='L113'> 113 <font color='darkred'>#define</font> WTAP_ENCAP_ASCEND                       16
+<a name='L114'> 114 <font color='darkred'>#define</font> WTAP_ENCAP_ISDN                         17
+<a name='L115'> 115 <font color='darkred'>#define</font> WTAP_ENCAP_IP_OVER_FC                   18
+<a name='L116'> 116 <font color='darkred'>#define</font> WTAP_ENCAP_PPP_WITH_PHDR                19
+<a name='L117'> 117 <font color='darkred'>#define</font> WTAP_ENCAP_IEEE_802_11                  20
+<a name='L118'> 118 <font color='darkred'>#define</font> WTAP_ENCAP_PRISM_HEADER                 21
+<a name='L119'> 119 <font color='darkred'>#define</font> WTAP_ENCAP_IEEE_802_11_WITH_RADIO       22
+<a name='L120'> 120 <font color='darkred'>#define</font> WTAP_ENCAP_IEEE_802_11_WLAN_RADIOTAP    23
+<a name='L121'> 121 <font color='darkred'>#define</font> WTAP_ENCAP_IEEE_802_11_WLAN_AVS         24
+<a name='L122'> 122 <font color='darkred'>#define</font> WTAP_ENCAP_SLL                          25
+<a name='L123'> 123 <font color='darkred'>#define</font> WTAP_ENCAP_FRELAY                       26
+<a name='L124'> 124 <font color='darkred'>#define</font> WTAP_ENCAP_FRELAY_WITH_PHDR             27
+<a name='L125'> 125 <font color='darkred'>#define</font> WTAP_ENCAP_CHDLC                        28
+<a name='L126'> 126 <font color='darkred'>#define</font> WTAP_ENCAP_CISCO_IOS                    29
+<a name='L127'> 127 <font color='darkred'>#define</font> WTAP_ENCAP_LOCALTALK                    30
+<a name='L128'> 128 <font color='darkred'>#define</font> WTAP_ENCAP_OLD_PFLOG                    31
+<a name='L129'> 129 <font color='darkred'>#define</font> WTAP_ENCAP_HHDLC                        32
+<a name='L130'> 130 <font color='darkred'>#define</font> WTAP_ENCAP_DOCSIS                       33
+<a name='L131'> 131 <font color='darkred'>#define</font> WTAP_ENCAP_COSINE                       34
+<a name='L132'> 132 <font color='darkred'>#define</font> WTAP_ENCAP_WFLEET_HDLC                  35
+<a name='L133'> 133 <font color='darkred'>#define</font> WTAP_ENCAP_SDLC                         36
+<a name='L134'> 134 <font color='darkred'>#define</font> WTAP_ENCAP_TZSP                         37
+<a name='L135'> 135 <font color='darkred'>#define</font> WTAP_ENCAP_ENC                          38
+<a name='L136'> 136 <font color='darkred'>#define</font> WTAP_ENCAP_PFLOG                        39
+<a name='L137'> 137 <font color='darkred'>#define</font> WTAP_ENCAP_CHDLC_WITH_PHDR              40
+<a name='L138'> 138 <font color='darkred'>#define</font> WTAP_ENCAP_BLUETOOTH_H4                 41
+<a name='L139'> 139 <font color='darkred'>#define</font> WTAP_ENCAP_MTP2                         42
+<a name='L140'> 140 <font color='darkred'>#define</font> WTAP_ENCAP_MTP3                         43
+<a name='L141'> 141 <font color='darkred'>#define</font> WTAP_ENCAP_IRDA                         44
+<a name='L142'> 142 <font color='darkred'>#define</font> WTAP_ENCAP_USER0                        45
+<a name='L143'> 143 <font color='darkred'>#define</font> WTAP_ENCAP_USER1                        46
+<a name='L144'> 144 <font color='darkred'>#define</font> WTAP_ENCAP_USER2                        47
+<a name='L145'> 145 <font color='darkred'>#define</font> WTAP_ENCAP_USER3                        48
+<a name='L146'> 146 <font color='darkred'>#define</font> WTAP_ENCAP_USER4                        49
+<a name='L147'> 147 <font color='darkred'>#define</font> WTAP_ENCAP_USER5                        50
+<a name='L148'> 148 <font color='darkred'>#define</font> WTAP_ENCAP_USER6                        51
+<a name='L149'> 149 <font color='darkred'>#define</font> WTAP_ENCAP_USER7                        52
+<a name='L150'> 150 <font color='darkred'>#define</font> WTAP_ENCAP_USER8                        53
+<a name='L151'> 151 <font color='darkred'>#define</font> WTAP_ENCAP_USER9                        54
+<a name='L152'> 152 <font color='darkred'>#define</font> WTAP_ENCAP_USER10                       55
+<a name='L153'> 153 <font color='darkred'>#define</font> WTAP_ENCAP_USER11                       56
+<a name='L154'> 154 <font color='darkred'>#define</font> WTAP_ENCAP_USER12                       57
+<a name='L155'> 155 <font color='darkred'>#define</font> WTAP_ENCAP_USER13                       58
+<a name='L156'> 156 <font color='darkred'>#define</font> WTAP_ENCAP_USER14                       59
+<a name='L157'> 157 <font color='darkred'>#define</font> WTAP_ENCAP_USER15                       60
+<a name='L158'> 158 <font color='darkred'>#define</font> WTAP_ENCAP_SYMANTEC                     61
+<a name='L159'> 159 <font color='darkred'>#define</font> WTAP_ENCAP_APPLE_IP_OVER_IEEE1394       62
+<a name='L160'> 160 <font color='darkred'>#define</font> WTAP_ENCAP_BACNET_MS_TP                 63
+<a name='L161'> 161 <font color='darkred'>#define</font> WTAP_ENCAP_NETTL_RAW_ICMP               64
+<a name='L162'> 162 <font color='darkred'>#define</font> WTAP_ENCAP_NETTL_RAW_ICMPV6             65
+<a name='L163'> 163 <font color='darkred'>#define</font> WTAP_ENCAP_GPRS_LLC                     66
+<a name='L164'> 164 <font color='darkred'>#define</font> WTAP_ENCAP_JUNIPER_ATM1                 67
+<a name='L165'> 165 <font color='darkred'>#define</font> WTAP_ENCAP_JUNIPER_ATM2                 68
+<a name='L166'> 166 <font color='darkred'>#define</font> WTAP_ENCAP_REDBACK                      69
+<a name='L167'> 167 <font color='darkred'>#define</font> WTAP_ENCAP_NETTL_RAW_IP                 70
+<a name='L168'> 168 <font color='darkred'>#define</font> WTAP_ENCAP_NETTL_ETHERNET               71
+<a name='L169'> 169 <font color='darkred'>#define</font> WTAP_ENCAP_NETTL_TOKEN_RING             72
+<a name='L170'> 170 <font color='darkred'>#define</font> WTAP_ENCAP_NETTL_FDDI                   73
+<a name='L171'> 171 <font color='darkred'>#define</font> WTAP_ENCAP_NETTL_UNKNOWN                74
+<a name='L172'> 172 <font color='darkred'>#define</font> WTAP_ENCAP_MTP2_WITH_PHDR               75
+<a name='L173'> 173 <font color='darkred'>#define</font> WTAP_ENCAP_JUNIPER_PPPOE                76
+<a name='L174'> 174 <font color='darkred'>#define</font> WTAP_GCOM_TIE1                          77
+<a name='L175'> 175 <font color='darkred'>#define</font> WTAP_GCOM_SERIAL                        78
+<a name='L176'> 176 <font color='darkred'>#define</font> WTAP_ENCAP_NETTL_X25                    79
+<a name='L177'> 177 <font color='darkred'>#define</font> WTAP_ENCAP_K12                          80
+<a name='L178'> 178 <font color='darkred'>#define</font> WTAP_ENCAP_JUNIPER_MLPPP                81
+<a name='L179'> 179 <font color='darkred'>#define</font> WTAP_ENCAP_JUNIPER_MLFR                 82
+<a name='L180'> 180 <font color='darkred'>#define</font> WTAP_ENCAP_JUNIPER_ETHER                83
+<a name='L181'> 181 <font color='darkred'>#define</font> WTAP_ENCAP_JUNIPER_PPP                  84
+<a name='L182'> 182 <font color='darkred'>#define</font> WTAP_ENCAP_JUNIPER_FRELAY               85
+<a name='L183'> 183 <font color='darkred'>#define</font> WTAP_ENCAP_JUNIPER_CHDLC                86
+<a name='L184'> 184 <font color='darkred'>#define</font> WTAP_ENCAP_JUNIPER_GGSN                 87
+<a name='L185'> 185 <font color='darkred'>#define</font> WTAP_ENCAP_LINUX_LAPD                   88
+<a name='L186'> 186 <font color='darkred'>#define</font> WTAP_ENCAP_CATAPULT_DCT2000             89
+<a name='L187'> 187 <font color='darkred'>#define</font> WTAP_ENCAP_BER                          90
+<a name='L188'> 188 <font color='darkred'>#define</font> WTAP_ENCAP_JUNIPER_VP                   91
+<a name='L189'> 189 <font color='darkred'>#define</font> WTAP_ENCAP_USB                          92
+<a name='L190'> 190 <font color='darkred'>#define</font> WTAP_ENCAP_IEEE802_16_MAC_CPS           93
+<a name='L191'> 191 <font color='darkred'>#define</font> WTAP_ENCAP_NETTL_RAW_TELNET                     94
+<a name='L192'> 192 <font color='darkred'>#define</font> WTAP_ENCAP_USB_LINUX                            95
+<a name='L193'> 193 <font color='darkred'>#define</font> WTAP_ENCAP_MPEG                                         96
+<a name='L194'> 194 <font color='darkred'>#define</font> WTAP_ENCAP_PPI                                          97
+<a name='L195'> 195 <font color='darkred'>#define</font> WTAP_ENCAP_ERF                                          98
+<a name='L196'> 196 <font color='darkred'>#define</font> WTAP_ENCAP_BLUETOOTH_H4_WITH_PHDR       99
+<a name='L197'> 197 <font color='darkred'>#define</font> WTAP_ENCAP_SITA                                         100
+<a name='L198'> 198 <font color='darkred'>#define</font> WTAP_ENCAP_SCCP                                         101
+<a name='L199'> 199 <font color='darkred'>#define</font> WTAP_ENCAP_BLUETOOTH_HCI                        102 <i><font color='green'>/*raw packets without a transport layer header e.g. H4*/</font></i>
+<a name='L200'> 200 <font color='darkred'>#define</font> WTAP_ENCAP_IPMB                                         103
+<a name='L201'> 201 <font color='darkred'>#define</font> WTAP_ENCAP_IEEE802_15_4                         104
+<a name='L202'> 202 <font color='darkred'>#define</font> WTAP_ENCAP_X2E_XORAYA                   105
+<a name='L203'> 203 <font color='darkred'>#define</font> WTAP_ENCAP_FLEXRAY                      106
+<a name='L204'> 204 <font color='darkred'>#define</font> WTAP_ENCAP_LIN                          107
+<a name='L205'> 205 <font color='darkred'>#define</font> WTAP_ENCAP_MOST                         108
+<a name='L206'> 206 <font color='darkred'>#define</font> WTAP_ENCAP_CAN20B                       109
+<a name='L207'> 207 
+<a name='L208'> 208 <font color='darkred'>#define</font> WTAP_NUM_ENCAP_TYPES                    <a href='../Y/7968.html' title='Multiple used in 2 places.'>wtap_get_num_encap_types</a>()
+<a name='L209'> 209 
+<a name='L210'> 210 <i><font color='green'>/* File types that can be read by wiretap.</font></i>
+<a name='L211'> 211 <i><font color='green'>   We support writing some many of these file types, too, so we</font></i>
+<a name='L212'> 212 <i><font color='green'>   distinguish between different versions of them. */</font></i>
+<a name='L213'> 213 <font color='darkred'>#define</font> WTAP_FILE_UNKNOWN                       0
+<a name='L214'> 214 <font color='darkred'>#define</font> WTAP_FILE_WTAP                                          1
+<a name='L215'> 215 <font color='darkred'>#define</font> WTAP_FILE_PCAP                                          2
+<a name='L216'> 216 <font color='darkred'>#define</font> WTAP_FILE_PCAP_NSEC                                     3
+<a name='L217'> 217 <font color='darkred'>#define</font> WTAP_FILE_PCAP_AIX                                      4
+<a name='L218'> 218 <font color='darkred'>#define</font> WTAP_FILE_PCAP_SS991029                         5
+<a name='L219'> 219 <font color='darkred'>#define</font> WTAP_FILE_PCAP_NOKIA                            6
+<a name='L220'> 220 <font color='darkred'>#define</font> WTAP_FILE_PCAP_SS990417                         7
+<a name='L221'> 221 <font color='darkred'>#define</font> WTAP_FILE_PCAP_SS990915                         8
+<a name='L222'> 222 <font color='darkred'>#define</font> WTAP_FILE_5VIEWS                                        9
+<a name='L223'> 223 <font color='darkred'>#define</font> WTAP_FILE_IPTRACE_1_0                           10
+<a name='L224'> 224 <font color='darkred'>#define</font> WTAP_FILE_IPTRACE_2_0                           11
+<a name='L225'> 225 <font color='darkred'>#define</font> WTAP_FILE_BER                                           12
+<a name='L226'> 226 <font color='darkred'>#define</font> WTAP_FILE_HCIDUMP                                       13
+<a name='L227'> 227 <font color='darkred'>#define</font> WTAP_FILE_CATAPULT_DCT2000                      14
+<a name='L228'> 228 <font color='darkred'>#define</font> WTAP_FILE_NETXRAY_OLD                           15
+<a name='L229'> 229 <font color='darkred'>#define</font> WTAP_FILE_NETXRAY_1_0                           16
+<a name='L230'> 230 <font color='darkred'>#define</font> WTAP_FILE_COSINE                                        17
+<a name='L231'> 231 <font color='darkred'>#define</font> WTAP_FILE_CSIDS                                         18
+<a name='L232'> 232 <font color='darkred'>#define</font> WTAP_FILE_DBS_ETHERWATCH                        19
+<a name='L233'> 233 <font color='darkred'>#define</font> WTAP_FILE_ERF                                           20
+<a name='L234'> 234 <font color='darkred'>#define</font> WTAP_FILE_EYESDN                                        21
+<a name='L235'> 235 <font color='darkred'>#define</font> WTAP_FILE_NETTL                                         22
+<a name='L236'> 236 <font color='darkred'>#define</font> WTAP_FILE_ISERIES                                       23
+<a name='L237'> 237 <font color='darkred'>#define</font> WTAP_FILE_ISERIES_UNICODE                       24
+<a name='L238'> 238 <font color='darkred'>#define</font> WTAP_FILE_I4BTRACE                                      25
+<a name='L239'> 239 <font color='darkred'>#define</font> WTAP_FILE_ASCEND                                        26
+<a name='L240'> 240 <font color='darkred'>#define</font> WTAP_FILE_NETMON_1_x                            27
+<a name='L241'> 241 <font color='darkred'>#define</font> WTAP_FILE_NETMON_2_x                            28
+<a name='L242'> 242 <font color='darkred'>#define</font> WTAP_FILE_NGSNIFFER_UNCOMPRESSED        29
+<a name='L243'> 243 <font color='darkred'>#define</font> WTAP_FILE_NGSNIFFER_COMPRESSED          30
+<a name='L244'> 244 <font color='darkred'>#define</font> WTAP_FILE_NETXRAY_1_1                           31
+<a name='L245'> 245 <font color='darkred'>#define</font> WTAP_FILE_NETXRAY_2_00x                         32
+<a name='L246'> 246 <font color='darkred'>#define</font> WTAP_FILE_NETWORK_INSTRUMENTS_V9        33
+<a name='L247'> 247 <font color='darkred'>#define</font> WTAP_FILE_LANALYZER                                     34
+<a name='L248'> 248 <font color='darkred'>#define</font> WTAP_FILE_PPPDUMP                                       35
+<a name='L249'> 249 <font color='darkred'>#define</font> WTAP_FILE_RADCOM                                        36
+<a name='L250'> 250 <font color='darkred'>#define</font> WTAP_FILE_SNOOP                                         37
+<a name='L251'> 251 <font color='darkred'>#define</font> WTAP_FILE_SHOMITI                                       38
+<a name='L252'> 252 <font color='darkred'>#define</font> WTAP_FILE_VMS                                           39
+<a name='L253'> 253 <font color='darkred'>#define</font> WTAP_FILE_K12                                           40
+<a name='L254'> 254 <font color='darkred'>#define</font> WTAP_FILE_TOSHIBA                                       41
+<a name='L255'> 255 <font color='darkred'>#define</font> WTAP_FILE_VISUAL_NETWORKS                       42
+<a name='L256'> 256 <font color='darkred'>#define</font> WTAP_FILE_ETHERPEEK_V56                         43
+<a name='L257'> 257 <font color='darkred'>#define</font> WTAP_FILE_ETHERPEEK_V7                          44
+<a name='L258'> 258 <font color='darkred'>#define</font> WTAP_FILE_AIROPEEK_V9                           45
+<a name='L259'> 259 <font color='darkred'>#define</font> WTAP_FILE_MPEG                                          46
+<a name='L260'> 260 <font color='darkred'>#define</font> WTAP_FILE_K12TEXT                                       47
+<a name='L261'> 261 <font color='darkred'>#define</font> WTAP_FILE_NETSCREEN                                     48
+<a name='L262'> 262 <font color='darkred'>#define</font> WTAP_FILE_COMMVIEW                                      49
+<a name='L263'> 263 <font color='darkred'>#define</font> WTAP_FILE_PCAPNG                                        50
+<a name='L264'> 264 <font color='darkred'>#define</font> WTAP_FILE_BTSNOOP                                       51
+<a name='L265'> 265 <font color='darkred'>#define</font> WTAP_FILE_X2E_XORAYA                                    52
+<a name='L266'> 266 
+<a name='L267'> 267 <font color='darkred'>#define</font> WTAP_NUM_FILE_TYPES                     <a href='../Y/7969.html' title='Multiple used in 2 places.'>wtap_get_num_file_types</a>()
+<a name='L268'> 268 
+<a name='L269'> 269 <i><font color='green'>/* timestamp precision (currently only these values are supported) */</font></i>
+<a name='L270'> 270 <font color='darkred'>#define</font> WTAP_FILE_TSPREC_SEC            0
+<a name='L271'> 271 <font color='darkred'>#define</font> WTAP_FILE_TSPREC_DSEC           1
+<a name='L272'> 272 <font color='darkred'>#define</font> WTAP_FILE_TSPREC_CSEC           2
+<a name='L273'> 273 <font color='darkred'>#define</font> WTAP_FILE_TSPREC_MSEC           3
+<a name='L274'> 274 <font color='darkred'>#define</font> WTAP_FILE_TSPREC_USEC           6
+<a name='L275'> 275 <font color='darkred'>#define</font> WTAP_FILE_TSPREC_NSEC           9
+<a name='L276'> 276 
+<a name='L277'> 277 <i><font color='green'>/*</font></i>
+<a name='L278'> 278 <i><font color='green'> * Maximum packet size we'll support.</font></i>
+<a name='L279'> 279 <i><font color='green'> * It must be at least 65535.</font></i>
+<a name='L280'> 280 <i><font color='green'> */</font></i>
+<a name='L281'> 281 <font color='darkred'>#define</font> <a href='../S/349.html#L76' title='Refered from 76 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/cfile.h.'>WTAP_MAX_PACKET_SIZE</a>                    65535
+<a name='L282'> 282 
+<a name='L283'> 283 <i><font color='green'>/*</font></i>
+<a name='L284'> 284 <i><font color='green'> * "Pseudo-headers" are used to supply to the clients of wiretap</font></i>
+<a name='L285'> 285 <i><font color='green'> * per-packet information that's not part of the packet payload</font></i>
+<a name='L286'> 286 <i><font color='green'> * proper.</font></i>
+<a name='L287'> 287 <i><font color='green'> *</font></i>
+<a name='L288'> 288 <i><font color='green'> * NOTE: do not use pseudo-header structures to hold information</font></i>
+<a name='L289'> 289 <i><font color='green'> * used by the code to read a particular capture file type; to</font></i>
+<a name='L290'> 290 <i><font color='green'> * keep that sort of state information, add a new structure for</font></i>
+<a name='L291'> 291 <i><font color='green'> * that private information to "wtap-int.h", add a pointer to that</font></i>
+<a name='L292'> 292 <i><font color='green'> * type of structure to the "capture" member of the "struct wtap"</font></i>
+<a name='L293'> 293 <i><font color='green'> * structure, and allocate one of those structures and set that member</font></i>
+<a name='L294'> 294 <i><font color='green'> * in the "open" routine for that capture file type if the open</font></i>
+<a name='L295'> 295 <i><font color='green'> * succeeds.  See various other capture file type handlers for examples</font></i>
+<a name='L296'> 296 <i><font color='green'> * of that.</font></i>
+<a name='L297'> 297 <i><font color='green'> */</font></i>
+<a name='L298'> 298 
+<a name='L299'> 299 <i><font color='green'>/* Packet "pseudo-header" information for Ethernet capture files. */</font></i>
+<a name='L300'> 300 <b>struct</b> <a href='../S/533.html#L734' title='Refered from 734 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>eth_phdr</a> <font color='red'>{</font>
+<a name='L301'> 301         <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a>    <a href='../Y/3014.html' title='Multiple used in 3 places.'>fcs_len</a>;        <i><font color='green'>/* Number of bytes of FCS - -1 means "unknown" */</font></i>
+<a name='L302'> 302 <font color='red'>}</font>;
+<a name='L303'> 303 
+<a name='L304'> 304 <i><font color='green'>/* Packet "pseudo-header" information for X.25 capture files. */</font></i>
+<a name='L305'> 305 <font color='darkred'>#define</font> FROM_DCE                        0x80
+<a name='L306'> 306 <b>struct</b> <a href='../S/533.html#L735' title='Refered from 735 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>x25_phdr</a> <font color='red'>{</font>
+<a name='L307'> 307         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>; <i><font color='green'>/* ENCAP_LAPB, ENCAP_V120 : 1st bit means From DCE */</font></i>
+<a name='L308'> 308 <font color='red'>}</font>;
+<a name='L309'> 309 
+<a name='L310'> 310 <i><font color='green'>/* Packet "pseudo-header" information for ISDN capture files. */</font></i>
+<a name='L311'> 311 
+<a name='L312'> 312 <i><font color='green'>/* Direction */</font></i>
+<a name='L313'> 313 <b>struct</b> <a href='../R/3327.html' title='Multiple refered from 2 places.'>isdn_phdr</a> <font color='red'>{</font>
+<a name='L314'> 314         <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> uton;
+<a name='L315'> 315         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  <a href='../Y/1856.html' title='Multiple used in 30 places.'>channel</a>;                <i><font color='green'>/* 0 = D-channel; n = B-channel n */</font></i>
+<a name='L316'> 316 <font color='red'>}</font>;
+<a name='L317'> 317 
+<a name='L318'> 318 <i><font color='green'>/* Packet "pseudo-header" for ATM capture files.</font></i>
+<a name='L319'> 319 <i><font color='green'>   Not all of this information is supplied by all capture types. */</font></i>
+<a name='L320'> 320 
+<a name='L321'> 321 <i><font color='green'>/*</font></i>
+<a name='L322'> 322 <i><font color='green'> * Status bits.</font></i>
+<a name='L323'> 323 <i><font color='green'> */</font></i>
+<a name='L324'> 324 <font color='darkred'>#define</font> ATM_RAW_CELL    0x01    <i><font color='green'>/* TRUE if the packet is a single cell */</font></i>
+<a name='L325'> 325 
+<a name='L326'> 326 <i><font color='green'>/*</font></i>
+<a name='L327'> 327 <i><font color='green'> * AAL types.</font></i>
+<a name='L328'> 328 <i><font color='green'> */</font></i>
+<a name='L329'> 329 <font color='darkred'>#define</font> AAL_UNKNOWN     0       <i><font color='green'>/* AAL unknown */</font></i>
+<a name='L330'> 330 <font color='darkred'>#define</font> AAL_1           1       <i><font color='green'>/* AAL1 */</font></i>
+<a name='L331'> 331 <font color='darkred'>#define</font> AAL_2           2       <i><font color='green'>/* AAL2 */</font></i>
+<a name='L332'> 332 <font color='darkred'>#define</font> AAL_3_4         3       <i><font color='green'>/* AAL3/4 */</font></i>
+<a name='L333'> 333 <font color='darkred'>#define</font> AAL_5           4       <i><font color='green'>/* AAL5 */</font></i>
+<a name='L334'> 334 <font color='darkred'>#define</font> AAL_USER        5       <i><font color='green'>/* User AAL */</font></i>
+<a name='L335'> 335 <font color='darkred'>#define</font> AAL_SIGNALLING  6       <i><font color='green'>/* Signaling AAL */</font></i>
+<a name='L336'> 336 <font color='darkred'>#define</font> AAL_OAMCELL     7       <i><font color='green'>/* OAM cell */</font></i>
+<a name='L337'> 337 
+<a name='L338'> 338 <i><font color='green'>/*</font></i>
+<a name='L339'> 339 <i><font color='green'> * Traffic types.</font></i>
+<a name='L340'> 340 <i><font color='green'> */</font></i>
+<a name='L341'> 341 <font color='darkred'>#define</font> TRAF_UNKNOWN    0       <i><font color='green'>/* Unknown */</font></i>
+<a name='L342'> 342 <font color='darkred'>#define</font> TRAF_LLCMX      1       <i><font color='green'>/* LLC multiplexed (RFC 1483) */</font></i>
+<a name='L343'> 343 <font color='darkred'>#define</font> TRAF_VCMX       2       <i><font color='green'>/* VC multiplexed (RFC 1483) */</font></i>
+<a name='L344'> 344 <font color='darkred'>#define</font> TRAF_LANE       3       <i><font color='green'>/* LAN Emulation */</font></i>
+<a name='L345'> 345 <font color='darkred'>#define</font> TRAF_ILMI       4       <i><font color='green'>/* ILMI */</font></i>
+<a name='L346'> 346 <font color='darkred'>#define</font> TRAF_FR         5       <i><font color='green'>/* Frame Relay */</font></i>
+<a name='L347'> 347 <font color='darkred'>#define</font> TRAF_SPANS      6       <i><font color='green'>/* FORE SPANS */</font></i>
+<a name='L348'> 348 <font color='darkred'>#define</font> TRAF_IPSILON    7       <i><font color='green'>/* Ipsilon */</font></i>
+<a name='L349'> 349 <font color='darkred'>#define</font> TRAF_UMTS_FP    8       <i><font color='green'>/* UMTS Frame Protocol */</font></i>
+<a name='L350'> 350 
+<a name='L351'> 351 <i><font color='green'>/*</font></i>
+<a name='L352'> 352 <i><font color='green'> * Traffic subtypes.</font></i>
+<a name='L353'> 353 <i><font color='green'> */</font></i>
+<a name='L354'> 354 <font color='darkred'>#define</font> TRAF_ST_UNKNOWN         0       <i><font color='green'>/* Unknown */</font></i>
+<a name='L355'> 355 
+<a name='L356'> 356 <i><font color='green'>/*</font></i>
+<a name='L357'> 357 <i><font color='green'> * For TRAF_VCMX:</font></i>
+<a name='L358'> 358 <i><font color='green'> */</font></i>
+<a name='L359'> 359 <font color='darkred'>#define</font> TRAF_ST_VCMX_802_3_FCS  1       <i><font color='green'>/* 802.3 with an FCS */</font></i>
+<a name='L360'> 360 <font color='darkred'>#define</font> TRAF_ST_VCMX_802_4_FCS  2       <i><font color='green'>/* 802.4 with an FCS */</font></i>
+<a name='L361'> 361 <font color='darkred'>#define</font> TRAF_ST_VCMX_802_5_FCS  3       <i><font color='green'>/* 802.5 with an FCS */</font></i>
+<a name='L362'> 362 <font color='darkred'>#define</font> TRAF_ST_VCMX_FDDI_FCS   4       <i><font color='green'>/* FDDI with an FCS */</font></i>
+<a name='L363'> 363 <font color='darkred'>#define</font> TRAF_ST_VCMX_802_6_FCS  5       <i><font color='green'>/* 802.6 with an FCS */</font></i>
+<a name='L364'> 364 <font color='darkred'>#define</font> TRAF_ST_VCMX_802_3      7       <i><font color='green'>/* 802.3 without an FCS */</font></i>
+<a name='L365'> 365 <font color='darkred'>#define</font> TRAF_ST_VCMX_802_4      8       <i><font color='green'>/* 802.4 without an FCS */</font></i>
+<a name='L366'> 366 <font color='darkred'>#define</font> TRAF_ST_VCMX_802_5      9       <i><font color='green'>/* 802.5 without an FCS */</font></i>
+<a name='L367'> 367 <font color='darkred'>#define</font> TRAF_ST_VCMX_FDDI       10      <i><font color='green'>/* FDDI without an FCS */</font></i>
+<a name='L368'> 368 <font color='darkred'>#define</font> TRAF_ST_VCMX_802_6      11      <i><font color='green'>/* 802.6 without an FCS */</font></i>
+<a name='L369'> 369 <font color='darkred'>#define</font> TRAF_ST_VCMX_FRAGMENTS  12      <i><font color='green'>/* Fragments */</font></i>
+<a name='L370'> 370 <font color='darkred'>#define</font> TRAF_ST_VCMX_BPDU       13      <i><font color='green'>/* BPDU */</font></i>
+<a name='L371'> 371 
+<a name='L372'> 372 <i><font color='green'>/*</font></i>
+<a name='L373'> 373 <i><font color='green'> * For TRAF_LANE:</font></i>
+<a name='L374'> 374 <i><font color='green'> */</font></i>
+<a name='L375'> 375 <font color='darkred'>#define</font> TRAF_ST_LANE_LE_CTRL    1       <i><font color='green'>/* LANE: LE Ctrl */</font></i>
+<a name='L376'> 376 <font color='darkred'>#define</font> TRAF_ST_LANE_802_3      2       <i><font color='green'>/* LANE: 802.3 */</font></i>
+<a name='L377'> 377 <font color='darkred'>#define</font> TRAF_ST_LANE_802_5      3       <i><font color='green'>/* LANE: 802.5 */</font></i>
+<a name='L378'> 378 <font color='darkred'>#define</font> TRAF_ST_LANE_802_3_MC   4       <i><font color='green'>/* LANE: 802.3 multicast */</font></i>
+<a name='L379'> 379 <font color='darkred'>#define</font> TRAF_ST_LANE_802_5_MC   5       <i><font color='green'>/* LANE: 802.5 multicast */</font></i>
+<a name='L380'> 380 
+<a name='L381'> 381 <i><font color='green'>/*</font></i>
+<a name='L382'> 382 <i><font color='green'> * For TRAF_IPSILON:</font></i>
+<a name='L383'> 383 <i><font color='green'> */</font></i>
+<a name='L384'> 384 <font color='darkred'>#define</font> TRAF_ST_IPSILON_FT0     1       <i><font color='green'>/* Ipsilon: Flow Type 0 */</font></i>
+<a name='L385'> 385 <font color='darkred'>#define</font> TRAF_ST_IPSILON_FT1     2       <i><font color='green'>/* Ipsilon: Flow Type 1 */</font></i>
+<a name='L386'> 386 <font color='darkred'>#define</font> TRAF_ST_IPSILON_FT2     3       <i><font color='green'>/* Ipsilon: Flow Type 2 */</font></i>
+<a name='L387'> 387 
+<a name='L388'> 388 <b>struct</b> <a href='../R/2241.html' title='Multiple refered from 2 places.'>atm_phdr</a> <font color='red'>{</font>
+<a name='L389'> 389         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>;          <i><font color='green'>/* status flags */</font></i>
+<a name='L390'> 390         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  aal;            <i><font color='green'>/* AAL of the traffic */</font></i>
+<a name='L391'> 391         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;           <i><font color='green'>/* traffic type */</font></i>
+<a name='L392'> 392         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  <a href='../Y/7146.html' title='Multiple used in 20 places.'>subtype</a>;        <i><font color='green'>/* traffic subtype */</font></i>
+<a name='L393'> 393         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> vpi;            <i><font color='green'>/* virtual path identifier */</font></i>
+<a name='L394'> 394         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> vci;            <i><font color='green'>/* virtual circuit identifier */</font></i>
+<a name='L395'> 395         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  aal2_cid;       <i><font color='green'>/* channel id */</font></i>
+<a name='L396'> 396         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../Y/1856.html' title='Multiple used in 30 places.'>channel</a>;        <i><font color='green'>/* link: 0 for DTE-&gt;DCE, 1 for DCE-&gt;DTE */</font></i>
+<a name='L397'> 397         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> cells;          <i><font color='green'>/* number of cells */</font></i>
+<a name='L398'> 398         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> aal5t_u2u;      <i><font color='green'>/* user-to-user indicator */</font></i>
+<a name='L399'> 399         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> aal5t_len;      <i><font color='green'>/* length of the packet */</font></i>
+<a name='L400'> 400         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> aal5t_chksum;   <i><font color='green'>/* checksum for AAL5 packet */</font></i>
+<a name='L401'> 401 <font color='red'>}</font>;
+<a name='L402'> 402 
+<a name='L403'> 403 <i><font color='green'>/* Packet "pseudo-header" for the output from "wandsession", "wannext",</font></i>
+<a name='L404'> 404 <i><font color='green'>   "wandisplay", and similar commands on Lucent/Ascend access equipment. */</font></i>
+<a name='L405'> 405 
+<a name='L406'> 406 <font color='darkred'>#define</font> <a href='../R/87.html' title='Multiple refered from 2 places.'>ASCEND_MAX_STR_LEN</a> 64
+<a name='L407'> 407 
+<a name='L408'> 408 <font color='darkred'>#define</font> ASCEND_PFX_WDS_X 1
+<a name='L409'> 409 <font color='darkred'>#define</font> ASCEND_PFX_WDS_R 2
+<a name='L410'> 410 <font color='darkred'>#define</font> ASCEND_PFX_WDD   3
+<a name='L411'> 411 <font color='darkred'>#define</font> ASCEND_PFX_ISDN_X 4
+<a name='L412'> 412 <font color='darkred'>#define</font> ASCEND_PFX_ISDN_R 5
+<a name='L413'> 413 <font color='darkred'>#define</font> ASCEND_PFX_ETHER 6
+<a name='L414'> 414 
+<a name='L415'> 415 <b>struct</b> <a href='../R/2232.html' title='Multiple refered from 2 places.'>ascend_phdr</a> <font color='red'>{</font>
+<a name='L416'> 416         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;                   <i><font color='green'>/* ASCEND_PFX_*, as defined above */</font></i>
+<a name='L417'> 417         <b>char</b>    <a href='../Y/7681.html' title='Multiple used in 2 places.'>user</a>[<a href='../S/533.html#L406' title='Defined at 406 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>ASCEND_MAX_STR_LEN</a>];   <i><font color='green'>/* Username, from wandsession header */</font></i>
+<a name='L418'> 418         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/6679.html' title='Multiple used in 4 places.'>sess</a>;                   <i><font color='green'>/* Session number, from wandsession header */</font></i>
+<a name='L419'> 419         <b>char</b>    call_num[<a href='../S/533.html#L406' title='Defined at 406 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>ASCEND_MAX_STR_LEN</a>];   <i><font color='green'>/* Called number, from WDD header */</font></i>
+<a name='L420'> 420         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/1874.html' title='Multiple used in 5 places.'>chunk</a>;                  <i><font color='green'>/* Chunk number, from WDD header */</font></i>
+<a name='L421'> 421         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> task;                   <i><font color='green'>/* Task number */</font></i>
+<a name='L422'> 422 <font color='red'>}</font>;
+<a name='L423'> 423 
+<a name='L424'> 424 <i><font color='green'>/* Packet "pseudo-header" for point-to-point links with direction flags. */</font></i>
+<a name='L425'> 425 <b>struct</b> <a href='../R/3996.html' title='Multiple refered from 2 places.'>p2p_phdr</a> <font color='red'>{</font>
+<a name='L426'> 426         <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a>        <a href='../Y/6665.html' title='Multiple used in 6 places.'>sent</a>; <i><font color='green'>/* TRUE=sent, FALSE=received */</font></i>
+<a name='L427'> 427 <font color='red'>}</font>;
+<a name='L428'> 428 
+<a name='L429'> 429 <i><font color='green'>/*</font></i>
+<a name='L430'> 430 <i><font color='green'> * Packet "pseudo-header" information for 802.11.</font></i>
+<a name='L431'> 431 <i><font color='green'> * Radio information is only present for WTAP_ENCAP_IEEE_802_11_WITH_RADIO.</font></i>
+<a name='L432'> 432 <i><font color='green'> *</font></i>
+<a name='L433'> 433 <i><font color='green'> * Signal strength, etc. information:</font></i>
+<a name='L434'> 434 <i><font color='green'> *</font></i>
+<a name='L435'> 435 <i><font color='green'> * Raw signal strength can be measured in milliwatts.</font></i>
+<a name='L436'> 436 <i><font color='green'> * It can also be represented as dBm, which is 10 times the log base 10</font></i>
+<a name='L437'> 437 <i><font color='green'> * of the signal strength in mW.</font></i>
+<a name='L438'> 438 <i><font color='green'> *</font></i>
+<a name='L439'> 439 <i><font color='green'> * The Receive Signal Strength Indicator is an integer in the range 0 to 255.</font></i>
+<a name='L440'> 440 <i><font color='green'> * The actual RSSI value for a given signal strength is dependent on the</font></i>
+<a name='L441'> 441 <i><font color='green'> * vendor (and perhaps on the adapter).  The maximum possible RSSI value</font></i>
+<a name='L442'> 442 <i><font color='green'> * is also dependent on the vendor and perhaps the adapter.</font></i>
+<a name='L443'> 443 <i><font color='green'> *</font></i>
+<a name='L444'> 444 <i><font color='green'> * The signal strength can be represented as a percentage, which is 100</font></i>
+<a name='L445'> 445 <i><font color='green'> * times the ratio of the RSSI and the maximum RSSI.</font></i>
+<a name='L446'> 446 <i><font color='green'> */</font></i>
+<a name='L447'> 447 <b>struct</b> <a href='../S/533.html#L740' title='Refered from 740 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>ieee_802_11_phdr</a> <font color='red'>{</font>
+<a name='L448'> 448         <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a>    <a href='../Y/3014.html' title='Multiple used in 3 places.'>fcs_len</a>;        <i><font color='green'>/* Number of bytes of FCS - -1 means "unknown" */</font></i>
+<a name='L449'> 449         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  <a href='../Y/1856.html' title='Multiple used in 30 places.'>channel</a>;        <i><font color='green'>/* Channel number */</font></i>
+<a name='L450'> 450         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  data_rate;      <i><font color='green'>/* in .5 Mb/s units */</font></i>
+<a name='L451'> 451         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  signal_level;   <i><font color='green'>/* percentage */</font></i>
+<a name='L452'> 452 <font color='red'>}</font>;
+<a name='L453'> 453 
+<a name='L454'> 454 <i><font color='green'>/* Packet "pseudo-header" for the output from CoSine L2 debug output. */</font></i>
+<a name='L455'> 455 
+<a name='L456'> 456 <font color='darkred'>#define</font> <a href='../S/533.html#L474' title='Refered from 474 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>COSINE_MAX_IF_NAME_LEN</a>  128
+<a name='L457'> 457 
+<a name='L458'> 458 <font color='darkred'>#define</font> COSINE_ENCAP_TEST       1
+<a name='L459'> 459 <font color='darkred'>#define</font> COSINE_ENCAP_PPoATM     2
+<a name='L460'> 460 <font color='darkred'>#define</font> COSINE_ENCAP_PPoFR      3
+<a name='L461'> 461 <font color='darkred'>#define</font> COSINE_ENCAP_ATM        4
+<a name='L462'> 462 <font color='darkred'>#define</font> COSINE_ENCAP_FR         5
+<a name='L463'> 463 <font color='darkred'>#define</font> COSINE_ENCAP_HDLC       6
+<a name='L464'> 464 <font color='darkred'>#define</font> COSINE_ENCAP_PPP        7
+<a name='L465'> 465 <font color='darkred'>#define</font> COSINE_ENCAP_ETH        8
+<a name='L466'> 466 <font color='darkred'>#define</font> COSINE_ENCAP_UNKNOWN    99
+<a name='L467'> 467 
+<a name='L468'> 468 <font color='darkred'>#define</font> COSINE_DIR_TX 1
+<a name='L469'> 469 <font color='darkred'>#define</font> COSINE_DIR_RX 2
+<a name='L470'> 470 
+<a name='L471'> 471 <b>struct</b> <a href='../S/533.html#L741' title='Refered from 741 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>cosine_phdr</a> <font color='red'>{</font>
+<a name='L472'> 472         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> <a href='../Y/2669.html' title='Multiple used in 26 places.'>encap</a>;           <i><font color='green'>/* COSINE_ENCAP_* as defined above */</font></i>
+<a name='L473'> 473         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> <a href='../Y/2404.html' title='Multiple used in 4 places.'>direction</a>;       <i><font color='green'>/* COSINE_DIR_*, as defined above */</font></i>
+<a name='L474'> 474         <b>char</b> <a href='../Y/3726.html' title='Multiple used in 6 places.'>if_name</a>[<a href='../S/533.html#L456' title='Defined at 456 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>COSINE_MAX_IF_NAME_LEN</a>];  <i><font color='green'>/* Encap &amp; Logical I/F name */</font></i>
+<a name='L475'> 475         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> pro;            <i><font color='green'>/* Protocol */</font></i>
+<a name='L476'> 476         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../Y/5063.html' title='Multiple used in 3 places.'>off</a>;            <i><font color='green'>/* Offset */</font></i>
+<a name='L477'> 477         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> pri;            <i><font color='green'>/* Priority */</font></i>
+<a name='L478'> 478         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> rm;             <i><font color='green'>/* Rate Marking */</font></i>
+<a name='L479'> 479         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>;            <i><font color='green'>/* Error Code */</font></i>
+<a name='L480'> 480 <font color='red'>}</font>;
+<a name='L481'> 481 
+<a name='L482'> 482 <i><font color='green'>/* Packet "pseudo-header" for IrDA capture files. */</font></i>
+<a name='L483'> 483 
+<a name='L484'> 484 <i><font color='green'>/*</font></i>
+<a name='L485'> 485 <i><font color='green'> * Direction of the packet</font></i>
+<a name='L486'> 486 <i><font color='green'> */</font></i>
+<a name='L487'> 487 <font color='darkred'>#define</font> IRDA_INCOMING       0x0000
+<a name='L488'> 488 <font color='darkred'>#define</font> IRDA_OUTGOING       0x0004
+<a name='L489'> 489 
+<a name='L490'> 490 <i><font color='green'>/*</font></i>
+<a name='L491'> 491 <i><font color='green'> * "Inline" log messages produced by IrCOMM2k on Windows</font></i>
+<a name='L492'> 492 <i><font color='green'> */</font></i>
+<a name='L493'> 493 <font color='darkred'>#define</font> IRDA_LOG_MESSAGE    0x0100  <i><font color='green'>/* log message */</font></i>
+<a name='L494'> 494 <font color='darkred'>#define</font> IRDA_MISSED_MSG     0x0101  <i><font color='green'>/* missed log entry or frame */</font></i>
+<a name='L495'> 495 
+<a name='L496'> 496 <i><font color='green'>/*</font></i>
+<a name='L497'> 497 <i><font color='green'> * Differentiate between frames and log messages</font></i>
+<a name='L498'> 498 <i><font color='green'> */</font></i>
+<a name='L499'> 499 <font color='darkred'>#define</font> IRDA_CLASS_FRAME    0x0000
+<a name='L500'> 500 <font color='darkred'>#define</font> IRDA_CLASS_LOG      0x0100
+<a name='L501'> 501 <font color='darkred'>#define</font> IRDA_CLASS_MASK     0xFF00
+<a name='L502'> 502 
+<a name='L503'> 503 <b>struct</b> <a href='../S/533.html#L742' title='Refered from 742 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>irda_phdr</a> <font color='red'>{</font>
+<a name='L504'> 504         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../Y/5769.html' title='Multiple used in 2 places.'>pkttype</a>;    <i><font color='green'>/* packet type */</font></i>
+<a name='L505'> 505 <font color='red'>}</font>;
+<a name='L506'> 506 
+<a name='L507'> 507 <i><font color='green'>/* Packet "pseudo-header" for nettl (HP-UX) capture files. */</font></i>
+<a name='L508'> 508 
+<a name='L509'> 509 <b>struct</b> <a href='../S/533.html#L743' title='Refered from 743 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>nettl_phdr</a> <font color='red'>{</font>
+<a name='L510'> 510         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> subsys;
+<a name='L511'> 511         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> devid;
+<a name='L512'> 512         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/4019.html' title='Multiple used in 2 places.'>kind</a>;
+<a name='L513'> 513         <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a>  <a href='../Y/5731.html' title='Multiple used in 85 places.'>pid</a>;
+<a name='L514'> 514         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../Y/7615.html' title='Multiple used in 4 places.'>uid</a>;
+<a name='L515'> 515 <font color='red'>}</font>;
+<a name='L516'> 516 
+<a name='L517'> 517 <i><font color='green'>/* Packet "pseudo-header" for MTP2 files. */</font></i>
+<a name='L518'> 518 
+<a name='L519'> 519 <font color='darkred'>#define</font> MTP2_ANNEX_A_NOT_USED      0
+<a name='L520'> 520 <font color='darkred'>#define</font> MTP2_ANNEX_A_USED          1
+<a name='L521'> 521 <font color='darkred'>#define</font> MTP2_ANNEX_A_USED_UNKNOWN  2
+<a name='L522'> 522 
+<a name='L523'> 523 <b>struct</b> <a href='../S/533.html#L744' title='Refered from 744 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>mtp2_phdr</a> <font color='red'>{</font>
+<a name='L524'> 524         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  <a href='../Y/6665.html' title='Multiple used in 6 places.'>sent</a>;
+<a name='L525'> 525         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  <a href='../Y/1390.html' title='Multiple used in 2 places.'>annex_a_used</a>;
+<a name='L526'> 526         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../Y/4142.html' title='Multiple used in 2 places.'>link_number</a>;
+<a name='L527'> 527 <font color='red'>}</font>;
+<a name='L528'> 528 
+<a name='L529'> 529 <i><font color='green'>/* Packet "pseudo-header" for K12 files. */</font></i>
+<a name='L530'> 530 
+<a name='L531'> 531 <b>typedef</b> <b>union</b> <font color='red'>{</font>
+<a name='L532'> 532         <b>struct</b> <font color='red'>{</font>
+<a name='L533'> 533                 <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> vp;
+<a name='L534'> 534                 <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> vc;
+<a name='L535'> 535                 <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> cid;
+<a name='L536'> 536         <font color='red'>}</font> <a href='../Y/1509.html' title='Multiple used in 3 places.'>atm</a>;
+<a name='L537'> 537 
+<a name='L538'> 538         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> ds0mask;
+<a name='L539'> 539 <font color='red'>}</font> <a href='../S/533.html#L546' title='Refered from 546 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>k12_input_info_t</a>;
+<a name='L540'> 540 
+<a name='L541'> 541 <b>struct</b> <a href='../S/533.html#L745' title='Refered from 745 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>k12_phdr</a> <font color='red'>{</font>
+<a name='L542'> 542         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3832.html' title='Multiple used in 23 places.'>input</a>;
+<a name='L543'> 543         <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>* input_name;
+<a name='L544'> 544         <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>* stack_file;
+<a name='L545'> 545         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> input_type;
+<a name='L546'> 546         <a href='../S/533.html#L539' title='Defined at 539 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>k12_input_info_t</a> input_info;
+<a name='L547'> 547         <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>* extra_info;
+<a name='L548'> 548         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> extra_length;
+<a name='L549'> 549         <b>void</b>* <a href='../Y/7120.html' title='Multiple used in 2 places.'>stuff</a>;
+<a name='L550'> 550 <font color='red'>}</font>;
+<a name='L551'> 551 
+<a name='L552'> 552 <font color='darkred'>#define</font> K12_PORT_DS0S      0x00010008
+<a name='L553'> 553 <font color='darkred'>#define</font> K12_PORT_DS1       0x00100008
+<a name='L554'> 554 <font color='darkred'>#define</font> K12_PORT_ATMPVC    0x01020000
+<a name='L555'> 555 
+<a name='L556'> 556 <b>struct</b> <a href='../S/533.html#L746' title='Refered from 746 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>lapd_phdr</a> <font color='red'>{</font>
+<a name='L557'> 557         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../Y/5769.html' title='Multiple used in 2 places.'>pkttype</a>;    <i><font color='green'>/* packet type */</font></i>
+<a name='L558'> 558         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> we_network;
+<a name='L559'> 559 <font color='red'>}</font>;
+<a name='L560'> 560 
+<a name='L561'> 561 <b>struct</b> <a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a>;
+<a name='L562'> 562 <b>struct</b> <a href='../S/533.html#L747' title='Refered from 747 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>catapult_dct2000_phdr</a>
+<a name='L563'> 563 <font color='red'>{</font>
+<a name='L564'> 564         <b>union</b>
+<a name='L565'> 565         <font color='red'>{</font>
+<a name='L566'> 566                 <b>struct</b> <a href='../S/533.html#L313' title='Defined at 313 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>isdn_phdr</a>  <a href='../Y/3944.html' title='Multiple used in 2 places.'>isdn</a>;
+<a name='L567'> 567                 <b>struct</b> <a href='../S/533.html#L388' title='Defined at 388 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>atm_phdr</a>   <a href='../Y/1509.html' title='Multiple used in 3 places.'>atm</a>;
+<a name='L568'> 568                 <b>struct</b> <a href='../S/533.html#L425' title='Defined at 425 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>p2p_phdr</a>   <a href='../Y/5569.html' title='Multiple used in 2 places.'>p2p</a>;
+<a name='L569'> 569         <font color='red'>}</font> inner_pseudo_header;
+<a name='L570'> 570         <a href='../Y/3440.html' title='Multiple used in 29 places.'>gint64</a> <a href='../Y/6637.html' title='Multiple used in 2 places.'>seek_off</a>;
+<a name='L571'> 571         <b>struct</b> <a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>;
+<a name='L572'> 572 <font color='red'>}</font>;
+<a name='L573'> 573 
+<a name='L574'> 574 <i><font color='green'>/*</font></i>
+<a name='L575'> 575 <i><font color='green'> * possible event type</font></i>
+<a name='L576'> 576 <i><font color='green'> */</font></i>
+<a name='L577'> 577 <font color='darkred'>#define</font> URB_SUBMIT        'S'
+<a name='L578'> 578 <font color='darkred'>#define</font> URB_COMPLETE      'C'
+<a name='L579'> 579 <font color='darkred'>#define</font> URB_ERROR         'E'
+<a name='L580'> 580 
+<a name='L581'> 581 <i><font color='green'>/*</font></i>
+<a name='L582'> 582 <i><font color='green'> * possible transfer mode</font></i>
+<a name='L583'> 583 <i><font color='green'> */</font></i>
+<a name='L584'> 584 <font color='darkred'>#define</font> URB_ISOCHRONOUS   0x0
+<a name='L585'> 585 <font color='darkred'>#define</font> URB_INTERRUPT     0x1
+<a name='L586'> 586 <font color='darkred'>#define</font> URB_CONTROL       0x2
+<a name='L587'> 587 <font color='darkred'>#define</font> URB_BULK          0x3
+<a name='L588'> 588 
+<a name='L589'> 589 <font color='darkred'>#define</font> URB_TRANSFER_IN   0x80          <i><font color='green'>/* to host */</font></i>
+<a name='L590'> 590 
+<a name='L591'> 591 <i><font color='green'>/*</font></i>
+<a name='L592'> 592 <i><font color='green'> * USB setup header as defined in USB specification</font></i>
+<a name='L593'> 593 <i><font color='green'> */</font></i>
+<a name='L594'> 594 <b>struct</b> usb_request_hdr <font color='red'>{</font>
+<a name='L595'> 595     <a href='../Y/3441.html' title='Multiple used in 5 places.'>gint8</a> bmRequestType;
+<a name='L596'> 596     <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> bRequest;
+<a name='L597'> 597     <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> wValue;
+<a name='L598'> 598     <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> wIndex;
+<a name='L599'> 599     <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> wLength;
+<a name='L600'> 600 <font color='red'>}</font>;
+<a name='L601'> 601 
+<a name='L602'> 602 <i><font color='green'>/*</font></i>
+<a name='L603'> 603 <i><font color='green'> * Header prepended by Linux kernel to each USB event.</font></i>
+<a name='L604'> 604 <i><font color='green'> * Followed by a struct usb_request_hdr, although that header is valid</font></i>
+<a name='L605'> 605 <i><font color='green'> * only if setup_flag is 0.</font></i>
+<a name='L606'> 606 <i><font color='green'> * (Setup flag is '-', 'D', 'Z', or 0.  Data flag is '&lt;', '&gt;', 'Z', or 0.)</font></i>
+<a name='L607'> 607 <i><font color='green'> *</font></i>
+<a name='L608'> 608 <i><font color='green'> * We present this as a pseudo-header; the values are in host byte order.</font></i>
+<a name='L609'> 609 <i><font color='green'> */</font></i>
+<a name='L610'> 610 <b>struct</b> <a href='../S/533.html#L748' title='Refered from 748 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>linux_usb_phdr</a> <font color='red'>{</font>
+<a name='L611'> 611     <a href='../Y/3512.html' title='Multiple used in 59 places.'>guint64</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>;             <i><font color='green'>/* urb id, to link submission and completion events*/</font></i>
+<a name='L612'> 612     <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> <a href='../S/934.html#L39' title='Defined at 39 in src/component.c.'>event_type</a>;      <i><font color='green'>/* Submit ('S'), Completed ('C'), Error ('E')  */</font></i>
+<a name='L613'> 613     <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> transfer_type;   <i><font color='green'>/* ISO (0), Intr, Control, Bulk (3) */</font></i>
+<a name='L614'> 614     <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> endpoint_number; <i><font color='green'>/* Endpoint number (0-15) and transfer direction */</font></i>
+<a name='L615'> 615     <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> device_address;  <i><font color='green'>/* 0-127 */</font></i>
+<a name='L616'> 616     <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> bus_id;
+<a name='L617'> 617     <a href='../Y/3441.html' title='Multiple used in 5 places.'>gint8</a> setup_flag;       <i><font color='green'>/*if !=0 the urb setup header is not present*/</font></i>
+<a name='L618'> 618     <a href='../Y/3441.html' title='Multiple used in 5 places.'>gint8</a> data_flag;        <i><font color='green'>/*if !=0 no urb data is present*/</font></i>
+<a name='L619'> 619     <a href='../Y/3440.html' title='Multiple used in 29 places.'>gint64</a> <a href='../Y/7498.html' title='Multiple used in 5 places.'>ts_sec</a>;
+<a name='L620'> 620     <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a> <a href='../Y/7500.html' title='Multiple used in 5 places.'>ts_usec</a>;
+<a name='L621'> 621     <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a> <a href='../Y/7040.html' title='Multiple used in 97 places.'>status</a>;
+<a name='L622'> 622     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> urb_len;        <i><font color='green'>/* whole len of urb this event refers to */</font></i>
+<a name='L623'> 623     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/2262.html' title='Multiple used in 50 places.'>data_len</a>;       <i><font color='green'>/* amount of urb data really present in this event*/</font></i>
+<a name='L624'> 624 <font color='red'>}</font>;
+<a name='L625'> 625 
+<a name='L626'> 626 <i><font color='green'>/*</font></i>
+<a name='L627'> 627 <i><font color='green'> * Header prepended by libpcap to each bluetooth hci h:4 frame.</font></i>
+<a name='L628'> 628 <i><font color='green'> * Values in network byte order</font></i>
+<a name='L629'> 629 <i><font color='green'> */</font></i>
+<a name='L630'> 630 <b>struct</b> libpcap_bt_phdr <font color='red'>{</font>
+<a name='L631'> 631     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/2404.html' title='Multiple used in 4 places.'>direction</a>;     <i><font color='green'>/* Bit 0 hold the frame direction. */</font></i>
+<a name='L632'> 632 <font color='red'>}</font>;
+<a name='L633'> 633 
+<a name='L634'> 634 <i><font color='green'>/*</font></i>
+<a name='L635'> 635 <i><font color='green'> * Endace Record Format pseudo header</font></i>
+<a name='L636'> 636 <i><font color='green'> */</font></i>
+<a name='L637'> 637 <b>struct</b> <a href='../S/533.html#L651' title='Refered from 651 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>erf_phdr</a> <font color='red'>{</font>
+<a name='L638'> 638   <a href='../Y/3512.html' title='Multiple used in 59 places.'>guint64</a> <a href='../Y/7493.html' title='Multiple used in 120 places.'>ts</a>;             <i><font color='green'>/* Time stamp */</font></i>
+<a name='L639'> 639   <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;
+<a name='L640'> 640   <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>;
+<a name='L641'> 641   <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../Y/6450.html' title='Multiple used in 2 places.'>rlen</a>;
+<a name='L642'> 642   <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../Y/4106.html' title='Multiple used in 2 places.'>lctr</a>;
+<a name='L643'> 643   <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../Y/7886.html' title='Multiple used in 2 places.'>wlen</a>;
+<a name='L644'> 644 <font color='red'>}</font>;
+<a name='L645'> 645 
+<a name='L646'> 646 <i><font color='green'>/*</font></i>
+<a name='L647'> 647 <i><font color='green'> * ERF pseudo header with optional subheader</font></i>
+<a name='L648'> 648 <i><font color='green'> * (Multichannel or Ethernet)</font></i>
+<a name='L649'> 649 <i><font color='green'> */</font></i>
+<a name='L650'> 650 <b>struct</b> <a href='../S/533.html#L749' title='Refered from 749 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>erf_mc_phdr</a> <font color='red'>{</font>
+<a name='L651'> 651   <b>struct</b> <a href='../S/533.html#L637' title='Defined at 637 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>erf_phdr</a> <a href='../Y/5728.html' title='Multiple used in 4 places.'>phdr</a>;
+<a name='L652'> 652   <b>union</b>
+<a name='L653'> 653   <font color='red'>{</font>
+<a name='L654'> 654     <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../Y/2786.html' title='Multiple used in 4 places.'>eth_hdr</a>;
+<a name='L655'> 655     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/4404.html' title='Multiple used in 2 places.'>mc_hdr</a>;
+<a name='L656'> 656   <font color='red'>}</font> subhdr;
+<a name='L657'> 657 <font color='red'>}</font>;
+<a name='L658'> 658 
+<a name='L659'> 659 <font color='darkred'>#define</font> SITA_FRAME_DIR_TXED             (0x00)          <i><font color='green'>/* values of sita_phdr.flags */</font></i>
+<a name='L660'> 660 <font color='darkred'>#define</font> SITA_FRAME_DIR_RXED             (0x01)
+<a name='L661'> 661 <font color='darkred'>#define</font> SITA_FRAME_DIR                  (0x01)          <i><font color='green'>/* mask */</font></i>
+<a name='L662'> 662 <font color='darkred'>#define</font> SITA_ERROR_NO_BUFFER            (0x80)
+<a name='L663'> 663 
+<a name='L664'> 664 <font color='darkred'>#define</font> SITA_SIG_DSR                    (0x01)          <i><font color='green'>/* values of sita_phdr.signals */</font></i>
+<a name='L665'> 665 <font color='darkred'>#define</font> SITA_SIG_DTR                    (0x02)
+<a name='L666'> 666 <font color='darkred'>#define</font> SITA_SIG_CTS                    (0x04)
+<a name='L667'> 667 <font color='darkred'>#define</font> SITA_SIG_RTS                    (0x08)
+<a name='L668'> 668 <font color='darkred'>#define</font> SITA_SIG_DCD                    (0x10)
+<a name='L669'> 669 <font color='darkred'>#define</font> SITA_SIG_UNDEF1                 (0x20)
+<a name='L670'> 670 <font color='darkred'>#define</font> SITA_SIG_UNDEF2                 (0x40)
+<a name='L671'> 671 <font color='darkred'>#define</font> SITA_SIG_UNDEF3                 (0x80)
+<a name='L672'> 672 
+<a name='L673'> 673 <font color='darkred'>#define</font> SITA_ERROR_TX_UNDERRUN          (0x01)          <i><font color='green'>/* values of sita_phdr.errors2 (if SITA_FRAME_DIR_TXED) */</font></i>
+<a name='L674'> 674 <font color='darkred'>#define</font> SITA_ERROR_TX_CTS_LOST          (0x02)
+<a name='L675'> 675 <font color='darkred'>#define</font> SITA_ERROR_TX_UART_ERROR        (0x04)
+<a name='L676'> 676 <font color='darkred'>#define</font> SITA_ERROR_TX_RETX_LIMIT        (0x08)
+<a name='L677'> 677 <font color='darkred'>#define</font> SITA_ERROR_TX_UNDEF1            (0x10)
+<a name='L678'> 678 <font color='darkred'>#define</font> SITA_ERROR_TX_UNDEF2            (0x20)
+<a name='L679'> 679 <font color='darkred'>#define</font> SITA_ERROR_TX_UNDEF3            (0x40)
+<a name='L680'> 680 <font color='darkred'>#define</font> SITA_ERROR_TX_UNDEF4            (0x80)
+<a name='L681'> 681 
+<a name='L682'> 682 <font color='darkred'>#define</font> SITA_ERROR_RX_FRAMING           (0x01)          <i><font color='green'>/* values of sita_phdr.errors1 (if SITA_FRAME_DIR_RXED) */</font></i>
+<a name='L683'> 683 <font color='darkred'>#define</font> SITA_ERROR_RX_PARITY            (0x02)
+<a name='L684'> 684 <font color='darkred'>#define</font> SITA_ERROR_RX_COLLISION         (0x04)
+<a name='L685'> 685 <font color='darkred'>#define</font> SITA_ERROR_RX_FRAME_LONG        (0x08)
+<a name='L686'> 686 <font color='darkred'>#define</font> SITA_ERROR_RX_FRAME_SHORT       (0x10)
+<a name='L687'> 687 <font color='darkred'>#define</font> SITA_ERROR_RX_UNDEF1            (0x20)
+<a name='L688'> 688 <font color='darkred'>#define</font> SITA_ERROR_RX_UNDEF2            (0x40)
+<a name='L689'> 689 <font color='darkred'>#define</font> SITA_ERROR_RX_UNDEF3            (0x80)
+<a name='L690'> 690 
+<a name='L691'> 691 <font color='darkred'>#define</font> SITA_ERROR_RX_NONOCTET_ALIGNED  (0x01)  <i><font color='green'>/* values of sita_phdr.errors2 (if SITA_FRAME_DIR_RXED) */</font></i>
+<a name='L692'> 692 <font color='darkred'>#define</font> SITA_ERROR_RX_ABORT             (0x02)
+<a name='L693'> 693 <font color='darkred'>#define</font> SITA_ERROR_RX_CD_LOST           (0x04)
+<a name='L694'> 694 <font color='darkred'>#define</font> SITA_ERROR_RX_DPLL              (0x08)
+<a name='L695'> 695 <font color='darkred'>#define</font> SITA_ERROR_RX_OVERRUN           (0x10)
+<a name='L696'> 696 <font color='darkred'>#define</font> SITA_ERROR_RX_FRAME_LEN_VIOL    (0x20)
+<a name='L697'> 697 <font color='darkred'>#define</font> SITA_ERROR_RX_CRC               (0x40)
+<a name='L698'> 698 <font color='darkred'>#define</font> SITA_ERROR_RX_BREAK             (0x80)
+<a name='L699'> 699 
+<a name='L700'> 700 <font color='darkred'>#define</font> SITA_PROTO_UNUSED               (0x00)          <i><font color='green'>/* values of sita_phdr.proto */</font></i>
+<a name='L701'> 701 <font color='darkred'>#define</font> SITA_PROTO_BOP_LAPB             (0x01)
+<a name='L702'> 702 <font color='darkred'>#define</font> SITA_PROTO_ETHERNET             (0x02)
+<a name='L703'> 703 <font color='darkred'>#define</font> SITA_PROTO_ASYNC_INTIO          (0x03)
+<a name='L704'> 704 <font color='darkred'>#define</font> SITA_PROTO_ASYNC_BLKIO          (0x04)
+<a name='L705'> 705 <font color='darkred'>#define</font> SITA_PROTO_ALC                  (0x05)
+<a name='L706'> 706 <font color='darkred'>#define</font> SITA_PROTO_UTS                  (0x06)
+<a name='L707'> 707 <font color='darkred'>#define</font> SITA_PROTO_PPP_HDLC             (0x07)
+<a name='L708'> 708 <font color='darkred'>#define</font> SITA_PROTO_SDLC                 (0x08)
+<a name='L709'> 709 <font color='darkred'>#define</font> SITA_PROTO_TOKENRING            (0x09)
+<a name='L710'> 710 <font color='darkred'>#define</font> SITA_PROTO_I2C                  (0x10)
+<a name='L711'> 711 <font color='darkred'>#define</font> SITA_PROTO_DPM_LINK             (0x11)
+<a name='L712'> 712 <font color='darkred'>#define</font> SITA_PROTO_BOP_FRL              (0x12)
+<a name='L713'> 713 
+<a name='L714'> 714 <b>struct</b> <a href='../S/533.html#L750' title='Refered from 750 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>sita_phdr</a> <font color='red'>{</font>
+<a name='L715'> 715    <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  <a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>;
+<a name='L716'> 716    <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  <a href='../Y/6773.html' title='Multiple used in 4 places.'>signals</a>;
+<a name='L717'> 717    <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  errors1;
+<a name='L718'> 718    <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  errors2;
+<a name='L719'> 719    <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  <a href='../Y/5957.html' title='Multiple used in 226 places.'>proto</a>;
+<a name='L720'> 720 <font color='red'>}</font>;
+<a name='L721'> 721 
+<a name='L722'> 722 <i><font color='green'>/*pseudo header for Bluetooth HCI*/</font></i>
+<a name='L723'> 723 <b>struct</b> <a href='../S/533.html#L751' title='Refered from 751 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>bthci_phdr</a> <font color='red'>{</font>
+<a name='L724'> 724         <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/6665.html' title='Multiple used in 6 places.'>sent</a>;
+<a name='L725'> 725         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> <a href='../Y/1856.html' title='Multiple used in 30 places.'>channel</a>;
+<a name='L726'> 726 <font color='red'>}</font>;
+<a name='L727'> 727 
+<a name='L728'> 728 <font color='darkred'>#define</font> BTHCI_CHANNEL_COMMAND 1
+<a name='L729'> 729 <font color='darkred'>#define</font> BTHCI_CHANNEL_ACL     2
+<a name='L730'> 730 <font color='darkred'>#define</font> BTHCI_CHANNEL_SCO     3
+<a name='L731'> 731 <font color='darkred'>#define</font> BTHCI_CHANNEL_EVENT   4
+<a name='L732'> 732 
+<a name='L733'> 733 <b>union</b> <a href='../R/5024.html' title='Multiple refered from 7 places.'>wtap_pseudo_header</a> <font color='red'>{</font>
+<a name='L734'> 734         <b>struct</b> <a href='../S/533.html#L300' title='Defined at 300 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>eth_phdr</a>         <a href='../Y/2783.html' title='Multiple used in 84 places.'>eth</a>;
+<a name='L735'> 735         <b>struct</b> <a href='../S/533.html#L306' title='Defined at 306 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>x25_phdr</a>         x25;
+<a name='L736'> 736         <b>struct</b> <a href='../S/533.html#L313' title='Defined at 313 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>isdn_phdr</a>        <a href='../Y/3944.html' title='Multiple used in 2 places.'>isdn</a>;
+<a name='L737'> 737         <b>struct</b> <a href='../S/533.html#L388' title='Defined at 388 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>atm_phdr</a>         <a href='../Y/1509.html' title='Multiple used in 3 places.'>atm</a>;
+<a name='L738'> 738         <b>struct</b> <a href='../S/533.html#L415' title='Defined at 415 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>ascend_phdr</a>      <a href='../Y/1492.html' title='Multiple used in 2 places.'>ascend</a>;
+<a name='L739'> 739         <b>struct</b> <a href='../S/533.html#L425' title='Defined at 425 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>p2p_phdr</a>         <a href='../Y/5569.html' title='Multiple used in 2 places.'>p2p</a>;
+<a name='L740'> 740         <b>struct</b> <a href='../S/533.html#L447' title='Defined at 447 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>ieee_802_11_phdr</a> ieee_802_11;
+<a name='L741'> 741         <b>struct</b> <a href='../S/533.html#L471' title='Defined at 471 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>cosine_phdr</a>      cosine;
+<a name='L742'> 742         <b>struct</b> <a href='../S/533.html#L503' title='Defined at 503 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>irda_phdr</a>        irda;
+<a name='L743'> 743         <b>struct</b> <a href='../S/533.html#L509' title='Defined at 509 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>nettl_phdr</a>       <a href='../Y/4738.html' title='Multiple used in 2 places.'>nettl</a>;
+<a name='L744'> 744         <b>struct</b> <a href='../S/533.html#L523' title='Defined at 523 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>mtp2_phdr</a>        mtp2;
+<a name='L745'> 745         <b>struct</b> <a href='../S/533.html#L541' title='Defined at 541 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>k12_phdr</a>         <a href='../Y/3993.html' title='Multiple used in 3 places.'>k12</a>;
+<a name='L746'> 746         <b>struct</b> <a href='../S/533.html#L556' title='Defined at 556 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>lapd_phdr</a>        lapd;
+<a name='L747'> 747         <b>struct</b> <a href='../S/533.html#L562' title='Defined at 562 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>catapult_dct2000_phdr</a> <a href='../Y/2291.html' title='Multiple used in 2 places.'>dct2000</a>;
+<a name='L748'> 748         <b>struct</b> <a href='../S/533.html#L610' title='Defined at 610 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>linux_usb_phdr</a>   linux_usb;
+<a name='L749'> 749         <b>struct</b> <a href='../S/533.html#L650' title='Defined at 650 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>erf_mc_phdr</a>      erf;
+<a name='L750'> 750         <b>struct</b> <a href='../S/533.html#L714' title='Defined at 714 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>sita_phdr</a>        sita;
+<a name='L751'> 751         <b>struct</b> <a href='../S/533.html#L723' title='Defined at 723 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>bthci_phdr</a>       bthci;
+<a name='L752'> 752 <font color='red'>}</font>;
+<a name='L753'> 753 
+<a name='L754'> 754 <b>struct</b> <a href='../R/5022.html' title='Multiple refered from 5 places.'>wtap_nstime</a> <font color='red'>{</font>
+<a name='L755'> 755         <a href='../Y/7369.html' title='Multiple used in 80 places.'>time_t</a>  <a href='../Y/6633.html' title='Multiple used in 23 places.'>secs</a>;
+<a name='L756'> 756         <b>int</b>     <a href='../Y/4948.html' title='Multiple used in 2 places.'>nsecs</a>;
+<a name='L757'> 757 <font color='red'>}</font>;
+<a name='L758'> 758 
+<a name='L759'> 759 <b>struct</b> <a href='../R/5023.html' title='Multiple refered from 3 places.'>wtap_pkthdr</a> <font color='red'>{</font>
+<a name='L760'> 760         <b>struct</b> <a href='../S/533.html#L754' title='Defined at 754 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>wtap_nstime</a> <a href='../Y/7493.html' title='Multiple used in 120 places.'>ts</a>;
+<a name='L761'> 761         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/1794.html' title='Multiple used in 22 places.'>caplen</a>;
+<a name='L762'> 762         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;
+<a name='L763'> 763         <b>int</b> pkt_encap;
+<a name='L764'> 764 <font color='red'>}</font>;
+<a name='L765'> 765 
+<a name='L766'> 766 <b>struct</b> <a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a>;
+<a name='L767'> 767 <b>struct</b> <a href='../D/526.html' title='Multiple defined in 2 places.'>Buffer</a>;
+<a name='L768'> 768 <b>struct</b> <a href='../D/10142.html' title='Multiple defined in 2 places.'>wtap_dumper</a>;
+<a name='L769'> 769 
+<a name='L770'> 770 <b>typedef</b> <b>struct</b> <a href='../R/5020.html' title='Multiple refered from 24 places.'>wtap</a> <a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a>;
+<a name='L771'> 771 <b>typedef</b> <b>struct</b> <a href='../R/5021.html' title='Multiple refered from 12 places.'>wtap_dumper</a> <a href='../D/10142.html' title='Multiple defined in 2 places.'>wtap_dumper</a>;
+<a name='L772'> 772 
+<a name='L773'> 773 <b>struct</b> <a href='../S/533.html#L881' title='Refered from 881 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>file_type_info</a> <font color='red'>{</font>
+<a name='L774'> 774     <i><font color='green'>/* the file type name */</font></i>
+<a name='L775'> 775     <i><font color='green'>/* should be NULL for all "pseudo" types that are only internally used and not read/writeable */</font></i>
+<a name='L776'> 776         <b>const</b> <b>char</b> *<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;
+<a name='L777'> 777 
+<a name='L778'> 778     <i><font color='green'>/* the file type short name, used as a shortcut for the command line tools */</font></i>
+<a name='L779'> 779     <i><font color='green'>/* should be NULL for all "pseudo" types that are only internally used and not read/writeable */</font></i>
+<a name='L780'> 780         <b>const</b> <b>char</b> *<a href='../Y/6741.html' title='Multiple used in 5 places.'>short_name</a>;
+<a name='L781'> 781 
+<a name='L782'> 782     <i><font color='green'>/* the common file extensions for this type (seperated by semicolon) */</font></i>
+<a name='L783'> 783     <i><font color='green'>/* should be *.* if no common extension is applicable */</font></i>
+<a name='L784'> 784     <b>const</b> <b>char</b> *file_extensions;
+<a name='L785'> 785 
+<a name='L786'> 786     <i><font color='green'>/* the default file extension, used to save this type */</font></i>
+<a name='L787'> 787     <i><font color='green'>/* should be NULL if no default extension is known */</font></i>
+<a name='L788'> 788     <b>const</b> <b>char</b> *file_extension_default;
+<a name='L789'> 789 
+<a name='L790'> 790     <i><font color='green'>/* can this type be compressed with gzip? */</font></i>
+<a name='L791'> 791         <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a>        can_compress;
+<a name='L792'> 792 
+<a name='L793'> 793     <i><font color='green'>/* can this type write this encapsulation format? */</font></i>
+<a name='L794'> 794     <i><font color='green'>/* should be NULL is this file type don't have write support */</font></i>
+<a name='L795'> 795         <b>int</b>     (*can_write_encap)(<b>int</b>);
+<a name='L796'> 796 
+<a name='L797'> 797     <i><font color='green'>/* the function to open the capture file for writing */</font></i>
+<a name='L798'> 798     <i><font color='green'>/* should be NULL is this file type don't have write support */</font></i>
+<a name='L799'> 799         <b>int</b>     (*dump_open)(<a href='../D/10142.html' title='Multiple defined in 2 places.'>wtap_dumper</a> *, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a>, <b>int</b> *);
+<a name='L800'> 800 <font color='red'>}</font>;
+<a name='L801'> 801 
+<a name='L802'> 802 
+<a name='L803'> 803 <b>typedef</b> <b>int</b> (*<a href='../Y/7973.html' title='Multiple used in 2 places.'>wtap_open_routine_t</a>)(<b>struct</b> <a href='../Y/7945.html' title='Multiple used in 38 places.'>wtap</a>*, <b>int</b> *, <b>char</b> **);
+<a name='L804'> 804 
+<a name='L805'> 805 
+<a name='L806'> 806 <i><font color='green'>/*</font></i>
+<a name='L807'> 807 <i><font color='green'> * On failure, "wtap_open_offline()" returns NULL, and puts into the</font></i>
+<a name='L808'> 808 <i><font color='green'> * "int" pointed to by its second argument:</font></i>
+<a name='L809'> 809 <i><font color='green'> *</font></i>
+<a name='L810'> 810 <i><font color='green'> * a positive "errno" value if the capture file can't be opened;</font></i>
+<a name='L811'> 811 <i><font color='green'> * a negative number, indicating the type of error, on other failures.</font></i>
+<a name='L812'> 812 <i><font color='green'> */</font></i>
+<a name='L813'> 813 <b>struct</b> <a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a>* wtap_open_offline(<b>const</b> <b>char</b> *<a href='../Y/3055.html' title='Multiple used in 60 places.'>filename</a>, <b>int</b> *<a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>,
+<a name='L814'> 814     <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> **<a href='../Y/2747.html' title='Multiple used in 42 places.'>err_info</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> do_random);
+<a name='L815'> 815 
+<a name='L816'> 816 <i><font color='green'>/* Returns TRUE if read was successful. FALSE if failure. data_offset is</font></i>
+<a name='L817'> 817 <i><font color='green'> * set to the offset in the file where the data for the read packet is</font></i>
+<a name='L818'> 818 <i><font color='green'> * located. */</font></i>
+<a name='L819'> 819 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> wtap_read(<a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>, <b>int</b> *<a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>, <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> **<a href='../Y/2747.html' title='Multiple used in 42 places.'>err_info</a>,
+<a name='L820'> 820     <a href='../Y/3440.html' title='Multiple used in 29 places.'>gint64</a> *<a href='../Y/2266.html' title='Multiple used in 3 places.'>data_offset</a>);
+<a name='L821'> 821 
+<a name='L822'> 822 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> wtap_seek_read (<a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>, <a href='../Y/3440.html' title='Multiple used in 29 places.'>gint64</a> <a href='../Y/6637.html' title='Multiple used in 2 places.'>seek_off</a>,
+<a name='L823'> 823         <b>union</b> <a href='../S/533.html#L733' title='Defined at 733 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>wtap_pseudo_header</a> *<a href='../Y/6114.html' title='Multiple used in 10 places.'>pseudo_header</a>, <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> *<a href='../Y/5695.html' title='Multiple used in 12 places.'>pd</a>, <b>int</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>,
+<a name='L824'> 824         <b>int</b> *<a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>, <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> **<a href='../Y/2747.html' title='Multiple used in 42 places.'>err_info</a>);
+<a name='L825'> 825 
+<a name='L826'> 826 <i><font color='green'>/*** get various information snippets about the current packet ***/</font></i>
+<a name='L827'> 827 <b>struct</b> <a href='../S/533.html#L759' title='Defined at 759 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>wtap_pkthdr</a> *wtap_phdr(<a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>);
+<a name='L828'> 828 <b>union</b> <a href='../S/533.html#L733' title='Defined at 733 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>wtap_pseudo_header</a> *wtap_pseudoheader(<a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>);
+<a name='L829'> 829 <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> *wtap_buf_ptr(<a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>);
+<a name='L830'> 830 
+<a name='L831'> 831 <i><font color='green'>/*** get various information snippets about the current file ***/</font></i>
+<a name='L832'> 832 
+<a name='L833'> 833 <i><font color='green'>/* Return an approximation of the amount of data we've read sequentially</font></i>
+<a name='L834'> 834 <i><font color='green'> * from the file so far. */</font></i>
+<a name='L835'> 835 <a href='../Y/3440.html' title='Multiple used in 29 places.'>gint64</a> wtap_read_so_far(<a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>, <b>int</b> *<a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>);
+<a name='L836'> 836 <a href='../Y/3440.html' title='Multiple used in 29 places.'>gint64</a> wtap_file_size(<a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>, <b>int</b> *<a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>);
+<a name='L837'> 837 <b>int</b> wtap_snapshot_length(<a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>); <i><font color='green'>/* per file */</font></i>
+<a name='L838'> 838 <b>int</b> wtap_file_type(<a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>);
+<a name='L839'> 839 <b>int</b> wtap_file_encap(<a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>);
+<a name='L840'> 840 <b>int</b> wtap_file_tsprecision(<a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>);
+<a name='L841'> 841 
+<a name='L842'> 842 <i><font color='green'>/*** close the current file ***/</font></i>
+<a name='L843'> 843 <b>void</b> wtap_sequential_close(<a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>);
+<a name='L844'> 844 <b>void</b> wtap_close(<a href='../D/10141.html' title='Multiple defined in 2 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>);
+<a name='L845'> 845 
+<a name='L846'> 846 <i><font color='green'>/*** dump packets into a capture file ***/</font></i>
+<a name='L847'> 847 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> wtap_dump_can_open(<b>int</b> <a href='../Y/3069.html' title='Multiple used in 9 places.'>filetype</a>);
+<a name='L848'> 848 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> wtap_dump_can_write_encap(<b>int</b> <a href='../Y/3069.html' title='Multiple used in 9 places.'>filetype</a>, <b>int</b> <a href='../Y/2669.html' title='Multiple used in 26 places.'>encap</a>);
+<a name='L849'> 849 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> wtap_dump_can_compress(<b>int</b> <a href='../Y/3069.html' title='Multiple used in 9 places.'>filetype</a>);
+<a name='L850'> 850 <a href='../D/10142.html' title='Multiple defined in 2 places.'>wtap_dumper</a>* wtap_dump_open(<b>const</b> <b>char</b> *<a href='../Y/3055.html' title='Multiple used in 60 places.'>filename</a>, <b>int</b> <a href='../Y/3069.html' title='Multiple used in 9 places.'>filetype</a>, <b>int</b> <a href='../Y/2669.html' title='Multiple used in 26 places.'>encap</a>,
+<a name='L851'> 851         <b>int</b> <a href='../Y/6852.html' title='Multiple used in 12 places.'>snaplen</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/2043.html' title='Multiple used in 4 places.'>compressed</a>, <b>int</b> *<a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>);
+<a name='L852'> 852 <a href='../D/10142.html' title='Multiple defined in 2 places.'>wtap_dumper</a>* wtap_dump_fdopen(<b>int</b> <a href='../Y/3016.html' title='Multiple used in 422 places.'>fd</a>, <b>int</b> <a href='../Y/3069.html' title='Multiple used in 9 places.'>filetype</a>, <b>int</b> <a href='../Y/2669.html' title='Multiple used in 26 places.'>encap</a>, <b>int</b> <a href='../Y/6852.html' title='Multiple used in 12 places.'>snaplen</a>,
+<a name='L853'> 853         <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/2043.html' title='Multiple used in 4 places.'>compressed</a>, <b>int</b> *<a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>);
+<a name='L854'> 854 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> wtap_dump(<a href='../D/10142.html' title='Multiple defined in 2 places.'>wtap_dumper</a> *, <b>const</b> <b>struct</b> <a href='../S/533.html#L759' title='Defined at 759 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>wtap_pkthdr</a> *,
+<a name='L855'> 855         <b>const</b> <b>union</b> <a href='../S/533.html#L733' title='Defined at 733 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>wtap_pseudo_header</a> *<a href='../Y/6114.html' title='Multiple used in 10 places.'>pseudo_header</a>, <b>const</b> <a href='../Y/3473.html' title='Multiple used in 18 places.'>guchar</a> *, <b>int</b> *<a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>);
+<a name='L856'> 856 <b>void</b> wtap_dump_flush(<a href='../D/10142.html' title='Multiple defined in 2 places.'>wtap_dumper</a> *);
+<a name='L857'> 857 <a href='../Y/3440.html' title='Multiple used in 29 places.'>gint64</a> wtap_get_bytes_dumped(<a href='../D/10142.html' title='Multiple defined in 2 places.'>wtap_dumper</a> *);
+<a name='L858'> 858 <b>void</b> wtap_set_bytes_dumped(<a href='../D/10142.html' title='Multiple defined in 2 places.'>wtap_dumper</a> *<a href='../Y/7861.html' title='Multiple used in 20 places.'>wdh</a>, <a href='../Y/3440.html' title='Multiple used in 29 places.'>gint64</a> <a href='../Y/1739.html' title='Multiple used in 2 places.'>bytes_dumped</a>);
+<a name='L859'> 859 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> wtap_dump_close(<a href='../D/10142.html' title='Multiple defined in 2 places.'>wtap_dumper</a> *, <b>int</b> *);
+<a name='L860'> 860 
+<a name='L861'> 861 <i><font color='green'>/*** various string converter functions ***/</font></i>
+<a name='L862'> 862 <b>const</b> <b>char</b> *wtap_file_type_string(<b>int</b> <a href='../Y/3069.html' title='Multiple used in 9 places.'>filetype</a>);
+<a name='L863'> 863 <b>const</b> <b>char</b> *wtap_file_type_short_string(<b>int</b> <a href='../Y/3069.html' title='Multiple used in 9 places.'>filetype</a>);
+<a name='L864'> 864 <b>int</b> wtap_short_string_to_file_type(<b>const</b> <b>char</b> *<a href='../Y/6741.html' title='Multiple used in 5 places.'>short_name</a>);
+<a name='L865'> 865 
+<a name='L866'> 866 <b>const</b> <b>char</b> *wtap_file_extensions_string(<b>int</b> <a href='../Y/3069.html' title='Multiple used in 9 places.'>filetype</a>);
+<a name='L867'> 867 <b>const</b> <b>char</b> *wtap_file_extension_default_string(<b>int</b> <a href='../Y/3069.html' title='Multiple used in 9 places.'>filetype</a>);
+<a name='L868'> 868 
+<a name='L869'> 869 <b>const</b> <b>char</b> *wtap_encap_string(<b>int</b> <a href='../Y/2669.html' title='Multiple used in 26 places.'>encap</a>);
+<a name='L870'> 870 <b>const</b> <b>char</b> *wtap_encap_short_string(<b>int</b> <a href='../Y/2669.html' title='Multiple used in 26 places.'>encap</a>);
+<a name='L871'> 871 <b>int</b> wtap_short_string_to_encap(<b>const</b> <b>char</b> *<a href='../Y/6741.html' title='Multiple used in 5 places.'>short_name</a>);
+<a name='L872'> 872 
+<a name='L873'> 873 <b>const</b> <b>char</b> *wtap_strerror(<b>int</b> <a href='../S/252.html#L332' title='Defined at 332 in cbench/openflow/tests/test-stp.c.'>err</a>);
+<a name='L874'> 874 
+<a name='L875'> 875 <i><font color='green'>/*** get available number of file types and encapsulations ***/</font></i>
+<a name='L876'> 876 <b>int</b> <a href='../Y/7968.html' title='Multiple used in 2 places.'>wtap_get_num_encap_types</a>(<b>void</b>);
+<a name='L877'> 877 <b>int</b> <a href='../Y/7969.html' title='Multiple used in 2 places.'>wtap_get_num_file_types</a>(<b>void</b>);
+<a name='L878'> 878 
+<a name='L879'> 879 <i><font color='green'>/*** dynamically register new file types and encapsulations ***/</font></i>
+<a name='L880'> 880 <b>void</b> wtap_register_open_routine(<a href='../Y/7973.html' title='Multiple used in 2 places.'>wtap_open_routine_t</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> has_magic);
+<a name='L881'> 881 <b>int</b> wtap_register_file_type(<b>const</b> <b>struct</b> <a href='../S/533.html#L773' title='Defined at 773 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap.h.'>file_type_info</a>* <a href='../Y/3034.html' title='Multiple used in 6 places.'>fi</a>);
+<a name='L882'> 882 <b>int</b> wtap_register_encap_type(<b>char</b>* <a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>, <b>char</b>* <a href='../Y/6741.html' title='Multiple used in 5 places.'>short_name</a>);
+<a name='L883'> 883 
+<a name='L884'> 884 
+<a name='L885'> 885 <i><font color='green'>/*</font></i>
+<a name='L886'> 886 <i><font color='green'> * Wiretap error codes.</font></i>
+<a name='L887'> 887 <i><font color='green'> */</font></i>
+<a name='L888'> 888 <font color='darkred'>#define</font> WTAP_ERR_NOT_REGULAR_FILE               -1
+<a name='L889'> 889         <i><font color='green'>/* The file being opened for reading isn't a plain file (or pipe) */</font></i>
+<a name='L890'> 890 <font color='darkred'>#define</font> WTAP_ERR_RANDOM_OPEN_PIPE               -2
+<a name='L891'> 891         <i><font color='green'>/* The file is being opened for random access and it's a pipe */</font></i>
+<a name='L892'> 892 <font color='darkred'>#define</font> WTAP_ERR_FILE_UNKNOWN_FORMAT            -3
+<a name='L893'> 893         <i><font color='green'>/* The file being opened is not a capture file in a known format */</font></i>
+<a name='L894'> 894 <font color='darkred'>#define</font> WTAP_ERR_UNSUPPORTED                    -4
+<a name='L895'> 895         <i><font color='green'>/* Supported file type, but there's something in the file we</font></i>
+<a name='L896'> 896 <i><font color='green'>           can't support */</font></i>
+<a name='L897'> 897 <font color='darkred'>#define</font> WTAP_ERR_CANT_WRITE_TO_PIPE             -5
+<a name='L898'> 898         <i><font color='green'>/* Wiretap can't save to a pipe in the specified format */</font></i>
+<a name='L899'> 899 <font color='darkred'>#define</font> WTAP_ERR_CANT_OPEN                      -6
+<a name='L900'> 900         <i><font color='green'>/* The file couldn't be opened, reason unknown */</font></i>
+<a name='L901'> 901 <font color='darkred'>#define</font> WTAP_ERR_UNSUPPORTED_FILE_TYPE          -7
+<a name='L902'> 902         <i><font color='green'>/* Wiretap can't save files in the specified format */</font></i>
+<a name='L903'> 903 <font color='darkred'>#define</font> WTAP_ERR_UNSUPPORTED_ENCAP              -8
+<a name='L904'> 904         <i><font color='green'>/* Wiretap can't read or save files in the specified format with the</font></i>
+<a name='L905'> 905 <i><font color='green'>           specified encapsulation */</font></i>
+<a name='L906'> 906 <font color='darkred'>#define</font> WTAP_ERR_ENCAP_PER_PACKET_UNSUPPORTED   -9
+<a name='L907'> 907         <i><font color='green'>/* The specified format doesn't support per-packet encapsulations */</font></i>
+<a name='L908'> 908 <font color='darkred'>#define</font> WTAP_ERR_CANT_CLOSE                     -10
+<a name='L909'> 909         <i><font color='green'>/* The file couldn't be closed, reason unknown */</font></i>
+<a name='L910'> 910 <font color='darkred'>#define</font> WTAP_ERR_CANT_READ                      -11
+<a name='L911'> 911         <i><font color='green'>/* An attempt to read failed, reason unknown */</font></i>
+<a name='L912'> 912 <font color='darkred'>#define</font> <a href='../S/543.html#L470' title='Refered from 470 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/wtap-int.h.'>WTAP_ERR_SHORT_READ</a>                     -12
+<a name='L913'> 913         <i><font color='green'>/* An attempt to read read less data than it should have */</font></i>
+<a name='L914'> 914 <font color='darkred'>#define</font> WTAP_ERR_BAD_RECORD                     -13
+<a name='L915'> 915         <i><font color='green'>/* We read an invalid record */</font></i>
+<a name='L916'> 916 <font color='darkred'>#define</font> WTAP_ERR_SHORT_WRITE                    -14
+<a name='L917'> 917         <i><font color='green'>/* An attempt to write wrote less data than it should have */</font></i>
+<a name='L918'> 918 <font color='darkred'>#define</font> WTAP_ERR_UNC_TRUNCATED                  -15
+<a name='L919'> 919         <i><font color='green'>/* Sniffer compressed data was oddly truncated */</font></i>
+<a name='L920'> 920 <font color='darkred'>#define</font> WTAP_ERR_UNC_OVERFLOW                   -16
+<a name='L921'> 921         <i><font color='green'>/* Uncompressing Sniffer data would overflow buffer */</font></i>
+<a name='L922'> 922 <font color='darkred'>#define</font> WTAP_ERR_UNC_BAD_OFFSET                 -17
+<a name='L923'> 923         <i><font color='green'>/* LZ77 compressed data has bad offset to string */</font></i>
+<a name='L924'> 924 <font color='darkred'>#define</font> WTAP_ERR_RANDOM_OPEN_STDIN              -18
+<a name='L925'> 925         <i><font color='green'>/* We're trying to open the standard input for random access */</font></i>
+<a name='L926'> 926 <font color='darkred'>#define</font> WTAP_ERR_COMPRESSION_NOT_SUPPORTED -19
+<a name='L927'> 927         <i><font color='green'>/* The filetype doesn't support output compression */</font></i>
+<a name='L928'> 928 
+<a name='L929'> 929 <i><font color='green'>/* Errors from zlib; zlib error Z_xxx turns into Wiretap error</font></i>
+<a name='L930'> 930 <i><font color='green'>   WTAP_ERR_ZLIB + Z_xxx.</font></i>
+<a name='L931'> 931 <i><font color='green'></font></i>
+<a name='L932'> 932 <i><font color='green'>   WTAP_ERR_ZLIB_MIN and WTAP_ERR_ZLIB_MAX bound the range of zlib</font></i>
+<a name='L933'> 933 <i><font color='green'>   errors; we leave room for 100 positive and 100 negative error</font></i>
+<a name='L934'> 934 <i><font color='green'>   codes. */</font></i>
+<a name='L935'> 935 
+<a name='L936'> 936 <font color='darkred'>#define</font> WTAP_ERR_ZLIB                           -200
+<a name='L937'> 937 <font color='darkred'>#define</font> WTAP_ERR_ZLIB_MAX                       -100
+<a name='L938'> 938 <font color='darkred'>#define</font> WTAP_ERR_ZLIB_MIN                       -300
+<a name='L939'> 939 
+<a name='L940'> 940 <font color='darkred'>#ifdef</font> <a href='../Y/1158.html' title='Multiple used in 106 places.'>__cplusplus</a>
+<a name='L941'> 941 <font color='red'>}</font>
+<a name='L942'> 942 <font color='darkred'>#endif</font> <i><font color='green'>/* __cplusplus */</font></i>
+<a name='L943'> 943 
+<a name='L944'> 944 <font color='darkred'>#endif</font> <i><font color='green'>/* __WTAP_H__ */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

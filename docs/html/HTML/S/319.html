@@ -1,0 +1,177 @@
+<html>
+<head>
+<title>cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1126.html'>datapath</a>/<a href='../files/1129.html'>linux-2.6</a>/<a href='../files/1130.html'>compat-2.6</a>/<a href='../files/1131.html'>include</a>/<a href='../files/1133.html'>linux</a>/skbuff.h</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L9'>[^]</a><a href='#L129'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/131.html' title='Multiple included from 7 places.'>INCLUDED FROM</a></h2>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L9' title='Defined at 9.'>skb_copy_from_linear_data_offset</a>
+<li><a href='#L16' title='Defined at 16.'>skb_copy_to_linear_data_offset</a>
+<li><a href='#L28' title='Defined at 28.'>__skb_cow</a>
+<li><a href='#L44' title='Defined at 44.'>skb_cow_head</a>
+<li><a href='#L55' title='Defined at 55.'>kfree_skb_maybe_null</a>
+<li><a href='#L78' title='Defined at 78.'>skb_transport_header</a>
+<li><a href='#L83' title='Defined at 83.'>skb_reset_transport_header</a>
+<li><a href='#L88' title='Defined at 88.'>skb_set_transport_header</a>
+<li><a href='#L94' title='Defined at 94.'>skb_network_header</a>
+<li><a href='#L99' title='Defined at 99.'>skb_set_network_header</a>
+<li><a href='#L104' title='Defined at 104.'>skb_mac_header</a>
+<li><a href='#L109' title='Defined at 109.'>skb_reset_mac_header</a>
+<li><a href='#L114' title='Defined at 114.'>skb_set_mac_header</a>
+<li><a href='#L119' title='Defined at 119.'>skb_transport_offset</a>
+<li><a href='#L124' title='Defined at 124.'>skb_network_offset</a>
+<li><a href='#L129' title='Defined at 129.'>skb_copy_to_linear_data</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <font color='darkred'>#ifndef</font> <a href='../S/319.html#L2' title='Defined at 2 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h.'>__LINUX_SKBUFF_WRAPPER_H</a>
+<a name='L2'>   2 <font color='darkred'>#define</font> <a href='../S/319.html#L1' title='Refered from 1 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h.'>__LINUX_SKBUFF_WRAPPER_H</a> 1
+<a name='L3'>   3 
+<a name='L4'>   4 <font color='darkred'>#include_next</font> &lt;<a href='319.html'>linux/skbuff.h</a>&gt;
+<a name='L5'>   5 
+<a name='L6'>   6 <font color='darkred'>#include</font> &lt;linux/version.h&gt;
+<a name='L7'>   7 
+<a name='L8'>   8 <font color='darkred'>#ifndef</font> HAVE_SKB_COPY_FROM_LINEAR_DATA_OFFSET
+<a name='L9'>   9 <b>static</b> <b>inline</b> <b>void</b> skb_copy_from_linear_data_offset(<b>const</b> <b>struct</b> <a href='../Y/6803.html' title='Multiple used in 130 places.'>sk_buff</a> *<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>,
+<a name='L10'>  10                                                     <b>const</b> <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <b>void</b> *<a href='../Y/7406.html' title='Multiple used in 105 places.'>to</a>,
+<a name='L11'>  11                                                     <b>const</b> <b>unsigned</b> <b>int</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>)
+<a name='L12'>  12 <font color='red'>{</font>
+<a name='L13'>  13         <a href='../Y/4417.html' title='Multiple used in 205 places.'>memcpy</a>(<a href='../Y/7406.html' title='Multiple used in 105 places.'>to</a>, <a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> + <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>);
+<a name='L14'>  14 <font color='red'>}</font>
+<a name='L15'>  15 
+<a name='L16'>  16 <b>static</b> <b>inline</b> <b>void</b> skb_copy_to_linear_data_offset(<b>struct</b> <a href='../Y/6803.html' title='Multiple used in 130 places.'>sk_buff</a> *<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>,
+<a name='L17'>  17                                                   <b>const</b> <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>,
+<a name='L18'>  18                                                   <b>const</b> <b>void</b> *<a href='../Y/3251.html' title='Multiple used in 96 places.'>from</a>,
+<a name='L19'>  19                                                   <b>const</b> <b>unsigned</b> <b>int</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>)
+<a name='L20'>  20 <font color='red'>{</font>
+<a name='L21'>  21         <a href='../Y/4417.html' title='Multiple used in 205 places.'>memcpy</a>(<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> + <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/3251.html' title='Multiple used in 96 places.'>from</a>, <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>);
+<a name='L22'>  22 <font color='red'>}</font>
+<a name='L23'>  23 
+<a name='L24'>  24 <font color='darkred'>#endif</font>  <i><font color='green'>/* !HAVE_SKB_COPY_FROM_LINEAR_DATA_OFFSET */</font></i>
+<a name='L25'>  25 
+<a name='L26'>  26 
+<a name='L27'>  27 <font color='darkred'>#if</font> <a href='../Y/502.html' title='Multiple used in 39 places.'>LINUX_VERSION_CODE</a> &lt; <a href='../Y/480.html' title='Multiple used in 39 places.'>KERNEL_VERSION</a>(2,6,23)
+<a name='L28'>  28 <b>static</b> <b>inline</b> <b>int</b> <a href='../S/319.html#L46' title='Refered from 46 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h.'>__skb_cow</a>(<b>struct</b> <a href='../Y/6803.html' title='Multiple used in 130 places.'>sk_buff</a> *<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>, <b>unsigned</b> <b>int</b> <a href='../Y/3598.html' title='Multiple used in 13 places.'>headroom</a>,
+<a name='L29'>  29                             <b>int</b> <a href='../Y/1917.html' title='Multiple used in 2 places.'>cloned</a>)
+<a name='L30'>  30 <font color='red'>{</font>
+<a name='L31'>  31         <b>int</b> <a href='../Y/2325.html' title='Multiple used in 13 places.'>delta</a> = 0;
+<a name='L32'>  32 
+<a name='L33'>  33         <b>if</b> (<a href='../Y/3598.html' title='Multiple used in 13 places.'>headroom</a> &lt; <a href='../Y/569.html' title='Multiple used in 3 places.'>NET_SKB_PAD</a>)
+<a name='L34'>  34                 <a href='../Y/3598.html' title='Multiple used in 13 places.'>headroom</a> = <a href='../Y/569.html' title='Multiple used in 3 places.'>NET_SKB_PAD</a>;
+<a name='L35'>  35         <b>if</b> (<a href='../Y/3598.html' title='Multiple used in 13 places.'>headroom</a> &gt; <a href='../Y/6812.html' title='Multiple used in 2 places.'>skb_headroom</a>(<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>))
+<a name='L36'>  36                 <a href='../Y/2325.html' title='Multiple used in 13 places.'>delta</a> = <a href='../Y/3598.html' title='Multiple used in 13 places.'>headroom</a> - <a href='../Y/6812.html' title='Multiple used in 2 places.'>skb_headroom</a>(<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>);
+<a name='L37'>  37 
+<a name='L38'>  38         <b>if</b> (<a href='../Y/2325.html' title='Multiple used in 13 places.'>delta</a> || <a href='../Y/1917.html' title='Multiple used in 2 places.'>cloned</a>)
+<a name='L39'>  39                 <b>return</b> pskb_expand_head(<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>, ALIGN(<a href='../Y/2325.html' title='Multiple used in 13 places.'>delta</a>, <a href='../Y/569.html' title='Multiple used in 3 places.'>NET_SKB_PAD</a>), 0,
+<a name='L40'>  40                                         <a href='../Y/378.html' title='Multiple used in 20 places.'>GFP_ATOMIC</a>);
+<a name='L41'>  41         <b>return</b> 0;
+<a name='L42'>  42 <font color='red'>}</font>
+<a name='L43'>  43 
+<a name='L44'>  44 <b>static</b> <b>inline</b> <b>int</b> skb_cow_head(<b>struct</b> <a href='../Y/6803.html' title='Multiple used in 130 places.'>sk_buff</a> *<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>, <b>unsigned</b> <b>int</b> <a href='../Y/3598.html' title='Multiple used in 13 places.'>headroom</a>)
+<a name='L45'>  45 <font color='red'>{</font>
+<a name='L46'>  46         <b>return</b> <a href='../S/319.html#L28' title='Defined at 28 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h.'>__skb_cow</a>(<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>, <a href='../Y/3598.html' title='Multiple used in 13 places.'>headroom</a>, skb_header_cloned(<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>));
+<a name='L47'>  47 <font color='red'>}</font>
+<a name='L48'>  48 <font color='darkred'>#endif</font>  <i><font color='green'>/* linux &lt; 2.6.23 */</font></i>
+<a name='L49'>  49 
+<a name='L50'>  50 
+<a name='L51'>  51 <font color='darkred'>#if</font> <a href='../Y/502.html' title='Multiple used in 39 places.'>LINUX_VERSION_CODE</a> &lt; <a href='../Y/480.html' title='Multiple used in 39 places.'>KERNEL_VERSION</a>(2,6,17)
+<a name='L52'>  52 <i><font color='green'>/* Emulate Linux 2.6.17 and later behavior, in which kfree_skb silently ignores </font></i>
+<a name='L53'>  53 <i><font color='green'> * null pointer arguments. */</font></i>
+<a name='L54'>  54 <font color='darkred'>#define</font> <a href='../R/3338.html' title='Multiple refered from 21 places.'>kfree_skb</a>(<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>) <a href='../S/319.html#L55' title='Defined at 55 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h.'>kfree_skb_maybe_null</a>(<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>)
+<a name='L55'>  55 <b>static</b> <b>inline</b> <b>void</b> <a href='../S/319.html#L54' title='Refered from 54 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h.'>kfree_skb_maybe_null</a>(<b>struct</b> <a href='../Y/6803.html' title='Multiple used in 130 places.'>sk_buff</a> *<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>)
+<a name='L56'>  56 <font color='red'>{</font>
+<a name='L57'>  57         <b>if</b> (<a href='../S/872.html#L43' title='Defined at 43 in cbench/openflow/lib/compiler.h.'>likely</a>(<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>))
+<a name='L58'>  58                 (<a href='../S/319.html#L54' title='Defined at 54 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h.'>kfree_skb</a>)(<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>);
+<a name='L59'>  59 <font color='red'>}</font>
+<a name='L60'>  60 <font color='darkred'>#endif</font>
+<a name='L61'>  61 
+<a name='L62'>  62 
+<a name='L63'>  63 <font color='darkred'>#ifndef</font> <a href='../S/319.html#L66' title='Defined at 66 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h.'>CHECKSUM_PARTIAL</a>
+<a name='L64'>  64 <i><font color='green'>/* Note that CHECKSUM_PARTIAL is not implemented, but this allows us to at</font></i>
+<a name='L65'>  65 <i><font color='green'> * least test against it: see update_csum() in forward.c. */</font></i>
+<a name='L66'>  66 <font color='darkred'>#define</font> <a href='../R/173.html' title='Multiple refered from 2 places.'>CHECKSUM_PARTIAL</a> 3
+<a name='L67'>  67 <font color='darkred'>#endif</font>
+<a name='L68'>  68 <font color='darkred'>#ifndef</font> <a href='../S/319.html#L69' title='Defined at 69 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h.'>CHECKSUM_COMPLETE</a>
+<a name='L69'>  69 <font color='darkred'>#define</font> <a href='../R/172.html' title='Multiple refered from 2 places.'>CHECKSUM_COMPLETE</a> CHECKSUM_HW
+<a name='L70'>  70 <font color='darkred'>#endif</font>
+<a name='L71'>  71 
+<a name='L72'>  72 <font color='darkred'>#ifdef</font> HAVE_MAC_RAW
+<a name='L73'>  73 <font color='darkred'>#define</font> <a href='../R/3448.html' title='Multiple refered from 2 places.'>mac_header</a> <a href='../Y/4297.html' title='Multiple used in 196 places.'>mac</a>.<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>
+<a name='L74'>  74 <font color='darkred'>#define</font> network_header <a href='../Y/4873.html' title='Multiple used in 47 places.'>nh</a>.<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>
+<a name='L75'>  75 <font color='darkred'>#endif</font>
+<a name='L76'>  76 
+<a name='L77'>  77 <font color='darkred'>#ifndef</font> <a href='../Y/421.html' title='Multiple used in 7 places.'>HAVE_SKBUFF_HEADER_HELPERS</a>
+<a name='L78'>  78 <b>static</b> <b>inline</b> <b>unsigned</b> <b>char</b> *<a href='../R/4484.html' title='Multiple refered from 5 places.'>skb_transport_header</a>(<b>const</b> <b>struct</b> <a href='../Y/6803.html' title='Multiple used in 130 places.'>sk_buff</a> *<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>)
+<a name='L79'>  79 <font color='red'>{</font>
+<a name='L80'>  80         <b>return</b> <a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>.<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>;
+<a name='L81'>  81 <font color='red'>}</font>
+<a name='L82'>  82 
+<a name='L83'>  83 <b>static</b> <b>inline</b> <b>void</b> <a href='../S/283.html#L482' title='Refered from 482 in cbench/openflow/datapath/flow.c.'>skb_reset_transport_header</a>(<b>struct</b> <a href='../Y/6803.html' title='Multiple used in 130 places.'>sk_buff</a> *<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>)
+<a name='L84'>  84 <font color='red'>{</font>
+<a name='L85'>  85         <a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>.<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a> = <a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L86'>  86 <font color='red'>}</font>
+<a name='L87'>  87 
+<a name='L88'>  88 <b>static</b> <b>inline</b> <b>void</b> <a href='../S/283.html#L437' title='Refered from 437 in cbench/openflow/datapath/flow.c.'>skb_set_transport_header</a>(<b>struct</b> <a href='../Y/6803.html' title='Multiple used in 130 places.'>sk_buff</a> *<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>,
+<a name='L89'>  89                         <b>const</b> <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>)
+<a name='L90'>  90 <font color='red'>{</font>
+<a name='L91'>  91         <a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/3524.html' title='Multiple used in 47 places.'>h</a>.<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a> = <a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> + <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>;
+<a name='L92'>  92 <font color='red'>}</font>
+<a name='L93'>  93 
+<a name='L94'>  94 <b>static</b> <b>inline</b> <b>unsigned</b> <b>char</b> *<a href='../R/4478.html' title='Multiple refered from 4 places.'>skb_network_header</a>(<b>const</b> <b>struct</b> <a href='../Y/6803.html' title='Multiple used in 130 places.'>sk_buff</a> *<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>)
+<a name='L95'>  95 <font color='red'>{</font>
+<a name='L96'>  96         <b>return</b> <a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/4873.html' title='Multiple used in 47 places.'>nh</a>.<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>;
+<a name='L97'>  97 <font color='red'>}</font>
+<a name='L98'>  98 
+<a name='L99'>  99 <b>static</b> <b>inline</b> <b>void</b> <a href='../S/283.html#L427' title='Refered from 427 in cbench/openflow/datapath/flow.c.'>skb_set_network_header</a>(<b>struct</b> <a href='../Y/6803.html' title='Multiple used in 130 places.'>sk_buff</a> *<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>, <b>const</b> <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>)
+<a name='L100'> 100 <font color='red'>{</font>
+<a name='L101'> 101         <a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/4873.html' title='Multiple used in 47 places.'>nh</a>.<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a> = <a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> + <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>;
+<a name='L102'> 102 <font color='red'>}</font>
+<a name='L103'> 103 
+<a name='L104'> 104 <b>static</b> <b>inline</b> <b>unsigned</b> <b>char</b> *skb_mac_header(<b>const</b> <b>struct</b> <a href='../Y/6803.html' title='Multiple used in 130 places.'>sk_buff</a> *<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>)
+<a name='L105'> 105 <font color='red'>{</font>
+<a name='L106'> 106         <b>return</b> <a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/4297.html' title='Multiple used in 196 places.'>mac</a>.<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a>;
+<a name='L107'> 107 <font color='red'>}</font>
+<a name='L108'> 108 
+<a name='L109'> 109 <b>static</b> <b>inline</b> <b>void</b> <a href='../R/4480.html' title='Multiple refered from 4 places.'>skb_reset_mac_header</a>(<b>struct</b> <a href='../Y/6803.html' title='Multiple used in 130 places.'>sk_buff</a> *<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>)
+<a name='L110'> 110 <font color='red'>{</font>
+<a name='L111'> 111         <a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../S/319.html#L73' title='Defined at 73 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h.'>mac_header</a> = <a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L112'> 112 <font color='red'>}</font>
+<a name='L113'> 113 
+<a name='L114'> 114 <b>static</b> <b>inline</b> <b>void</b> skb_set_mac_header(<b>struct</b> <a href='../Y/6803.html' title='Multiple used in 130 places.'>sk_buff</a> *<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>, <b>const</b> <b>int</b> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>)
+<a name='L115'> 115 <font color='red'>{</font>
+<a name='L116'> 116         <a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/4297.html' title='Multiple used in 196 places.'>mac</a>.<a href='../Y/6247.html' title='Multiple used in 70 places.'>raw</a> = <a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> + <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>;
+<a name='L117'> 117 <font color='red'>}</font>
+<a name='L118'> 118 
+<a name='L119'> 119 <b>static</b> <b>inline</b> <b>int</b> <a href='../R/4485.html' title='Multiple refered from 4 places.'>skb_transport_offset</a>(<b>const</b> <b>struct</b> <a href='../Y/6803.html' title='Multiple used in 130 places.'>sk_buff</a> *<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>)
+<a name='L120'> 120 <font color='red'>{</font>
+<a name='L121'> 121     <b>return</b> <a href='../S/319.html#L78' title='Defined at 78 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h.'>skb_transport_header</a>(<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>) - <a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L122'> 122 <font color='red'>}</font>
+<a name='L123'> 123 
+<a name='L124'> 124 <b>static</b> <b>inline</b> <b>int</b> <a href='../S/332.html#L142' title='Refered from 142 in cbench/openflow/datapath/flow.h.'>skb_network_offset</a>(<b>const</b> <b>struct</b> <a href='../Y/6803.html' title='Multiple used in 130 places.'>sk_buff</a> *<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>)
+<a name='L125'> 125 <font color='red'>{</font>
+<a name='L126'> 126         <b>return</b> <a href='../S/319.html#L94' title='Defined at 94 in cbench/openflow/datapath/linux-2.6/compat-2.6/include/linux/skbuff.h.'>skb_network_header</a>(<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>) - <a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L127'> 127 <font color='red'>}</font>
+<a name='L128'> 128 
+<a name='L129'> 129 <b>static</b> <b>inline</b> <b>void</b> <a href='../S/282.html#L156' title='Refered from 156 in cbench/openflow/datapath/forward.c.'>skb_copy_to_linear_data</a>(<b>struct</b> <a href='../Y/6803.html' title='Multiple used in 130 places.'>sk_buff</a> *<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>,
+<a name='L130'> 130                                            <b>const</b> <b>void</b> *<a href='../Y/3251.html' title='Multiple used in 96 places.'>from</a>,
+<a name='L131'> 131                                            <b>const</b> <b>unsigned</b> <b>int</b> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>)
+<a name='L132'> 132 <font color='red'>{</font>
+<a name='L133'> 133         <a href='../Y/4417.html' title='Multiple used in 205 places.'>memcpy</a>(<a href='../Y/6805.html' title='Multiple used in 367 places.'>skb</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>, <a href='../Y/3251.html' title='Multiple used in 96 places.'>from</a>, <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>);
+<a name='L134'> 134 <font color='red'>}</font>
+<a name='L135'> 135 <font color='darkred'>#endif</font>  <i><font color='green'>/* !HAVE_SKBUFF_HEADER_HELPERS */</font></i>
+<a name='L136'> 136 
+<a name='L137'> 137 <font color='darkred'>#endif</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L9'>[^]</a><a href='#L129'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

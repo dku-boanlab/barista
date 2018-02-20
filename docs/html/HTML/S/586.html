@@ -1,0 +1,104 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/filters.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/filters.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* filters.h</font></i>
+<a name='L2'>   2 <i><font color='green'> * Declarations of routines for reading and writing the filters file.</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * $Id: filters.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L5'>   5 <i><font color='green'> *</font></i>
+<a name='L6'>   6 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L7'>   7 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L8'>   8 <i><font color='green'> * Copyright 1998 Gerald Combs</font></i>
+<a name='L9'>   9 <i><font color='green'> *</font></i>
+<a name='L10'>  10 <i><font color='green'> *</font></i>
+<a name='L11'>  11 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L12'>  12 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L13'>  13 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L14'>  14 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L15'>  15 <i><font color='green'> *</font></i>
+<a name='L16'>  16 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L17'>  17 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L18'>  18 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L19'>  19 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L20'>  20 <i><font color='green'> *</font></i>
+<a name='L21'>  21 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L22'>  22 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L23'>  23 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L24'>  24 <i><font color='green'> */</font></i>
+<a name='L25'>  25 
+<a name='L26'>  26 <i><font color='green'>/*</font></i>
+<a name='L27'>  27 <i><font color='green'> * Filter lists.</font></i>
+<a name='L28'>  28 <i><font color='green'> */</font></i>
+<a name='L29'>  29 <b>typedef</b> <b>enum</b> <font color='red'>{</font>
+<a name='L30'>  30         CFILTER_LIST,           <i><font color='green'>/* capture filter list - saved */</font></i>
+<a name='L31'>  31         DFILTER_LIST,           <i><font color='green'>/* display filter list - saved */</font></i>
+<a name='L32'>  32         CFILTER_EDITED_LIST,    <i><font color='green'>/* capture filter list - currently edited */</font></i>
+<a name='L33'>  33         DFILTER_EDITED_LIST     <i><font color='green'>/* display filter list - currently edited */</font></i>
+<a name='L34'>  34 <font color='red'>}</font> <a href='../R/3034.html' title='Multiple refered from 6 places.'>filter_list_type_t</a>;
+<a name='L35'>  35 
+<a name='L36'>  36 <i><font color='green'>/*</font></i>
+<a name='L37'>  37 <i><font color='green'> * Item in a list of filters.</font></i>
+<a name='L38'>  38 <i><font color='green'> */</font></i>
+<a name='L39'>  39 <b>typedef</b> <b>struct</b> <font color='red'>{</font>
+<a name='L40'>  40   <b>char</b> *<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;           <i><font color='green'>/* filter name */</font></i>
+<a name='L41'>  41   <b>char</b> *strval;         <i><font color='green'>/* filter expression */</font></i>
+<a name='L42'>  42 <font color='red'>}</font> filter_def;
+<a name='L43'>  43 
+<a name='L44'>  44 <i><font color='green'>/*</font></i>
+<a name='L45'>  45 <i><font color='green'> * Read in a list of filters.</font></i>
+<a name='L46'>  46 <i><font color='green'> *</font></i>
+<a name='L47'>  47 <i><font color='green'> * On success, "*pref_path_return" is set to NULL.</font></i>
+<a name='L48'>  48 <i><font color='green'> * On error, "*pref_path_return" is set to point to the pathname of</font></i>
+<a name='L49'>  49 <i><font color='green'> * the file we tried to read - it should be freed by our caller -</font></i>
+<a name='L50'>  50 <i><font color='green'> * and "*errno_return" is set to the error.</font></i>
+<a name='L51'>  51 <i><font color='green'> */</font></i>
+<a name='L52'>  52 <b>void</b> read_filter_list(<a href='../S/586.html#L34' title='Defined at 34 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/filters.h.'>filter_list_type_t</a> <a href='../Y/4167.html' title='Multiple used in 2 places.'>list_type</a>, <b>char</b> **<a href='../Y/5859.html' title='Multiple used in 3 places.'>pref_path_return</a>,
+<a name='L53'>  53     <b>int</b> *<a href='../Y/2761.html' title='Multiple used in 3 places.'>errno_return</a>);
+<a name='L54'>  54 
+<a name='L55'>  55 <i><font color='green'>/*</font></i>
+<a name='L56'>  56 <i><font color='green'> * Get a pointer to the first entry in a filter list.</font></i>
+<a name='L57'>  57 <i><font color='green'> */</font></i>
+<a name='L58'>  58 <a href='../Y/384.html' title='Multiple used in 42 places.'>GList</a> *get_filter_list_first(<a href='../S/586.html#L34' title='Defined at 34 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/filters.h.'>filter_list_type_t</a> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a>);
+<a name='L59'>  59 
+<a name='L60'>  60 <i><font color='green'>/*</font></i>
+<a name='L61'>  61 <i><font color='green'> * Add a new filter to the end of a list.</font></i>
+<a name='L62'>  62 <i><font color='green'> * Returns a pointer to the newly-added entry.</font></i>
+<a name='L63'>  63 <i><font color='green'> */</font></i>
+<a name='L64'>  64 <a href='../Y/384.html' title='Multiple used in 42 places.'>GList</a> *add_to_filter_list(<a href='../S/586.html#L34' title='Defined at 34 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/filters.h.'>filter_list_type_t</a> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a>, <b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>,
+<a name='L65'>  65     <b>const</b> <b>char</b> *<a href='../Y/2960.html' title='Multiple used in 8 places.'>expression</a>);
+<a name='L66'>  66 
+<a name='L67'>  67 <i><font color='green'>/*</font></i>
+<a name='L68'>  68 <i><font color='green'> * Remove a filter from a list.</font></i>
+<a name='L69'>  69 <i><font color='green'> */</font></i>
+<a name='L70'>  70 <b>void</b> remove_from_filter_list(<a href='../S/586.html#L34' title='Defined at 34 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/filters.h.'>filter_list_type_t</a> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a>, <a href='../Y/384.html' title='Multiple used in 42 places.'>GList</a> *fl_entry);
+<a name='L71'>  71 
+<a name='L72'>  72 <i><font color='green'>/*</font></i>
+<a name='L73'>  73 <i><font color='green'> * Write out a list of filters.</font></i>
+<a name='L74'>  74 <i><font color='green'> *</font></i>
+<a name='L75'>  75 <i><font color='green'> * On success, "*pref_path_return" is set to NULL.</font></i>
+<a name='L76'>  76 <i><font color='green'> * On error, "*pref_path_return" is set to point to the pathname of</font></i>
+<a name='L77'>  77 <i><font color='green'> * the file we tried to read - it should be freed by our caller -</font></i>
+<a name='L78'>  78 <i><font color='green'> * and "*errno_return" is set to the error.</font></i>
+<a name='L79'>  79 <i><font color='green'> */</font></i>
+<a name='L80'>  80 <b>void</b> save_filter_list(<a href='../S/586.html#L34' title='Defined at 34 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/filters.h.'>filter_list_type_t</a> <a href='../Y/4167.html' title='Multiple used in 2 places.'>list_type</a>, <b>char</b> **<a href='../Y/5859.html' title='Multiple used in 3 places.'>pref_path_return</a>,
+<a name='L81'>  81     <b>int</b> *<a href='../Y/2761.html' title='Multiple used in 3 places.'>errno_return</a>);
+<a name='L82'>  82 
+<a name='L83'>  83 <i><font color='green'>/*</font></i>
+<a name='L84'>  84 <i><font color='green'> * Clone the filter list so it can be edited.</font></i>
+<a name='L85'>  85 <i><font color='green'> */</font></i>
+<a name='L86'>  86 <b>void</b> copy_filter_list(<a href='../S/586.html#L34' title='Defined at 34 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/filters.h.'>filter_list_type_t</a> dest_type, <a href='../S/586.html#L34' title='Defined at 34 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/filters.h.'>filter_list_type_t</a> <a href='../Y/6943.html' title='Multiple used in 2 places.'>src_type</a>);
+<a name='L87'>  87 
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

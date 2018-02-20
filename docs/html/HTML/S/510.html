@@ -1,0 +1,123 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/libpcap.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1154.html'>wiretap</a>/libpcap.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* libpcap.h</font></i>
+<a name='L2'>   2 <i><font color='green'> *</font></i>
+<a name='L3'>   3 <i><font color='green'> * $Id: libpcap.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L4'>   4 <i><font color='green'> *</font></i>
+<a name='L5'>   5 <i><font color='green'> * Wiretap Library</font></i>
+<a name='L6'>   6 <i><font color='green'> * Copyright (c) 1998 by Gilbert Ramirez &lt;gram@alumni.rice.edu&gt;</font></i>
+<a name='L7'>   7 <i><font color='green'> *</font></i>
+<a name='L8'>   8 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L9'>   9 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L10'>  10 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L11'>  11 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L12'>  12 <i><font color='green'> *</font></i>
+<a name='L13'>  13 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L14'>  14 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L15'>  15 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L16'>  16 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L17'>  17 <i><font color='green'> *</font></i>
+<a name='L18'>  18 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L19'>  19 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L20'>  20 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L21'>  21 <i><font color='green'> */</font></i>
+<a name='L22'>  22 
+<a name='L23'>  23 <font color='darkred'>#ifndef</font> <a href='../S/510.html#L24' title='Defined at 24 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/libpcap.h.'>__W_LIBPCAP_H__</a>
+<a name='L24'>  24 <font color='darkred'>#define</font> <a href='../S/510.html#L23' title='Refered from 23 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/libpcap.h.'>__W_LIBPCAP_H__</a>
+<a name='L25'>  25 
+<a name='L26'>  26 <i><font color='green'>/* Magic numbers in "libpcap" files.</font></i>
+<a name='L27'>  27 <i><font color='green'></font></i>
+<a name='L28'>  28 <i><font color='green'>   "libpcap" file records are written in the byte order of the host that</font></i>
+<a name='L29'>  29 <i><font color='green'>   writes them, and the reader is expected to fix this up.</font></i>
+<a name='L30'>  30 <i><font color='green'></font></i>
+<a name='L31'>  31 <i><font color='green'>   PCAP_MAGIC is the magic number, in host byte order; PCAP_SWAPPED_MAGIC</font></i>
+<a name='L32'>  32 <i><font color='green'>   is a byte-swapped version of that.</font></i>
+<a name='L33'>  33 <i><font color='green'></font></i>
+<a name='L34'>  34 <i><font color='green'>   PCAP_MODIFIED_MAGIC is for Alexey Kuznetsov's modified "libpcap"</font></i>
+<a name='L35'>  35 <i><font color='green'>   format, as generated on Linux systems that have a "libpcap" with</font></i>
+<a name='L36'>  36 <i><font color='green'>   his patches, at</font></i>
+<a name='L37'>  37 <i><font color='green'></font></i>
+<a name='L38'>  38 <i><font color='green'>        http://ftp.sunet.se/pub/os/Linux/ip-routing/lbl-tools/</font></i>
+<a name='L39'>  39 <i><font color='green'></font></i>
+<a name='L40'>  40 <i><font color='green'>   applied; PCAP_SWAPPED_MODIFIED_MAGIC is the byte-swapped version. </font></i>
+<a name='L41'>  41 <i><font color='green'></font></i>
+<a name='L42'>  42 <i><font color='green'>   PCAP_NSEC_MAGIC is for Ulf Lamping's modified "libpcap" format,</font></i>
+<a name='L43'>  43 <i><font color='green'>   which uses the same common file format as PCAP_MAGIC, but the </font></i>
+<a name='L44'>  44 <i><font color='green'>   timestamps are saved in nanosecond resolution instead of microseconds.</font></i>
+<a name='L45'>  45 <i><font color='green'>   PCAP_SWAPPED_NSEC_MAGIC is a byte-swapped version of that. */</font></i>
+<a name='L46'>  46 <font color='darkred'>#define</font> PCAP_MAGIC                      0xa1b2c3d4
+<a name='L47'>  47 <font color='darkred'>#define</font> PCAP_SWAPPED_MAGIC              0xd4c3b2a1
+<a name='L48'>  48 <font color='darkred'>#define</font> PCAP_MODIFIED_MAGIC             0xa1b2cd34
+<a name='L49'>  49 <font color='darkred'>#define</font> PCAP_SWAPPED_MODIFIED_MAGIC     0x34cdb2a1
+<a name='L50'>  50 <font color='darkred'>#define</font> PCAP_NSEC_MAGIC                 0xa1b23c4d
+<a name='L51'>  51 <font color='darkred'>#define</font> PCAP_SWAPPED_NSEC_MAGIC         0x4d3cb2a1
+<a name='L52'>  52 
+<a name='L53'>  53 <i><font color='green'>/* "libpcap" file header (minus magic number). */</font></i>
+<a name='L54'>  54 <b>struct</b> <a href='../R/4022.html' title='Multiple refered from 2 places.'>pcap_hdr</a> <font color='red'>{</font>
+<a name='L55'>  55         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../Y/7771.html' title='Multiple used in 7 places.'>version_major</a>;  <i><font color='green'>/* major version number */</font></i>
+<a name='L56'>  56         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../Y/7772.html' title='Multiple used in 5 places.'>version_minor</a>;  <i><font color='green'>/* minor version number */</font></i>
+<a name='L57'>  57         <a href='../Y/3439.html' title='Multiple used in 45 places.'>gint32</a>  <a href='../Y/7356.html' title='Multiple used in 3 places.'>thiszone</a>;       <i><font color='green'>/* GMT to local correction */</font></i>
+<a name='L58'>  58         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/6765.html' title='Multiple used in 3 places.'>sigfigs</a>;        <i><font color='green'>/* accuracy of timestamps */</font></i>
+<a name='L59'>  59         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/6852.html' title='Multiple used in 12 places.'>snaplen</a>;        <i><font color='green'>/* max length of captured packets, in octets */</font></i>
+<a name='L60'>  60         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/4739.html' title='Multiple used in 42 places.'>network</a>;        <i><font color='green'>/* data link type */</font></i>
+<a name='L61'>  61 <font color='red'>}</font>;
+<a name='L62'>  62 
+<a name='L63'>  63 <i><font color='green'>/* "libpcap" record header. */</font></i>
+<a name='L64'>  64 <b>struct</b> <a href='../R/4029.html' title='Multiple refered from 5 places.'>pcaprec_hdr</a> <font color='red'>{</font>
+<a name='L65'>  65         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/7498.html' title='Multiple used in 5 places.'>ts_sec</a>;         <i><font color='green'>/* timestamp seconds */</font></i>
+<a name='L66'>  66         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/7500.html' title='Multiple used in 5 places.'>ts_usec</a>;        <i><font color='green'>/* timestamp microseconds (nsecs for PCAP_NSEC_MAGIC) */</font></i>
+<a name='L67'>  67         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3791.html' title='Multiple used in 4 places.'>incl_len</a>;       <i><font color='green'>/* number of octets of packet saved in file */</font></i>
+<a name='L68'>  68         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/5514.html' title='Multiple used in 3 places.'>orig_len</a>;       <i><font color='green'>/* actual length of packet */</font></i>
+<a name='L69'>  69 <font color='red'>}</font>;
+<a name='L70'>  70 
+<a name='L71'>  71 <i><font color='green'>/* "libpcap" record header for Alexey's patched version. */</font></i>
+<a name='L72'>  72 <b>struct</b> pcaprec_modified_hdr <font color='red'>{</font>
+<a name='L73'>  73         <b>struct</b> <a href='../D/9023.html' title='Multiple defined in 2 places.'>pcaprec_hdr</a> <a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>; <i><font color='green'>/* the regular header */</font></i>
+<a name='L74'>  74         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3735.html' title='Multiple used in 13 places.'>ifindex</a>;        <i><font color='green'>/* index, in *capturing* machine's list of</font></i>
+<a name='L75'>  75 <i><font color='green'>                                   interfaces, of the interface on which this</font></i>
+<a name='L76'>  76 <i><font color='green'>                                   packet came in. */</font></i>
+<a name='L77'>  77         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../S/333.html#L918' title='Defined at 918 in cbench/openflow/utilities/dpctl.c.'>protocol</a>;       <i><font color='green'>/* Ethernet packet type */</font></i>
+<a name='L78'>  78         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> <a href='../Y/5759.html' title='Multiple used in 4 places.'>pkt_type</a>;        <i><font color='green'>/* broadcast/multicast/etc. indication */</font></i>
+<a name='L79'>  79         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>;             <i><font color='green'>/* pad to a 4-byte boundary */</font></i>
+<a name='L80'>  80 <font color='red'>}</font>;
+<a name='L81'>  81 
+<a name='L82'>  82 <i><font color='green'>/* "libpcap" record header for Alexey's patched version in its ss990915</font></i>
+<a name='L83'>  83 <i><font color='green'>   incarnation; this version shows up in SuSE Linux 6.3. */</font></i>
+<a name='L84'>  84 <b>struct</b> pcaprec_ss990915_hdr <font color='red'>{</font>
+<a name='L85'>  85         <b>struct</b> <a href='../D/9023.html' title='Multiple defined in 2 places.'>pcaprec_hdr</a> <a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>; <i><font color='green'>/* the regular header */</font></i>
+<a name='L86'>  86         <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3735.html' title='Multiple used in 13 places.'>ifindex</a>;        <i><font color='green'>/* index, in *capturing* machine's list of</font></i>
+<a name='L87'>  87 <i><font color='green'>                                   interfaces, of the interface on which this</font></i>
+<a name='L88'>  88 <i><font color='green'>                                   packet came in. */</font></i>
+<a name='L89'>  89         <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> <a href='../S/333.html#L918' title='Defined at 918 in cbench/openflow/utilities/dpctl.c.'>protocol</a>;       <i><font color='green'>/* Ethernet packet type */</font></i>
+<a name='L90'>  90         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> <a href='../Y/5759.html' title='Multiple used in 4 places.'>pkt_type</a>;        <i><font color='green'>/* broadcast/multicast/etc. indication */</font></i>
+<a name='L91'>  91         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> cpu1, cpu2;      <i><font color='green'>/* SMP debugging gunk? */</font></i>
+<a name='L92'>  92         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> <a href='../Y/5627.html' title='Multiple used in 143 places.'>pad</a>[3];          <i><font color='green'>/* pad to a 4-byte boundary */</font></i>
+<a name='L93'>  93 <font color='red'>}</font>;
+<a name='L94'>  94 
+<a name='L95'>  95 <i><font color='green'>/* "libpcap" record header for version used on some Nokia boxes (firewalls?) */</font></i>
+<a name='L96'>  96 <b>struct</b> pcaprec_nokia_hdr <font color='red'>{</font>
+<a name='L97'>  97         <b>struct</b> <a href='../D/9023.html' title='Multiple defined in 2 places.'>pcaprec_hdr</a> <a href='../Y/3588.html' title='Multiple used in 77 places.'>hdr</a>; <i><font color='green'>/* the regular header */</font></i>
+<a name='L98'>  98         <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a> <a href='../Y/7120.html' title='Multiple used in 2 places.'>stuff</a>[4];        <i><font color='green'>/* mysterious stuff */</font></i>
+<a name='L99'>  99 <font color='red'>}</font>;
+<a name='L100'> 100 
+<a name='L101'> 101 <b>int</b> libpcap_open(<a href='../Y/7945.html' title='Multiple used in 38 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>, <b>int</b> *<a href='../Y/2737.html' title='Multiple used in 82 places.'>err</a>, <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> **<a href='../Y/2747.html' title='Multiple used in 42 places.'>err_info</a>);
+<a name='L102'> 102 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> libpcap_dump_open(<a href='../Y/7956.html' title='Multiple used in 21 places.'>wtap_dumper</a> *<a href='../Y/7861.html' title='Multiple used in 20 places.'>wdh</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/1789.html' title='Multiple used in 17 places.'>cant_seek</a>, <b>int</b> *<a href='../Y/2737.html' title='Multiple used in 82 places.'>err</a>);
+<a name='L103'> 103 <b>int</b> libpcap_dump_can_write_encap(<b>int</b> <a href='../Y/2669.html' title='Multiple used in 26 places.'>encap</a>);
+<a name='L104'> 104 <b>int</b> wtap_pcap_encap_to_wtap_encap(<b>int</b> <a href='../Y/2669.html' title='Multiple used in 26 places.'>encap</a>);
+<a name='L105'> 105 
+<a name='L106'> 106 <font color='darkred'>#endif</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

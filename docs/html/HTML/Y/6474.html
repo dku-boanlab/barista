@@ -1,0 +1,87 @@
+<html>
+<head>
+<title>rq</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/293.html#L63'>rq</a>                 63 cbench/openflow/datapath/datapath.c int (*dp_ioctl_hook)(struct net_device *dev, struct ifreq *rq, int cmd);
+<a href='../S/293.html#L1090'>rq</a>               1090 cbench/openflow/datapath/datapath.c 		   const struct ofp_header *rq)
+<a href='../S/293.html#L1095'>rq</a>               1095 cbench/openflow/datapath/datapath.c 	reply = alloc_openflow_skb(dp, ntohs(rq-&gt;length), OFPT_ECHO_REPLY,
+<a href='../S/293.html#L1100'>rq</a>               1100 cbench/openflow/datapath/datapath.c 	memcpy(reply + 1, rq + 1, ntohs(rq-&gt;length) - sizeof *rq);
+<a href='../S/293.html#L1399'>rq</a>               1399 cbench/openflow/datapath/datapath.c 	const struct ofp_flow_stats_request *rq;
+<a href='../S/293.html#L1416'>rq</a>               1416 cbench/openflow/datapath/datapath.c 	s-&gt;rq = fsr;
+<a href='../S/293.html#L1482'>rq</a>               1482 cbench/openflow/datapath/datapath.c 	flow_extract_match(&amp;match_key, &amp;s-&gt;rq-&gt;match);
+<a href='../S/293.html#L1483'>rq</a>               1483 cbench/openflow/datapath/datapath.c 	if (s-&gt;rq-&gt;table_id == EMERG_TABLE_ID_FOR_STATS) {
+<a href='../S/293.html#L1486'>rq</a>               1486 cbench/openflow/datapath/datapath.c 		error = table-&gt;iterate(table, &amp;match_key, s-&gt;rq-&gt;out_port,
+<a href='../S/293.html#L1491'>rq</a>               1491 cbench/openflow/datapath/datapath.c 		       &amp;&amp; (s-&gt;rq-&gt;table_id == 0xff
+<a href='../S/293.html#L1492'>rq</a>               1492 cbench/openflow/datapath/datapath.c 			   || s-&gt;rq-&gt;table_id == s-&gt;table_idx)) {
+<a href='../S/293.html#L1496'>rq</a>               1496 cbench/openflow/datapath/datapath.c 					       s-&gt;rq-&gt;out_port, &amp;s-&gt;position,
+<a href='../S/293.html#L1540'>rq</a>               1540 cbench/openflow/datapath/datapath.c 	struct ofp_aggregate_stats_request *rq = state;
+<a href='../S/293.html#L1554'>rq</a>               1554 cbench/openflow/datapath/datapath.c 	flow_extract_match(&amp;match_key, &amp;rq-&gt;match);
+<a href='../S/293.html#L1555'>rq</a>               1555 cbench/openflow/datapath/datapath.c 	table_idx = rq-&gt;table_id == 0xff ? 0 : rq-&gt;table_id;
+<a href='../S/293.html#L1558'>rq</a>               1558 cbench/openflow/datapath/datapath.c 	if (rq-&gt;table_id == EMERG_TABLE_ID_FOR_STATS) {
+<a href='../S/293.html#L1561'>rq</a>               1561 cbench/openflow/datapath/datapath.c 		error = table-&gt;iterate(table, &amp;match_key, rq-&gt;out_port,
+<a href='../S/293.html#L1568'>rq</a>               1568 cbench/openflow/datapath/datapath.c 		       &amp;&amp; (rq-&gt;table_id == 0xff || rq-&gt;table_id == table_idx)) {
+<a href='../S/293.html#L1571'>rq</a>               1571 cbench/openflow/datapath/datapath.c 			error = table-&gt;iterate(table, &amp;match_key, rq-&gt;out_port,
+<a href='../S/293.html#L1867'>rq</a>               1867 cbench/openflow/datapath/datapath.c 		struct ofp_stats_request *rq;
+<a href='../S/293.html#L1886'>rq</a>               1886 cbench/openflow/datapath/datapath.c 		if (!va || len &lt; sizeof *rq)
+<a href='../S/293.html#L1889'>rq</a>               1889 cbench/openflow/datapath/datapath.c 		rq = nla_data(va);
+<a href='../S/293.html#L1890'>rq</a>               1890 cbench/openflow/datapath/datapath.c 		sender.xid = rq-&gt;header.xid;
+<a href='../S/293.html#L1891'>rq</a>               1891 cbench/openflow/datapath/datapath.c 		type = ntohs(rq-&gt;type);
+<a href='../S/293.html#L1892'>rq</a>               1892 cbench/openflow/datapath/datapath.c 		if (rq-&gt;header.version != OFP_VERSION) {
+<a href='../S/293.html#L1894'>rq</a>               1894 cbench/openflow/datapath/datapath.c 					  OFPBRC_BAD_VERSION, rq, len);
+<a href='../S/293.html#L1897'>rq</a>               1897 cbench/openflow/datapath/datapath.c 		if (rq-&gt;header.type != OFPT_STATS_REQUEST
+<a href='../S/293.html#L1898'>rq</a>               1898 cbench/openflow/datapath/datapath.c 		    || ntohs(rq-&gt;header.length) != len)
+<a href='../S/293.html#L1908'>rq</a>               1908 cbench/openflow/datapath/datapath.c 						  OFPBRC_BAD_STAT, rq, len);
+<a href='../S/293.html#L1920'>rq</a>               1920 cbench/openflow/datapath/datapath.c 		cb-&gt;args[3] = rq-&gt;header.xid;
+<a href='../S/293.html#L1923'>rq</a>               1923 cbench/openflow/datapath/datapath.c 			err = s-&gt;init(dp, rq-&gt;body, body_len, &amp;state);
+<a href='../S/291.html#L83'>rq</a>                 83 cbench/openflow/datapath/datapath.h extern int (*dp_ioctl_hook)(struct net_device *dev, struct ifreq *rq, int cmd);
+<a href='../S/884.html#L488'>rq</a>                488 cbench/openflow/lib/learning-switch.c     struct ofp_header *rq = rq_;
+<a href='../S/884.html#L489'>rq</a>                489 cbench/openflow/lib/learning-switch.c     queue_tx(sw, rconn, make_echo_reply(rq));
+<a href='../S/881.html#L987'>rq</a>                987 cbench/openflow/lib/vconn.c     struct ofp_header *rq;
+<a href='../S/881.html#L988'>rq</a>                988 cbench/openflow/lib/vconn.c     struct ofpbuf *out = ofpbuf_new(sizeof *rq);
+<a href='../S/881.html#L989'>rq</a>                989 cbench/openflow/lib/vconn.c     rq = ofpbuf_put_uninit(out, sizeof *rq);
+<a href='../S/881.html#L990'>rq</a>                990 cbench/openflow/lib/vconn.c     rq-&gt;version = OFP_VERSION;
+<a href='../S/881.html#L991'>rq</a>                991 cbench/openflow/lib/vconn.c     rq-&gt;type = OFPT_ECHO_REQUEST;
+<a href='../S/881.html#L992'>rq</a>                992 cbench/openflow/lib/vconn.c     rq-&gt;length = htons(sizeof *rq);
+<a href='../S/881.html#L993'>rq</a>                993 cbench/openflow/lib/vconn.c     rq-&gt;xid = alloc_xid();
+<a href='../S/881.html#L1000'>rq</a>               1000 cbench/openflow/lib/vconn.c make_echo_reply(const struct ofp_header *rq)
+<a href='../S/881.html#L1002'>rq</a>               1002 cbench/openflow/lib/vconn.c     size_t size = ntohs(rq-&gt;length);
+<a href='../S/881.html#L1004'>rq</a>               1004 cbench/openflow/lib/vconn.c     struct ofp_header *reply = ofpbuf_put(out, rq, size);
+<a href='../S/906.html#L103'>rq</a>                103 cbench/openflow/lib/vconn.h struct ofpbuf *make_echo_reply(const struct ofp_header *rq);
+<a href='../S/204.html#L1552'>rq</a>               1552 cbench/openflow/udatapath/datapath.c     struct ofp_flow_stats_request rq;
+<a href='../S/204.html#L1568'>rq</a>               1568 cbench/openflow/udatapath/datapath.c     s-&gt;rq = *fsr;
+<a href='../S/204.html#L1586'>rq</a>               1586 cbench/openflow/udatapath/datapath.c     flow_extract_match(&amp;match_key, &amp;s-&gt;rq.match);
+<a href='../S/204.html#L1590'>rq</a>               1590 cbench/openflow/udatapath/datapath.c     if (s-&gt;rq.table_id == EMERG_TABLE_ID_FOR_STATS) {
+<a href='../S/204.html#L1593'>rq</a>               1593 cbench/openflow/udatapath/datapath.c         table-&gt;iterate(table, &amp;match_key, s-&gt;rq.out_port,
+<a href='../S/204.html#L1597'>rq</a>               1597 cbench/openflow/udatapath/datapath.c                &amp;&amp; (s-&gt;rq.table_id == 0xff || s-&gt;rq.table_id == s-&gt;table_idx))
+<a href='../S/204.html#L1601'>rq</a>               1601 cbench/openflow/udatapath/datapath.c             if (table-&gt;iterate(table, &amp;match_key, s-&gt;rq.out_port,
+<a href='../S/204.html#L1618'>rq</a>               1618 cbench/openflow/udatapath/datapath.c     struct ofp_aggregate_stats_request rq;
+<a href='../S/204.html#L1624'>rq</a>               1624 cbench/openflow/udatapath/datapath.c     const struct ofp_aggregate_stats_request *rq = body;
+<a href='../S/204.html#L1626'>rq</a>               1626 cbench/openflow/udatapath/datapath.c     s-&gt;rq = *rq;
+<a href='../S/204.html#L1644'>rq</a>               1644 cbench/openflow/udatapath/datapath.c     struct ofp_aggregate_stats_request *rq = &amp;s-&gt;rq;
+<a href='../S/204.html#L1654'>rq</a>               1654 cbench/openflow/udatapath/datapath.c     flow_extract_match(&amp;match_key, &amp;rq-&gt;match);
+<a href='../S/204.html#L1655'>rq</a>               1655 cbench/openflow/udatapath/datapath.c     table_idx = rq-&gt;table_id == 0xff ? 0 : rq-&gt;table_id;
+<a href='../S/204.html#L1658'>rq</a>               1658 cbench/openflow/udatapath/datapath.c     if (rq-&gt;table_id == EMERG_TABLE_ID_FOR_STATS) {
+<a href='../S/204.html#L1661'>rq</a>               1661 cbench/openflow/udatapath/datapath.c         error = table-&gt;iterate(table, &amp;match_key, rq-&gt;out_port, &amp;position,
+<a href='../S/204.html#L1667'>rq</a>               1667 cbench/openflow/udatapath/datapath.c                &amp;&amp; (rq-&gt;table_id == 0xff || rq-&gt;table_id == table_idx))
+<a href='../S/204.html#L1671'>rq</a>               1671 cbench/openflow/udatapath/datapath.c             error = table-&gt;iterate(table, &amp;match_key, rq-&gt;out_port, &amp;position,
+<a href='../S/204.html#L2040'>rq</a>               2040 cbench/openflow/udatapath/datapath.c     struct ofp_stats_request *rq;
+<a href='../S/204.html#L2090'>rq</a>               2090 cbench/openflow/udatapath/datapath.c         if (cb-&gt;rq) {
+<a href='../S/204.html#L2091'>rq</a>               2091 cbench/openflow/udatapath/datapath.c             free(cb-&gt;rq);
+<a href='../S/204.html#L2101'>rq</a>               2101 cbench/openflow/udatapath/datapath.c     const struct ofp_stats_request *rq = oh;
+<a href='../S/204.html#L2102'>rq</a>               2102 cbench/openflow/udatapath/datapath.c     size_t rq_len = ntohs(rq-&gt;header.length);
+<a href='../S/204.html#L2108'>rq</a>               2108 cbench/openflow/udatapath/datapath.c     type = ntohs(rq-&gt;type);
+<a href='../S/204.html#L2121'>rq</a>               2121 cbench/openflow/udatapath/datapath.c     cb-&gt;rq = xmemdup(rq, rq_len);
+<a href='../S/204.html#L2135'>rq</a>               2135 cbench/openflow/udatapath/datapath.c         err = cb-&gt;s-&gt;init(rq-&gt;body, body_len, &amp;cb-&gt;state);
+<a href='../S/204.html#L2148'>rq</a>               2148 cbench/openflow/udatapath/datapath.c     free(cb-&gt;rq);
+<a href='../S/333.html#L406'>rq</a>                406 cbench/openflow/utilities/dpctl.c     struct ofp_stats_request *rq;
+<a href='../S/333.html#L407'>rq</a>                407 cbench/openflow/utilities/dpctl.c     rq = make_openflow((offsetof(struct ofp_stats_request, body)
+<a href='../S/333.html#L409'>rq</a>                409 cbench/openflow/utilities/dpctl.c     rq-&gt;type = htons(type);
+<a href='../S/333.html#L410'>rq</a>                410 cbench/openflow/utilities/dpctl.c     rq-&gt;flags = htons(0);
+<a href='../S/333.html#L411'>rq</a>                411 cbench/openflow/utilities/dpctl.c     return rq-&gt;body;
+</pre>
+</body>
+</html>

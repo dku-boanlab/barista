@@ -1,0 +1,193 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/lanalyzer.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1154.html'>wiretap</a>/lanalyzer.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* lanalyzer.h</font></i>
+<a name='L2'>   2 <i><font color='green'> *</font></i>
+<a name='L3'>   3 <i><font color='green'> * $Id: lanalyzer.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L4'>   4 <i><font color='green'> *</font></i>
+<a name='L5'>   5 <i><font color='green'> * Wiretap Library</font></i>
+<a name='L6'>   6 <i><font color='green'> * Copyright (c) 1998 by Gilbert Ramirez &lt;gram@alumni.rice.edu&gt;</font></i>
+<a name='L7'>   7 <i><font color='green'> *</font></i>
+<a name='L8'>   8 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L9'>   9 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L10'>  10 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L11'>  11 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L12'>  12 <i><font color='green'> *</font></i>
+<a name='L13'>  13 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L14'>  14 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L15'>  15 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L16'>  16 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L17'>  17 <i><font color='green'> *</font></i>
+<a name='L18'>  18 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L19'>  19 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L20'>  20 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L21'>  21 <i><font color='green'> *</font></i>
+<a name='L22'>  22 <i><font color='green'> */</font></i>
+<a name='L23'>  23 
+<a name='L24'>  24 <font color='darkred'>#ifndef</font> <a href='../S/548.html#L25' title='Defined at 25 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/lanalyzer.h.'>__LANALYZER_H__</a>
+<a name='L25'>  25 <font color='darkred'>#define</font> <a href='../S/548.html#L24' title='Refered from 24 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/lanalyzer.h.'>__LANALYZER_H__</a>
+<a name='L26'>  26 
+<a name='L27'>  27 <i><font color='green'>/*    Record type codes:                */</font></i>
+<a name='L28'>  28 
+<a name='L29'>  29 <font color='darkred'>#define</font>     RT_HeaderRegular       0x1001
+<a name='L30'>  30 <font color='darkred'>#define</font>     RT_HeaderCyclic        0x1007
+<a name='L31'>  31 <font color='darkred'>#define</font>     RT_RxChannelName       0x1006
+<a name='L32'>  32 <font color='darkred'>#define</font>     RT_TxChannelName       0x100b
+<a name='L33'>  33 <font color='darkred'>#define</font>     RT_FilterName          0x1032
+<a name='L34'>  34 <font color='darkred'>#define</font>     RT_RxTemplateName      0x1035
+<a name='L35'>  35 <font color='darkred'>#define</font>     RT_TxTemplateName      0x1036
+<a name='L36'>  36 <font color='darkred'>#define</font>     RT_DisplayOptions      0x100a
+<a name='L37'>  37 <font color='darkred'>#define</font>     RT_Summary             0x1002
+<a name='L38'>  38 <font color='darkred'>#define</font>     RT_SubfileSummary      0x1003
+<a name='L39'>  39 <font color='darkred'>#define</font>     RT_CyclicInformation   0x1009
+<a name='L40'>  40 <font color='darkred'>#define</font>     RT_Index               0x1004
+<a name='L41'>  41 <font color='darkred'>#define</font>     RT_PacketData          0x1005
+<a name='L42'>  42 
+<a name='L43'>  43 <font color='darkred'>#define</font>     LA_ProFileLimit       (1024 * 1024 * 32)
+<a name='L44'>  44 
+<a name='L45'>  45 <b>typedef</b> <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>  Eadr[6];
+<a name='L46'>  46 <b>typedef</b> <a href='../Y/3510.html' title='Multiple used in 135 places.'>guint16</a> TimeStamp[3];  <i><font color='green'>/* 0.5 microseconds since start of trace */</font></i>
+<a name='L47'>  47 
+<a name='L48'>  48 <i><font color='green'>/*</font></i>
+<a name='L49'>  49 <i><font color='green'> * These records have only 2-byte alignment for 4-byte quantities,</font></i>
+<a name='L50'>  50 <i><font color='green'> * so the structures aren't necessarily valid; they're kept as comments</font></i>
+<a name='L51'>  51 <i><font color='green'> * for reference purposes.</font></i>
+<a name='L52'>  52 <i><font color='green'> */</font></i>
+<a name='L53'>  53 
+<a name='L54'>  54 <i><font color='green'>/*</font></i>
+<a name='L55'>  55 <i><font color='green'> * typedef struct {</font></i>
+<a name='L56'>  56 <i><font color='green'> *       guint8      day;</font></i>
+<a name='L57'>  57 <i><font color='green'> *       guint8      mon;</font></i>
+<a name='L58'>  58 <i><font color='green'> *       gint16      year;</font></i>
+<a name='L59'>  59 <i><font color='green'> *       } Date;</font></i>
+<a name='L60'>  60 <i><font color='green'> */</font></i>
+<a name='L61'>  61 
+<a name='L62'>  62 <i><font color='green'>/*</font></i>
+<a name='L63'>  63 <i><font color='green'> * typedef struct {</font></i>
+<a name='L64'>  64 <i><font color='green'> *       guint8      second;</font></i>
+<a name='L65'>  65 <i><font color='green'> *       guint8      minute;</font></i>
+<a name='L66'>  66 <i><font color='green'> *       guint8      hour;</font></i>
+<a name='L67'>  67 <i><font color='green'> *       guint8      day;</font></i>
+<a name='L68'>  68 <i><font color='green'> *       gint16      reserved;</font></i>
+<a name='L69'>  69 <i><font color='green'> *       } Time;</font></i>
+<a name='L70'>  70 <i><font color='green'> */</font></i>
+<a name='L71'>  71 
+<a name='L72'>  72 <i><font color='green'>/*</font></i>
+<a name='L73'>  73 <i><font color='green'> * typedef struct {</font></i>
+<a name='L74'>  74 <i><font color='green'> *       guint16     rx_channels;</font></i>
+<a name='L75'>  75 <i><font color='green'> *       guint16     rx_errors;</font></i>
+<a name='L76'>  76 <i><font color='green'> *       gint16      rx_frm_len;</font></i>
+<a name='L77'>  77 <i><font color='green'> *       gint16      rx_frm_sln;</font></i>
+<a name='L78'>  78 <i><font color='green'> *       TimeStamp   rx_time;</font></i>
+<a name='L79'>  79 <i><font color='green'> *       guint32     pktno;</font></i>
+<a name='L80'>  80 <i><font color='green'> *       gint16      prvlen;</font></i>
+<a name='L81'>  81 <i><font color='green'> *       gint16      offset;</font></i>
+<a name='L82'>  82 <i><font color='green'> *       gint16      tx_errs;</font></i>
+<a name='L83'>  83 <i><font color='green'> *       gint16      rx_filters;</font></i>
+<a name='L84'>  84 <i><font color='green'> *       gint8       unused[2];</font></i>
+<a name='L85'>  85 <i><font color='green'> *       gint16      hwcolls;</font></i>
+<a name='L86'>  86 <i><font color='green'> *       gint16      hwcollschans;</font></i>
+<a name='L87'>  87 <i><font color='green'> *       Packetdata ....;</font></i>
+<a name='L88'>  88 <i><font color='green'> *       } LA_PacketRecord;</font></i>
+<a name='L89'>  89 <i><font color='green'> */</font></i>
+<a name='L90'>  90 
+<a name='L91'>  91 <font color='darkred'>#define</font> LA_PacketRecordSize 32
+<a name='L92'>  92 
+<a name='L93'>  93 <i><font color='green'>/*</font></i>
+<a name='L94'>  94 <i><font color='green'> * typedef struct {</font></i>
+<a name='L95'>  95 <i><font color='green'> *       Date        datcre;</font></i>
+<a name='L96'>  96 <i><font color='green'> *       Date        datclo;</font></i>
+<a name='L97'>  97 <i><font color='green'> *       Time        timeopn;</font></i>
+<a name='L98'>  98 <i><font color='green'> *       Time        timeclo;</font></i>
+<a name='L99'>  99 <i><font color='green'> *       Eadr        statadr;</font></i>
+<a name='L100'> 100 <i><font color='green'> *       gint16      mxseqno;</font></i>
+<a name='L101'> 101 <i><font color='green'> *       gint16      slcoff;</font></i>
+<a name='L102'> 102 <i><font color='green'> *       gint16      mxslc;</font></i>
+<a name='L103'> 103 <i><font color='green'> *       gint32      totpktt;</font></i>
+<a name='L104'> 104 <i><font color='green'> *       gint32      statrg;</font></i>
+<a name='L105'> 105 <i><font color='green'> *       gint32      stptrg;</font></i>
+<a name='L106'> 106 <i><font color='green'> *       gint32      mxpkta[36];</font></i>
+<a name='L107'> 107 <i><font color='green'> *       gint16      board_type;</font></i>
+<a name='L108'> 108 <i><font color='green'> *       gint16      board_version;</font></i>
+<a name='L109'> 109 <i><font color='green'> *       gint8       reserved[18];</font></i>
+<a name='L110'> 110 <i><font color='green'> *       } Summary;</font></i>
+<a name='L111'> 111 <i><font color='green'> */</font></i>
+<a name='L112'> 112 
+<a name='L113'> 113 <font color='darkred'>#define</font> <a href='../S/548.html#L124' title='Refered from 124 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/lanalyzer.h.'>SummarySize</a> (18+22+(4*36)+6+6+6+4+4)
+<a name='L114'> 114 
+<a name='L115'> 115 
+<a name='L116'> 116 <i><font color='green'>/*</font></i>
+<a name='L117'> 117 <i><font color='green'> * typedef struct {</font></i>
+<a name='L118'> 118 <i><font color='green'> *       gint16      rid;</font></i>
+<a name='L119'> 119 <i><font color='green'> *       gint16      rlen;</font></i>
+<a name='L120'> 120 <i><font color='green'> *       Summary     s;</font></i>
+<a name='L121'> 121 <i><font color='green'> *       } LA_SummaryRecord;</font></i>
+<a name='L122'> 122 <i><font color='green'> */</font></i>
+<a name='L123'> 123 
+<a name='L124'> 124 <font color='darkred'>#define</font> LA_SummaryRecordSize (<a href='../S/548.html#L113' title='Defined at 113 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/lanalyzer.h.'>SummarySize</a> + 4)
+<a name='L125'> 125 
+<a name='L126'> 126 
+<a name='L127'> 127 <i><font color='green'>/*</font></i>
+<a name='L128'> 128 <i><font color='green'> * typedef struct {</font></i>
+<a name='L129'> 129 <i><font color='green'> *       gint16      rid;</font></i>
+<a name='L130'> 130 <i><font color='green'> *       gint16      rlen;</font></i>
+<a name='L131'> 131 <i><font color='green'> *       gint16      seqno;</font></i>
+<a name='L132'> 132 <i><font color='green'> *       gint32      totpktf;</font></i>
+<a name='L133'> 133 <i><font color='green'> *       } LA_SubfileSummaryRecord;</font></i>
+<a name='L134'> 134 <i><font color='green'> */</font></i>
+<a name='L135'> 135 
+<a name='L136'> 136 <font color='darkred'>#define</font> LA_SubfileSummaryRecordSize 10
+<a name='L137'> 137 
+<a name='L138'> 138 
+<a name='L139'> 139 <font color='darkred'>#define</font> <a href='../S/548.html#L153' title='Refered from 153 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/lanalyzer.h.'>LA_IndexSize</a> 500
+<a name='L140'> 140 
+<a name='L141'> 141 <i><font color='green'>/*</font></i>
+<a name='L142'> 142 <i><font color='green'> * typedef struct {</font></i>
+<a name='L143'> 143 <i><font color='green'> *       gint16      rid;</font></i>
+<a name='L144'> 144 <i><font color='green'> *       gint16      rlen;</font></i>
+<a name='L145'> 145 <i><font color='green'> *       gint16      idxsp;                    = LA_IndexSize</font></i>
+<a name='L146'> 146 <i><font color='green'> *       gint16      idxct;</font></i>
+<a name='L147'> 147 <i><font color='green'> *       gint8       idxgranu;</font></i>
+<a name='L148'> 148 <i><font color='green'> *       gint8       idxvd;</font></i>
+<a name='L149'> 149 <i><font color='green'> *       gint32      trcidx[LA_IndexSize + 2]; +2 undocumented but used by La 2.2</font></i>
+<a name='L150'> 150 <i><font color='green'> *       } LA_IndexRecord;</font></i>
+<a name='L151'> 151 <i><font color='green'> */</font></i>
+<a name='L152'> 152 
+<a name='L153'> 153 <font color='darkred'>#define</font> LA_IndexRecordSize (10 + 4 * (<a href='../S/548.html#L139' title='Defined at 139 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/wiretap/lanalyzer.h.'>LA_IndexSize</a> + 2))
+<a name='L154'> 154 
+<a name='L155'> 155 <i><font color='green'>/*</font></i>
+<a name='L156'> 156 <i><font color='green'> * typedef struct {</font></i>
+<a name='L157'> 157 <i><font color='green'> *       gint16      rid;</font></i>
+<a name='L158'> 158 <i><font color='green'> *       gint16      rlen;</font></i>
+<a name='L159'> 159 <i><font color='green'> *       } LA_RecordHeader;</font></i>
+<a name='L160'> 160 <i><font color='green'> */</font></i>
+<a name='L161'> 161 
+<a name='L162'> 162 <font color='darkred'>#define</font> LA_RecordHeaderSize 4
+<a name='L163'> 163 
+<a name='L164'> 164 <b>typedef</b> <b>struct</b> <font color='red'>{</font>
+<a name='L165'> 165       <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a>        <a href='../D/8107.html' title='Multiple defined in 14 places.'>init</a>;
+<a name='L166'> 166       <b>struct</b> <a href='../Y/7388.html' title='Multiple used in 197 places.'>timeval</a>  <a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a>;
+<a name='L167'> 167       <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a>         pkts;
+<a name='L168'> 168       <b>int</b>             <a href='../Y/2669.html' title='Multiple used in 26 places.'>encap</a>;
+<a name='L169'> 169       <b>int</b>             lastlen;
+<a name='L170'> 170       <font color='red'>}</font> LA_TmpInfo;
+<a name='L171'> 171 
+<a name='L172'> 172 <b>int</b>         lanalyzer_open(<a href='../Y/7945.html' title='Multiple used in 38 places.'>wtap</a> *<a href='../Y/7990.html' title='Multiple used in 51 places.'>wth</a>, <b>int</b> *<a href='../Y/2737.html' title='Multiple used in 82 places.'>err</a>, <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> **<a href='../Y/2747.html' title='Multiple used in 42 places.'>err_info</a>);
+<a name='L173'> 173 <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a>    lanalyzer_dump_open(<a href='../Y/7956.html' title='Multiple used in 21 places.'>wtap_dumper</a> *<a href='../Y/7861.html' title='Multiple used in 20 places.'>wdh</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/1789.html' title='Multiple used in 17 places.'>cant_seek</a>, <b>int</b> *<a href='../Y/2737.html' title='Multiple used in 82 places.'>err</a>);
+<a name='L174'> 174 <b>int</b>         lanalyzer_dump_can_write_encap(<b>int</b> <a href='../Y/2669.html' title='Multiple used in 26 places.'>encap</a>);
+<a name='L175'> 175 
+<a name='L176'> 176 <font color='darkred'>#endif</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

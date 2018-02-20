@@ -1,0 +1,45 @@
+<html>
+<head>
+<title>cbench/openflow/datapath/linux-2.6/compat-2.6/genetlink-openflow.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1126.html'>datapath</a>/<a href='../files/1129.html'>linux-2.6</a>/<a href='../files/1130.html'>compat-2.6</a>/genetlink-openflow.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L11'>[^]</a>[v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L11' title='Defined at 11.'>genl_register_mc_group</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <font color='darkred'>#include</font> "<a href='306.html'>net/genetlink.h</a>"
+<a name='L2'>   2 
+<a name='L3'>   3 <font color='darkred'>#include</font> &lt;linux/version.h&gt;
+<a name='L4'>   4 <font color='darkred'>#if</font> <a href='../Y/502.html' title='Multiple used in 39 places.'>LINUX_VERSION_CODE</a> &lt; <a href='../Y/480.html' title='Multiple used in 39 places.'>KERNEL_VERSION</a>(2,6,23)
+<a name='L5'>   5 
+<a name='L6'>   6 <i><font color='green'>/* We use multicast groups 16 through 31 to avoid colliding with the multicast</font></i>
+<a name='L7'>   7 <i><font color='green'> * group selected by brcompat_mod, which uses groups 32.  Collision isn't</font></i>
+<a name='L8'>   8 <i><font color='green'> * fatal--multicast listeners should check that the family is the one that they</font></i>
+<a name='L9'>   9 <i><font color='green'> * want and discard others--but it wastes time and memory to receive unwanted</font></i>
+<a name='L10'>  10 <i><font color='green'> * messages. */</font></i>
+<a name='L11'>  11 <b>int</b> <a href='../R/3133.html' title='Multiple refered from 2 places.'>genl_register_mc_group</a>(<b>struct</b> <a href='../Y/3327.html' title='Multiple used in 7 places.'>genl_family</a> *<a href='../Y/3002.html' title='Multiple used in 11 places.'>family</a>,
+<a name='L12'>  12                            <b>struct</b> <a href='../Y/3330.html' title='Multiple used in 3 places.'>genl_multicast_group</a> *<a href='../Y/3461.html' title='Multiple used in 7 places.'>grp</a>)
+<a name='L13'>  13 <font color='red'>{</font>
+<a name='L14'>  14         <i><font color='green'>/* This code is called single-threaded. */</font></i>
+<a name='L15'>  15         <b>static</b> <b>unsigned</b> <b>int</b> <a href='../Y/4808.html' title='Multiple used in 2 places.'>next_id</a> = 0;
+<a name='L16'>  16         <a href='../Y/3461.html' title='Multiple used in 7 places.'>grp</a>-&gt;<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a> = <a href='../Y/4808.html' title='Multiple used in 2 places.'>next_id</a>++ % 16 + 16;
+<a name='L17'>  17         <a href='../Y/3461.html' title='Multiple used in 7 places.'>grp</a>-&gt;<a href='../Y/3002.html' title='Multiple used in 11 places.'>family</a> = <a href='../Y/3002.html' title='Multiple used in 11 places.'>family</a>;
+<a name='L18'>  18 
+<a name='L19'>  19         <b>return</b> 0;
+<a name='L20'>  20 <font color='red'>}</font>
+<a name='L21'>  21 
+<a name='L22'>  22 <font color='darkred'>#endif</font> <i><font color='green'>/* kernel &lt; 2.6.23 */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^]<a href='#L11'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<html>
+<head>
+<title>cbench/openflow/hw-lib/skeleton/hw_flow.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1135.html'>hw-lib</a>/<a href='../files/1137.html'>skeleton</a>/hw_flow.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/151.html' title='Multiple included from 5 places.'>INCLUDED FROM</a></h2>
+<hr>
+<pre>
+<a name='L1'>   1 <font color='darkred'>#ifndef</font> <a href='../S/212.html#L2' title='Defined at 2 in cbench/openflow/hw-lib/skeleton/hw_flow.h.'>SAMPLE_PLATFORM_HW_FLOW_H</a>
+<a name='L2'>   2 <font color='darkred'>#define</font> <a href='../S/212.html#L1' title='Refered from 1 in cbench/openflow/hw-lib/skeleton/hw_flow.h.'>SAMPLE_PLATFORM_HW_FLOW_H</a> 1
+<a name='L3'>   3 
+<a name='L4'>   4 <i><font color='green'>/*</font></i>
+<a name='L5'>   5 <i><font color='green'> * Hardware Flow operations:  The glue between software flows and</font></i>
+<a name='L6'>   6 <i><font color='green'> * actual hardware table entries.</font></i>
+<a name='L7'>   7 <i><font color='green'> */</font></i>
+<a name='L8'>   8 
+<a name='L9'>   9 <font color='darkred'>#include</font> &lt;<a href='181.html'>openflow/openflow.h</a>&gt;
+<a name='L10'>  10 <font color='darkred'>#include</font> &lt;<a href='183.html'>of_hw_api.h</a>&gt;
+<a name='L11'>  11 
+<a name='L12'>  12 <font color='darkred'>#include</font> "<a href='220.html'>of_hw_platform.h</a>"
+<a name='L13'>  13 
+<a name='L14'>  14 <i><font color='green'>/* DEBUG for HW flow lists */</font></i>
+<a name='L15'>  15 <font color='darkred'>#define</font> <a href='../R/691.html' title='Multiple refered from 6 places.'>HW_FLOW_MAGIC</a> 0xba5eba11
+<a name='L16'>  16 <font color='darkred'>#define</font> <a href='../S/215.html#L36' title='Refered from 36 in cbench/openflow/hw-lib/skeleton/hw_flow.c.'>HW_FLOW_MAKE_VALID</a>(<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>) (<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>)-&gt;<a href='../Y/4312.html' title='Multiple used in 19 places.'>magic</a> = <a href='../D/2030.html' title='Multiple defined in 3 places.'>HW_FLOW_MAGIC</a>
+<a name='L17'>  17 <font color='darkred'>#define</font> <a href='../R/690.html' title='Multiple refered from 2 places.'>HW_FLOW_IS_VALID</a>(<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>) \
+<a name='L18'>  18     (((<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>) != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) &amp;&amp; ((<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>)-&gt;<a href='../Y/4312.html' title='Multiple used in 19 places.'>magic</a> == <a href='../D/2030.html' title='Multiple defined in 3 places.'>HW_FLOW_MAGIC</a>))
+<a name='L19'>  19 
+<a name='L20'>  20 <i><font color='green'>/* Some flows require multiple HW entries */</font></i>
+<a name='L21'>  21 <font color='darkred'>#define</font> <a href='../R/689.html' title='Multiple refered from 3 places.'>HW_FLOWS_PER_FLOW_MAX</a> (2)
+<a name='L22'>  22 
+<a name='L23'>  23 <i><font color='green'>/* The glue between SW flows and HW entries */</font></i>
+<a name='L24'>  24 <b>typedef</b> <b>struct</b> <a href='../R/3247.html' title='Multiple refered from 34 places.'>hw_flow</a> <font color='red'>{</font>
+<a name='L25'>  25     <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a> *<a href='../D/7829.html' title='Multiple defined in 2 places.'>flow</a>;    <i><font color='green'>/* Corresponding SW flow */</font></i>
+<a name='L26'>  26     <a href='../S/183.html#L69' title='Defined at 69 in cbench/openflow/include/openflow/of_hw_api.h.'>of_hw_driver_t</a> *<a href='../Y/3685.html' title='Multiple used in 131 places.'>hw_drv</a>;  <i><font color='green'>/* DP for this flow; MAY BE NULL for internal */</font></i>
+<a name='L27'>  27     <b>int</b> <a href='../Y/2703.html' title='Multiple used in 7 places.'>entry_count</a>;  <i><font color='green'>/* SW flow may require multiple HW table entries */</font></i>
+<a name='L28'>  28     <a href='../Y/2702.html' title='Multiple used in 7 places.'>entry_control_t</a> *<a href='../Y/2704.html' title='Multiple used in 12 places.'>entry_list</a>[<a href='../S/212.html#L21' title='Defined at 21 in cbench/openflow/hw-lib/skeleton/hw_flow.h.'>HW_FLOWS_PER_FLOW_MAX</a>];
+<a name='L29'>  29     <a href='../Y/7620.html' title='Multiple used in 17 places.'>uint32</a> <a href='../Y/3693.html' title='Multiple used in 17 places.'>hw_packet_count</a>;
+<a name='L30'>  30     <a href='../Y/7620.html' title='Multiple used in 17 places.'>uint32</a> <a href='../Y/3681.html' title='Multiple used in 17 places.'>hw_byte_count</a>;
+<a name='L31'>  31     <a href='../Y/7620.html' title='Multiple used in 17 places.'>uint32</a> <a href='../Y/4312.html' title='Multiple used in 19 places.'>magic</a>; <i><font color='green'>/* DEBUG */</font></i>
+<a name='L32'>  32 <font color='red'>}</font> <a href='../R/3252.html' title='Multiple refered from 9 places.'>hw_flow_t</a>;
+<a name='L33'>  33 
+<a name='L34'>  34 <i><font color='green'>/* Extra info needed by hardware about flow entry;</font></i>
+<a name='L35'>  35 <i><font color='green'> * determined during supported check; all in host order</font></i>
+<a name='L36'>  36 <i><font color='green'> *</font></i>
+<a name='L37'>  37 <i><font color='green'> * For smac, dmac, vid and priority, if these are changed at ingress</font></i>
+<a name='L38'>  38 <i><font color='green'> * and a remote rule is necessary, the remote rule must have the</font></i>
+<a name='L39'>  39 <i><font color='green'> * rewrite values to match.  This is indicated if value is not -1.</font></i>
+<a name='L40'>  40 <i><font color='green'> */</font></i>
+<a name='L41'>  41 <b>typedef</b> <b>struct</b> hw_flow_extra_s <font color='red'>{</font>
+<a name='L42'>  42     <b>int</b> <a href='../Y/6909.html' title='Multiple used in 3 places.'>source_port</a>;     <i><font color='green'>/* If single source port, what is it */</font></i>
+<a name='L43'>  43     <b>int</b> <a href='../Y/2347.html' title='Multiple used in 15 places.'>dest_port</a>;       <i><font color='green'>/* If one dest port, what is it */</font></i>
+<a name='L44'>  44     <i><font color='green'>/* If multi dest ports, one pbmp per device */</font></i>
+<a name='L45'>  45     <a href='../Y/331.html' title='Multiple used in 9 places.'>FIXME</a> dports;
+<a name='L46'>  46     <b>int</b> <a href='../Y/2346.html' title='Multiple used in 3 places.'>dest_count</a>;      <i><font color='green'>/* Drop (0), unicast (1), multicast (&gt;1) */</font></i>
+<a name='L47'>  47     <a href='../Y/7620.html' title='Multiple used in 17 places.'>uint32</a> <a href='../Y/4202.html' title='Multiple used in 3 places.'>local_reason</a>; <i><font color='green'>/* Why forwarded to CPU */</font></i>
+<a name='L48'>  48     <b>int</b> <a href='../Y/2141.html' title='Multiple used in 28 places.'>cosq</a>;            <i><font color='green'>/* For enqueue action */</font></i>
+<a name='L49'>  49 <font color='red'>}</font> <a href='../R/3249.html' title='Multiple refered from 7 places.'>hw_flow_extra_t</a>;
+<a name='L50'>  50 
+<a name='L51'>  51 <i><font color='green'>/* Driver functions */</font></i>
+<a name='L52'>  52 <b>extern</b> <b>int</b> <a href='../S/215.html#L467' title='Defined at 467 in cbench/openflow/hw-lib/skeleton/hw_flow.c.'>of_hw_flow_install</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>, <b>struct</b> <a href='../Y/7178.html' title='Multiple used in 120 places.'>sw_flow</a> *<a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a>);
+<a name='L53'>  53 <b>extern</b> <b>int</b> <a href='../S/215.html#L591' title='Defined at 591 in cbench/openflow/hw-lib/skeleton/hw_flow.c.'>of_hw_flow_modify</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>,
+<a name='L54'>  54     <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>, <b>int</b> <a href='../Y/7092.html' title='Multiple used in 128 places.'>strict</a>,
+<a name='L55'>  55     <b>const</b> <b>struct</b> <a href='../Y/5088.html' title='Multiple used in 65 places.'>ofp_action_header</a> *<a href='../Y/1294.html' title='Multiple used in 157 places.'>actions</a>, <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/1295.html' title='Multiple used in 192 places.'>actions_len</a>);
+<a name='L56'>  56 <b>extern</b> <b>int</b> <a href='../S/215.html#L546' title='Defined at 546 in cbench/openflow/hw-lib/skeleton/hw_flow.c.'>of_hw_flow_delete</a>(<b>struct</b> <a href='../Y/2280.html' title='Multiple used in 184 places.'>datapath</a> *<a href='../Y/2499.html' title='Multiple used in 612 places.'>dp</a>, <b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>,
+<a name='L57'>  57     <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>, <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5548.html' title='Multiple used in 164 places.'>out_port</a>,
+<a name='L58'>  58     <a href='../Y/7619.html' title='Multiple used in 1069 places.'>uint16_t</a> <a href='../Y/5909.html' title='Multiple used in 182 places.'>priority</a>, <b>int</b> <a href='../Y/7092.html' title='Multiple used in 128 places.'>strict</a>);
+<a name='L59'>  59 <b>extern</b> <b>void</b> <a href='../S/215.html#L638' title='Defined at 638 in cbench/openflow/hw-lib/skeleton/hw_flow.c.'>of_hw_flow_timeout</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>,
+<a name='L60'>  60                                 <b>struct</b> <a href='../Y/4150.html' title='Multiple used in 62 places.'>list</a> *<a href='../Y/2322.html' title='Multiple used in 29 places.'>deleted</a>);
+<a name='L61'>  61 <b>extern</b> <b>struct</b> <a href='../D/9768.html' title='Multiple defined in 2 places.'>sw_flow</a> *<a href='../S/215.html#L669' title='Defined at 669 in cbench/openflow/hw-lib/skeleton/hw_flow.c.'>of_hw_flow_lookup</a>(<b>struct</b> <a href='../Y/7187.html' title='Multiple used in 134 places.'>sw_table</a> *<a href='../Y/3176.html' title='Multiple used in 95 places.'>flowtab</a>,
+<a name='L62'>  62     <b>const</b> <b>struct</b> <a href='../Y/7180.html' title='Multiple used in 154 places.'>sw_flow_key</a> *<a href='../Y/3999.html' title='Multiple used in 606 places.'>key</a>);
+<a name='L63'>  63 
+<a name='L64'>  64 
+<a name='L65'>  65 <b>extern</b> <b>int</b> <a href='../S/215.html#L98' title='Defined at 98 in cbench/openflow/hw-lib/skeleton/hw_flow.c.'>of_hw_sw_flow_stat_update</a>(<b>struct</b> <a href='../Y/7178.html' title='Multiple used in 120 places.'>sw_flow</a> *<a href='../Y/3131.html' title='Multiple used in 114 places.'>flow</a>, <b>int</b> *<a href='../Y/7677.html' title='Multiple used in 32 places.'>used</a>,
+<a name='L66'>  66     <b>int</b> <a href='../Y/3196.html' title='Multiple used in 3 places.'>force_sync</a>);
+<a name='L67'>  67 <b>extern</b> <b>int</b> <a href='../S/215.html#L682' title='Defined at 682 in cbench/openflow/hw-lib/skeleton/hw_flow.c.'>of_hw_flow_stats_get</a>(<a href='../S/183.html#L69' title='Defined at 69 in cbench/openflow/include/openflow/of_hw_api.h.'>of_hw_driver_t</a> *<a href='../Y/3685.html' title='Multiple used in 131 places.'>hw_drv</a>, <b>struct</b> <a href='../Y/5195.html' title='Multiple used in 19 places.'>ofp_match</a>,
+<a name='L68'>  68     <b>struct</b> <a href='../Y/5156.html' title='Multiple used in 6 places.'>ofp_flow_stats</a> **<a href='../Y/7023.html' title='Multiple used in 238 places.'>stats</a>, <b>int</b> *<a href='../Y/2142.html' title='Multiple used in 329 places.'>count</a>);
+<a name='L69'>  69 <b>extern</b> <b>int</b> <a href='../S/215.html#L690' title='Defined at 690 in cbench/openflow/hw-lib/skeleton/hw_flow.c.'>of_hw_aggregate_stats_get</a>(<b>struct</b> <a href='../Y/5195.html' title='Multiple used in 19 places.'>ofp_match</a>,
+<a name='L70'>  70     <b>struct</b> <a href='../Y/5115.html' title='Multiple used in 5 places.'>ofp_aggregate_stats_reply</a> *<a href='../Y/7023.html' title='Multiple used in 238 places.'>stats</a>);
+<a name='L71'>  71 
+<a name='L72'>  72 <i><font color='green'>/* Controls a single FP (HW table flow) entry */</font></i>
+<a name='L73'>  73 <b>struct</b> entry_control_s <font color='red'>{</font>
+<a name='L74'>  74     <i><font color='green'>/* These must be persistent; update fp_entry_remove if you change this */</font></i>
+<a name='L75'>  75     <b>int</b> <a href='../Y/3795.html' title='Multiple used in 107 places.'>index</a>; <i><font color='green'>/* This entry-s index in field_control list */</font></i>
+<a name='L76'>  76 
+<a name='L77'>  77     <b>int</b> <a href='../Y/3787.html' title='Multiple used in 15 places.'>in_use</a>;
+<a name='L78'>  78     <a href='../S/212.html#L32' title='Defined at 32 in cbench/openflow/hw-lib/skeleton/hw_flow.h.'>hw_flow_t</a> *<a href='../S/212.html#L24' title='Defined at 24 in cbench/openflow/hw-lib/skeleton/hw_flow.h.'>hw_flow</a>;
+<a name='L79'>  79 
+<a name='L80'>  80     <i><font color='green'>/*</font></i>
+<a name='L81'>  81 <i><font color='green'>     * HW specific info</font></i>
+<a name='L82'>  82 <i><font color='green'>     */</font></i>
+<a name='L83'>  83     <a href='../Y/331.html' title='Multiple used in 9 places.'>FIXME</a>;
+<a name='L84'>  84 
+<a name='L85'>  85     <b>unsigned</b> <b>long</b> <b>int</b> <a href='../Y/7678.html' title='Multiple used in 3 places.'>used_check</a>; <i><font color='green'>/* Last counter; for checking if used */</font></i>
+<a name='L86'>  86     <b>unsigned</b> <b>long</b> <b>int</b> <a href='../Y/4072.html' title='Multiple used in 4 places.'>last_counter</a>; <i><font color='green'>/* pkts or bytes, see stat_sel above */</font></i>
+<a name='L87'>  87     <b>unsigned</b> <b>long</b> <b>int</b> <a href='../Y/2145.html' title='Multiple used in 2 places.'>counter_last_check</a>;   <i><font color='green'>/* Track entry usage by cntr */</font></i>
+<a name='L88'>  88     <b>unsigned</b> <b>long</b> <b>int</b> <a href='../Y/7435.html' title='Multiple used in 4 places.'>total_counter</a>; <i><font color='green'>/* FIXME: u64? */</font></i>
+<a name='L89'>  89 <font color='red'>}</font>;
+<a name='L90'>  90 
+<a name='L91'>  91 <i><font color='green'>/* Driver associated with a HW entry */</font></i>
+<a name='L92'>  92 <font color='darkred'>#define</font> HW_ENTRY_DRIVER(<a href='../Y/2693.html' title='Multiple used in 31 places.'>ent</a>) ((<a href='../Y/2693.html' title='Multiple used in 31 places.'>ent</a>)-&gt;<a href='../S/212.html#L24' title='Defined at 24 in cbench/openflow/hw-lib/skeleton/hw_flow.h.'>hw_flow</a>-&gt;<a href='../Y/3685.html' title='Multiple used in 131 places.'>hw_drv</a>)
+<a name='L93'>  93 
+<a name='L94'>  94 <i><font color='green'>/* FP control structure */</font></i>
+<a name='L95'>  95 <b>struct</b> field_control_s <font color='red'>{</font>
+<a name='L96'>  96     <i><font color='green'>/* HW Specific info */</font></i>
+<a name='L97'>  97     <a href='../Y/331.html' title='Multiple used in 9 places.'>FIXME</a>;
+<a name='L98'>  98     <b>int</b> <a href='../Y/2703.html' title='Multiple used in 7 places.'>entry_count</a>;   <i><font color='green'>/* How many entries in use */</font></i>
+<a name='L99'>  99     <a href='../Y/2702.html' title='Multiple used in 7 places.'>entry_control_t</a> <a href='../Y/2704.html' title='Multiple used in 12 places.'>entry_list</a>[<a href='../Y/327.html' title='Multiple used in 2 places.'>FIELD_ENTRY_MAX</a>]; <i><font color='green'>/* Instantiation of entries */</font></i>
+<a name='L100'> 100 <font color='red'>}</font>;
+<a name='L101'> 101 
+<a name='L102'> 102 <i><font color='green'>/* FIXME:  Do we need reference counts on stat objects? */</font></i>
+<a name='L103'> 103 
+<a name='L104'> 104 <b>extern</b> <b>int</b> of_hw_fp_setup(<b>void</b>);
+<a name='L105'> 105 <b>extern</b> <b>int</b> <a href='../S/215.html#L139' title='Defined at 139 in cbench/openflow/hw-lib/skeleton/hw_flow.c.'>of_hw_table_stats_update</a>(<a href='../S/222.html#L87' title='Defined at 87 in cbench/openflow/hw-lib/skeleton/hw_drv.h.'>of_hw_driver_int_t</a> *<a href='../Y/3685.html' title='Multiple used in 131 places.'>hw_drv</a>,
+<a name='L106'> 106     <b>unsigned</b> <b>long</b> *<a href='../Y/4348.html' title='Multiple used in 15 places.'>matched</a>, <b>unsigned</b> <b>long</b> *<a href='../Y/4474.html' title='Multiple used in 7 places.'>missed</a>);
+<a name='L107'> 107 
+<a name='L108'> 108 <b>extern</b> <b>void</b> <a href='../S/215.html#L698' title='Defined at 698 in cbench/openflow/hw-lib/skeleton/hw_flow.c.'>of_hw_flow_remove_all</a>(<a href='../S/222.html#L87' title='Defined at 87 in cbench/openflow/hw-lib/skeleton/hw_drv.h.'>of_hw_driver_int_t</a> *<a href='../Y/3690.html' title='Multiple used in 96 places.'>hw_int</a>);
+<a name='L109'> 109 
+<a name='L110'> 110 
+<a name='L111'> 111 <font color='darkred'>#endif</font> <i><font color='green'>/* SAMPLE_PLATFORM_HW_FLOW_H */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

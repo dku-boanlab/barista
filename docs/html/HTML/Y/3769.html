@@ -1,0 +1,73 @@
+<html>
+<head>
+<title>in_band</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/791.html#L67'>in_band</a>            67 cbench/openflow/secchan/in-band.c queue_tx(struct rconn *rc, struct in_band_data *in_band, struct ofpbuf *b)
+<a href='../S/791.html#L69'>in_band</a>            69 cbench/openflow/secchan/in-band.c     rconn_send_with_limit(rc, b, &amp;in_band-&gt;n_queued, 10);
+<a href='../S/791.html#L73'>in_band</a>            73 cbench/openflow/secchan/in-band.c get_controller_mac(struct in_band_data *in_band)
+<a href='../S/791.html#L83'>in_band</a>            83 cbench/openflow/secchan/in-band.c     ip = rconn_get_ip(in_band-&gt;controller);
+<a href='../S/791.html#L89'>in_band</a>            89 cbench/openflow/secchan/in-band.c         if (ip &amp;&amp; in_band-&gt;of_device) {
+<a href='../S/791.html#L90'>in_band</a>            90 cbench/openflow/secchan/in-band.c             int retval = netdev_arp_lookup(in_band-&gt;of_device, ip, mac);
+<a href='../S/791.html#L123'>in_band</a>           123 cbench/openflow/secchan/in-band.c                   struct in_band_data *in_band)
+<a href='../S/791.html#L125'>in_band</a>           125 cbench/openflow/secchan/in-band.c     const uint8_t *mac = get_controller_mac(in_band);
+<a href='../S/791.html#L130'>in_band</a>           130 cbench/openflow/secchan/in-band.c in_band_learn_mac(struct in_band_data *in_band,
+<a href='../S/791.html#L133'>in_band</a>           133 cbench/openflow/secchan/in-band.c     if (mac_learning_learn(in_band-&gt;ml, src_mac, 0, in_port)) {
+<a href='../S/791.html#L142'>in_band</a>           142 cbench/openflow/secchan/in-band.c     struct in_band_data *in_band = in_band_;
+<a href='../S/791.html#L151'>in_band</a>           151 cbench/openflow/secchan/in-band.c     if (!get_ofp_packet_eth_header(r, &amp;opi, &amp;eth) || !in_band-&gt;of_device) {
+<a href='../S/791.html#L161'>in_band</a>           161 cbench/openflow/secchan/in-band.c         out_port = mac_learning_lookup(in_band-&gt;ml, eth-&gt;eth_dst, 0);
+<a href='../S/791.html#L163'>in_band</a>           163 cbench/openflow/secchan/in-band.c                                netdev_get_etheraddr(in_band-&gt;of_device))) {
+<a href='../S/791.html#L166'>in_band</a>           166 cbench/openflow/secchan/in-band.c         in_band_learn_mac(in_band, in_port, eth-&gt;eth_src);
+<a href='../S/791.html#L169'>in_band</a>           169 cbench/openflow/secchan/in-band.c                &amp;&amp; is_controller_mac(eth-&gt;eth_src, in_band)) {
+<a href='../S/791.html#L172'>in_band</a>           172 cbench/openflow/secchan/in-band.c     } else if ((is_controller_mac(eth-&gt;eth_dst, in_band)
+<a href='../S/791.html#L173'>in_band</a>           173 cbench/openflow/secchan/in-band.c                 || is_controller_mac(eth-&gt;eth_src, in_band))
+<a href='../S/791.html#L181'>in_band</a>           181 cbench/openflow/secchan/in-band.c         in_band_learn_mac(in_band, in_port, eth-&gt;eth_src);
+<a href='../S/791.html#L182'>in_band</a>           182 cbench/openflow/secchan/in-band.c         out_port = mac_learning_lookup(in_band-&gt;ml, eth-&gt;eth_dst, 0);
+<a href='../S/791.html#L185'>in_band</a>           185 cbench/openflow/secchan/in-band.c         controller_mac = get_controller_mac(in_band);
+<a href='../S/791.html#L188'>in_band</a>           188 cbench/openflow/secchan/in-band.c             &amp;&amp; is_controller_mac(eth-&gt;eth_src, in_band)) {
+<a href='../S/791.html#L191'>in_band</a>           191 cbench/openflow/secchan/in-band.c         } else if (is_controller_mac(eth-&gt;eth_dst, in_band)
+<a href='../S/791.html#L192'>in_band</a>           192 cbench/openflow/secchan/in-band.c                    &amp;&amp; in_port == mac_learning_lookup(in_band-&gt;ml,
+<a href='../S/791.html#L203'>in_band</a>           203 cbench/openflow/secchan/in-band.c         queue_tx(rc, in_band, make_add_flow(&amp;flow, ntohl(opi-&gt;buffer_id),
+<a href='../S/791.html#L204'>in_band</a>           204 cbench/openflow/secchan/in-band.c                                           in_band-&gt;s-&gt;max_idle, 0));
+<a href='../S/791.html#L207'>in_band</a>           207 cbench/openflow/secchan/in-band.c         queue_tx(rc, in_band,
+<a href='../S/791.html#L209'>in_band</a>           209 cbench/openflow/secchan/in-band.c                                       out_port, in_band-&gt;s-&gt;max_idle));
+<a href='../S/791.html#L213'>in_band</a>           213 cbench/openflow/secchan/in-band.c             queue_tx(rc, in_band,
+<a href='../S/791.html#L226'>in_band</a>           226 cbench/openflow/secchan/in-band.c         queue_tx(rc, in_band, b);
+<a href='../S/791.html#L234'>in_band</a>           234 cbench/openflow/secchan/in-band.c     struct in_band_data *in_band = in_band_;
+<a href='../S/791.html#L239'>in_band</a>           239 cbench/openflow/secchan/in-band.c     if (in_band-&gt;of_device) {
+<a href='../S/791.html#L240'>in_band</a>           240 cbench/openflow/secchan/in-band.c         const uint8_t *mac = netdev_get_etheraddr(in_band-&gt;of_device);
+<a href='../S/791.html#L241'>in_band</a>           241 cbench/openflow/secchan/in-band.c         if (netdev_get_in4(in_band-&gt;of_device, &amp;local_ip)) {
+<a href='../S/791.html#L246'>in_band</a>           246 cbench/openflow/secchan/in-band.c         controller_ip = rconn_get_ip(in_band-&gt;controller);
+<a href='../S/791.html#L251'>in_band</a>           251 cbench/openflow/secchan/in-band.c         controller_mac = get_controller_mac(in_band);
+<a href='../S/791.html#L270'>in_band</a>           270 cbench/openflow/secchan/in-band.c     struct in_band_data *in_band = in_band_;
+<a href='../S/791.html#L275'>in_band</a>           275 cbench/openflow/secchan/in-band.c         if (!in_band-&gt;of_device
+<a href='../S/791.html#L276'>in_band</a>           276 cbench/openflow/secchan/in-band.c             || strcmp(netdev_get_name(in_band-&gt;of_device), name))
+<a href='../S/791.html#L279'>in_band</a>           279 cbench/openflow/secchan/in-band.c             netdev_close(in_band-&gt;of_device);
+<a href='../S/791.html#L281'>in_band</a>           281 cbench/openflow/secchan/in-band.c                                 &amp;in_band-&gt;of_device);
+<a href='../S/791.html#L288'>in_band</a>           288 cbench/openflow/secchan/in-band.c         netdev_close(in_band-&gt;of_device);
+<a href='../S/791.html#L289'>in_band</a>           289 cbench/openflow/secchan/in-band.c         in_band-&gt;of_device = NULL;
+<a href='../S/791.html#L296'>in_band</a>           296 cbench/openflow/secchan/in-band.c     struct in_band_data *in_band = in_band_;
+<a href='../S/791.html#L297'>in_band</a>           297 cbench/openflow/secchan/in-band.c     mac_learning_run(in_band-&gt;ml, NULL);
+<a href='../S/791.html#L303'>in_band</a>           303 cbench/openflow/secchan/in-band.c     struct in_band_data *in_band = in_band_;
+<a href='../S/791.html#L304'>in_band</a>           304 cbench/openflow/secchan/in-band.c     mac_learning_wait(in_band-&gt;ml);
+<a href='../S/791.html#L320'>in_band</a>           320 cbench/openflow/secchan/in-band.c     struct in_band_data *in_band;
+<a href='../S/791.html#L322'>in_band</a>           322 cbench/openflow/secchan/in-band.c     in_band = xcalloc(1, sizeof *in_band);
+<a href='../S/791.html#L323'>in_band</a>           323 cbench/openflow/secchan/in-band.c     in_band-&gt;s = s;
+<a href='../S/791.html#L324'>in_band</a>           324 cbench/openflow/secchan/in-band.c     in_band-&gt;ml = mac_learning_create();
+<a href='../S/791.html#L325'>in_band</a>           325 cbench/openflow/secchan/in-band.c     in_band-&gt;of_device = NULL;
+<a href='../S/791.html#L326'>in_band</a>           326 cbench/openflow/secchan/in-band.c     in_band-&gt;controller = remote;
+<a href='../S/791.html#L327'>in_band</a>           327 cbench/openflow/secchan/in-band.c     switch_status_register_category(ss, "in-band", in_band_status_cb, in_band);
+<a href='../S/791.html#L329'>in_band</a>           329 cbench/openflow/secchan/in-band.c                                               in_band);
+<a href='../S/791.html#L330'>in_band</a>           330 cbench/openflow/secchan/in-band.c     add_hook(secchan, &amp;in_band_hook_class, in_band);
+<a href='../S/801.html#L215'>in_band</a>           215 cbench/openflow/secchan/secchan.c     if (s.in_band) {
+<a href='../S/801.html#L638'>in_band</a>           638 cbench/openflow/secchan/secchan.c     s-&gt;in_band = true;
+<a href='../S/801.html#L723'>in_band</a>           723 cbench/openflow/secchan/secchan.c             s-&gt;in_band = false;
+<a href='../S/801.html#L727'>in_band</a>           727 cbench/openflow/secchan/secchan.c             s-&gt;in_band = true;
+<a href='../S/801.html#L824'>in_band</a>           824 cbench/openflow/secchan/secchan.c     if (s-&gt;discovery &amp;&amp; !s-&gt;in_band) {
+<a href='../S/806.html#L60'>in_band</a>            60 cbench/openflow/secchan/secchan.h     bool in_band;             /* Connect to controller in-band? */
+</pre>
+</body>
+</html>

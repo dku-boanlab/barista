@@ -1,0 +1,28 @@
+var structpreference =
+[
+    [ "base", "structpreference.html#ad50aef7cdcd059c08b04c308b218a397", null ],
+    [ "boolp", "structpreference.html#a5fd417c242ecbd4cfcb66f4289cfebdc", null ],
+    [ "boolval", "structpreference.html#a48b9580d694691f320f4dbbb2811a73e", null ],
+    [ "control", "structpreference.html#ae080f2357a7c0cd658c301557b1a4ef0", null ],
+    [ "description", "structpreference.html#a1b1628aa9682fed165d6c3ef656b6565", null ],
+    [ "enum_info", "structpreference.html#a45397f9a819d0bab5eecd61df07f3d0a", null ],
+    [ "enump", "structpreference.html#afff7c0cef4ceb6f89d45fb26172856ce", null ],
+    [ "enumval", "structpreference.html#acf8f8b491deabd40c7e415bfc591cdd3", null ],
+    [ "enumvals", "structpreference.html#aa169a1324855f5614ec377f50141d665", null ],
+    [ "info", "structpreference.html#ac92caee40f718301407233803c657543", null ],
+    [ "max_value", "structpreference.html#aef52d532874fad8709d1b3298552853e", null ],
+    [ "name", "structpreference.html#a8cdfefd8bc0e3d49530b871c2fdfa6ab", null ],
+    [ "ordinal", "structpreference.html#a5348c9f74f4a0c6096beedaaf352722a", null ],
+    [ "radio_buttons", "structpreference.html#ab8250c1e91f14b210044699d7457ef2e", null ],
+    [ "range", "structpreference.html#aa5d258772e156a6c4ea75c84e2e13839", null ],
+    [ "range", "structpreference.html#a7a0580c0e978295c31e3c1532015b44a", null ],
+    [ "saved_val", "structpreference.html#a8d782773ba496dbbc61b8f6618ffede1", null ],
+    [ "string", "structpreference.html#afc291f980ff1f67d953f99fab6f6e8e3", null ],
+    [ "string", "structpreference.html#ad5b506b1603f3bc6c577b702525b8a06", null ],
+    [ "title", "structpreference.html#a652de217ba8c4664944e2de684eb1121", null ],
+    [ "type", "structpreference.html#a6e342a3a9d81e1fff77c564d0eabe912", null ],
+    [ "uat", "structpreference.html#a14ef2b5893f672bdbfed76f3329d4018", null ],
+    [ "uint", "structpreference.html#a3b450134a93ec1b4960a27e187518a32", null ],
+    [ "uint", "structpreference.html#ab76e1b9aaaff438a69d89fd1410de933", null ],
+    [ "varp", "structpreference.html#a3bf3e7fa6164740a6e34670b409d9f5b", null ]
+];

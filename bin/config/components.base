@@ -1,0 +1,241 @@
+# component.conf
+
+#    name = component name
+#    args = arguments
+#    type = [general|autonomous]
+#    site = [internal|external]
+#    role = [network|security|admin]
+#           Do not use 'base' and 'management' for user components
+#    perm = [r|w|x]
+#           r: receive inbounds
+#           w: can modify incoming event data
+#           x: can cut control flows among components
+#    status = [enabled|disabled]
+#    inbounds = EVENT
+#    outbounds = EVENT
+
+[
+
+{
+    "name":"log",
+    "type":"autonomous",
+    "site":"internal",
+    "role":"base",
+    "perm":"r",
+    "status":"enabled",
+    "inbounds":["EV_LOG_DEBUG",
+                "EV_LOG_INFO",
+                "EV_LOG_WARN",
+                "EV_LOG_ERROR",
+                "EV_LOG_FATAL"],
+    "outbounds":["EV_LOG_UPDATE_MSGS"]
+},
+
+{
+    "name":"conn",
+    "type":"autonomous",
+    "site":"internal",
+    "role":"base",
+    "perm":"r",
+    "status":"enabled",
+    "inbounds":["EV_OFP_MSG_OUT"],
+    "outbounds":["EV_OFP_MSG_IN",
+                 "EV_SW_NEW_CONN",
+                 "EV_SW_EXPIRED_CONN"]
+},
+
+{
+    "name":"ofp",
+    "type":"general",
+    "site":"internal",
+    "role":"base",
+    "perm":"r",
+    "status":"enabled",
+    "inbounds":["EV_OFP_MSG_IN",
+                "EV_DP_SEND_PACKET",
+                "EV_DP_INSERT_FLOW",
+                "EV_DP_MODIFY_FLOW",
+                "EV_DP_DELETE_FLOW",
+                "EV_DP_REQUEST_FLOW_STATS",
+                "EV_DP_REQUEST_AGGREGATE_STATS",
+                "EV_DP_REQUEST_PORT_STATS"],
+    "outbounds":["EV_OFP_MSG_IN",
+                 "EV_OFP_MSG_OUT",
+                 "EV_DP_RECEIVE_PACKET",
+                 "EV_DP_FLOW_EXPIRED",
+                 "EV_DP_FLOW_DELETED",
+                 "EV_DP_FLOW_STATS",
+                 "EV_DP_AGGREGATE_STATS",
+                 "EV_DP_PORT_ADDED",
+                 "EV_DP_PORT_MODIFIED",
+                 "EV_DP_PORT_DELETED",
+                 "EV_DP_PORT_STATS",
+                 "EV_SW_UPDATE_CONFIG",
+                 "EV_SW_UPDATE_DESC",
+                 "EV_SW_GET_DPID",
+                 "EV_SW_GET_FD",
+                 "EV_SW_GET_XID",
+                 "EV_SW_GET_VERSION"]
+},
+
+{
+    "name":"switch_mgmt",
+    "type":"general",
+    "site":"internal",
+    "role":"base",
+    "perm":"rw",
+    "status":"enabled",
+    "inbounds":["EV_SW_NEW_CONN",
+                "EV_SW_EXPIRED_CONN",
+                "EV_SW_UPDATE_CONFIG",
+                "EV_SW_UPDATE_DESC",
+                "EV_SW_DISCONNECTED",
+                "EV_DP_AGGREGATE_STATS",
+                "EV_SW_GET_DPID",
+                "EV_SW_GET_FD",
+                "EV_SW_GET_XID",
+                "EV_SW_GET_VERSION",
+                "EV_SW_GET_INFO",
+                "EV_SW_GET_ALL_INFO"],
+    "outbounds":["EV_SW_CONNECTED",
+                 "EV_SW_DISCONNECTED"]
+},
+
+{
+    "name":"host_mgmt",
+    "type":"general",
+    "site":"internal",
+    "role":"management",
+    "perm":"rx",
+    "status":"enabled",
+    "inbounds":["EV_DP_RECEIVE_PACKET",
+                "EV_DP_PORT_DELETED",
+                "EV_SW_DISCONNECTED",
+                "EV_HOST_ADDED",
+                "EV_HOST_DELETED",
+                "EV_HOST_GET_INFO",
+                "EV_HOST_GET_ALL_INFO"],
+    "outbounds":["EV_DP_SEND_PACKET",
+                 "EV_HOST_ADDED",
+                 "EV_HOST_DELETED"]
+},
+
+{
+    "name":"topo_mgmt",
+    "type":"autonomous",
+    "site":"internal",
+    "role":"management",
+    "perm":"rx",
+    "status":"enabled",
+    "inbounds":["EV_DP_RECEIVE_PACKET",
+                "EV_SW_CONNECTED",
+                "EV_SW_DISCONNECTED",
+                "EV_DP_PORT_ADDED",
+                "EV_DP_PORT_DELETED",
+                "EV_DP_PORT_STATS",
+                "EV_LINK_ADDED",
+                "EV_LINK_DELETED",
+                "EV_LINK_GET_INFO",
+                "EV_LINK_GET_ALL_INFO"],
+    "outbounds":["EV_DP_SEND_PACKET",
+                 "EV_SW_GET_XID",
+                 "EV_LINK_ADDED",
+                 "EV_LINK_DELETED"]
+},
+
+{
+    "name":"flow_mgmt",
+    "type":"autonomous",
+    "site":"internal",
+    "role":"management",
+    "perm":"r",
+    "status":"enabled",
+    "inbounds":["EV_DP_INSERT_FLOW",
+                "EV_DP_MODIFY_FLOW",
+                "EV_DP_DELETE_FLOW",
+                "EV_DP_FLOW_EXPIRED",
+                "EV_DP_FLOW_DELETED",
+                "EV_DP_FLOW_STATS",
+                "EV_SW_DISCONNECTED",
+                "EV_FLOW_ADDED",
+                "EV_FLOW_DELETED",
+                "EV_FLOW_GET_INFO",
+                "EV_FLOW_GET_ALL_INFO"],
+    "outbounds":["EV_DP_REQUEST_FLOW_STATS",
+                 "EV_FLOW_ADDED",
+                 "EV_FLOW_DELETED"]
+},
+
+{
+    "name":"stat_mgmt",
+    "type":"autonomous",
+    "site":"internal",
+    "role":"management",
+    "perm":"r",
+    "status":"enabled",
+    "inbounds":["EV_SW_CONNECTED",
+                "EV_SW_DISCONNECTED"],
+    "outbounds":["EV_DP_REQUEST_AGGREGATE_STATS",
+                 "EV_DP_REQUEST_PORT_STATS"]
+},
+
+{
+    "name":"resource_mgmt",
+    "type":"autonomous",
+    "site":"internal",
+    "role":"management",
+    "perm":"r",
+    "status":"enabled",
+    "inbounds":["EV_NONE"],
+    "outbounds":["EV_RS_UPDATE_USAGE"]
+},
+
+{
+    "name":"traffic_mgmt",
+    "type":"autonomous",
+    "site":"internal",
+    "role":"management",
+    "perm":"r",
+    "status":"enabled",
+    "inbounds":["EV_OFP_MSG_IN",
+                "EV_OFP_MSG_OUT"],
+    "outbounds":["EV_TR_UPDATE_STATS"]
+},
+
+{
+    "name":"apphdlr",
+    "type":"general",
+    "site":"internal",
+    "role":"base",
+    "perm":"r",
+    "status":"enabled",
+    "inbounds":["EV_DP_RECEIVE_PACKET",
+                "EV_DP_FLOW_EXPIRED",
+                "EV_DP_FLOW_DELETED",
+                "EV_DP_PORT_ADDED",
+                "EV_DP_PORT_MODIFIED",
+                "EV_DP_PORT_DELETED",
+                "EV_SW_CONNECTED",
+                "EV_SW_DISCONNECTED",
+                "EV_HOST_ADDED",
+                "EV_HOST_DELETED",
+                "EV_LINK_ADDED",
+                "EV_LINK_DELETED",
+                "EV_FLOW_ADDED",
+                "EV_FLOW_DELETED"],
+    "outbounds":["EV_DP_SEND_PACKET",
+                 "EV_DP_INSERT_FLOW",
+                 "EV_DP_MODIFY_FLOW",
+                 "EV_DP_DELETE_FLOW",
+                 "EV_SW_GET_INFO",
+                 "EV_SW_GET_ALL_INFO",
+                 "EV_HOST_GET_INFO",
+                 "EV_HOST_GET_ALL_INFO",
+                 "EV_LINK_GET_INFO",
+                 "EV_LINK_GET_ALL_INFO",
+                 "EV_FLOW_GET_INFO",
+                 "EV_FLOW_GET_ALL_INFO"]
+}
+
+]
+

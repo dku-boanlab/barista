@@ -1,0 +1,236 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/<a href='../files/1148.html'>epan</a>/gcp.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* gcp.h</font></i>
+<a name='L2'>   2 <i><font color='green'> * Gateway Control Protocol -- Context Tracking</font></i>
+<a name='L3'>   3 <i><font color='green'> *</font></i>
+<a name='L4'>   4 <i><font color='green'> * $Id: gcp.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L5'>   5 <i><font color='green'> *</font></i>
+<a name='L6'>   6 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L7'>   7 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L8'>   8 <i><font color='green'> * Copyright 1998 Gerald Combs</font></i>
+<a name='L9'>   9 <i><font color='green'> *</font></i>
+<a name='L10'>  10 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L11'>  11 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L12'>  12 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L13'>  13 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L14'>  14 <i><font color='green'> *</font></i>
+<a name='L15'>  15 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L16'>  16 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L17'>  17 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L18'>  18 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L19'>  19 <i><font color='green'> *</font></i>
+<a name='L20'>  20 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L21'>  21 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L22'>  22 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L23'>  23 <i><font color='green'> */</font></i>
+<a name='L24'>  24 <font color='darkred'>#ifndef</font> <a href='../S/409.html#L25' title='Defined at 25 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>__GCP_H_</a>
+<a name='L25'>  25 <font color='darkred'>#define</font> <a href='../S/409.html#L24' title='Refered from 24 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>__GCP_H_</a>
+<a name='L26'>  26 
+<a name='L27'>  27 <font color='darkred'>#ifdef</font> <a href='../Y/409.html' title='Multiple used in 7 places.'>HAVE_CONFIG_H</a>
+<a name='L28'>  28 <font color='darkred'># include</font> "<a href='588.html'>config.h</a>"
+<a name='L29'>  29 <font color='darkred'>#endif</font>
+<a name='L30'>  30 
+<a name='L31'>  31 <font color='darkred'>#include</font> &lt;glib.h&gt;
+<a name='L32'>  32 <font color='darkred'>#include</font> &lt;<a href='446.html'>epan/packet.h</a>&gt;
+<a name='L33'>  33 <font color='darkred'>#include</font> &lt;<a href='360.html'>epan/conversation.h</a>&gt;
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='455.html'>epan/strutil.h</a>&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> &lt;<a href='443.html'>epan/emem.h</a>&gt;
+<a name='L36'>  36 <font color='darkred'>#include</font> &lt;<a href='423.html'>epan/expert.h</a>&gt;
+<a name='L37'>  37 <font color='darkred'>#include</font> &lt;<a href='442.html'>epan/prefs.h</a>&gt;
+<a name='L38'>  38 <font color='darkred'>#include</font> &lt;<a href='475.html'>epan/to_str.h</a>&gt;
+<a name='L39'>  39 <font color='darkred'>#include</font> &lt;<a href='354.html'>epan/asn1.h</a>&gt;
+<a name='L40'>  40 
+<a name='L41'>  41 <font color='darkred'>#include</font> &lt;stdio.h&gt;
+<a name='L42'>  42 <font color='darkred'>#include</font> &lt;string.h&gt;
+<a name='L43'>  43 
+<a name='L44'>  44 <font color='darkred'>#include</font> &lt;epan/dissectors/packet-ber.h&gt;
+<a name='L45'>  45 <font color='darkred'>#include</font> &lt;epan/dissectors/packet-q931.h&gt;
+<a name='L46'>  46 <font color='darkred'>#include</font> &lt;epan/dissectors/packet-mtp3.h&gt;
+<a name='L47'>  47 <font color='darkred'>#include</font> &lt;epan/dissectors/packet-alcap.h&gt;
+<a name='L48'>  48 <font color='darkred'>#include</font> &lt;epan/dissectors/packet-isup.h&gt;
+<a name='L49'>  49 
+<a name='L50'>  50 <font color='darkred'>#include</font> &lt;<a href='476.html'>epan/sctpppids.h</a>&gt;
+<a name='L51'>  51 
+<a name='L52'>  52 <b>typedef</b> <b>struct</b> _gcp_hf_ett_t <font color='red'>{</font>
+<a name='L53'>  53         <b>struct</b> <font color='red'>{</font>
+<a name='L54'>  54                 <b>int</b> <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>;
+<a name='L55'>  55                 <b>int</b> <a href='../Y/2206.html' title='Multiple used in 2 places.'>ctx_cmd</a>;
+<a name='L56'>  56                 <b>int</b> <a href='../Y/2208.html' title='Multiple used in 4 places.'>ctx_term</a>;
+<a name='L57'>  57                 <b>int</b> <a href='../Y/2211.html' title='Multiple used in 2 places.'>ctx_term_type</a>;
+<a name='L58'>  58                 <b>int</b> <a href='../Y/2209.html' title='Multiple used in 2 places.'>ctx_term_bir</a>;
+<a name='L59'>  59                 <b>int</b> <a href='../Y/2210.html' title='Multiple used in 2 places.'>ctx_term_nsap</a>;
+<a name='L60'>  60         <font color='red'>}</font> <a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>;
+<a name='L61'>  61         
+<a name='L62'>  62         <b>struct</b> <font color='red'>{</font>
+<a name='L63'>  63                 <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>;
+<a name='L64'>  64                 <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/2207.html' title='Multiple used in 2 places.'>ctx_cmds</a>;
+<a name='L65'>  65                 <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/2212.html' title='Multiple used in 2 places.'>ctx_terms</a>;
+<a name='L66'>  66                 <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/2208.html' title='Multiple used in 4 places.'>ctx_term</a>;
+<a name='L67'>  67         <font color='red'>}</font> <a href='../Y/2827.html' title='Multiple used in 8 places.'>ett</a>;
+<a name='L68'>  68 <font color='red'>}</font> <a href='../S/409.html#L201' title='Refered from 201 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_hf_ett_t</a>;
+<a name='L69'>  69 
+<a name='L70'>  70 <font color='darkred'>#define</font> NULL_CONTEXT 0
+<a name='L71'>  71 <font color='darkred'>#define</font> CHOOSE_CONTEXT 0xFFFFFFFE
+<a name='L72'>  72 <font color='darkred'>#define</font> ALL_CONTEXTS 0xFFFFFFFF
+<a name='L73'>  73 
+<a name='L74'>  74 
+<a name='L75'>  75 <b>typedef</b> <b>enum</b> <font color='red'>{</font>
+<a name='L76'>  76     GCP_CMD_NONE,
+<a name='L77'>  77     GCP_CMD_ADD_REQ,
+<a name='L78'>  78     GCP_CMD_MOVE_REQ,
+<a name='L79'>  79     GCP_CMD_MOD_REQ,
+<a name='L80'>  80     GCP_CMD_SUB_REQ,
+<a name='L81'>  81     GCP_CMD_AUDITCAP_REQ,
+<a name='L82'>  82     GCP_CMD_AUDITVAL_REQ,
+<a name='L83'>  83     GCP_CMD_NOTIFY_REQ,
+<a name='L84'>  84     GCP_CMD_SVCCHG_REQ,
+<a name='L85'>  85     GCP_CMD_TOPOLOGY_REQ,
+<a name='L86'>  86     GCP_CMD_CTX_ATTR_AUDIT_REQ,
+<a name='L87'>  87     GCP_CMD_OTHER_REQ,
+<a name='L88'>  88     GCP_CMD_ADD_REPLY,
+<a name='L89'>  89     GCP_CMD_MOVE_REPLY,
+<a name='L90'>  90     GCP_CMD_MOD_REPLY,
+<a name='L91'>  91     GCP_CMD_SUB_REPLY,
+<a name='L92'>  92     GCP_CMD_AUDITCAP_REPLY,
+<a name='L93'>  93     GCP_CMD_AUDITVAL_REPLY,
+<a name='L94'>  94     GCP_CMD_NOTIFY_REPLY,
+<a name='L95'>  95     GCP_CMD_SVCCHG_REPLY,
+<a name='L96'>  96     GCP_CMD_TOPOLOGY_REPLY,
+<a name='L97'>  97     GCP_CMD_REPLY
+<a name='L98'>  98 <font color='red'>}</font> <a href='../R/3119.html' title='Multiple refered from 2 places.'>gcp_cmd_type_t</a>;
+<a name='L99'>  99 
+<a name='L100'> 100 <b>typedef</b> <b>enum</b> <font color='red'>{</font>
+<a name='L101'> 101     GCP_TRX_NONE,
+<a name='L102'> 102     GCP_TRX_REQUEST,
+<a name='L103'> 103     GCP_TRX_PENDING,
+<a name='L104'> 104     GCP_TRX_REPLY,
+<a name='L105'> 105     GCP_TRX_ACK
+<a name='L106'> 106 <font color='red'>}</font> <a href='../R/3126.html' title='Multiple refered from 2 places.'>gcp_trx_type_t</a>;
+<a name='L107'> 107 
+<a name='L108'> 108 
+<a name='L109'> 109 <b>typedef</b> <b>struct</b> <a href='../S/409.html#L177' title='Refered from 177 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_msg_t</a> <font color='red'>{</font>
+<a name='L110'> 110     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> lo_addr;
+<a name='L111'> 111     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> hi_addr;
+<a name='L112'> 112     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3230.html' title='Multiple used in 3 places.'>framenum</a>;
+<a name='L113'> 113     <b>struct</b> <a href='../S/409.html#L117' title='Defined at 117 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_trx_msg_t</a>* trxs;
+<a name='L114'> 114     <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> commited;
+<a name='L115'> 115 <font color='red'>}</font> <a href='../R/3122.html' title='Multiple refered from 10 places.'>gcp_msg_t</a>;
+<a name='L116'> 116 
+<a name='L117'> 117 <b>typedef</b> <b>struct</b> <a href='../R/2082.html' title='Multiple refered from 3 places.'>_gcp_trx_msg_t</a> <font color='red'>{</font>
+<a name='L118'> 118     <b>struct</b> <a href='../S/409.html#L129' title='Defined at 129 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_trx_t</a>* <a href='../Y/7485.html' title='Multiple used in 2 places.'>trx</a>;
+<a name='L119'> 119     <b>struct</b> <a href='../S/409.html#L117' title='Defined at 117 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_trx_msg_t</a>* <a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L120'> 120     <b>struct</b> <a href='../S/409.html#L117' title='Defined at 117 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_trx_msg_t</a>* <a href='../Y/4066.html' title='Multiple used in 36 places.'>last</a>;
+<a name='L121'> 121 <font color='red'>}</font> gcp_trx_msg_t;
+<a name='L122'> 122 
+<a name='L123'> 123 <b>typedef</b> <b>struct</b> <a href='../R/2077.html' title='Multiple refered from 4 places.'>_gcp_cmd_msg_t</a> <font color='red'>{</font>
+<a name='L124'> 124     <b>struct</b> <a href='../S/409.html#L172' title='Defined at 172 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_cmd_t</a>* <a href='../Y/1933.html' title='Multiple used in 169 places.'>cmd</a>;
+<a name='L125'> 125     <b>struct</b> <a href='../S/409.html#L123' title='Defined at 123 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_cmd_msg_t</a>* <a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L126'> 126     <b>struct</b> <a href='../S/409.html#L123' title='Defined at 123 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_cmd_msg_t</a>* <a href='../Y/4066.html' title='Multiple used in 36 places.'>last</a>;
+<a name='L127'> 127 <font color='red'>}</font> gcp_cmd_msg_t;
+<a name='L128'> 128 
+<a name='L129'> 129 <b>typedef</b> <b>struct</b> <a href='../R/2083.html' title='Multiple refered from 2 places.'>_gcp_trx_t</a> <font color='red'>{</font>
+<a name='L130'> 130     <a href='../S/409.html#L115' title='Defined at 115 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_msg_t</a>* <a href='../Y/3826.html' title='Multiple used in 2 places.'>initial</a>;
+<a name='L131'> 131     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>;
+<a name='L132'> 132     <a href='../S/409.html#L106' title='Defined at 106 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_trx_type_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;
+<a name='L133'> 133     <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> pendings;
+<a name='L134'> 134     <b>struct</b> <a href='../S/409.html#L123' title='Defined at 123 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_cmd_msg_t</a>* <a href='../Y/1939.html' title='Multiple used in 3 places.'>cmds</a>;
+<a name='L135'> 135     <b>struct</b> _gcp_trx_ctx_t* ctxs;
+<a name='L136'> 136     <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L137'> 137 <font color='red'>}</font> <a href='../R/3125.html' title='Multiple refered from 4 places.'>gcp_trx_t</a>;
+<a name='L138'> 138 
+<a name='L139'> 139 <font color='darkred'>#define</font> GCP_TERM_TYPE_UNKNOWN 0
+<a name='L140'> 140 <font color='darkred'>#define</font> GCP_TERM_TYPE_AAL1 1
+<a name='L141'> 141 <font color='darkred'>#define</font> GCP_TERM_TYPE_AAL2 2
+<a name='L142'> 142 <font color='darkred'>#define</font> GCP_TERM_TYPE_AAL1_STRUCT 3
+<a name='L143'> 143 <font color='darkred'>#define</font> GCP_TERM_TYPE_IP_RTP 4
+<a name='L144'> 144 <font color='darkred'>#define</font> GCP_TERM_TYPE_TDM 5
+<a name='L145'> 145 
+<a name='L146'> 146 <b>typedef</b> <b>enum</b> _gcp_wildcard_t <font color='red'>{</font>
+<a name='L147'> 147     GCP_WILDCARD_NONE,
+<a name='L148'> 148     GCP_WILDCARD_CHOOSE,
+<a name='L149'> 149     GCP_WILDCARD_ALL
+<a name='L150'> 150 <font color='red'>}</font> <a href='../S/409.html#L200' title='Refered from 200 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_wildcard_t</a>;
+<a name='L151'> 151 
+<a name='L152'> 152 <b>typedef</b> <b>struct</b> _gcp_term_t <font color='red'>{</font>
+<a name='L153'> 153     <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>* <a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>;
+<a name='L154'> 154     
+<a name='L155'> 155     <a href='../Y/3513.html' title='Multiple used in 290 places.'>guint8</a>* <a href='../Y/1704.html' title='Multiple used in 387 places.'>buffer</a>;
+<a name='L156'> 156     <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/4119.html' title='Multiple used in 983 places.'>len</a>;
+<a name='L157'> 157 
+<a name='L158'> 158     <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;
+<a name='L159'> 159     <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>* bir;
+<a name='L160'> 160     <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>* nsap;
+<a name='L161'> 161 
+<a name='L162'> 162     <a href='../S/409.html#L115' title='Defined at 115 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_msg_t</a>* <a href='../D/9593.html' title='Multiple defined in 15 places.'>start</a>;
+<a name='L163'> 163     
+<a name='L164'> 164 <font color='red'>}</font> <a href='../R/3123.html' title='Multiple refered from 2 places.'>gcp_term_t</a>;
+<a name='L165'> 165 
+<a name='L166'> 166 <b>typedef</b> <b>struct</b> <a href='../R/2081.html' title='Multiple refered from 2 places.'>_gcp_terms_t</a> <font color='red'>{</font>
+<a name='L167'> 167     <a href='../S/409.html#L164' title='Defined at 164 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_term_t</a>* term;
+<a name='L168'> 168     <b>struct</b> <a href='../S/409.html#L166' title='Defined at 166 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_terms_t</a>* <a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L169'> 169     <b>struct</b> <a href='../S/409.html#L166' title='Defined at 166 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_terms_t</a>* <a href='../Y/4066.html' title='Multiple used in 36 places.'>last</a>;
+<a name='L170'> 170 <font color='red'>}</font> <a href='../R/3124.html' title='Multiple refered from 2 places.'>gcp_terms_t</a>;
+<a name='L171'> 171 
+<a name='L172'> 172 <b>typedef</b> <b>struct</b> <a href='../S/409.html#L124' title='Refered from 124 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_cmd_t</a> <font color='red'>{</font>
+<a name='L173'> 173     <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>;
+<a name='L174'> 174         <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>* <a href='../Y/7069.html' title='Multiple used in 188 places.'>str</a>;
+<a name='L175'> 175     <a href='../S/409.html#L98' title='Defined at 98 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_cmd_type_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>;
+<a name='L176'> 176     <a href='../S/409.html#L170' title='Defined at 170 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_terms_t</a> <a href='../Y/7309.html' title='Multiple used in 2 places.'>terms</a>;
+<a name='L177'> 177     <b>struct</b> <a href='../S/409.html#L109' title='Defined at 109 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_msg_t</a>* <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>;
+<a name='L178'> 178     <b>struct</b> <a href='../S/409.html#L129' title='Defined at 129 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_trx_t</a>* <a href='../Y/7485.html' title='Multiple used in 2 places.'>trx</a>;
+<a name='L179'> 179     <b>struct</b> <a href='../S/409.html#L184' title='Defined at 184 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_ctx_t</a>* <a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>;
+<a name='L180'> 180     <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L181'> 181 <font color='red'>}</font> <a href='../R/3118.html' title='Multiple refered from 3 places.'>gcp_cmd_t</a>;
+<a name='L182'> 182 
+<a name='L183'> 183 
+<a name='L184'> 184 <b>typedef</b> <b>struct</b> <a href='../R/2079.html' title='Multiple refered from 2 places.'>_gcp_ctx_t</a> <font color='red'>{</font>
+<a name='L185'> 185     <a href='../S/409.html#L115' title='Defined at 115 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_msg_t</a>* <a href='../Y/3826.html' title='Multiple used in 2 places.'>initial</a>;
+<a name='L186'> 186     <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>;
+<a name='L187'> 187         <b>struct</b> <a href='../S/409.html#L123' title='Defined at 123 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_cmd_msg_t</a>* <a href='../Y/1939.html' title='Multiple used in 3 places.'>cmds</a>;
+<a name='L188'> 188     <b>struct</b> <a href='../S/409.html#L184' title='Defined at 184 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>_gcp_ctx_t</a>* <a href='../Y/5873.html' title='Multiple used in 287 places.'>prev</a>;
+<a name='L189'> 189     <a href='../S/409.html#L170' title='Defined at 170 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_terms_t</a> <a href='../Y/7309.html' title='Multiple used in 2 places.'>terms</a>;
+<a name='L190'> 190 <font color='red'>}</font> <a href='../R/3120.html' title='Multiple refered from 2 places.'>gcp_ctx_t</a>;
+<a name='L191'> 191 
+<a name='L192'> 192 <a href='../S/588.html#L318' title='Defined at 318 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/config.h.'>WS_VAR_IMPORT</a> <b>const</b> <a href='../S/375.html#L35' title='Defined at 35 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/value_string.h.'>value_string</a> gcp_cmd_type[];
+<a name='L193'> 193 <a href='../S/588.html#L318' title='Defined at 318 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/config.h.'>WS_VAR_IMPORT</a> <b>const</b> <a href='../S/375.html#L35' title='Defined at 35 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/value_string.h.'>value_string</a> <a href='../Y/3318.html' title='Multiple used in 2 places.'>gcp_term_types</a>[];
+<a name='L194'> 194 
+<a name='L195'> 195 <b>extern</b> <b>void</b> gcp_init(<b>void</b>);
+<a name='L196'> 196 <b>extern</b> <a href='../S/409.html#L115' title='Defined at 115 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_msg_t</a>* gcp_msg(<a href='../Y/5598.html' title='Multiple used in 74 places.'>packet_info</a>* <a href='../Y/5734.html' title='Multiple used in 123 places.'>pinfo</a>, <b>int</b> <a href='../Y/5033.html' title='Multiple used in 23 places.'>o</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/5717.html' title='Multiple used in 7 places.'>persistent</a>);
+<a name='L197'> 197 <b>extern</b> <a href='../S/409.html#L137' title='Defined at 137 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_trx_t</a>* gcp_trx(<a href='../S/409.html#L115' title='Defined at 115 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_msg_t</a>* <a href='../Y/4293.html' title='Multiple used in 80 places.'>m</a> ,<a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> t_id , <a href='../S/409.html#L106' title='Defined at 106 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_trx_type_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/5717.html' title='Multiple used in 7 places.'>persistent</a>);
+<a name='L198'> 198 <b>extern</b> <a href='../S/409.html#L190' title='Defined at 190 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_ctx_t</a>* gcp_ctx(<a href='../S/409.html#L115' title='Defined at 115 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_msg_t</a>* <a href='../Y/4293.html' title='Multiple used in 80 places.'>m</a>, <a href='../S/409.html#L137' title='Defined at 137 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_trx_t</a>* <a href='../Y/7216.html' title='Multiple used in 183 places.'>t</a>, <a href='../Y/3511.html' title='Multiple used in 429 places.'>guint32</a> <a href='../Y/1756.html' title='Multiple used in 5 places.'>c_id</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/5717.html' title='Multiple used in 7 places.'>persistent</a>);
+<a name='L199'> 199 <b>extern</b> <a href='../S/409.html#L181' title='Defined at 181 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_cmd_t</a>* gcp_cmd(<a href='../S/409.html#L115' title='Defined at 115 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_msg_t</a>* <a href='../Y/4293.html' title='Multiple used in 80 places.'>m</a>, <a href='../S/409.html#L137' title='Defined at 137 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_trx_t</a>* <a href='../Y/7216.html' title='Multiple used in 183 places.'>t</a>, <a href='../S/409.html#L190' title='Defined at 190 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_ctx_t</a>* <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>, <a href='../S/409.html#L98' title='Defined at 98 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_cmd_type_t</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/3509.html' title='Multiple used in 190 places.'>guint</a> <a href='../Y/5065.html' title='Multiple used in 592 places.'>offset</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/5717.html' title='Multiple used in 7 places.'>persistent</a>);
+<a name='L200'> 200 <b>extern</b> <a href='../S/409.html#L164' title='Defined at 164 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_term_t</a>* gcp_cmd_add_term(<a href='../S/409.html#L115' title='Defined at 115 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_msg_t</a>* <a href='../Y/4293.html' title='Multiple used in 80 places.'>m</a>, <a href='../S/409.html#L137' title='Defined at 137 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_trx_t</a>* <a href='../Y/7450.html' title='Multiple used in 18 places.'>tr</a>, <a href='../S/409.html#L181' title='Defined at 181 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_cmd_t</a>* <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>, <a href='../S/409.html#L164' title='Defined at 164 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_term_t</a>* <a href='../Y/7216.html' title='Multiple used in 183 places.'>t</a>, <a href='../S/409.html#L150' title='Defined at 150 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_wildcard_t</a> <a href='../Y/7871.html' title='Multiple used in 4 places.'>wildcard</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/5717.html' title='Multiple used in 7 places.'>persistent</a>);
+<a name='L201'> 201 <b>extern</b> <b>void</b> gcp_analyze_msg(<a href='../Y/6018.html' title='Multiple used in 61 places.'>proto_tree</a>* gcp_tree, <a href='../S/422.html#L126' title='Defined at 126 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbuff.h.'>tvbuff_t</a>* gcp_tvb, <a href='../S/409.html#L115' title='Defined at 115 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_msg_t</a>* <a href='../Y/4293.html' title='Multiple used in 80 places.'>m</a>, <a href='../S/409.html#L68' title='Defined at 68 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_hf_ett_t</a>* <a href='../Y/3715.html' title='Multiple used in 2 places.'>ids</a>);
+<a name='L202'> 202 
+<a name='L203'> 203 <b>extern</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>* gcp_cmd_to_str(<a href='../S/409.html#L181' title='Defined at 181 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_cmd_t</a>* <a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/5717.html' title='Multiple used in 7 places.'>persistent</a>);
+<a name='L204'> 204 <b>extern</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a>* gcp_msg_to_str(<a href='../S/409.html#L115' title='Defined at 115 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/gcp.h.'>gcp_msg_t</a>* <a href='../Y/4293.html' title='Multiple used in 80 places.'>m</a>, <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> <a href='../Y/5717.html' title='Multiple used in 7 places.'>persistent</a>);
+<a name='L205'> 205 
+<a name='L206'> 206 <font color='darkred'>#define</font> gcp_cmd_set_error(<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>,<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>) (<a href='../Y/1749.html' title='Multiple used in 859 places.'>c</a>-&gt;<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> = <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>)
+<a name='L207'> 207 <font color='darkred'>#define</font> gcp_trx_set_error(<a href='../Y/7216.html' title='Multiple used in 183 places.'>t</a>,<a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>) (<a href='../Y/7216.html' title='Multiple used in 183 places.'>t</a>-&gt;<a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a> = <a href='../Y/2615.html' title='Multiple used in 89 places.'>e</a>)
+<a name='L208'> 208 
+<a name='L209'> 209 <font color='darkred'>#define</font> GCP_ETT_ARR_ELEMS(<a href='../Y/3433.html' title='Multiple used in 8 places.'>gi</a>)     &amp;(<a href='../Y/3433.html' title='Multiple used in 8 places.'>gi</a>.<a href='../Y/2827.html' title='Multiple used in 8 places.'>ett</a>.<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>),&amp;(<a href='../Y/3433.html' title='Multiple used in 8 places.'>gi</a>.<a href='../Y/2827.html' title='Multiple used in 8 places.'>ett</a>.<a href='../Y/2207.html' title='Multiple used in 2 places.'>ctx_cmds</a>),&amp;(<a href='../Y/3433.html' title='Multiple used in 8 places.'>gi</a>.<a href='../Y/2827.html' title='Multiple used in 8 places.'>ett</a>.<a href='../Y/2212.html' title='Multiple used in 2 places.'>ctx_terms</a>),&amp;(<a href='../Y/3433.html' title='Multiple used in 8 places.'>gi</a>.<a href='../Y/2827.html' title='Multiple used in 8 places.'>ett</a>.<a href='../Y/2208.html' title='Multiple used in 4 places.'>ctx_term</a>)
+<a name='L210'> 210 
+<a name='L211'> 211 <font color='darkred'>#define</font> GCP_HF_ARR_ELEMS(<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>,<a href='../Y/3433.html' title='Multiple used in 8 places.'>gi</a>) \
+<a name='L212'> 212   <font color='red'>{</font> &amp;(<a href='../Y/3433.html' title='Multiple used in 8 places.'>gi</a>.<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>.<a href='../Y/2205.html' title='Multiple used in 1149 places.'>ctx</a>), <font color='red'>{</font> "Context", <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> ".ctx", <a href='../S/493.html#L40' title='Defined at 40 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/ftypes/ftypes.h.'>FT_UINT32</a>, <a href='../S/488.html#L153' title='Defined at 153 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>BASE_HEX</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, 0, "", <a href='../S/488.html#L192' title='Defined at 192 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>HFILL</a> <font color='red'>}</font><font color='red'>}</font>, \
+<a name='L213'> 213   <font color='red'>{</font> &amp;(<a href='../Y/3433.html' title='Multiple used in 8 places.'>gi</a>.<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>.<a href='../Y/2208.html' title='Multiple used in 4 places.'>ctx_term</a>), <font color='red'>{</font> "Termination", <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> ".ctx.term", <a href='../S/493.html#L51' title='Defined at 51 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/ftypes/ftypes.h.'>FT_STRING</a>, <a href='../S/488.html#L151' title='Defined at 151 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>BASE_NONE</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, 0, "", <a href='../S/488.html#L192' title='Defined at 192 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>HFILL</a> <font color='red'>}</font><font color='red'>}</font>, \
+<a name='L214'> 214   <font color='red'>{</font> &amp;(<a href='../Y/3433.html' title='Multiple used in 8 places.'>gi</a>.<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>.<a href='../Y/2211.html' title='Multiple used in 2 places.'>ctx_term_type</a>), <font color='red'>{</font> "Type", <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> ".ctx.term.type", <a href='../S/493.html#L40' title='Defined at 40 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/ftypes/ftypes.h.'>FT_UINT32</a>, <a href='../S/488.html#L153' title='Defined at 153 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>BASE_HEX</a>, <a href='../S/488.html#L68' title='Defined at 68 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>VALS</a>(<a href='../Y/3318.html' title='Multiple used in 2 places.'>gcp_term_types</a>), 0, "", <a href='../S/488.html#L192' title='Defined at 192 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>HFILL</a> <font color='red'>}</font><font color='red'>}</font>, \
+<a name='L215'> 215   <font color='red'>{</font> &amp;(<a href='../Y/3433.html' title='Multiple used in 8 places.'>gi</a>.<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>.<a href='../Y/2209.html' title='Multiple used in 2 places.'>ctx_term_bir</a>), <font color='red'>{</font> "BIR", <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> ".ctx.term.bir", <a href='../S/493.html#L51' title='Defined at 51 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/ftypes/ftypes.h.'>FT_STRING</a>, <a href='../S/488.html#L153' title='Defined at 153 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>BASE_HEX</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, 0, "", <a href='../S/488.html#L192' title='Defined at 192 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>HFILL</a> <font color='red'>}</font><font color='red'>}</font>, \
+<a name='L216'> 216   <font color='red'>{</font> &amp;(<a href='../Y/3433.html' title='Multiple used in 8 places.'>gi</a>.<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>.<a href='../Y/2210.html' title='Multiple used in 2 places.'>ctx_term_nsap</a>), <font color='red'>{</font> "NSAP", <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> ".ctx.term.nsap", <a href='../S/493.html#L51' title='Defined at 51 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/ftypes/ftypes.h.'>FT_STRING</a>, <a href='../S/488.html#L151' title='Defined at 151 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>BASE_NONE</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, 0, "", <a href='../S/488.html#L192' title='Defined at 192 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>HFILL</a> <font color='red'>}</font><font color='red'>}</font>, \
+<a name='L217'> 217   <font color='red'>{</font> &amp;(<a href='../Y/3433.html' title='Multiple used in 8 places.'>gi</a>.<a href='../Y/3609.html' title='Multiple used in 47 places.'>hf</a>.<a href='../Y/2206.html' title='Multiple used in 2 places.'>ctx_cmd</a>), <font color='red'>{</font> "Command in Frame", <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> ".ctx.cmd", <a href='../S/493.html#L62' title='Defined at 62 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/ftypes/ftypes.h.'>FT_FRAMENUM</a>, <a href='../S/488.html#L152' title='Defined at 152 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>BASE_DEC</a>, <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>, 0, "", <a href='../S/488.html#L192' title='Defined at 192 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/proto.h.'>HFILL</a> <font color='red'>}</font><font color='red'>}</font>
+<a name='L218'> 218 
+<a name='L219'> 219 <font color='darkred'>#endif</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<html>
+<head>
+<title>elem</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/56.html#L206'>elem</a>              206 cbench/oflops/usage.c   config_setting_t *elem, *data;
+<a href='../S/56.html#L218'>elem</a>              218 cbench/oflops/usage.c   elem = config_lookup(&amp;conf, "oflops.traffic_generator");
+<a href='../S/56.html#L219'>elem</a>              219 cbench/oflops/usage.c   if(elem != NULL) {
+<a href='../S/56.html#L220'>elem</a>              220 cbench/oflops/usage.c     if(config_setting_get_int(elem) != 0)
+<a href='../S/56.html#L221'>elem</a>              221 cbench/oflops/usage.c     ctx-&gt;trafficGen = config_setting_get_int(elem);
+<a href='../S/56.html#L225'>elem</a>              225 cbench/oflops/usage.c   elem = config_lookup(&amp;conf, "oflops.dump_control_channel");
+<a href='../S/56.html#L226'>elem</a>              226 cbench/oflops/usage.c   if(elem != NULL) {
+<a href='../S/56.html#L227'>elem</a>              227 cbench/oflops/usage.c     if(config_setting_get_int(elem) != 0)
+<a href='../S/56.html#L228'>elem</a>              228 cbench/oflops/usage.c       ctx-&gt;dump_controller = config_setting_get_int(elem);
+<a href='../S/56.html#L231'>elem</a>              231 cbench/oflops/usage.c   elem = config_lookup(&amp;conf, "oflops.control.control_dev");
+<a href='../S/56.html#L232'>elem</a>              232 cbench/oflops/usage.c   if(elem != NULL) {
+<a href='../S/56.html#L233'>elem</a>              233 cbench/oflops/usage.c     if(config_setting_get_string(elem) != NULL) {
+<a href='../S/56.html#L234'>elem</a>              234 cbench/oflops/usage.c       printf("Setting up control channel on %s\n", config_setting_get_string(elem));
+<a href='../S/56.html#L235'>elem</a>              235 cbench/oflops/usage.c       channel_info_init(&amp;ctx-&gt;channels[OFLOPS_CONTROL], config_setting_get_string(elem));
+<a href='../S/56.html#L239'>elem</a>              239 cbench/oflops/usage.c   elem = config_lookup(&amp;conf, "oflops.control.control_port");
+<a href='../S/56.html#L240'>elem</a>              240 cbench/oflops/usage.c   if(elem != NULL) {
+<a href='../S/56.html#L241'>elem</a>              241 cbench/oflops/usage.c     if(config_setting_get_int(elem) != 0) {
+<a href='../S/56.html#L242'>elem</a>              242 cbench/oflops/usage.c       ctx-&gt;listen_port = config_setting_get_int(elem);
+<a href='../S/56.html#L246'>elem</a>              246 cbench/oflops/usage.c   elem = config_lookup(&amp;conf, "oflops.control.snmp_addr");
+<a href='../S/56.html#L247'>elem</a>              247 cbench/oflops/usage.c   if(elem != NULL) {
+<a href='../S/56.html#L248'>elem</a>              248 cbench/oflops/usage.c     if(config_setting_get_string(elem) != NULL) {
+<a href='../S/56.html#L249'>elem</a>              249 cbench/oflops/usage.c       snmp_client = malloc(strlen(config_setting_get_string(elem)) + 1);
+<a href='../S/56.html#L250'>elem</a>              250 cbench/oflops/usage.c       strcpy(snmp_client, config_setting_get_string(elem));
+<a href='../S/56.html#L251'>elem</a>              251 cbench/oflops/usage.c       if( (elem = config_lookup(&amp;conf, "oflops.control.snmp_community")) != NULL) {
+<a href='../S/56.html#L252'>elem</a>              252 cbench/oflops/usage.c 	snmp_community = malloc(strlen(config_setting_get_string(elem)) + 1);
+<a href='../S/56.html#L253'>elem</a>              253 cbench/oflops/usage.c 	strcpy(snmp_community, config_setting_get_string(elem));
+<a href='../S/56.html#L270'>elem</a>              270 cbench/oflops/usage.c   if(((elem = config_lookup(&amp;conf, "oflops.control.in_mib")) != NULL) &amp;&amp; 
+<a href='../S/56.html#L271'>elem</a>              271 cbench/oflops/usage.c      (strlen( config_setting_get_string(elem)) &gt; 0) ) {
+<a href='../S/56.html#L272'>elem</a>              272 cbench/oflops/usage.c     in_oid = malloc(strlen(config_setting_get_string(elem)) + 1);
+<a href='../S/56.html#L273'>elem</a>              273 cbench/oflops/usage.c     strcpy(in_oid,config_setting_get_string(elem));
+<a href='../S/56.html#L275'>elem</a>              275 cbench/oflops/usage.c   if( ((elem = config_lookup(&amp;conf, "oflops.control.out_mib")) != NULL) &amp;&amp; 
+<a href='../S/56.html#L276'>elem</a>              276 cbench/oflops/usage.c       (strlen(config_setting_get_string(elem)) &gt; 0) ) {
+<a href='../S/56.html#L277'>elem</a>              277 cbench/oflops/usage.c     out_oid = malloc(strlen(config_setting_get_string(elem)) + 1);
+<a href='../S/56.html#L278'>elem</a>              278 cbench/oflops/usage.c     strcpy(out_oid,config_setting_get_string(elem));
+<a href='../S/56.html#L282'>elem</a>              282 cbench/oflops/usage.c   if(((elem = config_lookup(&amp;conf, "oflops.control.cpu_mib")) != NULL) &amp;&amp; 
+<a href='../S/56.html#L283'>elem</a>              283 cbench/oflops/usage.c      (strlen( config_setting_get_string(elem)) &gt; 0) ) {
+<a href='../S/56.html#L284'>elem</a>              284 cbench/oflops/usage.c     out_oid = malloc(strlen(config_setting_get_string(elem)) + 1);
+<a href='../S/56.html#L285'>elem</a>              285 cbench/oflops/usage.c     strcpy(out_oid,config_setting_get_string(elem));
+<a href='../S/56.html#L295'>elem</a>              295 cbench/oflops/usage.c       elem = config_setting_get_elem(data, i);
+<a href='../S/56.html#L296'>elem</a>              296 cbench/oflops/usage.c       if(config_setting_get_member(elem, "dev") != NULL) {
+<a href='../S/56.html#L301'>elem</a>              301 cbench/oflops/usage.c 	channel_info_init(&amp;ctx-&gt;channels[ctx-&gt;n_channels++], config_setting_get_string(config_setting_get_member(elem, "dev")));
+<a href='../S/56.html#L302'>elem</a>              302 cbench/oflops/usage.c 	fprintf(stderr,"Adding a data channel on %s\n", config_setting_get_string(config_setting_get_member(elem, "dev")));
+<a href='../S/56.html#L303'>elem</a>              303 cbench/oflops/usage.c 	if(config_setting_get_member(elem, "port_num") != NULL) {
+<a href='../S/56.html#L304'>elem</a>              304 cbench/oflops/usage.c 	  ctx-&gt;channels[ctx-&gt;n_channels-1].of_port = config_setting_get_int(config_setting_get_member(elem, "port_num"));
+<a href='../S/56.html#L314'>elem</a>              314 cbench/oflops/usage.c 	if((config_setting_get_member(elem, "in_snmp_mib") != NULL) &amp;&amp; 
+<a href='../S/56.html#L315'>elem</a>              315 cbench/oflops/usage.c 	   (strlen( config_setting_get_string(config_setting_get_member(elem, "in_snmp_mib"))) &gt; 0) ) {
+<a href='../S/56.html#L316'>elem</a>              316 cbench/oflops/usage.c 	  in_oid = malloc(strlen(config_setting_get_string(config_setting_get_member(elem, "in_snmp_mib"))) + 1);
+<a href='../S/56.html#L317'>elem</a>              317 cbench/oflops/usage.c 	  strcpy(in_oid,config_setting_get_string(config_setting_get_member(elem, "in_snmp_mib")));
+<a href='../S/56.html#L319'>elem</a>              319 cbench/oflops/usage.c 	if((config_setting_get_member(elem, "out_snmp_mib") != NULL) &amp;&amp; 
+<a href='../S/56.html#L320'>elem</a>              320 cbench/oflops/usage.c 	   (strlen( config_setting_get_string(config_setting_get_member(elem, "out_snmp_mib"))) &gt; 0) ) {
+<a href='../S/56.html#L321'>elem</a>              321 cbench/oflops/usage.c 	  out_oid = malloc(strlen(config_setting_get_string(config_setting_get_member(elem, "out_snmp_mib"))) + 1);
+<a href='../S/56.html#L322'>elem</a>              322 cbench/oflops/usage.c 	  strcpy(out_oid,config_setting_get_string(config_setting_get_member(elem, "out_snmp_mib")));
+<a href='../S/56.html#L333'>elem</a>              333 cbench/oflops/usage.c       elem = config_setting_get_elem(data, i);
+<a href='../S/56.html#L335'>elem</a>              335 cbench/oflops/usage.c       if(config_setting_get_member(elem, "path") != NULL)  {
+<a href='../S/56.html#L336'>elem</a>              336 cbench/oflops/usage.c 	path = config_setting_get_string(config_setting_get_member(elem, "path"));
+<a href='../S/56.html#L342'>elem</a>              342 cbench/oflops/usage.c 	if(config_setting_get_member(elem, "param") != NULL)  {
+<a href='../S/56.html#L343'>elem</a>              343 cbench/oflops/usage.c 	  path = config_setting_get_string(config_setting_get_member(elem, "param"));
+<a href='../S/845.html#L46'>elem</a>               46 cbench/openflow/lib/list.c list_insert(struct list *before, struct list *elem)
+<a href='../S/845.html#L48'>elem</a>               48 cbench/openflow/lib/list.c   elem-&gt;prev = before-&gt;prev;
+<a href='../S/845.html#L49'>elem</a>               49 cbench/openflow/lib/list.c   elem-&gt;next = before;
+<a href='../S/845.html#L50'>elem</a>               50 cbench/openflow/lib/list.c   before-&gt;prev-&gt;next = elem;
+<a href='../S/845.html#L51'>elem</a>               51 cbench/openflow/lib/list.c   before-&gt;prev = elem;
+<a href='../S/845.html#L77'>elem</a>               77 cbench/openflow/lib/list.c list_push_front(struct list *list, struct list *elem)
+<a href='../S/845.html#L79'>elem</a>               79 cbench/openflow/lib/list.c   list_insert(list-&gt;next, elem);
+<a href='../S/845.html#L85'>elem</a>               85 cbench/openflow/lib/list.c list_push_back(struct list *list, struct list *elem)
+<a href='../S/845.html#L87'>elem</a>               87 cbench/openflow/lib/list.c   list_insert(list, elem);
+<a href='../S/845.html#L104'>elem</a>              104 cbench/openflow/lib/list.c list_remove(struct list *elem)
+<a href='../S/845.html#L106'>elem</a>              106 cbench/openflow/lib/list.c   elem-&gt;prev-&gt;next = elem-&gt;next;
+<a href='../S/845.html#L107'>elem</a>              107 cbench/openflow/lib/list.c   elem-&gt;next-&gt;prev = elem-&gt;prev;
+<a href='../S/845.html#L108'>elem</a>              108 cbench/openflow/lib/list.c   return elem-&gt;next;
+<a href='../S/499.html#L89'>elem</a>               89 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/tvbparse.h typedef void (*tvbparse_action_t)(void* tvbparse_data, const void* wanted_data, struct _tvbparse_elem_t* elem);
+<a href='../S/362.html#L270'>elem</a>              270 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/xmlstub.h     const xmlChar          *elem;       /* Element holding the attribute */
+<a href='../S/362.html#L996'>elem</a>              996 cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/epan/xmlstub.h typedef void (*attributeDeclSAXFunc)(void *ctx, const xmlChar *elem,
+</pre>
+</body>
+</html>

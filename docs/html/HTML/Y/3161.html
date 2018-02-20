@@ -1,0 +1,44 @@
+<html>
+<head>
+<title>flow_q</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<pre>
+<a href='../S/989.html#L28'>flow_q</a>             28 components/include/flow_queue.h flow_queue_t flow_q;
+<a href='../S/989.html#L40'>flow_q</a>             40 components/include/flow_queue.h     pthread_spin_lock(&amp;flow_q.lock);
+<a href='../S/989.html#L42'>flow_q</a>             42 components/include/flow_queue.h     if (flow_q.head == NULL) {
+<a href='../S/989.html#L43'>flow_q</a>             43 components/include/flow_queue.h         pthread_spin_unlock(&amp;flow_q.lock);
+<a href='../S/989.html#L51'>flow_q</a>             51 components/include/flow_queue.h         pthread_spin_lock(&amp;flow_q.lock);
+<a href='../S/989.html#L52'>flow_q</a>             52 components/include/flow_queue.h         flow_q.size--;
+<a href='../S/989.html#L53'>flow_q</a>             53 components/include/flow_queue.h         pthread_spin_unlock(&amp;flow_q.lock);
+<a href='../S/989.html#L56'>flow_q</a>             56 components/include/flow_queue.h     } else if (flow_q.head == flow_q.tail) {
+<a href='../S/989.html#L57'>flow_q</a>             57 components/include/flow_queue.h         new = flow_q.head;
+<a href='../S/989.html#L58'>flow_q</a>             58 components/include/flow_queue.h         flow_q.head = flow_q.tail = NULL;
+<a href='../S/989.html#L60'>flow_q</a>             60 components/include/flow_queue.h         new = flow_q.head;
+<a href='../S/989.html#L61'>flow_q</a>             61 components/include/flow_queue.h         flow_q.head = flow_q.head-&gt;next;
+<a href='../S/989.html#L62'>flow_q</a>             62 components/include/flow_queue.h         flow_q.head-&gt;prev = NULL;
+<a href='../S/989.html#L65'>flow_q</a>             65 components/include/flow_queue.h     flow_q.size--;
+<a href='../S/989.html#L67'>flow_q</a>             67 components/include/flow_queue.h     pthread_spin_unlock(&amp;flow_q.lock);
+<a href='../S/989.html#L85'>flow_q</a>             85 components/include/flow_queue.h     pthread_spin_lock(&amp;flow_q.lock);
+<a href='../S/989.html#L87'>flow_q</a>             87 components/include/flow_queue.h     if (flow_q.size &lt; 0) {
+<a href='../S/989.html#L88'>flow_q</a>             88 components/include/flow_queue.h         flow_q.size++;
+<a href='../S/989.html#L90'>flow_q</a>             90 components/include/flow_queue.h         pthread_spin_unlock(&amp;flow_q.lock);
+<a href='../S/989.html#L97'>flow_q</a>             97 components/include/flow_queue.h     if (flow_q.head == NULL &amp;&amp; flow_q.tail == NULL) {
+<a href='../S/989.html#L98'>flow_q</a>             98 components/include/flow_queue.h         flow_q.head = flow_q.tail = flow;
+<a href='../S/989.html#L100'>flow_q</a>            100 components/include/flow_queue.h         flow_q.tail-&gt;next = flow;
+<a href='../S/989.html#L101'>flow_q</a>            101 components/include/flow_queue.h         flow-&gt;prev = flow_q.tail;
+<a href='../S/989.html#L102'>flow_q</a>            102 components/include/flow_queue.h         flow_q.tail = flow;
+<a href='../S/989.html#L105'>flow_q</a>            105 components/include/flow_queue.h     flow_q.size++;
+<a href='../S/989.html#L107'>flow_q</a>            107 components/include/flow_queue.h     pthread_spin_unlock(&amp;flow_q.lock);
+<a href='../S/989.html#L118'>flow_q</a>            118 components/include/flow_queue.h     memset(&amp;flow_q, 0, sizeof(flow_queue_t));
+<a href='../S/989.html#L120'>flow_q</a>            120 components/include/flow_queue.h     pthread_spin_init(&amp;flow_q.lock, PTHREAD_PROCESS_PRIVATE);
+<a href='../S/989.html#L142'>flow_q</a>            142 components/include/flow_queue.h     pthread_spin_lock(&amp;flow_q.lock);
+<a href='../S/989.html#L144'>flow_q</a>            144 components/include/flow_queue.h     flow_t *curr = flow_q.head;
+<a href='../S/989.html#L152'>flow_q</a>            152 components/include/flow_queue.h     pthread_spin_unlock(&amp;flow_q.lock);
+<a href='../S/989.html#L154'>flow_q</a>            154 components/include/flow_queue.h     pthread_spin_destroy(&amp;flow_q.lock);
+<a href='../S/989.html#L156'>flow_q</a>            156 components/include/flow_queue.h     memset(&amp;flow_q, 0, sizeof(flow_queue_t));
+</pre>
+</body>
+</html>

@@ -1,0 +1,404 @@
+<html>
+<head>
+<title>components/ofp_veri.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1155.html'>components</a>/ofp_veri.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L34'>[^]</a><a href='#L345'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L34' title='Defined at 34.'>ofp_msg_verification</a>
+<li><a href='#L308' title='Defined at 308.'>ofp_veri_main</a>
+<li><a href='#L321' title='Defined at 321.'>ofp_veri_cleanup</a>
+<li><a href='#L335' title='Defined at 335.'>ofp_veri_cli</a>
+<li><a href='#L345' title='Defined at 345.'>ofp_veri_handler</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/*</font></i>
+<a name='L2'>   2 <i><font color='green'> * Copyright 2015-2018 NSSLab, KAIST</font></i>
+<a name='L3'>   3 <i><font color='green'> */</font></i>
+<a name='L4'>   4 
+<a name='L5'>   5 <i><font color='green'>/**</font></i>
+<a name='L6'>   6 <i><font color='green'> * \ingroup compnt</font></i>
+<a name='L7'>   7 <i><font color='green'> * @{</font></i>
+<a name='L8'>   8 <i><font color='green'> * \defgroup ofp_veri OpenFlow 1.0 Message Verification</font></i>
+<a name='L9'>   9 <i><font color='green'> * \brief (Security) OpenFlow 1.0 message verification</font></i>
+<a name='L10'>  10 <i><font color='green'> * @{</font></i>
+<a name='L11'>  11 <i><font color='green'> */</font></i>
+<a name='L12'>  12 
+<a name='L13'>  13 <i><font color='green'>/**</font></i>
+<a name='L14'>  14 <i><font color='green'> * \file</font></i>
+<a name='L15'>  15 <i><font color='green'> * \author Hyeonseong Jo &lt;hsjjo@kaist.ac.kr&gt;</font></i>
+<a name='L16'>  16 <i><font color='green'> * \author Jaehyun Nam &lt;namjh@kaist.ac.kr&gt;</font></i>
+<a name='L17'>  17 <i><font color='green'> */</font></i>
+<a name='L18'>  18 
+<a name='L19'>  19 <font color='darkred'>#include</font> "<a href='967.html'>ofp_veri.h</a>"
+<a name='L20'>  20 
+<a name='L21'>  21 <i><font color='green'>/** \brief OpenFlow structure */</font></i>
+<a name='L22'>  22 <font color='darkred'>#include</font> "<a href='925.html'>openflow10.h</a>"
+<a name='L23'>  23 
+<a name='L24'>  24 <i><font color='green'>/** \brief OpenFlow message verification ID */</font></i>
+<a name='L25'>  25 <font color='darkred'>#define</font> <a href='../R/1295.html' title='Multiple refered from 36 places.'>OFP_VERI_ID</a> 2355554649
+<a name='L26'>  26 
+<a name='L27'>  27 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L28'>  28 
+<a name='L29'>  29 <i><font color='green'>/**</font></i>
+<a name='L30'>  30 <i><font color='green'> * \brief Function to verify an OpenFlow message</font></i>
+<a name='L31'>  31 <i><font color='green'> * \param id Component ID</font></i>
+<a name='L32'>  32 <i><font color='green'> * \param msg OpenFlow message</font></i>
+<a name='L33'>  33 <i><font color='green'> */</font></i>
+<a name='L34'>  34 <b>static</b> <b>int</b> <a href='../R/3890.html' title='Multiple refered from 2 places.'>ofp_msg_verification</a>(<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <b>const</b> <a href='../D/9307.html' title='Multiple defined in 6 places.'>raw_msg_t</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>)
+<a name='L35'>  35 <font color='red'>{</font>
+<a name='L36'>  36     <b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> *<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a> = (<b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a> *)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L37'>  37 
+<a name='L38'>  38     <b>if</b> (<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>-&gt;<a href='../Y/7770.html' title='Multiple used in 173 places.'>version</a> != <a href='../Y/621.html' title='Multiple used in 78 places.'>OFP_VERSION</a>)
+<a name='L39'>  39         <b>return</b> 0;
+<a name='L40'>  40 
+<a name='L41'>  41     <b>if</b> ((<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> &lt; <a href='../D/3675.html' title='Multiple defined in 3 places.'>OFPT_HELLO</a>) || (<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a> &gt; <a href='../D/3685.html' title='Multiple defined in 3 places.'>OFPT_QUEUE_GET_CONFIG_REPLY</a>)) <font color='red'>{</font>
+<a name='L42'>  42         <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; wrong type", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L43'>  43         <b>return</b> -1;
+<a name='L44'>  44     <font color='red'>}</font>
+<a name='L45'>  45     <b>if</b> (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>-&gt;<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>) &lt; <b>sizeof</b>(<b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a>)) <font color='red'>{</font>
+<a name='L46'>  46         <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; wrong length", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L47'>  47         <b>return</b> -1;
+<a name='L48'>  48     <font color='red'>}</font>
+<a name='L49'>  49     <i><font color='green'>// skip xid verification</font></i>
+<a name='L50'>  50 
+<a name='L51'>  51     <b>switch</b> (<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) <font color='red'>{</font>
+<a name='L52'>  52     <b>case</b> <a href='../D/3675.html' title='Multiple defined in 3 places.'>OFPT_HELLO</a>:
+<a name='L53'>  53         <b>if</b> (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>-&gt;<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>) != <b>sizeof</b>(<b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a>)) <font color='red'>{</font>
+<a name='L54'>  54             <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_HELLO length error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L55'>  55             <b>return</b> -1;
+<a name='L56'>  56         <font color='red'>}</font>
+<a name='L57'>  57         <b>break</b>;
+<a name='L58'>  58     <b>case</b> <a href='../D/3662.html' title='Multiple defined in 3 places.'>OFPT_ERROR</a>:
+<a name='L59'>  59         <font color='red'>{</font>
+<a name='L60'>  60             <b>struct</b> <a href='../D/8772.html' title='Multiple defined in 3 places.'>ofp_error_msg</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>struct</b> <a href='../D/8772.html' title='Multiple defined in 3 places.'>ofp_error_msg</a> *)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L61'>  61             <b>if</b> ((<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) &lt; <a href='../D/3395.html' title='Multiple defined in 3 places.'>OFPET_HELLO_FAILED</a>) || (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) &gt; (<a href='../D/3398.html' title='Multiple defined in 3 places.'>OFPET_QUEUE_OP_FAILED</a> &lt;&lt; 1))) <font color='red'>{</font>
+<a name='L62'>  62                 <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_ERROR | type error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L63'>  63                 <b>return</b> -1;
+<a name='L64'>  64             <font color='red'>}</font>
+<a name='L65'>  65             <b>if</b> (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) == <a href='../D/3395.html' title='Multiple defined in 3 places.'>OFPET_HELLO_FAILED</a>) <font color='red'>{</font>
+<a name='L66'>  66                 <b>if</b> ((<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a>) &lt; <a href='../D/3479.html' title='Multiple defined in 3 places.'>OFPHFC_INCOMPATIBLE</a>) || (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a>) &gt; (<a href='../D/3478.html' title='Multiple defined in 3 places.'>OFPHFC_EPERM</a> &lt;&lt; 1))) <font color='red'>{</font>
+<a name='L67'>  67                     <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_ERROR | OFPET_HELLO_FAILED error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L68'>  68                     <b>return</b> -1;
+<a name='L69'>  69                 <font color='red'>}</font>
+<a name='L70'>  70             <font color='red'>}</font>
+<a name='L71'>  71             <b>else</b> <b>if</b> (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) == <a href='../D/3391.html' title='Multiple defined in 3 places.'>OFPET_BAD_REQUEST</a>) <font color='red'>{</font>
+<a name='L72'>  72                 <b>int</b> <a href='../Y/2253.html' title='Multiple used in 10 places.'>dataSize</a> = <a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>-&gt;<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>) - <b>sizeof</b>(<b>struct</b> <a href='../D/8772.html' title='Multiple defined in 3 places.'>ofp_error_msg</a>);
+<a name='L73'>  73                 <b>if</b> (<a href='../Y/2253.html' title='Multiple used in 10 places.'>dataSize</a> &lt; 64) <font color='red'>{</font>
+<a name='L74'>  74                     <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_ERROR | OFPET_BAD_REQUEST data length error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L75'>  75                     <b>return</b> -1;
+<a name='L76'>  76                 <font color='red'>}</font>
+<a name='L77'>  77                 <b>if</b> ((<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a>) &lt; <a href='../D/3361.html' title='Multiple defined in 3 places.'>OFPBRC_BAD_VERSION</a>) || (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a>) &gt; (<a href='../D/3363.html' title='Multiple defined in 3 places.'>OFPBRC_BUFFER_UNKNOWN</a> &lt;&lt; 1))) <font color='red'>{</font>
+<a name='L78'>  78                     <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_ERROR | OFPET_BAD_REQUEST code error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L79'>  79                     <b>return</b> -1;
+<a name='L80'>  80                 <font color='red'>}</font>
+<a name='L81'>  81             <font color='red'>}</font>
+<a name='L82'>  82             <b>else</b> <b>if</b> (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) == <a href='../D/3388.html' title='Multiple defined in 3 places.'>OFPET_BAD_ACTION</a>) <font color='red'>{</font>
+<a name='L83'>  83                 <b>int</b> <a href='../Y/2253.html' title='Multiple used in 10 places.'>dataSize</a> = <a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>-&gt;<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>) - <b>sizeof</b>(<b>struct</b> <a href='../D/8772.html' title='Multiple defined in 3 places.'>ofp_error_msg</a>);
+<a name='L84'>  84 
+<a name='L85'>  85                 <b>if</b> (<a href='../Y/2253.html' title='Multiple used in 10 places.'>dataSize</a> &lt; 64) <font color='red'>{</font>
+<a name='L86'>  86                     <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_ERROR | OFPET_BAD_ACTION data length error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L87'>  87                     <b>return</b> -1;
+<a name='L88'>  88                 <font color='red'>}</font>
+<a name='L89'>  89                 <b>if</b> ((<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a>) &lt; <a href='../D/3322.html' title='Multiple defined in 3 places.'>OFPBAC_BAD_TYPE</a>) || (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a>) &gt; (<a href='../D/3317.html' title='Multiple defined in 3 places.'>OFPBAC_BAD_QUEUE</a> &lt;&lt; 1))) <font color='red'>{</font>
+<a name='L90'>  90                     <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_ERROR | OFPBRC_BAD_ACTION code error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L91'>  91                     <b>return</b> -1;
+<a name='L92'>  92                 <font color='red'>}</font>
+<a name='L93'>  93             <font color='red'>}</font>
+<a name='L94'>  94             <b>else</b> <b>if</b> (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) == <a href='../D/3393.html' title='Multiple defined in 3 places.'>OFPET_FLOW_MOD_FAILED</a>) <font color='red'>{</font>
+<a name='L95'>  95                 <b>int</b> <a href='../Y/2253.html' title='Multiple used in 10 places.'>dataSize</a> = <a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>-&gt;<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>) - <b>sizeof</b>(<b>struct</b> <a href='../D/8772.html' title='Multiple defined in 3 places.'>ofp_error_msg</a>);
+<a name='L96'>  96 
+<a name='L97'>  97                 <b>if</b> (<a href='../Y/2253.html' title='Multiple used in 10 places.'>dataSize</a> &lt; 64) <font color='red'>{</font>
+<a name='L98'>  98                     <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_ERROR | OFPET_FLOW_MOD_FAILED data length error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L99'>  99                     <b>return</b> -1;
+<a name='L100'> 100                 <font color='red'>}</font>
+<a name='L101'> 101                 <b>if</b> ((<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a>) &lt; <a href='../D/3414.html' title='Multiple defined in 2 places.'>OFPFMFC_ALL_TABLES_FULL</a>) || (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a>) &gt; (<a href='../D/3424.html' title='Multiple defined in 2 places.'>OFPFMFC_UNSUPPORTED</a> &lt;&lt; 1))) <font color='red'>{</font>
+<a name='L102'> 102                     <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_ERROR | OFPET_FLOW_MOD_FAILED code error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L103'> 103                     <b>return</b> -1;
+<a name='L104'> 104                 <font color='red'>}</font>
+<a name='L105'> 105             <font color='red'>}</font>
+<a name='L106'> 106             <b>else</b> <b>if</b> (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) == <a href='../D/3397.html' title='Multiple defined in 3 places.'>OFPET_PORT_MOD_FAILED</a>) <font color='red'>{</font>
+<a name='L107'> 107                 <b>int</b> <a href='../Y/2253.html' title='Multiple used in 10 places.'>dataSize</a> = <a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>-&gt;<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>) - <b>sizeof</b>(<b>struct</b> <a href='../D/8772.html' title='Multiple defined in 3 places.'>ofp_error_msg</a>);
+<a name='L108'> 108 
+<a name='L109'> 109                 <b>if</b> (<a href='../Y/2253.html' title='Multiple used in 10 places.'>dataSize</a> &lt; 64) <font color='red'>{</font>
+<a name='L110'> 110                     <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_ERROR | OFPET_PORT_MOD_FAILED data length error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L111'> 111                     <b>return</b> -1;
+<a name='L112'> 112                 <font color='red'>}</font>
+<a name='L113'> 113                 <b>if</b> ((<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a>) &lt; <a href='../D/3567.html' title='Multiple defined in 3 places.'>OFPPMFC_BAD_PORT</a>) || (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a>) &gt; (<a href='../D/3566.html' title='Multiple defined in 3 places.'>OFPPMFC_BAD_HW_ADDR</a> &lt;&lt; 1))) <font color='red'>{</font>
+<a name='L114'> 114                     <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_ERROR | OFPET_PORT_MOD_FAILED code error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L115'> 115                     <b>return</b> -1;
+<a name='L116'> 116                 <font color='red'>}</font>
+<a name='L117'> 117             <font color='red'>}</font>
+<a name='L118'> 118             <b>else</b> <b>if</b> (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) == <a href='../D/3398.html' title='Multiple defined in 3 places.'>OFPET_QUEUE_OP_FAILED</a>) <font color='red'>{</font>
+<a name='L119'> 119                 <b>int</b> <a href='../Y/2253.html' title='Multiple used in 10 places.'>dataSize</a> = <a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>-&gt;<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>) - <b>sizeof</b>(<b>struct</b> <a href='../D/8772.html' title='Multiple defined in 3 places.'>ofp_error_msg</a>);
+<a name='L120'> 120 
+<a name='L121'> 121                 <b>if</b> (<a href='../Y/2253.html' title='Multiple used in 10 places.'>dataSize</a> &lt; 64) <font color='red'>{</font>
+<a name='L122'> 122                     <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_ERROR | OFPET_QUEUE_OP_FAILED data length error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L123'> 123                     <b>return</b> -1;
+<a name='L124'> 124                 <font color='red'>}</font>
+<a name='L125'> 125                 <b>if</b> ((<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a>) &lt; <a href='../D/3590.html' title='Multiple defined in 3 places.'>OFPQOFC_BAD_PORT</a>) || (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1956.html' title='Multiple used in 147 places.'>code</a>) &gt; (<a href='../D/3592.html' title='Multiple defined in 3 places.'>OFPQOFC_EPERM</a> &lt;&lt; 1))) <font color='red'>{</font>
+<a name='L126'> 126                     <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_ERROR | OFPET_QUEUE_OP_FAILED code error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L127'> 127                     <b>return</b> -1;
+<a name='L128'> 128                 <font color='red'>}</font>
+<a name='L129'> 129             <font color='red'>}</font>
+<a name='L130'> 130         <font color='red'>}</font>
+<a name='L131'> 131         <b>break</b>;
+<a name='L132'> 132     <b>case</b> <a href='../D/3660.html' title='Multiple defined in 3 places.'>OFPT_ECHO_REQUEST</a>:
+<a name='L133'> 133         <i><font color='green'>// do nothing</font></i>
+<a name='L134'> 134         <b>break</b>;
+<a name='L135'> 135     <b>case</b> <a href='../D/3658.html' title='Multiple defined in 3 places.'>OFPT_ECHO_REPLY</a>:
+<a name='L136'> 136         <i><font color='green'>// do nothing</font></i>
+<a name='L137'> 137         <b>break</b>;
+<a name='L138'> 138     <b>case</b> <a href='../D/3698.html' title='Multiple defined in 2 places.'>OFPT_VENDOR</a>:
+<a name='L139'> 139         <i><font color='green'>// do nothing</font></i>
+<a name='L140'> 140         <b>break</b>;
+<a name='L141'> 141     <b>case</b> <a href='../D/3666.html' title='Multiple defined in 3 places.'>OFPT_FEATURES_REQUEST</a>:
+<a name='L142'> 142         <b>if</b> (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>-&gt;<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>) != <b>sizeof</b>(<b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a>)) <font color='red'>{</font>
+<a name='L143'> 143             <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_FEATURES_REQUEST length error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L144'> 144             <b>return</b> -1;
+<a name='L145'> 145         <font color='red'>}</font>
+<a name='L146'> 146         <b>break</b>;
+<a name='L147'> 147     <b>case</b> <a href='../D/3665.html' title='Multiple defined in 3 places.'>OFPT_FEATURES_REPLY</a>:
+<a name='L148'> 148         <font color='red'>{</font>
+<a name='L149'> 149             <b>struct</b> <a href='../D/8902.html' title='Multiple defined in 3 places.'>ofp_switch_features</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>struct</b> <a href='../D/8902.html' title='Multiple defined in 3 places.'>ofp_switch_features</a> *)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L150'> 150 
+<a name='L151'> 151             <b>if</b> ((<a href='../Y/4953.html' title='Multiple used in 218 places.'>ntohl</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1792.html' title='Multiple used in 28 places.'>capabilities</a>) &lt; <a href='../D/3375.html' title='Multiple defined in 3 places.'>OFPC_FLOW_STATS</a>) || (<a href='../Y/4953.html' title='Multiple used in 218 places.'>ntohl</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1792.html' title='Multiple used in 28 places.'>capabilities</a>) &gt; (<a href='../D/3374.html' title='Multiple defined in 2 places.'>OFPC_ARP_MATCH_IP</a> &lt;&lt; 1))) <font color='red'>{</font>
+<a name='L152'> 152                 <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_FEATURES_REPLY | capabilities error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L153'> 153                 <b>return</b> -1;
+<a name='L154'> 154             <font color='red'>}</font>
+<a name='L155'> 155             <b>if</b> ((<a href='../Y/4953.html' title='Multiple used in 218 places.'>ntohl</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1294.html' title='Multiple used in 157 places.'>actions</a>) &lt; <a href='../D/3289.html' title='Multiple defined in 3 places.'>OFPAT_OUTPUT</a>) || (<a href='../Y/4953.html' title='Multiple used in 218 places.'>ntohl</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1294.html' title='Multiple used in 157 places.'>actions</a>) &gt; <a href='../D/3310.html' title='Multiple defined in 2 places.'>OFPAT_VENDOR</a>)) <font color='red'>{</font>
+<a name='L156'> 156                 <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_FEATURES_REPLY | action error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L157'> 157                 <b>return</b> -1;
+<a name='L158'> 158             <font color='red'>}</font>
+<a name='L159'> 159         <font color='red'>}</font>
+<a name='L160'> 160         <b>break</b>;
+<a name='L161'> 161     <b>case</b> <a href='../D/3673.html' title='Multiple defined in 3 places.'>OFPT_GET_CONFIG_REQUEST</a>:
+<a name='L162'> 162         <b>if</b> (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>-&gt;<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>) != <b>sizeof</b>(<b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a>)) <font color='red'>{</font>
+<a name='L163'> 163             <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_GET_CONFIG_REQUEST length error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L164'> 164             <b>return</b> -1;
+<a name='L165'> 165         <font color='red'>}</font>
+<a name='L166'> 166         <b>break</b>;
+<a name='L167'> 167     <b>case</b> <a href='../D/3672.html' title='Multiple defined in 3 places.'>OFPT_GET_CONFIG_REPLY</a>:
+<a name='L168'> 168         <font color='red'>{</font>
+<a name='L169'> 169             <b>struct</b> <a href='../D/8900.html' title='Multiple defined in 3 places.'>ofp_switch_config</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>struct</b> <a href='../D/8900.html' title='Multiple defined in 3 places.'>ofp_switch_config</a> *)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L170'> 170             <b>if</b> ((<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>)) &lt; <a href='../D/3378.html' title='Multiple defined in 3 places.'>OFPC_FRAG_NORMAL</a> || (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>)) &gt; (<a href='../D/3377.html' title='Multiple defined in 3 places.'>OFPC_FRAG_MASK</a> &lt;&lt; 1)) <font color='red'>{</font>
+<a name='L171'> 171                 <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_GET_CONFIG_REPLY flag error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L172'> 172                 <b>return</b> -1;
+<a name='L173'> 173             <font color='red'>}</font>
+<a name='L174'> 174         <font color='red'>}</font>
+<a name='L175'> 175         <b>break</b>;
+<a name='L176'> 176     <b>case</b> <a href='../D/3690.html' title='Multiple defined in 3 places.'>OFPT_SET_CONFIG</a>:
+<a name='L177'> 177         <font color='red'>{</font>
+<a name='L178'> 178             <b>struct</b> <a href='../D/8900.html' title='Multiple defined in 3 places.'>ofp_switch_config</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>struct</b> <a href='../D/8900.html' title='Multiple defined in 3 places.'>ofp_switch_config</a> *)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L179'> 179             <b>if</b> ((<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>)) &lt; <a href='../D/3378.html' title='Multiple defined in 3 places.'>OFPC_FRAG_NORMAL</a> || (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>)) &gt; (<a href='../D/3377.html' title='Multiple defined in 3 places.'>OFPC_FRAG_MASK</a> &lt;&lt; 1)) <font color='red'>{</font>
+<a name='L180'> 180                 <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_SET_CONFIG flag error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L181'> 181                 <b>return</b> -1;
+<a name='L182'> 182             <font color='red'>}</font>
+<a name='L183'> 183         <font color='red'>}</font>
+<a name='L184'> 184         <b>break</b>;
+<a name='L185'> 185     <b>case</b> <a href='../D/3680.html' title='Multiple defined in 3 places.'>OFPT_PACKET_IN</a>:
+<a name='L186'> 186         <font color='red'>{</font>
+<a name='L187'> 187             <b>struct</b> <a href='../D/8847.html' title='Multiple defined in 4 places.'>ofp_packet_in</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>struct</b> <a href='../D/8847.html' title='Multiple defined in 4 places.'>ofp_packet_in</a> *)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L188'> 188             <b>if</b> ((<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/6294.html' title='Multiple used in 94 places.'>reason</a> &lt; <a href='../D/3615.html' title='Multiple defined in 3 places.'>OFPR_NO_MATCH</a>) || (<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/6294.html' title='Multiple used in 94 places.'>reason</a> &gt; (<a href='../D/3613.html' title='Multiple defined in 3 places.'>OFPR_ACTION</a> &lt;&lt; 1))) <font color='red'>{</font>
+<a name='L189'> 189                 <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_PACKET_IN reason error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L190'> 190                 <b>return</b> -1;
+<a name='L191'> 191             <font color='red'>}</font>
+<a name='L192'> 192         <font color='red'>}</font>
+<a name='L193'> 193         <b>break</b>;
+<a name='L194'> 194     <b>case</b> <a href='../D/3669.html' title='Multiple defined in 3 places.'>OFPT_FLOW_REMOVED</a>:
+<a name='L195'> 195         <font color='red'>{</font>
+<a name='L196'> 196             <b>struct</b> <a href='../D/8783.html' title='Multiple defined in 3 places.'>ofp_flow_removed</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>struct</b> <a href='../D/8783.html' title='Multiple defined in 3 places.'>ofp_flow_removed</a> *)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L197'> 197             <b>if</b> ((<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/6294.html' title='Multiple used in 94 places.'>reason</a> &lt; <a href='../D/3611.html' title='Multiple defined in 3 places.'>OFPRR_IDLE_TIMEOUT</a>) || (<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/6294.html' title='Multiple used in 94 places.'>reason</a> &gt; (<a href='../D/3608.html' title='Multiple defined in 3 places.'>OFPRR_DELETE</a> &lt;&lt; 1))) <font color='red'>{</font>
+<a name='L198'> 198                 <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_FLOW_REMOVED reason error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L199'> 199                 <b>return</b> -1;
+<a name='L200'> 200             <font color='red'>}</font>
+<a name='L201'> 201         <font color='red'>}</font>
+<a name='L202'> 202         <b>break</b>;
+<a name='L203'> 203     <b>case</b> <a href='../D/3684.html' title='Multiple defined in 3 places.'>OFPT_PORT_STATUS</a>:
+<a name='L204'> 204         <font color='red'>{</font>
+<a name='L205'> 205             <b>struct</b> <a href='../D/8863.html' title='Multiple defined in 3 places.'>ofp_port_status</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>struct</b> <a href='../D/8863.html' title='Multiple defined in 3 places.'>ofp_port_status</a> *)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L206'> 206             <b>if</b> ((<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/6294.html' title='Multiple used in 94 places.'>reason</a> &lt; <a href='../D/3569.html' title='Multiple defined in 3 places.'>OFPPR_ADD</a>) || (<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/6294.html' title='Multiple used in 94 places.'>reason</a> &gt; (<a href='../D/3571.html' title='Multiple defined in 3 places.'>OFPPR_MODIFY</a> &lt;&lt; 1))) <font color='red'>{</font>
+<a name='L207'> 207                 <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_PORT_STATUS reason error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L208'> 208                 <b>return</b> -1;
+<a name='L209'> 209             <font color='red'>}</font>
+<a name='L210'> 210         <font color='red'>}</font>
+<a name='L211'> 211         <b>break</b>;
+<a name='L212'> 212     <b>case</b> <a href='../D/3682.html' title='Multiple defined in 3 places.'>OFPT_PACKET_OUT</a>:
+<a name='L213'> 213         <font color='red'>{</font>
+<a name='L214'> 214             <b>struct</b> <a href='../D/8849.html' title='Multiple defined in 4 places.'>ofp_packet_out</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>struct</b> <a href='../D/8849.html' title='Multiple defined in 4 places.'>ofp_packet_out</a> *)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L215'> 215             <b>if</b> (<a href='../Y/4953.html' title='Multiple used in 218 places.'>ntohl</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1706.html' title='Multiple used in 133 places.'>buffer_id</a>) == (<a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a>)-1) <font color='red'>{</font>
+<a name='L216'> 216                 <b>int</b> <a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> = <a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/3593.html' title='Multiple used in 234 places.'>header</a>.<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>) - (<b>sizeof</b>(<b>struct</b> <a href='../D/8849.html' title='Multiple defined in 4 places.'>ofp_packet_out</a>) + <a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/1295.html' title='Multiple used in 192 places.'>actions_len</a>));
+<a name='L217'> 217                 <b>if</b> (<a href='../Y/6799.html' title='Multiple used in 476 places.'>size</a> &lt; 0) <font color='red'>{</font>
+<a name='L218'> 218                     <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_PACKET_OUT length error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L219'> 219                     <b>return</b> -1;
+<a name='L220'> 220                 <font color='red'>}</font>
+<a name='L221'> 221             <font color='red'>}</font>
+<a name='L222'> 222         <font color='red'>}</font>
+<a name='L223'> 223         <b>break</b>;
+<a name='L224'> 224     <b>case</b> <a href='../D/3667.html' title='Multiple defined in 3 places.'>OFPT_FLOW_MOD</a>:
+<a name='L225'> 225         <font color='red'>{</font>
+<a name='L226'> 226             <b>struct</b> <a href='../D/8779.html' title='Multiple defined in 3 places.'>ofp_flow_mod</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>struct</b> <a href='../D/8779.html' title='Multiple defined in 3 places.'>ofp_flow_mod</a> *)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L227'> 227             <b>if</b> (<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/2133.html' title='Multiple used in 81 places.'>cookie</a> == 0xffffffffffffffff) <font color='red'>{</font>
+<a name='L228'> 228                 <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_FLOW_MOD | cookie reserved data error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L229'> 229                 <b>return</b> -1;
+<a name='L230'> 230             <font color='red'>}</font>
+<a name='L231'> 231             <b>if</b> ((<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../S/333.html#L92' title='Defined at 92 in cbench/openflow/utilities/dpctl.c.'>command</a>) &lt; <a href='../D/3403.html' title='Multiple defined in 3 places.'>OFPFC_ADD</a>) || (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../S/333.html#L92' title='Defined at 92 in cbench/openflow/utilities/dpctl.c.'>command</a>) &gt; (<a href='../D/3405.html' title='Multiple defined in 3 places.'>OFPFC_DELETE_STRICT</a> &lt;&lt; 1))) <font color='red'>{</font>
+<a name='L232'> 232                 <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_FLOW_MOD | command error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L233'> 233                 <b>return</b> -1;
+<a name='L234'> 234             <font color='red'>}</font>
+<a name='L235'> 235             <b>if</b> ((<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>) &lt; <a href='../D/3413.html' title='Multiple defined in 3 places.'>OFPFF_SEND_FLOW_REM</a>) || (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/3119.html' title='Multiple used in 292 places.'>flags</a>) &gt; (<a href='../D/3409.html' title='Multiple defined in 2 places.'>OFPFF_EMERG</a> &lt;&lt; 1))) <font color='red'>{</font>
+<a name='L236'> 236                 <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_FLOW_MOD | flags error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L237'> 237                 <b>return</b> -1;
+<a name='L238'> 238             <font color='red'>}</font>
+<a name='L239'> 239         <font color='red'>}</font>
+<a name='L240'> 240         <b>break</b>;
+<a name='L241'> 241     <b>case</b> <a href='../D/3683.html' title='Multiple defined in 3 places.'>OFPT_PORT_MOD</a>:
+<a name='L242'> 242         <font color='red'>{</font>
+<a name='L243'> 243             <b>struct</b> <a href='../D/8856.html' title='Multiple defined in 3 places.'>ofp_port_mod</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>struct</b> <a href='../D/8856.html' title='Multiple defined in 3 places.'>ofp_port_mod</a> *)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L244'> 244             <b>if</b> ((<a href='../Y/4953.html' title='Multiple used in 218 places.'>ntohl</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/2052.html' title='Multiple used in 115 places.'>config</a>) &lt; <a href='../D/3547.html' title='Multiple defined in 3 places.'>OFPPC_PORT_DOWN</a>) || (<a href='../Y/4953.html' title='Multiple used in 218 places.'>ntohl</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/2052.html' title='Multiple used in 115 places.'>config</a>) &gt; (<a href='../D/3543.html' title='Multiple defined in 3 places.'>OFPPC_NO_PACKET_IN</a> &lt;&lt; 1))) <font color='red'>{</font>
+<a name='L245'> 245                 <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_PORT_MOD | port config error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L246'> 246                 <b>return</b> -1;
+<a name='L247'> 247             <font color='red'>}</font>
+<a name='L248'> 248         <font color='red'>}</font>
+<a name='L249'> 249         <b>break</b>;
+<a name='L250'> 250     <b>case</b> <a href='../D/3694.html' title='Multiple defined in 2 places.'>OFPT_STATS_REQUEST</a>:
+<a name='L251'> 251         <font color='red'>{</font>
+<a name='L252'> 252             <b>struct</b> <a href='../D/8898.html' title='Multiple defined in 3 places.'>ofp_stats_request</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>struct</b> <a href='../D/8898.html' title='Multiple defined in 3 places.'>ofp_stats_request</a> *)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L253'> 253             <b>if</b> (((<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) &lt; <a href='../D/3622.html' title='Multiple defined in 2 places.'>OFPST_DESC</a>) || (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) &gt; (<a href='../D/3625.html' title='Multiple defined in 2 places.'>OFPST_QUEUE</a> &lt;&lt; 1))) &amp;&amp; (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) != <a href='../D/3627.html' title='Multiple defined in 2 places.'>OFPST_VENDOR</a>)) <font color='red'>{</font>
+<a name='L254'> 254                 <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_STATS_REQUEST type error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L255'> 255                 <b>return</b> -1;
+<a name='L256'> 256             <font color='red'>}</font>
+<a name='L257'> 257         <font color='red'>}</font>
+<a name='L258'> 258         <b>break</b>;
+<a name='L259'> 259     <b>case</b> <a href='../D/3691.html' title='Multiple defined in 2 places.'>OFPT_STATS_REPLY</a>:
+<a name='L260'> 260         <font color='red'>{</font>
+<a name='L261'> 261             <b>struct</b> <a href='../D/8896.html' title='Multiple defined in 3 places.'>ofp_stats_reply</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>struct</b> <a href='../D/8896.html' title='Multiple defined in 3 places.'>ofp_stats_reply</a> *)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L262'> 262             <b>if</b> (((<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) &lt; <a href='../D/3622.html' title='Multiple defined in 2 places.'>OFPST_DESC</a>) || (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) &gt; (<a href='../D/3625.html' title='Multiple defined in 2 places.'>OFPST_QUEUE</a> &lt;&lt; 1))) &amp;&amp; (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) != <a href='../D/3627.html' title='Multiple defined in 2 places.'>OFPST_VENDOR</a>)) <font color='red'>{</font>
+<a name='L263'> 263                 <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_STATS_REPLY type error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L264'> 264                 <b>return</b> -1;
+<a name='L265'> 265             <font color='red'>}</font>
+<a name='L266'> 266         <font color='red'>}</font>
+<a name='L267'> 267         <b>break</b>;
+<a name='L268'> 268     <b>case</b> <a href='../D/3657.html' title='Multiple defined in 3 places.'>OFPT_BARRIER_REQUEST</a>:
+<a name='L269'> 269         <b>if</b> (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>-&gt;<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>) != <b>sizeof</b>(<b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a>)) <font color='red'>{</font>
+<a name='L270'> 270             <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_BARRIER_REQUEST length error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L271'> 271             <b>return</b> -1;
+<a name='L272'> 272         <font color='red'>}</font>
+<a name='L273'> 273         <b>break</b>;
+<a name='L274'> 274     <b>case</b> <a href='../D/3656.html' title='Multiple defined in 3 places.'>OFPT_BARRIER_REPLY</a>:
+<a name='L275'> 275         <b>if</b> (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/5378.html' title='Multiple used in 178 places.'>ofph</a>-&gt;<a href='../Y/4125.html' title='Multiple used in 540 places.'>length</a>) != <b>sizeof</b>(<b>struct</b> <a href='../D/8801.html' title='Multiple defined in 3 places.'>ofp_header</a>)) <font color='red'>{</font>
+<a name='L276'> 276             <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_BARRIER_REQUEST length error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L277'> 277             <b>return</b> -1;
+<a name='L278'> 278         <font color='red'>}</font>
+<a name='L279'> 279         <b>break</b>;
+<a name='L280'> 280     <b>case</b> <a href='../D/3686.html' title='Multiple defined in 3 places.'>OFPT_QUEUE_GET_CONFIG_REQUEST</a>:
+<a name='L281'> 281         <font color='red'>{</font>
+<a name='L282'> 282             <b>struct</b> <a href='../D/8881.html' title='Multiple defined in 3 places.'>ofp_queue_get_config_request</a> *<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a> = (<b>struct</b> <a href='../D/8881.html' title='Multiple defined in 3 places.'>ofp_queue_get_config_request</a> *)<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>-&gt;<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>;
+<a name='L283'> 283             <b>if</b> (<a href='../D/8631.html' title='Multiple defined in 2 places.'>ntohs</a>(<a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>-&gt;<a href='../Y/5791.html' title='Multiple used in 749 places.'>port</a>) &gt; <a href='../D/3586.html' title='Multiple defined in 3 places.'>OFPP_MAX</a>) <font color='red'>{</font>
+<a name='L284'> 284                 <a href='../D/2414.html' title='Multiple defined in 6 places.'>LOG_ERROR</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, " %u -&gt; OFPT_QUEUE_GET_CONFIG_REQUEST port error", <a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>);
+<a name='L285'> 285                 <b>return</b> -1;
+<a name='L286'> 286             <font color='red'>}</font>
+<a name='L287'> 287         <font color='red'>}</font>
+<a name='L288'> 288         <b>break</b>;
+<a name='L289'> 289     <b>case</b> <a href='../D/3685.html' title='Multiple defined in 3 places.'>OFPT_QUEUE_GET_CONFIG_REPLY</a>:
+<a name='L290'> 290         <i><font color='green'>// do nothing</font></i>
+<a name='L291'> 291         <b>break</b>;
+<a name='L292'> 292 
+<a name='L293'> 293     <b>default</b>:
+<a name='L294'> 294         <b>break</b>;
+<a name='L295'> 295     <font color='red'>}</font>
+<a name='L296'> 296 
+<a name='L297'> 297     <b>return</b> 0;
+<a name='L298'> 298 <font color='red'>}</font>
+<a name='L299'> 299 
+<a name='L300'> 300 <i><font color='green'>/////////////////////////////////////////////////////////////////////</font></i>
+<a name='L301'> 301 
+<a name='L302'> 302 <i><font color='green'>/**</font></i>
+<a name='L303'> 303 <i><font color='green'> * \brief The main function</font></i>
+<a name='L304'> 304 <i><font color='green'> * \param activated The activation flag of this component</font></i>
+<a name='L305'> 305 <i><font color='green'> * \param argc The number of arguments</font></i>
+<a name='L306'> 306 <i><font color='green'> * \param argv Arguments</font></i>
+<a name='L307'> 307 <i><font color='green'> */</font></i>
+<a name='L308'> 308 <b>int</b> <a href='../S/979.html#L144' title='Refered from 144 in components/include/component_list.h.'>ofp_veri_main</a>(<b>int</b> *<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>, <b>int</b> <a href='../Y/1465.html' title='Multiple used in 309 places.'>argc</a>, <b>char</b> **<a href='../Y/1474.html' title='Multiple used in 417 places.'>argv</a>)
+<a name='L309'> 309 <font color='red'>{</font>
+<a name='L310'> 310     <a href='../D/2419.html' title='Multiple defined in 6 places.'>LOG_INFO</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, "Init - OpenFlow message verification");
+<a name='L311'> 311 
+<a name='L312'> 312     <a href='../D/6825.html' title='Multiple defined in 6 places.'>activate</a>();
+<a name='L313'> 313 
+<a name='L314'> 314     <b>return</b> 0;
+<a name='L315'> 315 <font color='red'>}</font>
+<a name='L316'> 316 
+<a name='L317'> 317 <i><font color='green'>/**</font></i>
+<a name='L318'> 318 <i><font color='green'> * \brief The cleanup function</font></i>
+<a name='L319'> 319 <i><font color='green'> * \param activated The activation flag of this component</font></i>
+<a name='L320'> 320 <i><font color='green'> */</font></i>
+<a name='L321'> 321 <b>int</b> <a href='../S/979.html#L144' title='Refered from 144 in components/include/component_list.h.'>ofp_veri_cleanup</a>(<b>int</b> *<a href='../Y/1297.html' title='Multiple used in 156 places.'>activated</a>)
+<a name='L322'> 322 <font color='red'>{</font>
+<a name='L323'> 323     <a href='../D/2419.html' title='Multiple defined in 6 places.'>LOG_INFO</a>(<a href='../S/994.html#L25' title='Defined at 25 in components/ofp_veri.c.'>OFP_VERI_ID</a>, "Clean up - OpenFlow message verification");
+<a name='L324'> 324 
+<a name='L325'> 325     <a href='../D/7280.html' title='Multiple defined in 6 places.'>deactivate</a>();
+<a name='L326'> 326 
+<a name='L327'> 327     <b>return</b> 0;
+<a name='L328'> 328 <font color='red'>}</font>
+<a name='L329'> 329 
+<a name='L330'> 330 <i><font color='green'>/**</font></i>
+<a name='L331'> 331 <i><font color='green'> * \brief The CLI function</font></i>
+<a name='L332'> 332 <i><font color='green'> * \param cli The CLI pointer</font></i>
+<a name='L333'> 333 <i><font color='green'> * \param args Arguments</font></i>
+<a name='L334'> 334 <i><font color='green'> */</font></i>
+<a name='L335'> 335 <b>int</b> <a href='../S/979.html#L144' title='Refered from 144 in components/include/component_list.h.'>ofp_veri_cli</a>(<b>char</b> **<a href='../Y/1469.html' title='Multiple used in 437 places.'>args</a>)
+<a name='L336'> 336 <font color='red'>{</font>
+<a name='L337'> 337     <b>return</b> 0;
+<a name='L338'> 338 <font color='red'>}</font>
+<a name='L339'> 339 
+<a name='L340'> 340 <i><font color='green'>/**</font></i>
+<a name='L341'> 341 <i><font color='green'> * \brief The handler function</font></i>
+<a name='L342'> 342 <i><font color='green'> * \param ev Read-only event</font></i>
+<a name='L343'> 343 <i><font color='green'> * \param ev_out Read-write event (if this component has the write permission)</font></i>
+<a name='L344'> 344 <i><font color='green'> */</font></i>
+<a name='L345'> 345 <b>int</b> <a href='../S/979.html#L144' title='Refered from 144 in components/include/component_list.h.'>ofp_veri_handler</a>(<b>const</b> <a href='../D/7743.html' title='Multiple defined in 7 places.'>event_t</a> *<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>, <a href='../D/7740.html' title='Multiple defined in 7 places.'>event_out_t</a> *<a href='../Y/2897.html' title='Multiple used in 49 places.'>ev_out</a>)
+<a name='L346'> 346 <font color='red'>{</font>
+<a name='L347'> 347     <b>switch</b> (<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>-&gt;<a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>) <font color='red'>{</font>
+<a name='L348'> 348     <b>case</b> <a href='../S/1026.html#L13' title='Defined at 13 in events/include/event_id.h.'>EV_OFP_MSG_IN</a>:
+<a name='L349'> 349         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("EV_OFP_MSG_IN\n");
+<a name='L350'> 350         <font color='red'>{</font>
+<a name='L351'> 351             <b>const</b> <a href='../D/9307.html' title='Multiple defined in 6 places.'>raw_msg_t</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a> = <a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>-&gt;<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>;
+<a name='L352'> 352             <b>if</b> (<a href='../S/994.html#L34' title='Defined at 34 in components/ofp_veri.c.'>ofp_msg_verification</a>(<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>-&gt;<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>)) <font color='red'>{</font>
+<a name='L353'> 353                 <b>return</b> -1;
+<a name='L354'> 354             <font color='red'>}</font>
+<a name='L355'> 355         <font color='red'>}</font>
+<a name='L356'> 356         <b>break</b>;
+<a name='L357'> 357     <b>case</b> <a href='../S/1026.html#L25' title='Defined at 25 in events/include/event_id.h.'>EV_OFP_MSG_OUT</a>:
+<a name='L358'> 358         <a href='../D/4939.html' title='Multiple defined in 12 places.'>PRINT_EV</a>("EV_OFP_MSG_OUT\n");
+<a name='L359'> 359         <font color='red'>{</font>
+<a name='L360'> 360             <b>const</b> <a href='../D/9307.html' title='Multiple defined in 6 places.'>raw_msg_t</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a> = <a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>-&gt;<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>;
+<a name='L361'> 361             <b>if</b> (<a href='../S/994.html#L34' title='Defined at 34 in components/ofp_veri.c.'>ofp_msg_verification</a>(<a href='../Y/2891.html' title='Multiple used in 186 places.'>ev</a>-&gt;<a href='../Y/3709.html' title='Multiple used in 808 places.'>id</a>, <a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>)) <font color='red'>{</font>
+<a name='L362'> 362                 <b>return</b> -1;
+<a name='L363'> 363             <font color='red'>}</font>
+<a name='L364'> 364         <font color='red'>}</font>
+<a name='L365'> 365         <b>break</b>;
+<a name='L366'> 366     <b>default</b>:
+<a name='L367'> 367         <b>break</b>;
+<a name='L368'> 368     <font color='red'>}</font>
+<a name='L369'> 369 
+<a name='L370'> 370     <b>return</b> 0;
+<a name='L371'> 371 <font color='red'>}</font>
+<a name='L372'> 372 
+<a name='L373'> 373 <i><font color='green'>/**</font></i>
+<a name='L374'> 374 <i><font color='green'> * @}</font></i>
+<a name='L375'> 375 <i><font color='green'> *</font></i>
+<a name='L376'> 376 <i><font color='green'> * @}</font></i>
+<a name='L377'> 377 <i><font color='green'> */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L34'>[^]</a><a href='#L345'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

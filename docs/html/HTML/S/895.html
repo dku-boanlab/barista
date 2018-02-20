@@ -1,0 +1,220 @@
+<html>
+<head>
+<title>cbench/openflow/lib/vconn-provider.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/vconn-provider.h</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L65'>[^]</a><a href='#L140'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2><a href='../J/263.html' title='Multiple included from 7 places.'>INCLUDED FROM</a></h2>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L65' title='Defined at 65.'>vconn_assert_class</a>
+<li><a href='#L140' title='Defined at 140.'>pvconn_assert_class</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> * </font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> * </font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> * </font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> * </font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#ifndef</font> <a href='../S/895.html#L35' title='Defined at 35 in cbench/openflow/lib/vconn-provider.h.'>VCONN_PROVIDER_H</a>
+<a name='L35'>  35 <font color='darkred'>#define</font> <a href='../S/895.html#L34' title='Refered from 34 in cbench/openflow/lib/vconn-provider.h.'>VCONN_PROVIDER_H</a> 1
+<a name='L36'>  36 
+<a name='L37'>  37 <i><font color='green'>/* Provider interface to vconns, which provide a virtual connection to an</font></i>
+<a name='L38'>  38 <i><font color='green'> * OpenFlow device. */</font></i>
+<a name='L39'>  39 
+<a name='L40'>  40 <font color='darkred'>#include</font> &lt;assert.h&gt;
+<a name='L41'>  41 <font color='darkred'>#include</font> &lt;stdint.h&gt;
+<a name='L42'>  42 <font color='darkred'>#include</font> "<a href='833.html'>ofpstat.h</a>"
+<a name='L43'>  43 <font color='darkred'>#include</font> "<a href='906.html'>vconn.h</a>"
+<a name='L44'>  44 
+<a name='L45'>  45 <i><font color='green'>/* Active virtual connection to an OpenFlow device. */</font></i>
+<a name='L46'>  46 
+<a name='L47'>  47 <i><font color='green'>/* Active virtual connection to an OpenFlow device.</font></i>
+<a name='L48'>  48 <i><font color='green'> *</font></i>
+<a name='L49'>  49 <i><font color='green'> * This structure should be treated as opaque by vconn implementations. */</font></i>
+<a name='L50'>  50 <b>struct</b> <a href='../R/4896.html' title='Multiple refered from 273 places.'>vconn</a> <font color='red'>{</font>
+<a name='L51'>  51     <b>struct</b> <a href='../S/895.html#L71' title='Defined at 71 in cbench/openflow/lib/vconn-provider.h.'>vconn_class</a> *<a href='../Y/1887.html' title='Multiple used in 77 places.'>class</a>;
+<a name='L52'>  52     <b>int</b> <a href='../S/849.html#L59' title='Defined at 59 in cbench/openflow/lib/rconn.c.'>state</a>;
+<a name='L53'>  53     <b>int</b> <a href='../Y/2762.html' title='Multiple used in 572 places.'>error</a>;
+<a name='L54'>  54     <b>int</b> <a href='../Y/4470.html' title='Multiple used in 16 places.'>min_version</a>;
+<a name='L55'>  55     <b>int</b> <a href='../Y/7770.html' title='Multiple used in 173 places.'>version</a>;
+<a name='L56'>  56     <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3874.html' title='Multiple used in 230 places.'>ip</a>;
+<a name='L57'>  57     <b>char</b> *<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;
+<a name='L58'>  58     <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/6305.html' title='Multiple used in 8 places.'>reconnectable</a>;
+<a name='L59'>  59     <b>struct</b> <a href='../S/833.html#L38' title='Defined at 38 in cbench/openflow/lib/ofpstat.h.'>ofpstat</a> <a href='../Y/5400.html' title='Multiple used in 22 places.'>ofps_rcvd</a>;
+<a name='L60'>  60     <b>struct</b> <a href='../S/833.html#L38' title='Defined at 38 in cbench/openflow/lib/ofpstat.h.'>ofpstat</a> <a href='../Y/5401.html' title='Multiple used in 34 places.'>ofps_sent</a>;
+<a name='L61'>  61 <font color='red'>}</font>;
+<a name='L62'>  62 
+<a name='L63'>  63 <b>void</b> <a href='../S/881.html#L1139' title='Defined at 1139 in cbench/openflow/lib/vconn.c.'>vconn_init</a>(<b>struct</b> <a href='../Y/7745.html' title='Multiple used in 95 places.'>vconn</a> *, <b>struct</b> <a href='../Y/7747.html' title='Multiple used in 3 places.'>vconn_class</a> *, <b>int</b> <a href='../Y/2098.html' title='Multiple used in 10 places.'>connect_status</a>,
+<a name='L64'>  64                 <a href='../Y/7621.html' title='Multiple used in 1429 places.'>uint32_t</a> <a href='../Y/3874.html' title='Multiple used in 230 places.'>ip</a>, <b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>, <a href='../Y/1645.html' title='Multiple used in 313 places.'>bool</a> <a href='../Y/6305.html' title='Multiple used in 8 places.'>reconnectable</a>);
+<a name='L65'>  65 <b>static</b> <b>inline</b> <b>void</b> <a href='../R/4897.html' title='Multiple refered from 3 places.'>vconn_assert_class</a>(<b>const</b> <b>struct</b> <a href='../Y/7745.html' title='Multiple used in 95 places.'>vconn</a> *<a href='../Y/7745.html' title='Multiple used in 95 places.'>vconn</a>,
+<a name='L66'>  66                                       <b>const</b> <b>struct</b> <a href='../Y/7747.html' title='Multiple used in 3 places.'>vconn_class</a> *<a href='../Y/1887.html' title='Multiple used in 77 places.'>class</a>)
+<a name='L67'>  67 <font color='red'>{</font>
+<a name='L68'>  68     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../S/895.html#L50' title='Defined at 50 in cbench/openflow/lib/vconn-provider.h.'>vconn</a>-&gt;<a href='../Y/1887.html' title='Multiple used in 77 places.'>class</a> == <a href='../Y/1887.html' title='Multiple used in 77 places.'>class</a>);
+<a name='L69'>  69 <font color='red'>}</font>
+<a name='L70'>  70 
+<a name='L71'>  71 <b>struct</b> <a href='../R/4898.html' title='Multiple refered from 14 places.'>vconn_class</a> <font color='red'>{</font>
+<a name='L72'>  72     <i><font color='green'>/* Prefix for connection names, e.g. "nl", "tcp". */</font></i>
+<a name='L73'>  73     <b>const</b> <b>char</b> *<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;
+<a name='L74'>  74 
+<a name='L75'>  75     <i><font color='green'>/* Attempts to connect to an OpenFlow device.  'name' is the full</font></i>
+<a name='L76'>  76 <i><font color='green'>     * connection name provided by the user, e.g. "nl:0", "tcp:1.2.3.4".  This</font></i>
+<a name='L77'>  77 <i><font color='green'>     * name is useful for error messages but must not be modified.</font></i>
+<a name='L78'>  78 <i><font color='green'>     *</font></i>
+<a name='L79'>  79 <i><font color='green'>     * 'suffix' is a copy of 'name' following the colon and may be modified.</font></i>
+<a name='L80'>  80 <i><font color='green'>     *</font></i>
+<a name='L81'>  81 <i><font color='green'>     * Returns 0 if successful, otherwise a positive errno value.  If</font></i>
+<a name='L82'>  82 <i><font color='green'>     * successful, stores a pointer to the new connection in '*vconnp'.</font></i>
+<a name='L83'>  83 <i><font color='green'>     *</font></i>
+<a name='L84'>  84 <i><font color='green'>     * The open function must not block waiting for a connection to complete.</font></i>
+<a name='L85'>  85 <i><font color='green'>     * If the connection cannot be completed immediately, it should return</font></i>
+<a name='L86'>  86 <i><font color='green'>     * EAGAIN (not EINPROGRESS, as returned by the connect system call) and</font></i>
+<a name='L87'>  87 <i><font color='green'>     * continue the connection in the background. */</font></i>
+<a name='L88'>  88     <b>int</b> (*<a href='../Y/5465.html' title='Multiple used in 21 places.'>open</a>)(<b>const</b> <b>char</b> *<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>, <b>char</b> *<a href='../Y/7156.html' title='Multiple used in 17 places.'>suffix</a>, <b>struct</b> <a href='../S/895.html#L50' title='Defined at 50 in cbench/openflow/lib/vconn-provider.h.'>vconn</a> **<a href='../Y/7752.html' title='Multiple used in 33 places.'>vconnp</a>);
+<a name='L89'>  89 
+<a name='L90'>  90     <i><font color='green'>/* Closes 'vconn' and frees associated memory. */</font></i>
+<a name='L91'>  91     <b>void</b> (*<a href='../Y/1918.html' title='Multiple used in 102 places.'>close</a>)(<b>struct</b> <a href='../S/895.html#L50' title='Defined at 50 in cbench/openflow/lib/vconn-provider.h.'>vconn</a> *<a href='../S/895.html#L50' title='Defined at 50 in cbench/openflow/lib/vconn-provider.h.'>vconn</a>);
+<a name='L92'>  92 
+<a name='L93'>  93     <i><font color='green'>/* Tries to complete the connection on 'vconn'.  If 'vconn''s connection is</font></i>
+<a name='L94'>  94 <i><font color='green'>     * complete, returns 0 if the connection was successful or a positive errno</font></i>
+<a name='L95'>  95 <i><font color='green'>     * value if it failed.  If the connection is still in progress, returns</font></i>
+<a name='L96'>  96 <i><font color='green'>     * EAGAIN.</font></i>
+<a name='L97'>  97 <i><font color='green'>     *</font></i>
+<a name='L98'>  98 <i><font color='green'>     * The connect function must not block waiting for the connection to</font></i>
+<a name='L99'>  99 <i><font color='green'>     * complete; instead, it should return EAGAIN immediately. */</font></i>
+<a name='L100'> 100     <b>int</b> (*<a href='../Y/2093.html' title='Multiple used in 10 places.'>connect</a>)(<b>struct</b> <a href='../S/895.html#L50' title='Defined at 50 in cbench/openflow/lib/vconn-provider.h.'>vconn</a> *<a href='../S/895.html#L50' title='Defined at 50 in cbench/openflow/lib/vconn-provider.h.'>vconn</a>);
+<a name='L101'> 101 
+<a name='L102'> 102     <i><font color='green'>/* Tries to receive an OpenFlow message from 'vconn'.  If successful,</font></i>
+<a name='L103'> 103 <i><font color='green'>     * stores the received message into '*msgp' and returns 0.  The caller is</font></i>
+<a name='L104'> 104 <i><font color='green'>     * responsible for destroying the message with ofpbuf_delete().  On</font></i>
+<a name='L105'> 105 <i><font color='green'>     * failure, returns a positive errno value and stores a null pointer into</font></i>
+<a name='L106'> 106 <i><font color='green'>     * '*msgp'.</font></i>
+<a name='L107'> 107 <i><font color='green'>     *</font></i>
+<a name='L108'> 108 <i><font color='green'>     * If the connection has been closed in the normal fashion, returns EOF.</font></i>
+<a name='L109'> 109 <i><font color='green'>     *</font></i>
+<a name='L110'> 110 <i><font color='green'>     * The recv function must not block waiting for a packet to arrive.  If no</font></i>
+<a name='L111'> 111 <i><font color='green'>     * packets have been received, it should return EAGAIN. */</font></i>
+<a name='L112'> 112     <b>int</b> (*<a href='../Y/6310.html' title='Multiple used in 12 places.'>recv</a>)(<b>struct</b> <a href='../S/895.html#L50' title='Defined at 50 in cbench/openflow/lib/vconn-provider.h.'>vconn</a> *<a href='../S/895.html#L50' title='Defined at 50 in cbench/openflow/lib/vconn-provider.h.'>vconn</a>, <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> **<a href='../Y/4532.html' title='Multiple used in 12 places.'>msgp</a>);
+<a name='L113'> 113 
+<a name='L114'> 114     <i><font color='green'>/* Tries to queue 'msg' for transmission on 'vconn'.  If successful,</font></i>
+<a name='L115'> 115 <i><font color='green'>     * returns 0, in which case ownership of 'msg' is transferred to the vconn.</font></i>
+<a name='L116'> 116 <i><font color='green'>     * Success does not guarantee that 'msg' has been or ever will be delivered</font></i>
+<a name='L117'> 117 <i><font color='green'>     * to the peer, only that it has been queued for transmission.</font></i>
+<a name='L118'> 118 <i><font color='green'>     *</font></i>
+<a name='L119'> 119 <i><font color='green'>     * Returns a positive errno value on failure, in which case the caller</font></i>
+<a name='L120'> 120 <i><font color='green'>     * retains ownership of 'msg'.</font></i>
+<a name='L121'> 121 <i><font color='green'>     *</font></i>
+<a name='L122'> 122 <i><font color='green'>     * The send function must not block.  If 'msg' cannot be immediately</font></i>
+<a name='L123'> 123 <i><font color='green'>     * accepted for transmission, it should return EAGAIN. */</font></i>
+<a name='L124'> 124     <b>int</b> (*<a href='../Y/6650.html' title='Multiple used in 11 places.'>send</a>)(<b>struct</b> <a href='../S/895.html#L50' title='Defined at 50 in cbench/openflow/lib/vconn-provider.h.'>vconn</a> *<a href='../S/895.html#L50' title='Defined at 50 in cbench/openflow/lib/vconn-provider.h.'>vconn</a>, <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>);
+<a name='L125'> 125 
+<a name='L126'> 126     <i><font color='green'>/* Arranges for the poll loop to wake up when 'vconn' is ready to take an</font></i>
+<a name='L127'> 127 <i><font color='green'>     * action of the given 'type'. */</font></i>
+<a name='L128'> 128     <b>void</b> (*<a href='../Y/7837.html' title='Multiple used in 31 places.'>wait</a>)(<b>struct</b> <a href='../S/895.html#L50' title='Defined at 50 in cbench/openflow/lib/vconn-provider.h.'>vconn</a> *<a href='../S/895.html#L50' title='Defined at 50 in cbench/openflow/lib/vconn-provider.h.'>vconn</a>, <b>enum</b> <a href='../S/906.html#L66' title='Defined at 66 in cbench/openflow/lib/vconn.h.'>vconn_wait_type</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>);
+<a name='L129'> 129 <font color='red'>}</font>;
+<a name='L130'> 130 
+<a name='L131'> 131 <i><font color='green'>/* Passive virtual connection to an OpenFlow device.</font></i>
+<a name='L132'> 132 <i><font color='green'> *</font></i>
+<a name='L133'> 133 <i><font color='green'> * This structure should be treated as opaque by vconn implementations. */</font></i>
+<a name='L134'> 134 <b>struct</b> <a href='../R/4220.html' title='Multiple refered from 50 places.'>pvconn</a> <font color='red'>{</font>
+<a name='L135'> 135     <b>struct</b> <a href='../S/895.html#L146' title='Defined at 146 in cbench/openflow/lib/vconn-provider.h.'>pvconn_class</a> *<a href='../Y/1887.html' title='Multiple used in 77 places.'>class</a>;
+<a name='L136'> 136     <b>char</b> *<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;
+<a name='L137'> 137 <font color='red'>}</font>;
+<a name='L138'> 138 
+<a name='L139'> 139 <b>void</b> <a href='../S/881.html#L1157' title='Defined at 1157 in cbench/openflow/lib/vconn.c.'>pvconn_init</a>(<b>struct</b> <a href='../Y/6174.html' title='Multiple used in 31 places.'>pvconn</a> *, <b>struct</b> <a href='../Y/6175.html' title='Multiple used in 3 places.'>pvconn_class</a> *, <b>const</b> <b>char</b> *<a href='../Y/4631.html' title='Multiple used in 221 places.'>name</a>);
+<a name='L140'> 140 <b>static</b> <b>inline</b> <b>void</b> <a href='../R/4222.html' title='Multiple refered from 2 places.'>pvconn_assert_class</a>(<b>const</b> <b>struct</b> <a href='../Y/6174.html' title='Multiple used in 31 places.'>pvconn</a> *<a href='../Y/6174.html' title='Multiple used in 31 places.'>pvconn</a>,
+<a name='L141'> 141                                        <b>const</b> <b>struct</b> <a href='../Y/6175.html' title='Multiple used in 3 places.'>pvconn_class</a> *<a href='../Y/1887.html' title='Multiple used in 77 places.'>class</a>)
+<a name='L142'> 142 <font color='red'>{</font>
+<a name='L143'> 143     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../S/895.html#L134' title='Defined at 134 in cbench/openflow/lib/vconn-provider.h.'>pvconn</a>-&gt;<a href='../Y/1887.html' title='Multiple used in 77 places.'>class</a> == <a href='../Y/1887.html' title='Multiple used in 77 places.'>class</a>);
+<a name='L144'> 144 <font color='red'>}</font>
+<a name='L145'> 145 
+<a name='L146'> 146 <b>struct</b> <a href='../R/4223.html' title='Multiple refered from 13 places.'>pvconn_class</a> <font color='red'>{</font>
+<a name='L147'> 147     <i><font color='green'>/* Prefix for connection names, e.g. "ptcp", "pssl". */</font></i>
+<a name='L148'> 148     <b>const</b> <b>char</b> *<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>;
+<a name='L149'> 149 
+<a name='L150'> 150     <i><font color='green'>/* Attempts to start listening for OpenFlow connections.  'name' is the</font></i>
+<a name='L151'> 151 <i><font color='green'>     * full connection name provided by the user, e.g. "nl:0", "tcp:1.2.3.4".</font></i>
+<a name='L152'> 152 <i><font color='green'>     * This name is useful for error messages but must not be modified.</font></i>
+<a name='L153'> 153 <i><font color='green'>     *</font></i>
+<a name='L154'> 154 <i><font color='green'>     * 'suffix' is a copy of 'name' following the colon and may be modified.</font></i>
+<a name='L155'> 155 <i><font color='green'>     *</font></i>
+<a name='L156'> 156 <i><font color='green'>     * Returns 0 if successful, otherwise a positive errno value.  If</font></i>
+<a name='L157'> 157 <i><font color='green'>     * successful, stores a pointer to the new connection in '*pvconnp'.</font></i>
+<a name='L158'> 158 <i><font color='green'>     *</font></i>
+<a name='L159'> 159 <i><font color='green'>     * The listen function must not block.  If the connection cannot be</font></i>
+<a name='L160'> 160 <i><font color='green'>     * completed immediately, it should return EAGAIN (not EINPROGRESS, as</font></i>
+<a name='L161'> 161 <i><font color='green'>     * returned by the connect system call) and continue the connection in the</font></i>
+<a name='L162'> 162 <i><font color='green'>     * background. */</font></i>
+<a name='L163'> 163     <b>int</b> (*<a href='../Y/4168.html' title='Multiple used in 10 places.'>listen</a>)(<b>const</b> <b>char</b> *<a href='../D/8420.html' title='Multiple defined in 16 places.'>name</a>, <b>char</b> *<a href='../Y/7156.html' title='Multiple used in 17 places.'>suffix</a>, <b>struct</b> <a href='../S/895.html#L134' title='Defined at 134 in cbench/openflow/lib/vconn-provider.h.'>pvconn</a> **<a href='../Y/6178.html' title='Multiple used in 14 places.'>pvconnp</a>);
+<a name='L164'> 164 
+<a name='L165'> 165     <i><font color='green'>/* Closes 'pvconn' and frees associated memory. */</font></i>
+<a name='L166'> 166     <b>void</b> (*<a href='../Y/1918.html' title='Multiple used in 102 places.'>close</a>)(<b>struct</b> <a href='../S/895.html#L134' title='Defined at 134 in cbench/openflow/lib/vconn-provider.h.'>pvconn</a> *<a href='../S/895.html#L134' title='Defined at 134 in cbench/openflow/lib/vconn-provider.h.'>pvconn</a>);
+<a name='L167'> 167 
+<a name='L168'> 168     <i><font color='green'>/* Tries to accept a new connection on 'pvconn'.  If successful, stores the</font></i>
+<a name='L169'> 169 <i><font color='green'>     * new connection in '*new_vconnp' and returns 0.  Otherwise, returns a</font></i>
+<a name='L170'> 170 <i><font color='green'>     * positive errno value.</font></i>
+<a name='L171'> 171 <i><font color='green'>     *</font></i>
+<a name='L172'> 172 <i><font color='green'>     * The accept function must not block waiting for a connection.  If no</font></i>
+<a name='L173'> 173 <i><font color='green'>     * connection is ready to be accepted, it should return EAGAIN. */</font></i>
+<a name='L174'> 174     <b>int</b> (*<a href='../Y/1266.html' title='Multiple used in 18 places.'>accept</a>)(<b>struct</b> <a href='../S/895.html#L134' title='Defined at 134 in cbench/openflow/lib/vconn-provider.h.'>pvconn</a> *<a href='../S/895.html#L134' title='Defined at 134 in cbench/openflow/lib/vconn-provider.h.'>pvconn</a>, <b>struct</b> <a href='../S/895.html#L50' title='Defined at 50 in cbench/openflow/lib/vconn-provider.h.'>vconn</a> **<a href='../Y/4791.html' title='Multiple used in 5 places.'>new_vconnp</a>);
+<a name='L175'> 175 
+<a name='L176'> 176     <i><font color='green'>/* Arranges for the poll loop to wake up when a connection is ready to be</font></i>
+<a name='L177'> 177 <i><font color='green'>     * accepted on 'pvconn'. */</font></i>
+<a name='L178'> 178     <b>void</b> (*<a href='../Y/7837.html' title='Multiple used in 31 places.'>wait</a>)(<b>struct</b> <a href='../S/895.html#L134' title='Defined at 134 in cbench/openflow/lib/vconn-provider.h.'>pvconn</a> *<a href='../S/895.html#L134' title='Defined at 134 in cbench/openflow/lib/vconn-provider.h.'>pvconn</a>);
+<a name='L179'> 179 <font color='red'>}</font>;
+<a name='L180'> 180 
+<a name='L181'> 181 <i><font color='green'>/* Active and passive vconn classes. */</font></i>
+<a name='L182'> 182 <b>extern</b> <b>struct</b> <a href='../S/895.html#L71' title='Defined at 71 in cbench/openflow/lib/vconn-provider.h.'>vconn_class</a> <a href='../Y/7289.html' title='Multiple used in 3 places.'>tcp_vconn_class</a>;
+<a name='L183'> 183 <b>extern</b> <b>struct</b> <a href='../S/895.html#L146' title='Defined at 146 in cbench/openflow/lib/vconn-provider.h.'>pvconn_class</a> <a href='../Y/6125.html' title='Multiple used in 3 places.'>ptcp_pvconn_class</a>;
+<a name='L184'> 184 <b>extern</b> <b>struct</b> <a href='../S/895.html#L71' title='Defined at 71 in cbench/openflow/lib/vconn-provider.h.'>vconn_class</a> <a href='../Y/7639.html' title='Multiple used in 3 places.'>unix_vconn_class</a>;
+<a name='L185'> 185 <b>extern</b> <b>struct</b> <a href='../S/895.html#L146' title='Defined at 146 in cbench/openflow/lib/vconn-provider.h.'>pvconn_class</a> <a href='../Y/6164.html' title='Multiple used in 3 places.'>punix_pvconn_class</a>;
+<a name='L186'> 186 <font color='darkred'>#ifdef</font> <a href='../Y/418.html' title='Multiple used in 13 places.'>HAVE_OPENSSL</a>
+<a name='L187'> 187 <b>extern</b> <b>struct</b> <a href='../S/895.html#L71' title='Defined at 71 in cbench/openflow/lib/vconn-provider.h.'>vconn_class</a> <a href='../Y/6959.html' title='Multiple used in 5 places.'>ssl_vconn_class</a>;
+<a name='L188'> 188 <b>extern</b> <b>struct</b> <a href='../S/895.html#L146' title='Defined at 146 in cbench/openflow/lib/vconn-provider.h.'>pvconn_class</a> <a href='../Y/6121.html' title='Multiple used in 6 places.'>pssl_pvconn_class</a>;
+<a name='L189'> 189 <font color='darkred'>#endif</font>
+<a name='L190'> 190 <font color='darkred'>#ifdef</font> <a href='../Y/414.html' title='Multiple used in 7 places.'>HAVE_NETLINK</a>
+<a name='L191'> 191 <b>extern</b> <b>struct</b> <a href='../S/895.html#L71' title='Defined at 71 in cbench/openflow/lib/vconn-provider.h.'>vconn_class</a> <a href='../Y/4734.html' title='Multiple used in 5 places.'>netlink_vconn_class</a>;
+<a name='L192'> 192 <font color='darkred'>#endif</font>
+<a name='L193'> 193 
+<a name='L194'> 194 <font color='darkred'>#endif</font> <i><font color='green'>/* vconn-provider.h */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L65'>[^]</a><a href='#L140'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

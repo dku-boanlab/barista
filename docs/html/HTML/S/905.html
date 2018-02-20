@@ -1,0 +1,166 @@
+<html>
+<head>
+<title>cbench/openflow/lib/queue.c</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1140.html'>lib</a>/queue.c</h2>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L45'>[^]</a><a href='#L120'>[v]</a>[top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<h2>DEFINITIONS</h2>
+This source file includes following definitions.
+<ol>
+<li><a href='#L45' title='Defined at 45.'>queue_init</a>
+<li><a href='#L54' title='Defined at 54.'>queue_destroy</a>
+<li><a href='#L65' title='Defined at 65.'>queue_clear</a>
+<li><a href='#L78' title='Defined at 78.'>queue_advance_head</a>
+<li><a href='#L91' title='Defined at 91.'>queue_push_tail</a>
+<li><a href='#L111' title='Defined at 111.'>queue_pop_head</a>
+<li><a href='#L120' title='Defined at 120.'>check_queue</a>
+</ol>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* Copyright (c) 2008, 2009 The Board of Trustees of The Leland Stanford</font></i>
+<a name='L2'>   2 <i><font color='green'> * Junior University</font></i>
+<a name='L3'>   3 <i><font color='green'> * </font></i>
+<a name='L4'>   4 <i><font color='green'> * We are making the OpenFlow specification and associated documentation</font></i>
+<a name='L5'>   5 <i><font color='green'> * (Software) available for public use and benefit with the expectation</font></i>
+<a name='L6'>   6 <i><font color='green'> * that others will use, modify and enhance the Software and contribute</font></i>
+<a name='L7'>   7 <i><font color='green'> * those enhancements back to the community. However, since we would</font></i>
+<a name='L8'>   8 <i><font color='green'> * like to make the Software available for broadest use, with as few</font></i>
+<a name='L9'>   9 <i><font color='green'> * restrictions as possible permission is hereby granted, free of</font></i>
+<a name='L10'>  10 <i><font color='green'> * charge, to any person obtaining a copy of this Software to deal in</font></i>
+<a name='L11'>  11 <i><font color='green'> * the Software under the copyrights without restriction, including</font></i>
+<a name='L12'>  12 <i><font color='green'> * without limitation the rights to use, copy, modify, merge, publish,</font></i>
+<a name='L13'>  13 <i><font color='green'> * distribute, sublicense, and/or sell copies of the Software, and to</font></i>
+<a name='L14'>  14 <i><font color='green'> * permit persons to whom the Software is furnished to do so, subject to</font></i>
+<a name='L15'>  15 <i><font color='green'> * the following conditions:</font></i>
+<a name='L16'>  16 <i><font color='green'> * </font></i>
+<a name='L17'>  17 <i><font color='green'> * The above copyright notice and this permission notice shall be</font></i>
+<a name='L18'>  18 <i><font color='green'> * included in all copies or substantial portions of the Software.</font></i>
+<a name='L19'>  19 <i><font color='green'> * </font></i>
+<a name='L20'>  20 <i><font color='green'> * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,</font></i>
+<a name='L21'>  21 <i><font color='green'> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF</font></i>
+<a name='L22'>  22 <i><font color='green'> * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</font></i>
+<a name='L23'>  23 <i><font color='green'> * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS</font></i>
+<a name='L24'>  24 <i><font color='green'> * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN</font></i>
+<a name='L25'>  25 <i><font color='green'> * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</font></i>
+<a name='L26'>  26 <i><font color='green'> * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</font></i>
+<a name='L27'>  27 <i><font color='green'> * SOFTWARE.</font></i>
+<a name='L28'>  28 <i><font color='green'> * </font></i>
+<a name='L29'>  29 <i><font color='green'> * The name and trademarks of copyright holder(s) may NOT be used in</font></i>
+<a name='L30'>  30 <i><font color='green'> * advertising or publicity pertaining to the Software or any</font></i>
+<a name='L31'>  31 <i><font color='green'> * derivatives without specific, written prior permission.</font></i>
+<a name='L32'>  32 <i><font color='green'> */</font></i>
+<a name='L33'>  33 
+<a name='L34'>  34 <font color='darkred'>#include</font> &lt;<a href='588.html'>config.h</a>&gt;
+<a name='L35'>  35 <font color='darkred'>#include</font> "<a href='829.html'>queue.h</a>"
+<a name='L36'>  36 <font color='darkred'>#include</font> &lt;assert.h&gt;
+<a name='L37'>  37 <font color='darkred'>#include</font> "<a href='872.html'>compiler.h</a>"
+<a name='L38'>  38 <font color='darkred'>#include</font> "<a href='882.html'>leak-checker.h</a>"
+<a name='L39'>  39 <font color='darkred'>#include</font> "<a href='865.html'>ofpbuf.h</a>"
+<a name='L40'>  40 
+<a name='L41'>  41 <b>static</b> <b>void</b> <a href='../S/905.html#L120' title='Defined at 120 in cbench/openflow/lib/queue.c.'>check_queue</a>(<b>struct</b> <a href='../Y/5302.html' title='Multiple used in 14 places.'>ofp_queue</a> *<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>);
+<a name='L42'>  42 
+<a name='L43'>  43 <i><font color='green'>/* Initializes 'q' as an empty packet queue. */</font></i>
+<a name='L44'>  44 <b>void</b>
+<a name='L45'>  45 <a href='../R/4236.html' title='Multiple refered from 4 places.'>queue_init</a>(<b>struct</b> <a href='../Y/5302.html' title='Multiple used in 14 places.'>ofp_queue</a> *<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>)
+<a name='L46'>  46 <font color='red'>{</font>
+<a name='L47'>  47     <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> = 0;
+<a name='L48'>  48     <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L49'>  49     <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L50'>  50 <font color='red'>}</font>
+<a name='L51'>  51 
+<a name='L52'>  52 <i><font color='green'>/* Destroys 'q' and all of the packets that it contains. */</font></i>
+<a name='L53'>  53 <b>void</b>
+<a name='L54'>  54 <a href='../R/4235.html' title='Multiple refered from 3 places.'>queue_destroy</a>(<b>struct</b> <a href='../Y/5302.html' title='Multiple used in 14 places.'>ofp_queue</a> *<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>)
+<a name='L55'>  55 <font color='red'>{</font>
+<a name='L56'>  56     <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> *<a href='../Y/2216.html' title='Multiple used in 5 places.'>cur</a>, *<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L57'>  57     <b>for</b> (<a href='../Y/2216.html' title='Multiple used in 5 places.'>cur</a> = <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a>; <a href='../Y/2216.html' title='Multiple used in 5 places.'>cur</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>; <a href='../Y/2216.html' title='Multiple used in 5 places.'>cur</a> = <a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>) <font color='red'>{</font>
+<a name='L58'>  58         <a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a> = <a href='../Y/2216.html' title='Multiple used in 5 places.'>cur</a>-&gt;<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L59'>  59         <a href='../S/887.html#L110' title='Defined at 110 in cbench/openflow/lib/ofpbuf.c.'>ofpbuf_delete</a>(<a href='../Y/2216.html' title='Multiple used in 5 places.'>cur</a>);
+<a name='L60'>  60     <font color='red'>}</font>
+<a name='L61'>  61 <font color='red'>}</font>
+<a name='L62'>  62 
+<a name='L63'>  63 <i><font color='green'>/* Removes and destroys all of the packets in 'q', rendering it empty. */</font></i>
+<a name='L64'>  64 <b>void</b>
+<a name='L65'>  65 <a href='../S/829.html#L46' title='Refered from 46 in cbench/openflow/lib/queue.h.'>queue_clear</a>(<b>struct</b> <a href='../Y/5302.html' title='Multiple used in 14 places.'>ofp_queue</a> *<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>)
+<a name='L66'>  66 <font color='red'>{</font>
+<a name='L67'>  67     <a href='../S/905.html#L54' title='Defined at 54 in cbench/openflow/lib/queue.c.'>queue_destroy</a>(<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>);
+<a name='L68'>  68     <a href='../S/905.html#L45' title='Defined at 45 in cbench/openflow/lib/queue.c.'>queue_init</a>(<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>);
+<a name='L69'>  69 <font color='red'>}</font>
+<a name='L70'>  70 
+<a name='L71'>  71 <i><font color='green'>/* Advances the first packet in 'q' from 'q-&gt;head' to 'next', which should be</font></i>
+<a name='L72'>  72 <i><font color='green'> * the second packet in the queue.</font></i>
+<a name='L73'>  73 <i><font color='green'> *</font></i>
+<a name='L74'>  74 <i><font color='green'> * The odd, unsafe interface here allows the first packet in the queue to be</font></i>
+<a name='L75'>  75 <i><font color='green'> * passed to a function for possible consumption (and destruction) and only</font></i>
+<a name='L76'>  76 <i><font color='green'> * dropped from the queue if that function actually accepts it. */</font></i>
+<a name='L77'>  77 <b>void</b>
+<a name='L78'>  78 <a href='../R/4233.html' title='Multiple refered from 3 places.'>queue_advance_head</a>(<b>struct</b> <a href='../Y/5302.html' title='Multiple used in 14 places.'>ofp_queue</a> *<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>, <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/4799.html' title='Multiple used in 2 places.'>next</a>)
+<a name='L79'>  79 <font color='red'>{</font>
+<a name='L80'>  80     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>);
+<a name='L81'>  81     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a>);
+<a name='L82'>  82     <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a> = <a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>;
+<a name='L83'>  83     <b>if</b> (<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) <font color='red'>{</font>
+<a name='L84'>  84         <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L85'>  85     <font color='red'>}</font>
+<a name='L86'>  86     <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>--;
+<a name='L87'>  87 <font color='red'>}</font>
+<a name='L88'>  88 
+<a name='L89'>  89 <i><font color='green'>/* Appends 'b' to the tail of 'q'. */</font></i>
+<a name='L90'>  90 <b>void</b>
+<a name='L91'>  91 <a href='../R/4240.html' title='Multiple refered from 3 places.'>queue_push_tail</a>(<b>struct</b> <a href='../Y/5302.html' title='Multiple used in 14 places.'>ofp_queue</a> *<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>, <b>struct</b> <a href='../Y/5376.html' title='Multiple used in 231 places.'>ofpbuf</a> *<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>)
+<a name='L92'>  92 <font color='red'>{</font>
+<a name='L93'>  93     <a href='../S/905.html#L120' title='Defined at 120 in cbench/openflow/lib/queue.c.'>check_queue</a>(<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>);
+<a name='L94'>  94     <a href='../D/8195.html' title='Multiple defined in 2 places.'>leak_checker_claim</a>(<a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>);
+<a name='L95'>  95 
+<a name='L96'>  96     <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>-&gt;<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a> = <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>;
+<a name='L97'>  97     <b>if</b> (<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>++) <font color='red'>{</font>
+<a name='L98'>  98         <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a>-&gt;<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a> = <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>;
+<a name='L99'>  99     <font color='red'>}</font> <b>else</b> <font color='red'>{</font>
+<a name='L100'> 100         <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a> = <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>;
+<a name='L101'> 101     <font color='red'>}</font>
+<a name='L102'> 102     <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a> = <a href='../Y/1564.html' title='Multiple used in 874 places.'>b</a>;
+<a name='L103'> 103 
+<a name='L104'> 104     <a href='../S/905.html#L120' title='Defined at 120 in cbench/openflow/lib/queue.c.'>check_queue</a>(<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>);
+<a name='L105'> 105 <font color='red'>}</font>
+<a name='L106'> 106 
+<a name='L107'> 107 <i><font color='green'>/* Removes the first buffer from 'q', which must not be empty, and returns</font></i>
+<a name='L108'> 108 <i><font color='green'> * it.  The caller must free the buffer (with ofpbuf_delete()) when it is no</font></i>
+<a name='L109'> 109 <i><font color='green'> * longer needed. */</font></i>
+<a name='L110'> 110 <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> *
+<a name='L111'> 111 <a href='../R/4239.html' title='Multiple refered from 4 places.'>queue_pop_head</a>(<b>struct</b> <a href='../Y/5302.html' title='Multiple used in 14 places.'>ofp_queue</a> *<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>)
+<a name='L112'> 112 <font color='red'>{</font>
+<a name='L113'> 113     <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> *<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a> = <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a>;
+<a name='L114'> 114     <a href='../S/905.html#L78' title='Defined at 78 in cbench/openflow/lib/queue.c.'>queue_advance_head</a>(<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>, <a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a>-&gt;<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>);
+<a name='L115'> 115     <b>return</b> <a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a>;
+<a name='L116'> 116 <font color='red'>}</font>
+<a name='L117'> 117 
+<a name='L118'> 118 <i><font color='green'>/* Checks the internal integrity of 'q'.  For use in debugging. */</font></i>
+<a name='L119'> 119 <b>static</b> <b>void</b>
+<a name='L120'> 120 <a href='../R/2348.html' title='Multiple refered from 3 places.'>check_queue</a>(<b>struct</b> <a href='../Y/5302.html' title='Multiple used in 14 places.'>ofp_queue</a> *<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a> <a href='../D/5808.html' title='Multiple defined in 5 places.'>UNUSED</a>)
+<a name='L121'> 121 <font color='red'>{</font>
+<a name='L122'> 122 <font color='darkred'>#if</font> 0
+<a name='L123'> 123     <b>struct</b> <a href='../S/865.html#L41' title='Defined at 41 in cbench/openflow/lib/ofpbuf.h.'>ofpbuf</a> *<a href='../Y/3957.html' title='Multiple used in 11 places.'>iter</a>;
+<a name='L124'> 124     <a href='../Y/6800.html' title='Multiple used in 615 places.'>size_t</a> <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>;
+<a name='L125'> 125 
+<a name='L126'> 126     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> == 0
+<a name='L127'> 127            ? <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a> &amp;&amp; <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a> == <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>
+<a name='L128'> 128            : <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a> &amp;&amp; <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>);
+<a name='L129'> 129 
+<a name='L130'> 130     <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> = 0;
+<a name='L131'> 131     <b>for</b> (<a href='../Y/3957.html' title='Multiple used in 11 places.'>iter</a> = <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/3592.html' title='Multiple used in 341 places.'>head</a>; <a href='../Y/3957.html' title='Multiple used in 11 places.'>iter</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>; <a href='../Y/3957.html' title='Multiple used in 11 places.'>iter</a> = <a href='../Y/3957.html' title='Multiple used in 11 places.'>iter</a>-&gt;<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a>) <font color='red'>{</font>
+<a name='L132'> 132         <a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>++;
+<a name='L133'> 133         <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>((<a href='../Y/3957.html' title='Multiple used in 11 places.'>iter</a>-&gt;<a href='../S/838.html#L116' title='Defined at 116 in cbench/openflow/lib/port-array.c.'>next</a> != <a href='../Y/603.html' title='Multiple used in 2170 places.'>NULL</a>) == (<a href='../Y/3957.html' title='Multiple used in 11 places.'>iter</a> != <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/7239.html' title='Multiple used in 214 places.'>tail</a>));
+<a name='L134'> 134     <font color='red'>}</font>
+<a name='L135'> 135     <a href='../Y/1502.html' title='Multiple used in 179 places.'>assert</a>(<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a> == <a href='../Y/6187.html' title='Multiple used in 118 places.'>q</a>-&gt;<a href='../Y/4560.html' title='Multiple used in 375 places.'>n</a>);
+<a name='L136'> 136 <font color='darkred'>#endif</font>
+<a name='L137'> 137 <font color='red'>}</font>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;]<a href='#L45'>[^]</a><a href='#L120'>[v]</a><a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>

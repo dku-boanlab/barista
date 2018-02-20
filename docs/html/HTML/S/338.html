@@ -1,0 +1,201 @@
+<html>
+<head>
+<title>cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h</title>
+<meta name='robots' content='noindex,nofollow'>
+<meta name='generator' content='GLOBAL-5.7.1'>
+</head>
+<body text='#191970' bgcolor='#f5f5dc' vlink='gray'>
+<a name='TOP'><h2><a href='../mains.html'>root</a>/<a href='../files/1100.html'>cbench</a>/<a href='../files/1124.html'>openflow</a>/<a href='../files/1144.html'>utilities</a>/<a href='../files/1145.html'>wireshark_dissectors</a>/<a href='../files/1147.html'>wireshark-1.0.0-includes</a>/simple_dialog.h</h2>
+<i><font color='green'>/* [&lt;][&gt;][^][v][top]<a href='#BOTTOM'>[bottom]</a><a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+<hr>
+<pre>
+<a name='L1'>   1 <i><font color='green'>/* simple_dialog.h</font></i>
+<a name='L2'>   2 <i><font color='green'> * Definitions for alert box routines with toolkit-independent APIs but</font></i>
+<a name='L3'>   3 <i><font color='green'> * toolkit-dependent implementations.</font></i>
+<a name='L4'>   4 <i><font color='green'> *</font></i>
+<a name='L5'>   5 <i><font color='green'> * $Id: simple_dialog.h 3992 2008-06-10 03:13:11Z dgu $</font></i>
+<a name='L6'>   6 <i><font color='green'> *</font></i>
+<a name='L7'>   7 <i><font color='green'> * Wireshark - Network traffic analyzer</font></i>
+<a name='L8'>   8 <i><font color='green'> * By Gerald Combs &lt;gerald@wireshark.org&gt;</font></i>
+<a name='L9'>   9 <i><font color='green'> * Copyright 1998 Gerald Combs</font></i>
+<a name='L10'>  10 <i><font color='green'> *</font></i>
+<a name='L11'>  11 <i><font color='green'> * This program is free software; you can redistribute it and/or</font></i>
+<a name='L12'>  12 <i><font color='green'> * modify it under the terms of the GNU General Public License</font></i>
+<a name='L13'>  13 <i><font color='green'> * as published by the Free Software Foundation; either version 2</font></i>
+<a name='L14'>  14 <i><font color='green'> * of the License, or (at your option) any later version.</font></i>
+<a name='L15'>  15 <i><font color='green'> *</font></i>
+<a name='L16'>  16 <i><font color='green'> * This program is distributed in the hope that it will be useful,</font></i>
+<a name='L17'>  17 <i><font color='green'> * but WITHOUT ANY WARRANTY; without even the implied warranty of</font></i>
+<a name='L18'>  18 <i><font color='green'> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</font></i>
+<a name='L19'>  19 <i><font color='green'> * GNU General Public License for more details.</font></i>
+<a name='L20'>  20 <i><font color='green'> *</font></i>
+<a name='L21'>  21 <i><font color='green'> * You should have received a copy of the GNU General Public License</font></i>
+<a name='L22'>  22 <i><font color='green'> * along with this program; if not, write to the Free Software</font></i>
+<a name='L23'>  23 <i><font color='green'> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.</font></i>
+<a name='L24'>  24 <i><font color='green'> */</font></i>
+<a name='L25'>  25 
+<a name='L26'>  26 <font color='darkred'>#ifndef</font> <a href='../S/338.html#L27' title='Defined at 27 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>__DIALOG_H__</a>
+<a name='L27'>  27 <font color='darkred'>#define</font> <a href='../S/338.html#L26' title='Refered from 26 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>__DIALOG_H__</a>
+<a name='L28'>  28 
+<a name='L29'>  29 <font color='darkred'>#ifdef</font> <a href='../Y/1158.html' title='Multiple used in 106 places.'>__cplusplus</a>
+<a name='L30'>  30 <b>extern</b> "C" <font color='red'>{</font>
+<a name='L31'>  31 <font color='darkred'>#endif</font> <i><font color='green'>/* __cplusplus */</font></i>
+<a name='L32'>  32 
+<a name='L33'>  33 <i><font color='green'>/** @file</font></i>
+<a name='L34'>  34 <i><font color='green'> *  Simple dialog box.</font></i>
+<a name='L35'>  35 <i><font color='green'> *  @ingroup dialog_group</font></i>
+<a name='L36'>  36 <i><font color='green'> */</font></i>
+<a name='L37'>  37 
+<a name='L38'>  38 
+<a name='L39'>  39 <i><font color='green'>/** Dialog types. */</font></i>
+<a name='L40'>  40 <b>typedef</b> <b>enum</b> <font color='red'>{</font> 
+<a name='L41'>  41     ESD_TYPE_INFO,          <i><font color='green'>/**&lt; tells the user something they should know, but not requiring</font></i>
+<a name='L42'>  42 <i><font color='green'>                                    any action; the only button should be "OK" */</font></i>
+<a name='L43'>  43     ESD_TYPE_WARN,          <i><font color='green'>/**&lt; tells the user about a problem; the only button should be "OK" */</font></i>
+<a name='L44'>  44     ESD_TYPE_CONFIRMATION,  <i><font color='green'>/**&lt; asks the user for confirmation; there should be more than</font></i>
+<a name='L45'>  45 <i><font color='green'>                                    one button */</font></i>
+<a name='L46'>  46     ESD_TYPE_ERROR,         <i><font color='green'>/**&lt; tells the user about a serious problem; the only button should be "OK" */</font></i>
+<a name='L47'>  47     ESD_TYPE_STOP           <i><font color='green'>/**&lt; tells the user a stop action is in progress, there should be no button */</font></i>
+<a name='L48'>  48 <font color='red'>}</font> <a href='../R/432.html' title='Multiple refered from 4 places.'>ESD_TYPE_E</a>;
+<a name='L49'>  49 
+<a name='L50'>  50 <i><font color='green'>/** display no buttons at all */</font></i>
+<a name='L51'>  51 <font color='darkred'>#define</font> ESD_BTN_NONE   0x00
+<a name='L52'>  52 <i><font color='green'>/** display an "Ok" button */</font></i>
+<a name='L53'>  53 <font color='darkred'>#define</font> <a href='../S/338.html#L68' title='Refered from 68 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_BTN_OK</a>     0x01 
+<a name='L54'>  54 <i><font color='green'>/** display a "Cancel" button */</font></i>
+<a name='L55'>  55 <font color='darkred'>#define</font> <a href='../R/426.html' title='Multiple refered from 3 places.'>ESD_BTN_CANCEL</a> 0x02 
+<a name='L56'>  56 <i><font color='green'>/** display a "Yes" button */</font></i>
+<a name='L57'>  57 <font color='darkred'>#define</font> <a href='../R/431.html' title='Multiple refered from 2 places.'>ESD_BTN_YES</a>    0x04 
+<a name='L58'>  58 <i><font color='green'>/** display a "No" button */</font></i>
+<a name='L59'>  59 <font color='darkred'>#define</font> <a href='../R/428.html' title='Multiple refered from 2 places.'>ESD_BTN_NO</a>     0x08 
+<a name='L60'>  60 <i><font color='green'>/** display a "Clear" button */</font></i>
+<a name='L61'>  61 <font color='darkred'>#define</font> ESD_BTN_CLEAR  0x10
+<a name='L62'>  62 <i><font color='green'>/** display a "Save" button */</font></i>
+<a name='L63'>  63 <font color='darkred'>#define</font> <a href='../S/338.html#L74' title='Refered from 74 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_BTN_SAVE</a>   0x20
+<a name='L64'>  64 <i><font color='green'>/** display a "Continue without Saving" button */</font></i>
+<a name='L65'>  65 <font color='darkred'>#define</font> <a href='../S/338.html#L74' title='Refered from 74 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_BTN_DONT_SAVE</a> 0x40 
+<a name='L66'>  66 
+<a name='L67'>  67 <i><font color='green'>/** Standard button combination "Ok" + "Cancel". */</font></i>
+<a name='L68'>  68 <font color='darkred'>#define</font> ESD_BTNS_OK_CANCEL      (<a href='../S/338.html#L53' title='Defined at 53 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_BTN_OK</a>|<a href='../S/338.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_BTN_CANCEL</a>)
+<a name='L69'>  69 <i><font color='green'>/** Standard button combination "Yes" + "No". */</font></i>
+<a name='L70'>  70 <font color='darkred'>#define</font> ESD_BTNS_YES_NO         (<a href='../S/338.html#L57' title='Defined at 57 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_BTN_YES</a>|<a href='../S/338.html#L59' title='Defined at 59 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_BTN_NO</a>)
+<a name='L71'>  71 <i><font color='green'>/** Standard button combination "Yes" + "No" + "Cancel". */</font></i>
+<a name='L72'>  72 <font color='darkred'>#define</font> ESD_BTNS_YES_NO_CANCEL  (<a href='../S/338.html#L57' title='Defined at 57 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_BTN_YES</a>|<a href='../S/338.html#L59' title='Defined at 59 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_BTN_NO</a>|<a href='../S/338.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_BTN_CANCEL</a>)
+<a name='L73'>  73 <i><font color='green'>/** Standard button combination "No" + "Cancel" + "Save". */</font></i>
+<a name='L74'>  74 <font color='darkred'>#define</font> ESD_BTNS_SAVE_DONTSAVE_CANCEL (<a href='../S/338.html#L65' title='Defined at 65 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_BTN_DONT_SAVE</a>|<a href='../S/338.html#L55' title='Defined at 55 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_BTN_CANCEL</a>|<a href='../S/338.html#L63' title='Defined at 63 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_BTN_SAVE</a>)
+<a name='L75'>  75 
+<a name='L76'>  76 <font color='darkred'>#if</font> <a href='../Y/1132.html' title='Multiple used in 7 places.'>__GNUC__</a> &gt;= 2
+<a name='L77'>  77 <i><font color='green'>/** Create and show a simple dialog.</font></i>
+<a name='L78'>  78 <i><font color='green'> *</font></i>
+<a name='L79'>  79 <i><font color='green'> * @param type type of dialog</font></i>
+<a name='L80'>  80 <i><font color='green'> * @param btn_mask the buttons to display</font></i>
+<a name='L81'>  81 <i><font color='green'> * @param msg_format printf like message format</font></i>
+<a name='L82'>  82 <i><font color='green'> * @param ... printf like parameters</font></i>
+<a name='L83'>  83 <i><font color='green'> * @return the newly created dialog</font></i>
+<a name='L84'>  84 <i><font color='green'> */</font></i>
+<a name='L85'>  85 <b>extern</b> <a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a> <a href='../Y/6779.html' title='Multiple used in 2 places.'>simple_dialog</a>(<a href='../S/338.html#L48' title='Defined at 48 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_TYPE_E</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1686.html' title='Multiple used in 4 places.'>btn_mask</a>,
+<a name='L86'>  86     <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/4521.html' title='Multiple used in 6 places.'>msg_format</a>, ...)
+<a name='L87'>  87     <b>__attribute__</b>((<a href='../Y/3199.html' title='Multiple used in 321 places.'>format</a> (<a href='../Y/5906.html' title='Multiple used in 387 places.'>printf</a>, 3, 4)));
+<a name='L88'>  88 <i><font color='green'>/** Create and show a simple dialog using a va_list.</font></i>
+<a name='L89'>  89 <i><font color='green'> *</font></i>
+<a name='L90'>  90 <i><font color='green'> * @param type type of dialog</font></i>
+<a name='L91'>  91 <i><font color='green'> * @param btn_mask the buttons to display</font></i>
+<a name='L92'>  92 <i><font color='green'> * @param msg_format printf like message format</font></i>
+<a name='L93'>  93 <i><font color='green'> * @param ap parameters</font></i>
+<a name='L94'>  94 <i><font color='green'> * @return the newly created dialog</font></i>
+<a name='L95'>  95 <i><font color='green'> */</font></i>
+<a name='L96'>  96 <b>extern</b> <a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a> <a href='../Y/7824.html' title='Multiple used in 2 places.'>vsimple_dialog</a>(<a href='../S/338.html#L48' title='Defined at 48 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_TYPE_E</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1686.html' title='Multiple used in 4 places.'>btn_mask</a>,
+<a name='L97'>  97    <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/4521.html' title='Multiple used in 6 places.'>msg_format</a>, <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a> <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L98'>  98 <font color='darkred'>#else</font>
+<a name='L99'>  99 <i><font color='green'>/** Create and show a simple dialog.</font></i>
+<a name='L100'> 100 <i><font color='green'> *</font></i>
+<a name='L101'> 101 <i><font color='green'> * @param type type of dialog</font></i>
+<a name='L102'> 102 <i><font color='green'> * @param btn_mask the buttons to display</font></i>
+<a name='L103'> 103 <i><font color='green'> * @param msg_format printf like message format</font></i>
+<a name='L104'> 104 <i><font color='green'> * @param ... printf like parameters</font></i>
+<a name='L105'> 105 <i><font color='green'> * @return the newly created dialog</font></i>
+<a name='L106'> 106 <i><font color='green'> */</font></i>
+<a name='L107'> 107 <b>extern</b> <a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a> <a href='../Y/6779.html' title='Multiple used in 2 places.'>simple_dialog</a>(<a href='../S/338.html#L48' title='Defined at 48 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_TYPE_E</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1686.html' title='Multiple used in 4 places.'>btn_mask</a>,
+<a name='L108'> 108     <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/4521.html' title='Multiple used in 6 places.'>msg_format</a>, ...);
+<a name='L109'> 109 <i><font color='green'>/** Create and show a simple dialog using a va_list.</font></i>
+<a name='L110'> 110 <i><font color='green'> *</font></i>
+<a name='L111'> 111 <i><font color='green'> * @param type type of dialog</font></i>
+<a name='L112'> 112 <i><font color='green'> * @param btn_mask the buttons to display</font></i>
+<a name='L113'> 113 <i><font color='green'> * @param msg_format printf like message format</font></i>
+<a name='L114'> 114 <i><font color='green'> * @param ap parameters</font></i>
+<a name='L115'> 115 <i><font color='green'> * @return the newly created dialog</font></i>
+<a name='L116'> 116 <i><font color='green'> */</font></i>
+<a name='L117'> 117 <b>extern</b> <a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a> <a href='../Y/7824.html' title='Multiple used in 2 places.'>vsimple_dialog</a>(<a href='../S/338.html#L48' title='Defined at 48 in cbench/openflow/utilities/wireshark_dissectors/wireshark-1.0.0-includes/simple_dialog.h.'>ESD_TYPE_E</a> <a href='../Y/7553.html' title='Multiple used in 958 places.'>type</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> <a href='../Y/1686.html' title='Multiple used in 4 places.'>btn_mask</a>,
+<a name='L118'> 118     <b>const</b> <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/4521.html' title='Multiple used in 6 places.'>msg_format</a>, <a href='../Y/7711.html' title='Multiple used in 68 places.'>va_list</a> <a href='../Y/1396.html' title='Multiple used in 128 places.'>ap</a>);
+<a name='L119'> 119 <font color='darkred'>#endif</font>
+<a name='L120'> 120 
+<a name='L121'> 121 <i><font color='green'>/** Callback function type for simple_dialog_set_cb() */</font></i>
+<a name='L122'> 122 <b>typedef</b> <b>void</b> (* <a href='../Y/6780.html' title='Multiple used in 2 places.'>simple_dialog_cb_t</a>) (<a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a> <a href='../Y/2396.html' title='Multiple used in 5 places.'>dialog</a>, <a href='../Y/3437.html' title='Multiple used in 641 places.'>gint</a> btn, <a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a> <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L123'> 123 
+<a name='L124'> 124 <i><font color='green'>/** Set the callback function for the dialog, called when a button was pressed.</font></i>
+<a name='L125'> 125 <i><font color='green'> *</font></i>
+<a name='L126'> 126 <i><font color='green'> * @param dialog the dialog from simple_dialog()</font></i>
+<a name='L127'> 127 <i><font color='green'> * @param callback_fct the callback function to set</font></i>
+<a name='L128'> 128 <i><font color='green'> * @param data data to be passed to the callback function</font></i>
+<a name='L129'> 129 <i><font color='green'> */</font></i>
+<a name='L130'> 130 <b>extern</b> <b>void</b> simple_dialog_set_cb(<a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a> <a href='../Y/2396.html' title='Multiple used in 5 places.'>dialog</a>, <a href='../Y/6780.html' title='Multiple used in 2 places.'>simple_dialog_cb_t</a> callback_fct, <a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a> <a href='../Y/2247.html' title='Multiple used in 1185 places.'>data</a>);
+<a name='L131'> 131 
+<a name='L132'> 132 <i><font color='green'>/** Close the dialog, useful for "no button" dialogs.</font></i>
+<a name='L133'> 133 <i><font color='green'> *</font></i>
+<a name='L134'> 134 <i><font color='green'> * @param dialog the dialog to close from simple_dialog()</font></i>
+<a name='L135'> 135 <i><font color='green'> */</font></i>
+<a name='L136'> 136 <b>extern</b> <b>void</b> simple_dialog_close(<a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a> <a href='../Y/2396.html' title='Multiple used in 5 places.'>dialog</a>);
+<a name='L137'> 137 
+<a name='L138'> 138 <i><font color='green'>/** Add a check button to the dialog (e.g. "Don't show this message again")</font></i>
+<a name='L139'> 139 <i><font color='green'> * </font></i>
+<a name='L140'> 140 <i><font color='green'> * @param dialog the dialog from simple_dialog()</font></i>
+<a name='L141'> 141 <i><font color='green'> * @param text the text to display </font></i>
+<a name='L142'> 142 <i><font color='green'> */</font></i>
+<a name='L143'> 143 <b>extern</b> <b>void</b> simple_dialog_check_set(<a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a> <a href='../Y/2396.html' title='Multiple used in 5 places.'>dialog</a>, <a href='../Y/3315.html' title='Multiple used in 404 places.'>gchar</a> *<a href='../Y/7318.html' title='Multiple used in 13 places.'>text</a>);
+<a name='L144'> 144 
+<a name='L145'> 145 <i><font color='green'>/** Get the check buttons state.</font></i>
+<a name='L146'> 146 <i><font color='green'> * </font></i>
+<a name='L147'> 147 <i><font color='green'> * @param dialog the dialog from simple_dialog()</font></i>
+<a name='L148'> 148 <i><font color='green'> * @return current button state (TRUE is checked)</font></i>
+<a name='L149'> 149 <i><font color='green'> */</font></i>
+<a name='L150'> 150 <b>extern</b> <a href='../Y/3313.html' title='Multiple used in 443 places.'>gboolean</a> simple_dialog_check_get(<a href='../Y/3453.html' title='Multiple used in 68 places.'>gpointer</a> <a href='../Y/2396.html' title='Multiple used in 5 places.'>dialog</a>);
+<a name='L151'> 151 
+<a name='L152'> 152 <i><font color='green'>/** Surround the primary dialog message text by </font></i>
+<a name='L153'> 153 <i><font color='green'> *  simple_dialog_primary_start() and simple_dialog_primary_end().</font></i>
+<a name='L154'> 154 <i><font color='green'> *  To highlight the first sentence (will take effect on GTK2 only).</font></i>
+<a name='L155'> 155 <i><font color='green'> */</font></i>
+<a name='L156'> 156 <b>extern</b> <b>char</b> *simple_dialog_primary_start(<b>void</b>);
+<a name='L157'> 157 <i><font color='green'>/** Surround the primary dialog message text by </font></i>
+<a name='L158'> 158 <i><font color='green'> *  simple_dialog_primary_start() and simple_dialog_primary_end().</font></i>
+<a name='L159'> 159 <i><font color='green'> *  To highlight the first sentence (will take effect on GTK2 only).</font></i>
+<a name='L160'> 160 <i><font color='green'> */</font></i>
+<a name='L161'> 161 <b>extern</b> <b>char</b> *simple_dialog_primary_end(<b>void</b>);
+<a name='L162'> 162 
+<a name='L163'> 163 <i><font color='green'>/** Escape the message text, if it probably contains Pango escape sequences.</font></i>
+<a name='L164'> 164 <i><font color='green'> *  For example html like tags starting with a &lt;.</font></i>
+<a name='L165'> 165 <i><font color='green'> *</font></i>
+<a name='L166'> 166 <i><font color='green'> * @param msg the string to escape</font></i>
+<a name='L167'> 167 <i><font color='green'> * @return the escaped message text, must be freed with g_free() later</font></i>
+<a name='L168'> 168 <i><font color='green'> */</font></i>
+<a name='L169'> 169 <b>extern</b> <b>char</b> *simple_dialog_format_message(<b>const</b> <b>char</b> *<a href='../Y/4517.html' title='Multiple used in 949 places.'>msg</a>);
+<a name='L170'> 170 
+<a name='L171'> 171 <i><font color='green'>/**</font></i>
+<a name='L172'> 172 <i><font color='green'> * Display all queued messages.</font></i>
+<a name='L173'> 173 <i><font color='green'> * If a routine is called to display a dialog before there are any windows</font></i>
+<a name='L174'> 174 <i><font color='green'> * open, information to use to display the dialog is queued up.  This</font></i>
+<a name='L175'> 175 <i><font color='green'> * routine should be called once there are windows open, so that the queued</font></i>
+<a name='L176'> 176 <i><font color='green'> * up dialogs are displayed on top of those windows.</font></i>
+<a name='L177'> 177 <i><font color='green'> */</font></i>
+<a name='L178'> 178 <b>extern</b> <b>void</b> display_queued_messages(<b>void</b>);
+<a name='L179'> 179 
+<a name='L180'> 180 <font color='darkred'>#ifdef</font> <a href='../Y/1158.html' title='Multiple used in 106 places.'>__cplusplus</a>
+<a name='L181'> 181 <font color='red'>}</font>
+<a name='L182'> 182 <font color='darkred'>#endif</font> <i><font color='green'>/* __cplusplus */</font></i>
+<a name='L183'> 183 
+<a name='L184'> 184 <font color='darkred'>#endif</font> <i><font color='green'>/* __DIALOG_H__ */</font></i>
+</pre>
+<hr>
+<a name='BOTTOM'>
+<i><font color='green'>/* [&lt;][&gt;][^][v]<a href='#TOP'>[top]</a>[bottom]<a href='../mains.html'>[index]</a><a href='../help.html'>[help]</a> */</font></i>
+</body>
+</html>
