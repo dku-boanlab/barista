@@ -17,6 +17,39 @@
 
 #include "rsm.h"
 
+/** \brief The SIGINT handler definition */
+void (*sigint_func)(int);
+
+/** \brief Function to handle the SIGINT signal */
+void sigint_handler(int sig)
+{
+    PRINTF("Got a SIGINT signal\n");
+
+    exit(0);
+}
+
+/** \brief The SIGKILL handler definition */
+void (*sigkill_func)(int);
+
+/** \brief Function to handle the SIGKILL signal */
+void sigkill_handler(int sig)
+{
+    PRINTF("Got a SIGKILL signal\n");
+
+    exit(0);
+}
+
+/** \brief The SIGTERM handler definition */
+void (*sigterm_func)(int);
+
+/** \brief Function to handle the SIGTERM signal */
+void sigterm_handler(int sig)
+{
+    PRINTF("Got a SIGTERM signal\n");
+
+    exit(0);
+}
+
 /**
  * \brief Function to monitor CPU and memory usages
  * \param argc The number of arguments
@@ -28,6 +61,10 @@ int main(int argc, char **argv)
 
     char cmd[__CONF_WORD_LEN] = {0};
     sprintf(cmd, "ps -p $(pgrep -x barista) -o %%cpu,%%mem 2> /dev/null | tail -n 1");
+
+    sigint_func = signal(SIGINT, sigint_handler);
+    sigkill_func = signal(SIGKILL, sigkill_handler);
+    sigterm_func = signal(SIGTERM, sigterm_handler);
 
     while (1) {
         time_t timer;

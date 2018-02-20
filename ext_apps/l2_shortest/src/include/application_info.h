@@ -7,9 +7,7 @@
  * \author Jaehyun Nam <namjh@kaist.ac.kr>
  */
 
-#include "common.h"
+#pragma once
 
-#include <signal.h>
-#include <sys/time.h>
-#include <sys/sysinfo.h>
+#define TARGET_APP "l2_shortest"
 

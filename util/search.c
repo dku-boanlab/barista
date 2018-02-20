@@ -7,7 +7,7 @@
  * @{
  *
  * \defgroup str Search Function
- * \brief Function to find configuration files
+ * \brief Function to find external configuration files
  * @{
  */
 

@@ -16,12 +16,14 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
         return -1;
 
     event_t ev;
+    event_out_t *ev_out = (event_out_t *)&ev;
 
-    ev.id = id;
-    ev.type = type;
-    ev.length = len;
-    ev.prev = ev.last = 0;
-    ev.checksum = 0;
+    ev_out->id = id;
+    ev_out->type = type;
+    ev_out->length = len;
+    ev_out->prev = ev_out->last = 0;
+    ev_out->checksum = 0;
+
     ev.FUNC_DATA = data;
 
     ev_ctx->num_events[type]++;
@@ -45,8 +47,6 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
         if (c->perm & COMPNT_WRITE) {
             if (c->site == COMPNT_INTERNAL) { // internal site
-                event_out_t *ev_out = (event_out_t *)&ev;
-
                 c->num_events[type]++;
 
                 int ret = c->handler(&ev, ev_out);
@@ -72,8 +72,6 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
             if (c->perm & COMPNT_WRITE) {
                 if (c->site == COMPNT_INTERNAL) { // internal site
-                    event_out_t *ev_out = (event_out_t *)&ev;
-
                     c->num_events[type]++;
 
                     int ret = c->handler(&ev, ev_out);

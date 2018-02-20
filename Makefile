@@ -46,8 +46,6 @@ $(PROG): $(addprefix $(OBJ_DIR)/,$(OBJ))
 	mv $(PROG) $(BIN_DIR)
 	@cd southbound; make; cd ..
 	@cd resource; make; cd ..
-	@cd ext_applications/l2_learning; make; cd ../..
-	@cd ext_applications/l2_shortest; make; cd ../..
 
 $(OBJ_DIR)/%.o: %.c
 	mkdir -p $(@D)
@@ -63,6 +61,4 @@ clean:
 	rm -rf $(BIN_DIR)/$(PROG) $(BIN_DIR)/core $(LOG_DIR)/* $(TMP_DIR)/* $(OBJ_DIR) $(INC_DIR)
 	@cd southbound; make clean; cd ..
 	@cd resource; make clean; cd ..
-	@cd ext_applications/l2_learning; make clean; cd ../..
-	@cd ext_applications/l2_shortest; make clean; cd ../..
 

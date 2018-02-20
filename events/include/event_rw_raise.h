@@ -20,9 +20,10 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, FUNC_TYPE *data)
         event_out_t ev_out;
         event_t *ev = (event_t *)&ev_out;
 
-        ev->id = id;
-        ev->type = type;
-        ev->length = len;
+        ev_out.id = id;
+        ev_out.type = type;
+        ev_out.length = len;
+
         ev_out.FUNC_DATA = data;
 
         ev_ctx->num_events[type]++;
