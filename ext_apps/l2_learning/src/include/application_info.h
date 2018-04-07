@@ -10,4 +10,3 @@
 #pragma once
 
 #define TARGET_APP "l2_learning"
-

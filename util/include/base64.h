@@ -13,4 +13,3 @@
 
 char *base64_encode(const char *bin, int len);
 char *base64_decode(const char *encoded);
-

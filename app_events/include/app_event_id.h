@@ -22,14 +22,6 @@ enum {
     AV_DP_DELETE_FLOW,
     AV_ALL_DOWNSTREAM,
     // internal (request-response)
-    AV_SW_GET_INFO,
-    AV_SW_GET_ALL_INFO,
-    AV_HOST_GET_INFO,
-    AV_HOST_GET_ALL_INFO,
-    AV_LINK_GET_INFO,
-    AV_LINK_GET_ALL_INFO,
-    AV_FLOW_GET_INFO,
-    AV_FLOW_GET_ALL_INFO,
     AV_WRT_INTSTREAM,
     // internal (notification)
     AV_SW_CONNECTED,
@@ -49,4 +41,3 @@ enum {
     AV_LOG_FATAL,
     AV_NUM_EVENTS,
 };
-

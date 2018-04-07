@@ -14,4 +14,3 @@
 #include "mac2int.h"
 
 #include <arpa/inet.h>
-

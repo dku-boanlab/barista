@@ -20,7 +20,7 @@
 #include <errno.h>
 
 #ifndef __DISABLE_CLI
-    #include "libcli.h"
+#include "libcli.h"
 #endif /* CLI */
 
 #define __CONF_ARGC 16
@@ -146,11 +146,11 @@
 /** \brief Functions to change the byte orders of 64-bit fields */
 /* @{ */
 #ifdef WORDS_BIGENDIAN
-    #define htonll(x) (x)
-    #define ntohll(x) (x)
+#define htonll(x) (x)
+#define ntohll(x) (x)
 #else
-    #define htonll(x) ((((uint64_t)htonl(x)) <<32) + htonl(x>> 32))
-    #define ntohll(x) ((((uint64_t)ntohl(x)) <<32) + ntohl(x>> 32))
+#define htonll(x) ((((uint64_t)htonl(x)) <<32) + htonl(x>> 32))
+#define ntohll(x) ((((uint64_t)ntohl(x)) <<32) + ntohl(x>> 32))
 #endif
 /* @} */
 
@@ -161,7 +161,7 @@
 #define cli_bufprt(cli, buf) cli_print(cli, "%s", buf)
 
 #ifdef __DISABLE_CLI
-    #define cli_print(cli, format, args...) printf("%s: " format, __FUNCTION__, ##args)
+#define cli_print(cli, format, args...) printf("%s: " format, __FUNCTION__, ##args)
 #endif /* CLI */
 /* @} */
 
@@ -169,13 +169,13 @@
 /* @{ */
 //#define __ENABLE_DEBUG
 #ifdef __ENABLE_DEBUG
-    #define DEBUG(format, args...) ({ printf("%s: " format, __FUNCTION__, ##args); fflush(stdout); })
-    #define PRINTF(format, args...) ({ printf("%s: " format, __FUNCTION__, ##args); fflush(stdout); })
-    #define PRINT_EV(format, args...) ({ printf("%s: " format, __FUNCTION__, ##args); fflush(stdout); })
+#define DEBUG(format, args...) ({ printf("%s: " format, __FUNCTION__, ##args); fflush(stdout); })
+#define PRINTF(format, args...) ({ printf("%s: " format, __FUNCTION__, ##args); fflush(stdout); })
+#define PRINT_EV(format, args...) ({ printf("%s: " format, __FUNCTION__, ##args); fflush(stdout); })
 #else /* !__ENABLE_DEBUG */
-    #define DEBUG(format, args...) (void)0
-    #define PRINTF(format, args...) ({ printf(format, ##args); fflush(stdout); })
-    #define PRINT_EV(format, args...) (void)0
+#define DEBUG(format, args...) (void)0
+#define PRINTF(format, args...) ({ printf(format, ##args); fflush(stdout); })
+#define PRINT_EV(format, args...) (void)0
 #endif /* !__ENABLE_DEBUG */
 
 #define PERROR(msg) fprintf(stdout, "\x1b[31m[%s:%d] %s: %s\x1b[0m\n", __FUNCTION__, __LINE__, (msg), strerror(errno))
@@ -198,4 +198,3 @@
 #define ALOG_INFO(id, format, args...)  av_log_info(id, format, ##args)
 #define ALOG_DEBUG(id, format, args...) av_log_debug(id, format, ##args)
 /* @} */
-

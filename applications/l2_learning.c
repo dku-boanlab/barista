@@ -126,10 +126,7 @@ static int discard_packet(const pktin_t *pktin)
  */
 static int l2_learning(const pktin_t *pktin)
 {
-#ifdef __ENABLE_CBENCH
-    send_packet(pktin, PORT_FLOOD);
-    return 0;
-#else /* !__ENABLE_CBENCH */
+#ifndef __ENABLE_CBENCH
     if ((pktin->proto & (PROTO_ARP | PROTO_IPV4)) == 0) {
         discard_packet(pktin);
         return -1;
@@ -219,7 +216,10 @@ static int l2_learning(const pktin_t *pktin)
         send_packet(pktin, port);
 
     return 0;
-#endif /* !__ENABLE_CBENCH */
+#else /* __ENABLE_CBENCH */
+    send_packet(pktin, PORT_FLOOD);
+    return 0;
+#endif /* __ENABLE_CBENCH */
 }
 
 /////////////////////////////////////////////////////////////////////

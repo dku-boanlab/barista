@@ -1,8 +1,0 @@
-var struct__AIRPDCAP__KEY__ITEM =
-[
-    [ "AIRPDCAP_KEY_ITEMDATA", "union__AIRPDCAP__KEY__ITEM_1_1AIRPDCAP__KEY__ITEMDATA.html", "union__AIRPDCAP__KEY__ITEM_1_1AIRPDCAP__KEY__ITEMDATA" ],
-    [ "AIRPDCAP_KEY_ITEMDATA_PWD", "struct__AIRPDCAP__KEY__ITEM_1_1AIRPDCAP__KEY__ITEMDATA__PWD.html", "struct__AIRPDCAP__KEY__ITEM_1_1AIRPDCAP__KEY__ITEMDATA__PWD" ],
-    [ "KeyData", "struct__AIRPDCAP__KEY__ITEM.html#ac9b38f1a859586bf78958258284b95b6", null ],
-    [ "KeyType", "struct__AIRPDCAP__KEY__ITEM.html#a65cc84ff060a43712818dd3966fd973f", null ],
-    [ "UserPwd", "struct__AIRPDCAP__KEY__ITEM.html#a01c21c3398050dd915cb49ed1a43b3a7", null ]
-];

@@ -122,4 +122,3 @@ int application_show_policy(cli_t *, char *);
 int application_show(cli_t *, char *);
 int application_list(cli_t *);
 int application_cli(cli_t *, char **);
-

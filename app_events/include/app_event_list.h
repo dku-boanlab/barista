@@ -29,15 +29,6 @@ void av_dp_delete_flow(uint32_t id, const flow_t *data);
 
 // internal (request-response) //////////////////////////////////////
 
-void av_sw_get_info(uint32_t id, switch_t *data);
-void av_sw_get_all_info(uint32_t id, switch_t *data);
-void av_host_get_info(uint32_t id, host_t *data);
-void av_host_get_all_info(uint32_t id, host_t *data);
-void av_link_get_info(uint32_t id, port_t *data);
-void av_link_get_all_info(uint32_t id, port_t *data);
-void av_flow_get_info(uint32_t id, flow_t *data);
-void av_flow_get_all_info(uint32_t id, flow_t *data);
-
 // internal (notification) //////////////////////////////////////////
 
 void av_sw_connected(uint32_t id, const switch_t *data);
@@ -58,4 +49,3 @@ void av_log_error(uint32_t id, char *format, ...);
 void av_log_fatal(uint32_t id, char *format, ...);
 
 /////////////////////////////////////////////////////////////////////
-

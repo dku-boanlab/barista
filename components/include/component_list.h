@@ -37,11 +37,6 @@ DECLARE_HANDLER_FUNC(conn_sb_handler);
 DECLARE_CLEANUP_FUNC(conn_sb_cleanup);
 DECLARE_CLI_FUNC(conn_sb_cli);
 
-DECLARE_MAIN_FUNC(conn_tls_main);
-DECLARE_HANDLER_FUNC(conn_tls_handler);
-DECLARE_CLEANUP_FUNC(conn_tls_cleanup);
-DECLARE_CLI_FUNC(conn_tls_cli);
-
 DECLARE_MAIN_FUNC(ofp_main);
 DECLARE_HANDLER_FUNC(ofp_handler);
 DECLARE_CLEANUP_FUNC(ofp_cleanup);
@@ -128,7 +123,6 @@ struct _compnt_func_t {
     {"log", log_main, log_handler, log_cleanup, log_cli},
     {"conn", conn_main, conn_handler, conn_cleanup, conn_cli},
     {"conn_sb", conn_sb_main, conn_sb_handler, conn_sb_cleanup, conn_sb_cli},
-    {"conn_tls", conn_tls_main, conn_tls_handler, conn_tls_cleanup, conn_tls_cli},
     {"ofp", ofp_main, ofp_handler, ofp_cleanup, ofp_cli},
     {"switch_mgmt", switch_mgmt_main, switch_mgmt_handler, switch_mgmt_cleanup, switch_mgmt_cli},
     {"host_mgmt", host_mgmt_main, host_mgmt_handler, host_mgmt_cleanup, host_mgmt_cli},

@@ -37,4 +37,3 @@ struct _app_func_t {
 } g_applications[] = {
     {"l2_learning", l2_learning_main, l2_learning_handler, l2_learning_cleanup, l2_learning_cli},
 }; /**< The list of function pointers */
-

@@ -61,4 +61,3 @@ clean:
 	rm -rf $(BIN_DIR)/$(PROG) $(BIN_DIR)/core $(LOG_DIR)/* $(TMP_DIR)/* $(OBJ_DIR) $(INC_DIR)
 	@cd southbound; make clean; cd ..
 	@cd resource; make clean; cd ..
-

@@ -12,4 +12,3 @@
 #include "common.h"
 
 uint32_t hash_func(const uint32_t *k, size_t length);
-

@@ -22,4 +22,3 @@ int ofp10_flow_mod(const flow_t *flow, int flag);
 int ofp10_flow_stats(const flow_t *flow);
 int ofp10_aggregate_stats(const flow_t *flow);
 int ofp10_port_stats(const port_t *port);
-

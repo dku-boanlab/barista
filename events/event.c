@@ -19,24 +19,43 @@
 #include "component.h"
 #include "cli.h"
 
+#include <zmq.h>
+
 /////////////////////////////////////////////////////////////////////
-//
+
 /** \brief The pointer of the context structure */
 static ctx_t *ev_ctx;
 
-/** \brief The set flag not to overwrite the context structure */
-int event_is_set;
+/** \brief The running flag of the event handler */
+static int ev_on;
+
+/////////////////////////////////////////////////////////////////////
+
+/** \brief The MQ context to pull events */
+void *ev_pull_ctx;
+
+/** \brief The MQ socket to pull events */
+void *ev_pull_sock;
+
+/** \brief The MQ context to handle request-reply events */
+void *ev_rep_ctx;
+
+/** \brief The MQ socket for components */
+void *ev_rep_comp;
+
+/** \brief The MQ socket for workers */
+void *ev_rep_work;
 
 /////////////////////////////////////////////////////////////////////
 
 /** \brief Switch related trigger function (non-const) */
 static int sw_rw_raise(uint32_t id, uint16_t type, uint16_t len, switch_t *data);
 /** \brief Port related trigger function (non-const) */
-static int port_rw_raise(uint32_t id, uint16_t type, uint16_t len, port_t *data);
+//static int port_rw_raise(uint32_t id, uint16_t type, uint16_t len, port_t *data);
 /** \brief Host related trigger function (non-const) */
-static int host_rw_raise(uint32_t id, uint16_t type, uint16_t len, host_t *data);
+//static int host_rw_raise(uint32_t id, uint16_t type, uint16_t len, host_t *data);
 /** \brief Flow related trigger function (non-const) */
-static int flow_rw_raise(uint32_t id, uint16_t type, uint16_t len, flow_t *data);
+//static int flow_rw_raise(uint32_t id, uint16_t type, uint16_t len, flow_t *data);
 
 /////////////////////////////////////////////////////////////////////
 
@@ -60,6 +79,27 @@ static int rs_ev_raise(uint32_t id, uint16_t type, uint16_t len, const resource_
 static int tr_ev_raise(uint32_t id, uint16_t type, uint16_t len, const traffic_t *data);
 /** \brief Log related trigger function (const) */
 static int log_ev_raise(uint32_t id, uint16_t type, uint16_t len, const char *data);
+
+/////////////////////////////////////////////////////////////////////
+
+#define EV_PUSH_EXT_MSG(id, type, size, data) { \
+    msg_t msg = {0}; \
+    msg.id = id; \
+    msg.type = type; \
+    memmove(msg.data, data, size); \
+    zmq_send(c->push_sock, &msg, sizeof(msg_t), 0); \
+}
+
+#define EV_SEND_EXT_MSG(id, type, size, data, output) ({ \
+    msg_t msg = {0}; \
+    msg.id = id; \
+    msg.type = type; \
+    memmove(msg.data, data, size); \
+    zmq_send(c->req_sock, &msg, sizeof(msg_t), 0); \
+    zmq_recv(c->req_sock, &msg, sizeof(msg_t), 0); \
+    memmove(output->data, msg.data, size); \
+    msg.ret; \
+})
 
 // Upstream events //////////////////////////////////////////////////
 
@@ -113,23 +153,6 @@ void ev_sw_get_fd(uint32_t id, switch_t *data) { sw_rw_raise(id, EV_SW_GET_FD, s
 void ev_sw_get_xid(uint32_t id, switch_t *data) { sw_rw_raise(id, EV_SW_GET_XID, sizeof(switch_t), data); }
 /** \brief EV_SW_GET_VERSION (fd or dpid) */
 void ev_sw_get_version(uint32_t id, switch_t *data) { sw_rw_raise(id, EV_SW_GET_VERSION, sizeof(switch_t), data); }
-
-/** \brief EV_SW_GET_INFO (dpid) */
-void ev_sw_get_info(uint32_t id, switch_t *data) { sw_rw_raise(id, EV_SW_GET_INFO, sizeof(switch_t), data); }
-/** \brief EV_SW_GET_ALL_INFO (none) */
-void ev_sw_get_all_info(uint32_t id, switch_t *data) { sw_rw_raise(id, EV_SW_GET_ALL_INFO, sizeof(switch_t), data); }
-/** \brief EV_HOST_GET_INFO (MAC address or IP address) */
-void ev_host_get_info(uint32_t id, host_t *data) { host_rw_raise(id, EV_HOST_GET_INFO, sizeof(host_t), data); }
-/** \brief EV_HOST_GET_ALL_INFO (none) */
-void ev_host_get_all_info(uint32_t id, host_t *data) { host_rw_raise(id, EV_HOST_GET_ALL_INFO, sizeof(host_t), data); }
-/** \brief EV_LINK_GET_INFO (dpid) */
-void ev_link_get_info(uint32_t id, port_t *data) { port_rw_raise(id, EV_LINK_GET_INFO, sizeof(port_t), data); }
-/** \brief EV_LINK_GET_ALL_INFO (none) */
-void ev_link_get_all_info(uint32_t id, port_t *data) { port_rw_raise(id, EV_LINK_GET_ALL_INFO, sizeof(port_t), data); }
-/** \brief EV_FLOW_GET_INFO (dpid) */
-void ev_flow_get_info(uint32_t id, flow_t *data) { flow_rw_raise(id, EV_FLOW_GET_INFO, sizeof(flow_t), data); }
-/** \brief EV_FLOW_GET_ALL_INFO (none) */
-void ev_flow_get_all_info(uint32_t id, flow_t *data) { flow_rw_raise(id, EV_FLOW_GET_ALL_INFO, sizeof(flow_t), data); }
 
 // Internal events (notification) ///////////////////////////////////
 
@@ -295,23 +318,165 @@ static void *meta_events(void *null)
 /////////////////////////////////////////////////////////////////////
 
 /**
+ * \brief Function to process requests from components
+ * \return NULL
+ */
+static void *reply_events(void *null)
+{
+    void *recv = zmq_socket(ev_rep_ctx, ZMQ_REP);
+    zmq_connect(recv, "inproc://ev_reply_workers");
+
+    while (ev_on) {
+        msg_t msg = {0};
+
+        zmq_recv(recv, &msg, sizeof(msg_t), 0);
+
+        switch (msg.type) {
+
+        // request-reply events
+
+        //sw_rw_raise(...);
+
+        //port_rw_raise(...);
+
+        //host_rw_raise(...);
+
+        //flow_rw_raise(...);
+
+        default:
+            break;
+        }
+
+        zmq_send(recv, &msg, sizeof(msg_t), 0);
+    }
+
+    zmq_close(recv);
+
+    return NULL;
+}
+
+/**
+ * \brief Function to connect work threads to component threads via a queue proxy
+ * \return NULL
+ */
+static void *reply_proxy(void *null)
+{
+    zmq_proxy(ev_rep_comp, ev_rep_work, NULL);
+
+    return NULL;
+}
+
+/**
+ * \brief Function to receive events from external components
+ * \return NULL
+ */
+static void *receive_events(void *null)
+{
+    while (ev_on) {
+        msg_t msg = {0};
+
+        zmq_recv(ev_pull_sock, &msg, sizeof(msg_t), 0);
+
+        switch (msg.type) {
+
+        // upstream events
+
+        // downstream events
+
+        // log events
+
+        default:
+            break;
+        }
+    }
+
+    return NULL;
+}
+
+/**
+ * \brief Function to destroy an event queue
+ * \return None
+ */
+int destroy_ev_workers(ctx_t *ctx)
+{
+    ev_on = FALSE;
+
+    waitsec(1, 0);
+
+    zmq_close(ev_pull_sock);
+    zmq_ctx_destroy(ev_pull_ctx);
+
+    zmq_close(ev_rep_comp);
+    zmq_close(ev_rep_work);
+    zmq_ctx_destroy(ev_rep_ctx);
+
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////
+
+/**
  * \brief Function to initialize the event handler
  * \param ctx The context of the Barista NOS
  */
 int event_init(ctx_t *ctx)
 {
-    if (event_is_set == FALSE) {
-        ev_ctx = ctx;
-        event_is_set = TRUE;
-    } else {
-        return -1;
+    ev_ctx = ctx;
+
+    if (ev_on == FALSE) {
+        pthread_t thread;
+        if (pthread_create(&thread, NULL, &meta_events, NULL) < 0) {
+            PERROR("pthread_create");
+            return -1;
+        }
+
+        // pull (outside)
+
+        ev_pull_ctx = zmq_ctx_new();
+        ev_pull_sock = zmq_socket(ev_pull_ctx, ZMQ_PULL);
+
+        if (zmq_bind(ev_pull_sock, "tcp://*:6001")) {
+            PERROR("zmq_bind");
+            return -1;
+        }
+
+        int i;
+        for (i=0; i<__NUM_THREADS; i++) {
+            if (pthread_create(&thread, NULL, &receive_events, NULL) < 0) {
+                PERROR("pthread_create");
+                return -1;
+            }
+        }
+
+        // reply
+
+        ev_rep_ctx = zmq_ctx_new();
+        ev_rep_comp = zmq_socket(ev_rep_ctx, ZMQ_ROUTER);
+        if (zmq_bind(ev_rep_comp, "tcp://*:6002")) {
+            PERROR("zmq_bind");
+            return -1;
+        }
+
+        ev_rep_work = zmq_socket(ev_rep_ctx, ZMQ_DEALER);
+        if (zmq_bind(ev_rep_work, "inproc://ev_reply_workers")) {
+            PERROR("zmq_bind");
+            return -1;
+        }
+
+        for (i=0; i<__NUM_THREADS; i++) {
+            if (pthread_create(&thread, NULL, &reply_events, NULL) < 0) {
+                PERROR("pthread_create");
+                return -1;
+            }
+        }
+
+        if (pthread_create(&thread, NULL, &reply_proxy, ctx) < 0) {
+            PERROR("pthread_create");
+            return -1;
+        }
     }
 
-    pthread_t thread;
-    if (pthread_create(&thread, NULL, &meta_events, NULL) < 0) {
-        PERROR("pthread_create");
-        return -1;
-    }
+    ev_on = TRUE;
 
     return 0;
 }
@@ -378,13 +543,13 @@ int event_init(ctx_t *ctx)
  * \param len The length of data
  * \param data Data
  */
-#define FUNC_NAME port_rw_raise
-#define FUNC_TYPE port_t
-#define FUNC_DATA port_data
-#include "event_rw_raise.h"
-#undef FUNC_NAME
-#undef FUNC_TYPE
-#undef FUNC_DATA
+//#define FUNC_NAME port_rw_raise
+//#define FUNC_TYPE port_t
+//#define FUNC_DATA port_data
+//#include "event_rw_raise.h"
+//#undef FUNC_NAME
+//#undef FUNC_TYPE
+//#undef FUNC_DATA
 
 /**
  * \brief The code of host_rw_raise()
@@ -393,13 +558,13 @@ int event_init(ctx_t *ctx)
  * \param len The length of data
  * \param data Data
  */
-#define FUNC_NAME host_rw_raise
-#define FUNC_TYPE host_t
-#define FUNC_DATA host_data
-#include "event_rw_raise.h"
-#undef FUNC_NAME
-#undef FUNC_TYPE
-#undef FUNC_DATA
+//#define FUNC_NAME host_rw_raise
+//#define FUNC_TYPE host_t
+//#define FUNC_DATA host_data
+//#include "event_rw_raise.h"
+//#undef FUNC_NAME
+//#undef FUNC_TYPE
+//#undef FUNC_DATA
 
 /**
  * \brief The code of flow_rw_raise()
@@ -408,13 +573,13 @@ int event_init(ctx_t *ctx)
  * \param len The length of data
  * \param data Data
  */
-#define FUNC_NAME flow_rw_raise
-#define FUNC_TYPE flow_t
-#define FUNC_DATA flow_data
-#include "event_rw_raise.h"
-#undef FUNC_NAME
-#undef FUNC_TYPE
-#undef FUNC_DATA
+//#define FUNC_NAME flow_rw_raise
+//#define FUNC_TYPE flow_t
+//#define FUNC_DATA flow_data
+//#include "event_rw_raise.h"
+//#undef FUNC_NAME
+//#undef FUNC_TYPE
+//#undef FUNC_DATA
 
 /**
  * \brief The code of raw_ev_raise()

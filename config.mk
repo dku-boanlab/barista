@@ -16,4 +16,3 @@ CONFIG= \
     __MAX_POLICY_ENTRIES=10 \
     \
     __NUM_THREADS=8 \
-    \

@@ -250,7 +250,10 @@ static int shortest_path(int *route, uint64_t src_dpid, uint64_t dst_dpid)
     int dst = get_index_from_dpid(dst_dpid);
 
     int u = src + 1;
-    //int v = dst + 1;
+
+#if 0
+    int v = dst + 1;
+#endif
 
     if (dist[src][dst] == INF) {
         pthread_rwlock_unlock(&path_lock);
@@ -475,7 +478,7 @@ static int insert_flow(const pktin_t *pktin, uint16_t port)
  * \param pktin Pktin message
  * \param port Port
  */
-static int send_packet_4_next_w_payload(const pktin_t *pktin, int hop, int *route, uint16_t port)
+static int send_packet_next_w_payload(const pktin_t *pktin, int hop, int *route, uint16_t port)
 {
     pktout_t out = {0};
 
@@ -500,7 +503,7 @@ static int send_packet_4_next_w_payload(const pktin_t *pktin, int hop, int *rout
  * \param route The shortest path from source to destination
  * \param port The port where the destination is connected
  */
-static int insert_flow_4_next(const pktin_t *pktin, int hop, int *route, uint16_t port)
+static int insert_flow_next(const pktin_t *pktin, int hop, int *route, uint16_t port)
 {
     flow_t out = {0};
 
@@ -545,10 +548,7 @@ static int discard_packet(const pktin_t *pktin)
  */
 static int l2_shortest(const pktin_t *pktin)
 {
-#ifdef __ENABLE_CBENCH
-    send_packet(pktin, PORT_FLOOD);
-    return 0;
-#else /* !__ENABLE_CBENCH */
+#ifndef __ENABLE_CBENCH
     if ((pktin->proto & (PROTO_ARP | PROTO_IPV4)) == 0) {
         discard_packet(pktin);
         return -1;
@@ -681,16 +681,19 @@ static int l2_shortest(const pktin_t *pktin)
 
         if (hop > 0) {
             if (pktin->buffer_id == (uint32_t)-1)
-                send_packet_4_next_w_payload(pktin, hop, route, port);
+                send_packet_next_w_payload(pktin, hop, route, port);
             else
-                insert_flow_4_next(pktin, hop, route, port);
+                insert_flow_next(pktin, hop, route, port);
         } else {
             discard_packet(pktin);
         }
     }
 
     return 0;
-#endif /* !__ENABLE_CBENCH */
+#else /* __ENABLE_CBENCH */
+    send_packet(pktin, PORT_FLOOD);
+    return 0;
+#endif /* __ENABLE_CBENCH */
 }
 
 /////////////////////////////////////////////////////////////////////

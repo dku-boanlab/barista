@@ -12,19 +12,16 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
     int ev_num = ev_ctx->ev_num[type];
     compnt_t **ev_list = ev_ctx->ev_list[type];
 
-    if (ev_list == NULL)
-        return -1;
+    if (ev_list == NULL) return -1;
 
-    event_t ev;
-    event_out_t *ev_out = (event_out_t *)&ev;
+    event_out_t ev_out = {0};
+    event_t *ev = (event_t *)&ev_out;
 
-    ev_out->id = id;
-    ev_out->type = type;
-    ev_out->length = len;
-    ev_out->prev = ev_out->last = 0;
-    ev_out->checksum = 0;
+    ev_out.id = id;
+    ev_out.type = type;
+    ev_out.length = len;
 
-    ev.FUNC_DATA = data;
+    ev->FUNC_DATA = data;
 
     ev_ctx->num_events[type]++;
 
@@ -49,20 +46,42 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
             if (c->site == COMPNT_INTERNAL) { // internal site
                 c->num_events[type]++;
 
-                int ret = c->handler(&ev, ev_out);
+                int ret = c->handler(ev, &ev_out);
                 if (ret && c->perm & COMPNT_EXECUTE) {
                     break;
                 }
 
-                ev_out->checksum = 0;
+                ev_out.checksum = 0;
+            } else { // external site
+                event_out_t *out = &ev_out;
+
+                c->num_events[type]++;
+
+                int ret = EV_SEND_EXT_MSG(id, type, len, data, out);
+                if (ret && c->perm & COMPNT_EXECUTE) {
+                    break;
+                }
             }
         } else {
             if (c->site == COMPNT_INTERNAL) { // internal site
                 c->num_events[type]++;
 
-                int ret = c->handler(&ev, NULL);
+                int ret = c->handler(ev, NULL);
                 if (ret && c->perm & COMPNT_EXECUTE) {
                     break;
+                }
+            } else { // external site
+                event_out_t *out = &ev_out;
+
+                c->num_events[type]++;
+
+                if (c->perm & COMPNT_EXECUTE) {
+                    int ret = EV_SEND_EXT_MSG(id, type, len, data, out);
+                    if (ret) {
+                        break;
+                    }
+                } else {
+                    EV_PUSH_EXT_MSG(id, type, len, data);
                 }
             }
         }
@@ -74,7 +93,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
                 if (c->site == COMPNT_INTERNAL) { // internal site
                     c->num_events[type]++;
 
-                    int ret = c->handler(&ev, ev_out);
+                    int ret = c->handler(ev, &ev_out);
                     if (ret && c->perm & COMPNT_EXECUTE) {
                         break;
                     }
@@ -83,7 +102,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
                 if (c->site == COMPNT_INTERNAL) { // internal site
                     c->num_events[type]++;
 
-                    int ret = c->handler(&ev, NULL);
+                    int ret = c->handler(ev, NULL);
                     if (ret && c->perm & COMPNT_EXECUTE) {
                         break;
                     }
@@ -94,4 +113,3 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
     return 0;
 }
-

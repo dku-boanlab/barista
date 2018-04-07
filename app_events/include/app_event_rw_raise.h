@@ -12,17 +12,16 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, FUNC_TYPE *data)
     int av_num = av_ctx->av_num[type];
     app_t **av_list = av_ctx->av_list[type];
 
-    if (av_list == NULL)
-        return -1;
+    if (av_list == NULL) return -1;
 
     // only for request-response events
     if (AV_ALL_DOWNSTREAM < type && type < AV_WRT_INTSTREAM) {
-        app_event_out_t av_out;
+        app_event_out_t av_out = {0};
         app_event_t *av = (app_event_t *)&av_out;
 
-        av->id = id;
-        av->type = type;
-        av->length = len;
+        av_out.id = id;
+        av_out.type = type;
+        av_out.length = len;
         av_out.FUNC_DATA = data;
 
         av_ctx->num_app_events[type]++;
@@ -46,7 +45,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, FUNC_TYPE *data)
 
                 c->num_app_events[type]++;
 
-                int ret = AV_WRITE_EXT_MSG(id, type, len, data, out);
+                int ret = AV_SEND_EXT_MSG(id, type, len, data, out);
                 if (ret && c->perm & APP_EXECUTE) {
                     break;
                 }
@@ -56,4 +55,3 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, FUNC_TYPE *data)
 
     return 0;
 }
-

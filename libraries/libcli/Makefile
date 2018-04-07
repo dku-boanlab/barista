@@ -63,4 +63,3 @@ install: $(TARGET_LIBS)
 	    ln -fs $(LIB).$(MAJOR).$(MINOR).$(REVISION) $(LIB).$(MAJOR).$(MINOR) && \
 	    ln -fs $(LIB).$(MAJOR).$(MINOR) $(LIB)
   endif
-

@@ -48,4 +48,3 @@ $(OBJ_DIR)/.%.dep: %.c $(CONFIG_MK)
 
 clean:
 	rm -rf $(BIN_DIR)/$(PROG) $(OBJ_DIR) $(INC_DIR)
-

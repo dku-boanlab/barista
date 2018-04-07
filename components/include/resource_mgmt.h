@@ -13,4 +13,3 @@
 #include "event.h"
 
 #include <spawn.h>
-

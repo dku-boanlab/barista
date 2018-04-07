@@ -49,4 +49,3 @@ Barista> help
 # Contributors
 - Hyeonseong Jo <hsjjo@kaist.ac.kr>  
 - Yeonkeun kim <yeonk@kaist.ac.kr>  
-

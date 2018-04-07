@@ -43,4 +43,3 @@ struct _ctx_t {
 };
 
 int ctx_init(ctx_t *ctx);
-

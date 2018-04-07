@@ -21,7 +21,3 @@ cd ../..
 
 # dependency => doxygen, htags
 sudo apt-get -y install doxygen global
-
-# development => vim, git, gdb, line of code
-sudo apt-get -y install vim git gdb cloc
-

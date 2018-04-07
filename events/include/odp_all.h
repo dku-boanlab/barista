@@ -141,4 +141,3 @@ static int ODP_FUNC(odp_t *odp, const ODP_TYPE *data)
 
     return pass;
 }
-

@@ -102,55 +102,6 @@ int appint_handler(const app_event_t *av, app_event_out_t *av_out)
 
     // request-response events
 
-    case AV_SW_GET_INFO:
-        PRINT_EV("AV_SW_GET_INFO\n");
-        {
-            ev_sw_get_info(APPHDLR_ID, av_out->sw_data);
-        }
-        break;
-    case AV_SW_GET_ALL_INFO:
-        PRINT_EV("AV_SW_GET_ALL_INFO\n");
-        {
-            ev_sw_get_all_info(APPHDLR_ID, av_out->sw_data);
-        }
-        break;
-    case AV_HOST_GET_INFO:
-        PRINT_EV("AV_HOST_GET_INFO\n");
-        {
-            ev_host_get_info(APPHDLR_ID, av_out->host_data);
-        }
-        break;
-    case AV_HOST_GET_ALL_INFO:
-        PRINT_EV("AV_HOST_GET_ALL_INFO\n");
-        {
-            ev_host_get_all_info(APPHDLR_ID, av_out->host_data);
-        }
-        break;
-    case AV_LINK_GET_INFO:
-        PRINT_EV("AV_LINK_GET_INFO\n");
-        {
-            ev_link_get_info(APPHDLR_ID, av_out->port_data);
-        }
-        break;
-    case AV_LINK_GET_ALL_INFO:
-        PRINT_EV("AV_LINK_GET_ALL_INFO\n");
-        {
-            ev_link_get_all_info(APPHDLR_ID, av_out->port_data);
-        }
-        break;
-    case AV_FLOW_GET_INFO:
-        PRINT_EV("AV_FLOW_GET_INFO\n");
-        {
-            ev_flow_get_info(APPHDLR_ID, av_out->flow_data);
-        }
-        break;
-    case AV_FLOW_GET_ALL_INFO:
-        PRINT_EV("AV_FLOW_GET_ALL_INFO\n");
-        {
-            ev_flow_get_all_info(APPHDLR_ID, av_out->flow_data);
-        }
-        break;
-
     // log events
 
     case AV_LOG_DEBUG:

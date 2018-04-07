@@ -16,4 +16,3 @@
 #include "str.h"
 
 #include <jansson.h>
-

@@ -12,15 +12,16 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
     int av_num = av_ctx->av_num[type];
     app_t **av_list = av_ctx->av_list[type];
 
-    if (av_list == NULL)
-        return -1;
+    if (av_list == NULL) return -1;
 
-    app_event_t av;
+    app_event_out_t av_out = {0};
+    app_event_t *av = (app_event_t *)&av_out;
 
-    av.id = id;
-    av.type = type;
-    av.length = len;
-    av.FUNC_DATA = data;
+    av_out.id = id;
+    av_out.type = type;
+    av_out.length = len;
+
+    av->FUNC_DATA = data;
 
     av_ctx->num_app_events[type]++;
 
@@ -37,22 +38,20 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
         if (c->perm & APP_WRITE) {
             if (c->site == APP_INTERNAL) { // internal site
-                app_event_out_t *av_out = (app_event_out_t *)&av;
-
                 c->num_app_events[type]++;
 
-                int ret = c->handler(&av, av_out);
+                int ret = c->handler(av, &av_out);
                 if (ret && c->perm & APP_EXECUTE) {
                     break;
                 }
 
-                av_out->checksum = 0;
+                av_out.checksum = 0;
             } else { // external site
-                app_event_out_t *av_out = (app_event_out_t *)&av;
+                app_event_out_t *out = &av_out;
 
                 c->num_app_events[type]++;
 
-                int ret = AV_WRITE_EXT_MSG(id, type, len, data, av_out);
+                int ret = AV_SEND_EXT_MSG(id, type, len, data, out);
                 if (ret && c->perm & APP_EXECUTE) {
                     break;
                 }
@@ -61,17 +60,17 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
             if (c->site == APP_INTERNAL) { // internal site
                 c->num_app_events[type]++;
 
-                int ret = c->handler(&av, NULL);
+                int ret = c->handler(av, NULL);
                 if (ret && c->perm & APP_EXECUTE) {
                     break;
                 }
             } else { // external site
+                app_event_out_t *out = &av_out;
+
                 c->num_app_events[type]++;
 
                 if (c->perm & APP_EXECUTE) {
-                    app_event_out_t *av_out = (app_event_out_t *)&av;
-
-                    int ret = AV_WRITE_EXT_MSG(id, type, len, data, av_out);
+                    int ret = AV_SEND_EXT_MSG(id, type, len, data, out);
                     if (ret) {
                         break;
                     }
@@ -84,4 +83,3 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
     return 0;
 }
-

@@ -80,6 +80,12 @@ struct _compnt_t {
     int status; /**< Status */
     int activated; /**< Activation */
 
+    void *push_ctx; /**< Context to push events */
+    void *push_sock; /**< Socket to push events */
+
+    void *req_ctx; /**< Context to request events */
+    void *req_sock; /**< Socket to request events */
+
     compnt_main_f main; /**< The main function pointer */
     compnt_handler_f handler; /**< The handler function pointer */
     compnt_cleanup_f cleanup; /**< The cleanup function pointer */
@@ -117,4 +123,3 @@ int component_show_policy(cli_t *, char *);
 int component_show(cli_t *, char *);
 int component_list(cli_t *);
 int component_cli(cli_t *, char **);
-

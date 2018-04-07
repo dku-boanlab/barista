@@ -154,4 +154,3 @@ static int mac_q_destroy(void)
 
     return 0;
 }
-

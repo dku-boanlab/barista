@@ -41,14 +41,6 @@ void ev_sw_get_dpid(uint32_t id, switch_t *data);
 void ev_sw_get_fd(uint32_t id, switch_t *data);
 void ev_sw_get_xid(uint32_t id, switch_t *data);
 void ev_sw_get_version(uint32_t id, switch_t *data);
-void ev_sw_get_info(uint32_t id, switch_t *data);
-void ev_sw_get_all_info(uint32_t id, switch_t *data);
-void ev_host_get_info(uint32_t id, host_t *data);
-void ev_host_get_all_info(uint32_t id, host_t *data);
-void ev_link_get_info(uint32_t id, port_t *data);
-void ev_link_get_all_info(uint32_t id, port_t *data);
-void ev_flow_get_info(uint32_t id, flow_t *data);
-void ev_flow_get_all_info(uint32_t id, flow_t *data);
 
 // internal (notification) //////////////////////////////////////////
 

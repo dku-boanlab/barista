@@ -12,4 +12,3 @@
 #include "common.h"
 
 int get_external_configurations(char (*temp)[__CONF_WORD_LEN], int *cnt, char *curr);
-

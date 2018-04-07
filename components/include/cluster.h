@@ -11,8 +11,8 @@
 
 #include "common.h"
 #include "event.h"
-#include "mac2int.h"
 #include "base64.h"
+#include "mac2int.h"
 
 #include <arpa/inet.h>
 

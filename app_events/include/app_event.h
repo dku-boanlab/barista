@@ -17,12 +17,12 @@
 /** \brief The structure of an app event (read-only) */
 typedef struct _app_event_t {
     // header
-    uint32_t id; /**< Application ID */
-    uint16_t type; /**< App event type */
-    uint16_t length; /**< The length of data */
-    uint16_t prev; /**< The app event before the previous app event */
-    uint16_t last; /**< The previous app event */
-    uint32_t checksum; /**< Checksum */
+    const uint32_t id; /**< Application ID */
+    const uint16_t type; /**< App event type */
+    const uint16_t length; /**< The length of data */
+    const uint16_t prev; /**< The app event before the previous app event */
+    const uint16_t last; /**< The previous app event */
+    const uint32_t checksum; /**< Checksum */
 
     // body
     union {
@@ -61,4 +61,3 @@ typedef struct _app_event_out_t {
 
 int app_event_init(ctx_t *ctx);
 int destroy_av_workers(ctx_t *ctx);
-

@@ -59,6 +59,8 @@ typedef struct _event_out_t {
         port_t           *port_data; /**< The pointer of a port */
         host_t           *host_data; /**< The pointer of a host */
         flow_t           *flow_data; /**< The pointer of a flow */
+
+        char             *data; /**< The pointer of data */
     };
 } event_out_t;
 
@@ -66,4 +68,3 @@ int event_init(ctx_t *ctx);
 
 /** \brief The cluster ID updated by cluster */
 int cluster_id;
-

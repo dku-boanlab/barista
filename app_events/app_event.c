@@ -6,7 +6,7 @@
  * \ingroup framework
  * @{
  * \defgroup app_events Application Event Handler
- * \brief Functions to manage app events for applications
+ * \brief Functions to manage events for applications
  * @{
  */
 
@@ -26,11 +26,8 @@
 /** \brief The pointer of the context structure */
 static ctx_t *av_ctx;
 
-/** \brief The set flag not to overwrite the context structure */
-int app_event_is_set;
-
-/** \brief The running flag for app event workers */
-int av_worker_on;
+/** \brief The running flag of the application event handler */
+static int av_on;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -52,13 +49,13 @@ void *av_rep_work;
 /////////////////////////////////////////////////////////////////////
 
 /** \brief Switch related trigger function (non-const) */
-static int sw_rw_raise(uint32_t id, uint16_t type, uint16_t len, switch_t *data);
+//static int sw_rw_raise(uint32_t id, uint16_t type, uint16_t len, switch_t *data);
 /** \brief Port related trigger function (non-const) */
-static int port_rw_raise(uint32_t id, uint16_t type, uint16_t len, port_t *data);
+//static int port_rw_raise(uint32_t id, uint16_t type, uint16_t len, port_t *data);
 /** \brief Host related trigger function (non-const) */
-static int host_rw_raise(uint32_t id, uint16_t type, uint16_t len, host_t *data);
+//static int host_rw_raise(uint32_t id, uint16_t type, uint16_t len, host_t *data);
 /** \brief Flow related trigger function (non-const) */
-static int flow_rw_raise(uint32_t id, uint16_t type, uint16_t len, flow_t *data);
+//static int flow_rw_raise(uint32_t id, uint16_t type, uint16_t len, flow_t *data);
 
 /////////////////////////////////////////////////////////////////////
 
@@ -79,22 +76,22 @@ static int log_av_raise(uint32_t id, uint16_t type, uint16_t len, const char *da
 
 /////////////////////////////////////////////////////////////////////
 
-#define AV_PUSH_EXT_MSG(i, t, s, d) { \
+#define AV_PUSH_EXT_MSG(id, type, size, data) { \
     msg_t msg = {0}; \
-    msg.id = i; \
-    msg.type = t; \
-    memmove(msg.data, d, s); \
+    msg.id = id; \
+    msg.type = type; \
+    memmove(msg.data, data, size); \
     zmq_send(c->push_sock, &msg, sizeof(msg_t), 0); \
 }
 
-#define AV_WRITE_EXT_MSG(i, t, s, d, o) ({ \
+#define AV_SEND_EXT_MSG(id, type, size, data, output) ({ \
     msg_t msg = {0}; \
-    msg.id = i; \
-    msg.type = t; \
-    memmove(msg.data, d, s); \
+    msg.id = id; \
+    msg.type = type; \
+    memmove(msg.data, data, size); \
     zmq_send(c->req_sock, &msg, sizeof(msg_t), 0); \
     zmq_recv(c->req_sock, &msg, sizeof(msg_t), 0); \
-    memmove(o->data, msg.data, s); \
+    memmove(output->data, msg.data, size); \
     msg.ret; \
 })
 
@@ -125,23 +122,6 @@ void av_dp_modify_flow(uint32_t id, const flow_t *data) { flow_av_raise(id, AV_D
 void av_dp_delete_flow(uint32_t id, const flow_t *data) { flow_av_raise(id, AV_DP_DELETE_FLOW, sizeof(flow_t), data); }
 
 // Internal events (request-response) ///////////////////////////////
-
-/** \brief AV_SW_GET_INFO (dpid) */
-void av_sw_get_info(uint32_t id, switch_t *data) { sw_rw_raise(id, AV_SW_GET_INFO, sizeof(switch_t), data); }
-/** \brief AV_SW_GET_ALL_INFO (none) */
-void av_sw_get_all_info(uint32_t id, switch_t *data) { sw_rw_raise(id, AV_SW_GET_ALL_INFO, sizeof(switch_t), data); }
-/** \brief AV_HOST_GET_INFO (MAC address or IP address) */
-void av_host_get_info(uint32_t id, host_t *data) { host_rw_raise(id, AV_HOST_GET_INFO, sizeof(host_t), data); }
-/** \brief AV_HOST_GET_ALL_INFO (none) */
-void av_host_get_all_info(uint32_t id, host_t *data) { host_rw_raise(id, AV_HOST_GET_ALL_INFO, sizeof(host_t), data); }
-/** \brief AV_LINK_GET_INFO (dpid) */
-void av_link_get_info(uint32_t id, port_t *data) { port_rw_raise(id, AV_LINK_GET_INFO, sizeof(port_t), data); }
-/** \brief AV_LINK_GET_ALL_INFO (none) */
-void av_link_get_all_info(uint32_t id, port_t *data) { port_rw_raise(id, AV_LINK_GET_ALL_INFO, sizeof(port_t), data); }
-/** \brief AV_FLOW_GET_INFO (dpid) */
-void av_flow_get_info(uint32_t id, flow_t *data) { flow_rw_raise(id, AV_FLOW_GET_INFO, sizeof(flow_t), data); }
-/** \brief AV_FLOW_GET_ALL_INFO (none) */
-void av_flow_get_all_info(uint32_t id, flow_t *data) { flow_rw_raise(id, AV_FLOW_GET_ALL_INFO, sizeof(flow_t), data); }
 
 // Internal events (notification) ///////////////////////////////////
 
@@ -231,7 +211,7 @@ static void *meta_app_events(void *null)
     int *num_events = av_ctx->num_app_events;
     meta_event_t *meta = av_ctx->meta_app_event;
 
-    while (app_event_is_set) {
+    while (av_on) {
         int av_id;
         for (av_id=0; av_id<__MAX_APP_EVENTS; av_id++) {
             int num_event = num_events[av_id];
@@ -299,9 +279,9 @@ static void *meta_app_events(void *null)
 static void *reply_app_events(void *null)
 {
     void *recv = zmq_socket(av_rep_ctx, ZMQ_REP);
-    zmq_connect(recv, "inproc://reply_workers");
+    zmq_connect(recv, "inproc://av_reply_workers");
 
-    while (av_worker_on) {
+    while (av_on) {
         msg_t msg = {0};
 
         zmq_recv(recv, &msg, sizeof(msg_t), 0);
@@ -310,30 +290,13 @@ static void *reply_app_events(void *null)
 
         // request-reply events
 
-        case AV_SW_GET_INFO:
-            sw_rw_raise(msg.id, AV_SW_GET_INFO, sizeof(switch_t), (switch_t *)msg.data);
-            break;
-        case AV_SW_GET_ALL_INFO:
-            sw_rw_raise(msg.id, AV_SW_GET_ALL_INFO, sizeof(switch_t), (switch_t *)msg.data);
-            break;
-        case AV_HOST_GET_INFO:
-            host_rw_raise(msg.id, AV_HOST_GET_INFO, sizeof(host_t), (host_t *)msg.data);
-            break;
-        case AV_HOST_GET_ALL_INFO:
-            host_rw_raise(msg.id, AV_HOST_GET_ALL_INFO, sizeof(host_t), (host_t *)msg.data);
-            break;
-        case AV_LINK_GET_INFO:
-            port_rw_raise(msg.id, AV_LINK_GET_INFO, sizeof(port_t), (port_t *)msg.data);
-            break;
-        case AV_LINK_GET_ALL_INFO:
-            port_rw_raise(msg.id, AV_LINK_GET_ALL_INFO, sizeof(port_t), (port_t *)msg.data);
-            break;
-        case AV_FLOW_GET_INFO:
-            flow_rw_raise(msg.id, AV_FLOW_GET_INFO, sizeof(flow_t), (flow_t *)msg.data);
-            break;
-        case AV_FLOW_GET_ALL_INFO:
-            flow_rw_raise(msg.id, AV_FLOW_GET_ALL_INFO, sizeof(flow_t), (flow_t *)msg.data);
-            break;
+        //sw_rw_raise(...);
+
+        //port_rw_raise(...);
+
+        //host_rw_raise(...);
+
+        //flow_rw_raise(...);
 
         default:
             break;
@@ -364,7 +327,7 @@ static void *reply_proxy(void *null)
  */
 static void *receive_app_events(void *null)
 {
-    while (av_worker_on) {
+    while (av_on) {
         msg_t msg = {0};
 
         zmq_recv(av_pull_sock, &msg, sizeof(msg_t), 0);
@@ -439,7 +402,9 @@ static void *receive_app_events(void *null)
  */
 int destroy_av_workers(ctx_t *ctx)
 {
-    av_worker_on = FALSE;
+    av_on = FALSE;
+
+    waitsec(1, 0);
 
     zmq_close(av_pull_sock);
     zmq_ctx_destroy(av_pull_ctx);
@@ -459,73 +424,62 @@ int destroy_av_workers(ctx_t *ctx)
  */
 int app_event_init(ctx_t *ctx)
 {
-    if (app_event_is_set == FALSE) {
-        av_ctx = ctx;
-        app_event_is_set = TRUE;
-    } else {
-        return -1;
-    }
+    av_ctx = ctx;
 
-    pthread_t thread;
-    if (pthread_create(&thread, NULL, &meta_app_events, NULL) < 0) {
-        PERROR("pthread_create");
-        return -1;
-    }
+    if (av_on == FALSE) {
+        pthread_t thread;
+        if (pthread_create(&thread, NULL, &meta_app_events, NULL) < 0) {
+            PERROR("pthread_create");
+            return -1;
+        }
 
-    av_worker_on = TRUE;
+        // pull (outside)
 
-    // pull (outside)
+        av_pull_ctx = zmq_ctx_new();
+        av_pull_sock = zmq_socket(av_pull_ctx, ZMQ_PULL);
 
-    av_pull_ctx = zmq_ctx_new();
-    av_pull_sock = zmq_socket(av_pull_ctx, ZMQ_PULL);
+        if (zmq_bind(av_pull_sock, "tcp://*:5001")) {
+            PERROR("zmq_bind");
+            return -1;
+        }
 
-    if (access("../tmp/ext_app_event_handler", F_OK) != -1) {
-        remove("../tmp/ext_app_event_handler");
-    }
+        int i;
+        for (i=0; i<__NUM_THREADS; i++) {
+            if (pthread_create(&thread, NULL, &receive_app_events, NULL) < 0) {
+                PERROR("pthread_create");
+                return -1;
+            }
+        }
 
-    if (zmq_bind(av_pull_sock, "ipc://../tmp/ext_app_event_handler")) {
-        PERROR("zmq_bind");
-        return -1;
-    }
+        // reply
 
-    int i;
-    for (i=0; i<__NUM_THREADS; i++) {
-        if (pthread_create(&thread, NULL, &receive_app_events, NULL) < 0) {
+        av_rep_ctx = zmq_ctx_new();
+        av_rep_app = zmq_socket(av_rep_ctx, ZMQ_ROUTER);
+        if (zmq_bind(av_rep_app, "tcp://*:5002")) {
+            PERROR("zmq_bind");
+            return -1;
+        }
+
+        av_rep_work = zmq_socket(av_rep_ctx, ZMQ_DEALER);
+        if (zmq_bind(av_rep_work, "inproc://av_reply_workers")) {
+            PERROR("zmq_bind");
+            return -1;
+        }
+
+        for (i=0; i<__NUM_THREADS; i++) {
+            if (pthread_create(&thread, NULL, &reply_app_events, NULL) < 0) {
+                PERROR("pthread_create");
+                return -1;
+            }
+        }
+
+        if (pthread_create(&thread, NULL, &reply_proxy, ctx) < 0) {
             PERROR("pthread_create");
             return -1;
         }
     }
 
-    // reply
-
-    if (access("../tmp/app_req_handler", F_OK) != -1) {
-        remove("../tmp/app_req_handler");
-    }
-
-    av_rep_ctx = zmq_ctx_new();
-    av_rep_app = zmq_socket(av_rep_ctx, ZMQ_ROUTER);
-    if (zmq_bind(av_rep_app, "ipc://../tmp/app_req_handler")) {
-        PERROR("zmq_bind");
-        return -1;
-    }
-
-    av_rep_work = zmq_socket(av_rep_ctx, ZMQ_DEALER);
-    if (zmq_bind(av_rep_work, "inproc://reply_workers")) {
-        PERROR("zmq_bind");
-        return -1;
-    }
-
-    for (i=0; i<__NUM_THREADS; i++) {
-        if (pthread_create(&thread, NULL, &reply_app_events, NULL) < 0) {
-            PERROR("pthread_create");
-            return -1;
-        }
-    }
-
-    if (pthread_create(&thread, NULL, &reply_proxy, ctx) < 0) {
-        PERROR("pthread_create");
-        return -1;
-    }
+    av_on = TRUE;
 
     return 0;
 }
@@ -577,13 +531,13 @@ int app_event_init(ctx_t *ctx)
  * \param len The length of data
  * \param data Data
  */
-#define FUNC_NAME sw_rw_raise
-#define FUNC_TYPE switch_t
-#define FUNC_DATA sw_data
-#include "app_event_rw_raise.h"
-#undef FUNC_NAME
-#undef FUNC_TYPE
-#undef FUNC_DATA
+//#define FUNC_NAME sw_rw_raise
+//#define FUNC_TYPE switch_t
+//#define FUNC_DATA sw_data
+//#include "app_event_rw_raise.h"
+//#undef FUNC_NAME
+//#undef FUNC_TYPE
+//#undef FUNC_DATA
 
 /**
  * \brief The code of port_rw_raise()
@@ -592,28 +546,13 @@ int app_event_init(ctx_t *ctx)
  * \param len The length of data
  * \param data Data
  */
-#define FUNC_NAME port_rw_raise
-#define FUNC_TYPE port_t
-#define FUNC_DATA port_data
-#include "app_event_rw_raise.h"
-#undef FUNC_NAME
-#undef FUNC_TYPE
-#undef FUNC_DATA
-
-/**
- * \brief The code of flow_rw_raise()
- * \param id Application ID
- * \param type App event type
- * \param len The length of data
- * \param data Data
- */
-#define FUNC_NAME flow_rw_raise
-#define FUNC_TYPE flow_t
-#define FUNC_DATA flow_data
-#include "app_event_rw_raise.h"
-#undef FUNC_NAME
-#undef FUNC_TYPE
-#undef FUNC_DATA
+//#define FUNC_NAME port_rw_raise
+//#define FUNC_TYPE port_t
+//#define FUNC_DATA port_data
+//#include "app_event_rw_raise.h"
+//#undef FUNC_NAME
+//#undef FUNC_TYPE
+//#undef FUNC_DATA
 
 /**
  * \brief The code of host_rw_raise()
@@ -622,13 +561,28 @@ int app_event_init(ctx_t *ctx)
  * \param len The length of data
  * \param data Data
  */
-#define FUNC_NAME host_rw_raise
-#define FUNC_TYPE host_t
-#define FUNC_DATA host_data
-#include "app_event_rw_raise.h"
-#undef FUNC_NAME
-#undef FUNC_TYPE
-#undef FUNC_DATA
+//#define FUNC_NAME host_rw_raise
+//#define FUNC_TYPE host_t
+//#define FUNC_DATA host_data
+//#include "app_event_rw_raise.h"
+//#undef FUNC_NAME
+//#undef FUNC_TYPE
+//#undef FUNC_DATA
+
+/**
+ * \brief The code of flow_rw_raise()
+ * \param id Application ID
+ * \param type App event type
+ * \param len The length of data
+ * \param data Data
+ */
+//#define FUNC_NAME flow_rw_raise
+//#define FUNC_TYPE flow_t
+//#define FUNC_DATA flow_data
+//#include "app_event_rw_raise.h"
+//#undef FUNC_NAME
+//#undef FUNC_TYPE
+//#undef FUNC_DATA
 
 /**
  * \brief The code of sw_av_raise()
