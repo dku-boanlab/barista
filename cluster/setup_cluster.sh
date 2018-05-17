@@ -1,12 +1,12 @@
 #!/bin/bash
 
 if [ -z $1 ]; then
-    echo $0" [MY_IP_ADDRESS] [OTHER_IP_ADDRESSES(,)]"
+    echo $0" [MY_IP_ADDRESS] [OTHER_IP_ADDRESSES(,)/none]"
     exit
 fi
 
 if [ -z $2 ]; then
-    echo $0" [MY_IP_ADDRESS] [OTHER_IP_ADDRESSES(,)]"
+    echo $0" [MY_IP_ADDRESS] [OTHER_IP_ADDRESSES(,)/none]"
     exit
 fi
 
@@ -31,7 +31,11 @@ echo "MY_IP_ADDRESS = "$1
 echo "OTHER_IP_ADDRESSES = "$2
 echo
 sudo sed -i 's/MY_IP_ADDRESS/'$1'/g' $CONF_HOME/mariadb.cnf
-sudo sed -i 's/OTHER_IP_ADDRESSES/'$2'/g' $CONF_HOME/mariadb.cnf
+if [ "$2" == "none" ]; then
+	sudo sed -i 's/OTHER_IP_ADDRESSES//g' $CONF_HOME/mariadb.cnf
+else
+	sudo sed -i 's/OTHER_IP_ADDRESSES/'$2'/g' $CONF_HOME/mariadb.cnf
+fi
 
 if [ ! -f $DB_HOME/debian.cnf.bak ];
 then
