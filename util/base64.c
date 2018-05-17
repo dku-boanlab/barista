@@ -7,7 +7,7 @@
  * @{
  *
  * \defgroup base64 Base64 Functions
- * \brief Functions to encode binary data to an ASCII-based string and vice versa through Base64
+ * \brief Functions to encode binary data to an ASCII string and vice versa through Base64
  * @{
  */
 
