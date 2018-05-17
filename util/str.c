@@ -93,7 +93,7 @@ __non_space:
 }
 
 /**
- * \brief Function to read the raw string in a file
+ * \brief Function to read a raw string in a file
  * \param fname File name
  * \return Raw string retrieved from the file
  */
