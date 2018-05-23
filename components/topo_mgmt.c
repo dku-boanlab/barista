@@ -26,15 +26,15 @@
 /** \brief The default TTL value */
 #define DEFAULT_TTL 64
 
-/** \brief The number of links */
-int num_links;
-
 /** \brief The structure of a topology */
 typedef struct _topo_t {
     uint64_t dpid; /**< Datapath ID */
     uint32_t remote; /**< Remote switch */
     port_t port[__MAX_NUM_PORTS]; /**< Ports */
 } topo_t;
+
+/** \brief The number of links */
+int num_links;
 
 /** \brief Network topology */
 topo_t *topo;
@@ -197,8 +197,6 @@ static int insert_link(uint64_t src_dpid, uint16_t src_port, uint64_t dst_dpid, 
 
                     port_t link = {0};
 
-                    link.remote = FALSE;
-
                     link.dpid = src_dpid;
                     link.port = src_port;
                     link.target_dpid = dst_dpid;
@@ -297,7 +295,7 @@ int topo_mgmt_cleanup(int *activated)
  */
 static int topo_listup(cli_t *cli)
 {
-    cli_print(cli, "<Link Lists>");
+    cli_print(cli, "<Link List>");
 
     pthread_rwlock_rdlock(&topo_lock);
 
@@ -339,10 +337,9 @@ static int topo_showup(cli_t *cli, char *dpid_str)
 
     pthread_rwlock_rdlock(&topo_lock);
 
-    int i, cnt = 0;
+    int i, j, cnt = 0;
     for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
         if (topo[i].dpid == dpid) { // check source dpid
-            int j;
             for (j=0; j<__MAX_NUM_PORTS; j++) {
                 if (topo[i].port[j].port > 0) { // check source port
                     if (topo[i].port[j].target_port > 0) { // check destination port
@@ -476,10 +473,9 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             pthread_rwlock_wrlock(&topo_lock);
 
-            int i;
+            int i, j;
             for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
                 if (topo[i].dpid == sw->dpid) { // check source dpid
-                    int j;
                     for (j=0; j<__MAX_NUM_PORTS; j++) {
                         if (topo[i].port[j].port > 0) { // check source port
                             if (topo[i].port[j].target_port > 0) { // check destination port
@@ -488,8 +484,6 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
                                 if (topo[i].remote == FALSE) {
                                     port_t link = {0};
-
-                                    link.remote = FALSE;
 
                                     link.dpid = topo[i].dpid;
                                     link.port = topo[i].port[j].port;
@@ -558,8 +552,6 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                             if (topo[i].remote == FALSE) {
                                 port_t link = {0};
 
-                                link.remote = FALSE;
-
                                 link.dpid = port->dpid;
                                 link.port = port->port;
                                 link.target_dpid = topo[i].port[port->port].target_dpid;
@@ -626,8 +618,7 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const port_t *link = ev->port;
 
-            if (link->remote == FALSE)
-                break;
+            if (link->remote == FALSE) break;
 
             pthread_rwlock_wrlock(&topo_lock);
 
@@ -657,8 +648,7 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const port_t *link = ev->port;
 
-            if (link->remote == FALSE)
-                break;
+            if (link->remote == FALSE) break;
 
             pthread_rwlock_wrlock(&topo_lock);
 

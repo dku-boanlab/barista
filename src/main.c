@@ -24,10 +24,8 @@
 
 #include <fcntl.h>
 #include <signal.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-
-#include <spawn.h>
+#include <sys/types.h>
 #include <sys/ioctl.h>
 
 /////////////////////////////////////////////////////////////////////
@@ -141,7 +139,7 @@ static void print_logo(void)
 static void print_usage(char *name)
 {
     PRINTF("Usage:\n");
-    PRINTF("\t%s -c [config file] -a [app config file] -r {auto | base | daemon}\n", name);
+    PRINTF("\t%s -c [config file] -a [app config file] -r auto -o base -d\n", name);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -160,7 +158,7 @@ int main(int argc, char **argv)
     print_logo();
 
     if (argc >= 2) {
-        while ((opt = getopt(argc, argv, "c:a:r:")) != -1) {
+        while ((opt = getopt(argc, argv, "c:a:brd")) != -1) {
             switch (opt) {
             case 'c':
                 memset(conf_file, 0, __CONF_WORD_LEN);
@@ -170,21 +168,18 @@ int main(int argc, char **argv)
                 memset(app_conf_file, 0, __CONF_WORD_LEN);
                 strcpy(app_conf_file, optarg);
                 break;
-            case 'r':
-                if (strcmp(optarg, "auto") == 0) {
-                    autostart = TRUE;
-                } else if (strcmp(optarg, "base") == 0) {
-                    memset(conf_file, 0, __CONF_WORD_LEN);
-                    strcpy(conf_file, COMPNT_BASE_CONFIG_FILE);
+            case 'b':
+                memset(conf_file, 0, __CONF_WORD_LEN);
+                strcpy(conf_file, COMPNT_BASE_CONFIG_FILE);
 
-                    memset(app_conf_file, 0, __CONF_WORD_LEN);
-                    strcpy(app_conf_file, APP_BASE_CONFIG_FILE);
-                } else if (strcmp(optarg, "daemon") == 0) {
-                    daemon = TRUE;
-                } else {
-                    print_usage(argv[0]);
-                    return -1;
-                }
+                memset(app_conf_file, 0, __CONF_WORD_LEN);
+                strcpy(app_conf_file, APP_BASE_CONFIG_FILE);
+                break;
+            case 'r':
+                autostart = TRUE;
+                break;
+            case 'd':
+                daemon = TRUE;
                 break;
             default:
                 print_usage(argv[0]);
@@ -192,31 +187,6 @@ int main(int argc, char **argv)
             }
         }
     }
-
-    // debug messages
-    DEBUG("Structures in type.h\n");
-    DEBUG("raw_msg_t: %lu\n", sizeof(raw_msg_t));
-    DEBUG("msg_t: %lu\n", sizeof(msg_t));
-    DEBUG("switch_t: %lu\n", sizeof(switch_t));
-    DEBUG("port_t: %lu\n", sizeof(port_t));
-    DEBUG("host_t: %lu\n", sizeof(host_t));
-    DEBUG("pktin_t: %lu\n", sizeof(pktin_t));
-    DEBUG("action_t: %lu\n", sizeof(action_t));
-    DEBUG("pktout_t: %lu\n", sizeof(pktout_t));
-    DEBUG("flow_t: %lu\n", sizeof(flow_t));
-    DEBUG("traffic_t: %lu\n", sizeof(traffic_t));
-    DEBUG("resource_t: %lu\n", sizeof(resource_t));
-    DEBUG("odp_t: %lu\n", sizeof(odp_t));
-    DEBUG("meta_event_t: %lu\n", sizeof(meta_event_t));
-
-    // kill external packet I/O engine
-    int pid;
-    char *argb[] = {"pkill", "-9", "barista_sb", NULL};
-    posix_spawn(&pid, "/usr/bin/pkill", NULL, NULL, argb, NULL);
-
-    // kill resource monitor
-    char *argr[] = {"pkill", "-9", "barista_rsm", NULL};
-    posix_spawn(&pid, "/usr/bin/pkill", NULL, NULL, argr, NULL);
 
     if (daemon == TRUE)
         daemonize();

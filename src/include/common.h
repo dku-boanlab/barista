@@ -19,9 +19,7 @@
 #include <ctype.h>
 #include <errno.h>
 
-#ifndef __DISABLE_CLI
 #include "libcli.h"
-#endif /* CLI */
 
 #define __CONF_ARGC 16
 #define __CONF_SHORT_LEN 16
@@ -32,18 +30,22 @@
 #define __DEFAULT_TABLE_SIZE 65536
 #define __HASHING_NAME_LENGTH 8
 
+#define LOG_UPDATE_TIME 1
+
 #define FLOW_MGMT_REQUEST_TIME 5
 #define TOPO_MGMT_REQUEST_TIME 5
 #define STAT_MGMT_REQUEST_TIME 5
+
 #define RESOURCE_MGMT_MONITOR_TIME 1
 #define RESOURCE_MGMT_HISTORY 3600
+
 #define TRAFFIC_MGMT_MONITOR_TIME 1
 #define TRAFFIC_MGMT_HISTORY 3600
+
 #define CLUSTER_UPDATE_TIME_NS (1000*1000)
 #define CLUSTER_DELIMITER 2000
-#define LOG_UPDATE_TIME 1
 
-//#define __SHOW_COMPONENT_ID
+#define __SHOW_COMPONENT_ID
 
 #include "type.h"
 
@@ -67,9 +69,6 @@
 
 /** \brief The default resource file */
 #define DEFAULT_RESOURCE_FILE "../log/resource.log"
-
-/** \brief The default raw resource file */
-#define DEFAULT_RAW_RESOURCE_FILE "../tmp/raw_usage"
 
 /** \brief The default traffic file */
 #define DEFAULT_TRAFFIC_FILE "../log/traffic.log"
@@ -159,10 +158,6 @@
 #define cli_bufcls(buf) memset(buf, 0, sizeof(buf))
 #define cli_buffer(buf, format, args...) sprintf(&buf[strlen(buf)], format, ##args)
 #define cli_bufprt(cli, buf) cli_print(cli, "%s", buf)
-
-#ifdef __DISABLE_CLI
-#define cli_print(cli, format, args...) printf("%s: " format, __FUNCTION__, ##args)
-#endif /* CLI */
 /* @} */
 
 /** \brief Functions for debug and error messages */
@@ -177,7 +172,6 @@
 #define PRINTF(format, args...) ({ printf(format, ##args); fflush(stdout); })
 #define PRINT_EV(format, args...) (void)0
 #endif /* !__ENABLE_DEBUG */
-
 #define PERROR(msg) fprintf(stdout, "\x1b[31m[%s:%d] %s: %s\x1b[0m\n", __FUNCTION__, __LINE__, (msg), strerror(errno))
 /* @} */
 

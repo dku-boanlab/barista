@@ -65,15 +65,6 @@ void sigint_handler(int sig)
 
     component_deactivate(NULL, "log");
 
-    // kill external packet I/O engine
-    int pid;
-    char *argb[] = {"pkill", "-9", "barista_sb", NULL};
-    posix_spawn(&pid, "/usr/bin/pkill", NULL, NULL, argb, NULL);
-
-    // kill resource monitor
-    char *argr[] = {"pkill", "-9", "barista_rsm", NULL};
-    posix_spawn(&pid, "/usr/bin/pkill", NULL, NULL, argr, NULL);
-
     cli_done(cli);
 
     exit(0);
@@ -97,15 +88,6 @@ void sigkill_handler(int sig)
 
     component_deactivate(NULL, "log");
 
-    // kill external packet I/O engine
-    int pid;
-    char *argb[] = {"pkill", "-9", "barista_sb", NULL};
-    posix_spawn(&pid, "/usr/bin/pkill", NULL, NULL, argb, NULL);
-
-    // kill resource monitor
-    char *argr[] = {"pkill", "-9", "barista_rsm", NULL};
-    posix_spawn(&pid, "/usr/bin/pkill", NULL, NULL, argr, NULL);
-
     cli_done(cli);
 
     exit(0);
@@ -128,15 +110,6 @@ void sigterm_handler(int sig)
     waitsec(0, 1000 * 1000);
 
     component_deactivate(NULL, "log");
-
-    // kill external packet I/O engine
-    int pid;
-    char *argb[] = {"pkill", "-9", "barista_sb", NULL};
-    posix_spawn(&pid, "/usr/bin/pkill", NULL, NULL, argb, NULL);
-
-    // kill resource monitor
-    char *argr[] = {"pkill", "-9", "barista_rsm", NULL};
-    posix_spawn(&pid, "/usr/bin/pkill", NULL, NULL, argr, NULL);
 
     cli_done(cli);
 
@@ -615,11 +588,11 @@ static int cli_list_switches(struct cli_def *cli, UNUSED(const char *command), c
     return CLI_OK;
 }
 
-static int cli_list_links(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
+static int cli_list_hosts(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     char cmd[__CONF_WORD_LEN] = {0};
 
-    sprintf(cmd, "topo_mgmt list links");
+    sprintf(cmd, "host_mgmt list hosts");
 
     int cnt = 0;
     char *args[__CONF_ARGC + 1] = {0};
@@ -631,11 +604,11 @@ static int cli_list_links(struct cli_def *cli, UNUSED(const char *command), char
     return CLI_OK;
 }
 
-static int cli_list_hosts(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
+static int cli_list_links(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     char cmd[__CONF_WORD_LEN] = {0};
 
-    sprintf(cmd, "host_mgmt list hosts");
+    sprintf(cmd, "topo_mgmt list links");
 
     int cnt = 0;
     char *args[__CONF_ARGC + 1] = {0};
@@ -737,15 +710,6 @@ static int cli_exit(struct cli_def *cli, UNUSED(const char *command), char *argv
 
     component_deactivate(cli, "log");
 
-    waitsec(0, 1000);
-
-    int pid;
-    char *argb[] = {"pkill", "-9", "barista_sb", NULL};
-    posix_spawn(&pid, "/usr/bin/pkill", NULL, NULL, argb, NULL);
-
-    char *argr[] = {"pkill", "-9", "barista_rsm", NULL};
-    posix_spawn(&pid, "/usr/bin/pkill", NULL, NULL, argr, NULL);
-
     cli_print(cli, "\nReady to be terminated");
 
     return CLI_OK;
@@ -753,9 +717,9 @@ static int cli_exit(struct cli_def *cli, UNUSED(const char *command), char *argv
 
 static int check_auth(const char *username, const char *password)
 {
-    if (strcasecmp(username, "admin") != 0)
+    if (strcasecmp(username, USERID) != 0)
         return CLI_ERROR;
-    if (strcasecmp(password, "secret") != 0)
+    if (strcasecmp(password, USERPW) != 0)
         return CLI_ERROR;
     return CLI_OK;
 }
@@ -767,7 +731,7 @@ static int regular_callback(struct cli_def *cli)
 
 static int check_enable(const char *password)
 {
-    return !strcasecmp(password, "topsecret");
+    return !strcasecmp(password, ADMINPW);
 }
 
 static int idle_timeout(struct cli_def *cli)
@@ -870,8 +834,8 @@ int start_cli(ctx_t *ctx)
     cli_register_command(cli, c, "applications", cli_list_applications, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "List up all applications");
 
     cli_register_command(cli, c, "switches", cli_list_switches, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "List up all switches");
-    cli_register_command(cli, c, "links", cli_list_links, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "List up all links");
     cli_register_command(cli, c, "hosts", cli_list_hosts, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "List up all hosts");
+    cli_register_command(cli, c, "links", cli_list_links, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "List up all links");
     cli_register_command(cli, c, "flows", cli_list_flows, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "List up all flow rules");
 
     c = cli_register_command(cli, NULL, "stat", NULL, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, NULL);

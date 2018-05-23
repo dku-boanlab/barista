@@ -147,14 +147,11 @@ int stat_mgmt_handler(const event_t *ev, event_out_t *ev_out)
     case EV_SW_CONNECTED:
         PRINT_EV("EV_SW_CONNECTED\n");
         {
-            if (ev->sw->remote == TRUE)
-                break;
-
             pthread_rwlock_wrlock(&stat_lock);
 
             int i;
             for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-                if (switch_list[i] == 0) {
+                if (!switch_list[i] && ev->sw->remote == FALSE) {
                     switch_list[i] = ev->sw->dpid;
                     break;
                 }
@@ -166,14 +163,11 @@ int stat_mgmt_handler(const event_t *ev, event_out_t *ev_out)
     case EV_SW_DISCONNECTED:
         PRINT_EV("EV_SW_DISCONNECTED\n");
         {
-            if (ev->sw->remote == TRUE)
-                break;
-
             pthread_rwlock_wrlock(&stat_lock);
 
             int i;
             for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-                if (switch_list[i] == ev->sw->dpid) {
+                if (ev->sw->remote == FALSE && switch_list[i] == ev->sw->dpid) {
                     switch_list[i] = 0;
                     break;
                 }

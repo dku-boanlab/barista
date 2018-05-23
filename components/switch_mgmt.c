@@ -22,9 +22,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of switches */
-int num_switches;
-
 /** \brief The structure of a switch table */
 typedef struct _switch_table_t {
     switch_t *head; /**< The head pointer */
@@ -32,6 +29,9 @@ typedef struct _switch_table_t {
 
     pthread_rwlock_t lock; /**< The lock for management */
 } switch_table_t;
+
+/** \brief The number of switches */
+int num_switches;
 
 /** \brief Switch table */
 switch_table_t switches;
@@ -126,7 +126,6 @@ static int switch_listup(cli_t *cli)
         cli_print(cli, "  Switch #%d", ++cnt);
         cli_print(cli, "    Datapath ID: %lu", curr->dpid);
         cli_print(cli, "    Location: %s", (curr->remote) ? "remote" : "local");
-        cli_print(cli, "    Current OF version: %s", (curr->version == 0x4) ? "1.3" : "1.0");
         cli_print(cli, "    Number of tables: %u", curr->n_tables);
         cli_print(cli, "    Number of buffers: %u", curr->n_buffers);
         cli_print(cli, "    Capabilities: 0x%x", curr->capabilities);
@@ -175,7 +174,6 @@ static int switch_showup(cli_t *cli, char *dpid_str)
         if (curr->dpid == dpid) {
             cli_print(cli, "    Datapath ID: %lu", curr->dpid);
             cli_print(cli, "    Location: %s", (curr->remote) ? "remote" : "local");
-            cli_print(cli, "    Current OF version: %s", (curr->version == 0x4) ? "1.3" : "1.0");
             cli_print(cli, "    Number of tables: %u", curr->n_tables);
             cli_print(cli, "    Number of buffers: %u", curr->n_buffers);
             cli_print(cli, "    Capabilities: 0x%x", curr->capabilities);
@@ -332,7 +330,6 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                 new->dpid = sw->dpid;
                 new->fd = sw->fd;
                 new->xid = 0;
-                new->version = sw->version;
                 new->n_tables = sw->n_tables;
                 new->n_buffers = sw->n_buffers;
                 new->capabilities = sw->capabilities;
@@ -390,13 +387,83 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
             pthread_rwlock_unlock(&switches.lock);
         }
         break;
+    case EV_SW_CONNECTED:
+        PRINT_EV("EV_SW_CONNECTED\n");
+        {
+            const switch_t *sw = ev->sw;
+
+            if (sw->remote == FALSE) break;
+
+            pthread_rwlock_rdlock(&switches.lock);
+
+            int i, pass = FALSE;
+            for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
+                if (switch_table[i] == NULL)
+                    continue;
+
+                if (switch_table[i]->dpid == sw->dpid) {
+                    pass = TRUE;
+                    break;
+                }
+            }
+
+            pthread_rwlock_unlock(&switches.lock);
+
+            if (pass == FALSE) {
+                switch_t *new = sw_dequeue();
+                if (new == NULL) {
+                    PERROR("sw_dequeue");
+                    return -1;
+                }
+
+                new->dpid = sw->dpid;
+                new->fd = sw->fd;
+                new->xid = 0;
+                new->n_tables = sw->n_tables;
+                new->n_buffers = sw->n_buffers;
+                new->capabilities = sw->capabilities;
+                new->actions = sw->actions;
+
+                new->remote = sw->remote;
+
+                new->prev = new->next = NULL;
+
+                pthread_rwlock_wrlock(&switches.lock);
+
+                if (switches.head == NULL) {
+                    switches.head = new;
+                    switches.tail = new;
+                } else {
+                    new->prev = switches.tail;
+                    switches.tail->next = new;
+                    switches.tail = new;
+                }
+
+                switch_table[sw->fd] = new;
+
+                num_switches++;
+
+                pthread_rwlock_unlock(&switches.lock);
+
+                switch_t out = {0};
+
+                out.dpid = sw->dpid;
+                out.fd = sw->fd;
+
+                out.remote = sw->remote;
+
+                ev_sw_connected(SWITCH_MGMT_ID, &out);
+
+                LOG_INFO(SWITCH_MGMT_ID, "Connected (FD=%d, DPID=%lu)", sw->fd, sw->dpid);
+            }
+        }
+        break;
     case EV_SW_DISCONNECTED:
         PRINT_EV("EV_SW_DISCONNECTED\n");
         {
             const switch_t *sw = ev->sw;
 
-            if (sw->remote == FALSE)
-                break;
+            if (sw->remote == FALSE) break;
 
             pthread_rwlock_wrlock(&switches.lock);
 
@@ -510,29 +577,6 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                 while (curr != NULL) {
                     if (curr->dpid == sw->dpid) {
                         sw->xid = curr->xid++;
-                        break;
-                    }
-                    curr = curr->next;
-                }
-            }
-
-            pthread_rwlock_unlock(&switches.lock);
-        }
-        break;
-    case EV_SW_GET_VERSION:
-        PRINT_EV("EV_SW_GET_VERSION\n");
-        {
-            switch_t *sw = ev_out->sw_data;
-
-            pthread_rwlock_rdlock(&switches.lock);
-
-            if (sw->fd) {
-                sw->version = switch_table[sw->fd]->version;
-            } else {
-                switch_t *curr = switches.head;
-                while (curr != NULL) {
-                    if (curr->dpid == sw->dpid) {
-                        sw->version = curr->version;
                         break;
                     }
                     curr = curr->next;

@@ -127,11 +127,6 @@ static int discard_packet(const pktin_t *pktin)
 static int l2_learning(const pktin_t *pktin)
 {
 #ifndef __ENABLE_CBENCH
-    if ((pktin->proto & (PROTO_ARP | PROTO_IPV4)) == 0) {
-        discard_packet(pktin);
-        return -1;
-    }
-
     uint64_t mac = mac2int(pktin->src_mac);
     uint32_t mkey = hash_func((uint32_t *)&mac, 2) % MAC_HASH_SIZE;
 
@@ -188,6 +183,7 @@ static int l2_learning(const pktin_t *pktin)
     }
 
     uint16_t port = 0;
+
     mkey = hash_func((uint32_t *)&mac, 2) % MAC_HASH_SIZE;
 
     pthread_rwlock_rdlock(&mac_table[mkey].lock);
@@ -212,8 +208,10 @@ static int l2_learning(const pktin_t *pktin)
 
     if (pktin->proto & PROTO_IPV4) // IPv4
         insert_flow(pktin, port);
-    else // ARP
+    else if (pktin->proto & PROTO_ARP) // ARP
         send_packet(pktin, port);
+    else // Others
+        discard_packet(pktin);
 
     return 0;
 #else /* __ENABLE_CBENCH */
@@ -501,6 +499,61 @@ int l2_learning_handler(const app_event_t *av, app_event_out_t *av_out)
             l2_learning(pktin);
         }
         break;
+    case AV_DP_PORT_ADDED:
+        PRINT_EV("AV_DP_PORT_ADDED\n");
+        {
+            const port_t *port = av->port;
+
+            int i;
+            for (i=0; i<MAC_HASH_SIZE; i++) {
+                mac_table_t tmp_list = {0};
+
+                pthread_rwlock_wrlock(&mac_table[i].lock);
+
+                mac_entry_t *curr = mac_table[i].head;
+                while (curr != NULL) {
+                    if (curr->dpid == port->dpid && curr->port == port->port) {
+                        if (tmp_list.head == NULL) {
+                            tmp_list.head = curr;
+                            tmp_list.tail = curr;
+                            curr->r_next = NULL;
+                        } else {
+                            tmp_list.tail->r_next = curr;
+                            tmp_list.tail = curr;
+                            curr->r_next = NULL;
+                        }
+                    }
+
+                    curr = curr->next;
+                }
+
+                curr = tmp_list.head;
+                while (curr != NULL) {
+                    mac_entry_t *tmp = curr;
+
+                    curr = curr->r_next;
+
+                    if (tmp->prev != NULL && tmp->next != NULL) {
+                        tmp->prev->next = tmp->next;
+                        tmp->next->prev = tmp->prev;
+                    } else if (tmp->prev == NULL && tmp->next != NULL) {
+                        mac_table[i].head = tmp->next;
+                        tmp->next->prev = NULL;
+                    } else if (tmp->prev != NULL && tmp->next == NULL) {
+                        mac_table[i].tail = tmp->prev;
+                        tmp->prev->next = NULL;
+                    } else if (tmp->prev == NULL && tmp->next == NULL) {
+                        mac_table[i].head = NULL;
+                        mac_table[i].tail = NULL;
+                    }
+
+                    mac_enqueue(tmp);
+                }
+
+                pthread_rwlock_unlock(&mac_table[i].lock);
+            }
+        }
+        break;
     case AV_DP_PORT_DELETED:
         PRINT_EV("AV_DP_PORT_DELETED\n");
         {
@@ -534,6 +587,61 @@ int l2_learning_handler(const app_event_t *av, app_event_out_t *av_out)
                     mac_entry_t *tmp = curr;
 
                     curr = curr->r_next;
+
+                    if (tmp->prev != NULL && tmp->next != NULL) {
+                        tmp->prev->next = tmp->next;
+                        tmp->next->prev = tmp->prev;
+                    } else if (tmp->prev == NULL && tmp->next != NULL) {
+                        mac_table[i].head = tmp->next;
+                        tmp->next->prev = NULL;
+                    } else if (tmp->prev != NULL && tmp->next == NULL) {
+                        mac_table[i].tail = tmp->prev;
+                        tmp->prev->next = NULL;
+                    } else if (tmp->prev == NULL && tmp->next == NULL) {
+                        mac_table[i].head = NULL;
+                        mac_table[i].tail = NULL;
+                    }
+
+                    mac_enqueue(tmp);
+                }
+
+                pthread_rwlock_unlock(&mac_table[i].lock);
+            }
+        }
+        break;
+    case AV_SW_CONNECTED:
+        PRINT_EV("AV_SW_CONNECTED\n");
+        {
+            const switch_t *sw = av->sw;
+
+            int i;
+            for (i=0; i<MAC_HASH_SIZE; i++) {
+                mac_table_t tmp_list = {0};
+
+                pthread_rwlock_wrlock(&mac_table[i].lock);
+
+                mac_entry_t *curr = mac_table[i].head;
+                while (curr != NULL) {
+                    if (curr->dpid == sw->dpid) {
+                        if (tmp_list.head == NULL) {
+                            tmp_list.head = curr;
+                            tmp_list.tail = curr;
+                            curr->r_next = NULL;
+                        } else {
+                            tmp_list.tail->r_next = curr;
+                            tmp_list.tail = curr;
+                            curr->r_next = NULL;
+                        }
+                    }
+
+                    curr = curr->next;
+                }
+
+                curr = tmp_list.head;
+                while (curr != NULL) {
+                    mac_entry_t *tmp = curr;
+
+                    curr = curr->next;
 
                     if (tmp->prev != NULL && tmp->next != NULL) {
                         tmp->prev->next = tmp->next;

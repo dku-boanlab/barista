@@ -151,8 +151,6 @@ void ev_sw_get_dpid(uint32_t id, switch_t *data) { sw_rw_raise(id, EV_SW_GET_DPI
 void ev_sw_get_fd(uint32_t id, switch_t *data) { sw_rw_raise(id, EV_SW_GET_FD, sizeof(switch_t), data); }
 /** \brief EV_SW_GET_XID (fd or dpid) */
 void ev_sw_get_xid(uint32_t id, switch_t *data) { sw_rw_raise(id, EV_SW_GET_XID, sizeof(switch_t), data); }
-/** \brief EV_SW_GET_VERSION (fd or dpid) */
-void ev_sw_get_version(uint32_t id, switch_t *data) { sw_rw_raise(id, EV_SW_GET_VERSION, sizeof(switch_t), data); }
 
 // Internal events (notification) ///////////////////////////////////
 
@@ -333,7 +331,7 @@ static void *reply_events(void *null)
 
         switch (msg.type) {
 
-        // request-reply events
+        // request-response events
 
         //sw_rw_raise(...);
 
@@ -435,7 +433,7 @@ int event_init(ctx_t *ctx)
         ev_pull_ctx = zmq_ctx_new();
         ev_pull_sock = zmq_socket(ev_pull_ctx, ZMQ_PULL);
 
-        if (zmq_bind(ev_pull_sock, "tcp://*:6001")) {
+        if (zmq_bind(ev_pull_sock, "tcp://0.0.0.0:5001")) {
             PERROR("zmq_bind");
             return -1;
         }
@@ -452,7 +450,7 @@ int event_init(ctx_t *ctx)
 
         ev_rep_ctx = zmq_ctx_new();
         ev_rep_comp = zmq_socket(ev_rep_ctx, ZMQ_ROUTER);
-        if (zmq_bind(ev_rep_comp, "tcp://*:6002")) {
+        if (zmq_bind(ev_rep_comp, "tcp://0.0.0.0:5002")) {
             PERROR("zmq_bind");
             return -1;
         }

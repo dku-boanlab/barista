@@ -19,10 +19,6 @@
 #include "application_list.h"
 #include "app_event.h"
 
-#include "search.h"
-#include <spawn.h>
-#include <zmq.h>
-
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The pointer of the context structure */
@@ -93,7 +89,7 @@ static int app_event_print(cli_t *cli, int id)
 int app_event_show(cli_t *cli, char *name)
 {
     if (app_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -120,9 +116,8 @@ int app_event_show(cli_t *cli, char *name)
     } else if (strcmp(name, "AV_ALL_INTSTREAM") == 0) {
         cli_print(cli, "<Application Event - AV_ALL_INTSTREAM>");
         int i;
-        for (i=AV_WRT_INTSTREAM+1; i<AV_ALL_INTSTREAM; i++) {
+        for (i=AV_WRT_INTSTREAM+1; i<AV_ALL_INTSTREAM; i++)
             app_event_print(cli, i);
-        }
         return 0;
     } else {
         int i;
@@ -147,7 +142,7 @@ int app_event_show(cli_t *cli, char *name)
 int app_event_list(cli_t *cli)
 {
     if (app_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -291,7 +286,7 @@ static int application_print(cli_t *cli, app_t *c, int details)
 int application_show(cli_t *cli, char *name)
 {
     if (app_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -316,7 +311,7 @@ int application_show(cli_t *cli, char *name)
 int application_list(cli_t *cli)
 {
     if (app_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -338,7 +333,7 @@ int application_list(cli_t *cli)
 int application_enable(cli_t *cli, char *name)
 {
     if (app_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -367,7 +362,7 @@ int application_enable(cli_t *cli, char *name)
 int application_disable(cli_t *cli, char *name)
 {
     if (app_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -416,7 +411,7 @@ static void *app_thread_main(void *a_id)
 int application_activate(cli_t *cli, char *name)
 {
     if (app_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -454,50 +449,6 @@ int application_activate(cli_t *cli, char *name)
                                 return 0;
                             }
                         }
-                    // external?
-                    } else {
-                        app_t *a = app_ctx->app_list[i];
-
-                        char app_path[__CONF_WORD_LEN] = {0};
-                        sprintf(app_path, "./%s", a->name);
-                        if (access(app_path, F_OK) != 0) {
-                            cli_print(cli, "%s does not exist", a->name);
-                            return -1;
-                        }
-
-                        char app_push_path[__CONF_WORD_LEN] = {0};
-                        sprintf(app_push_path, "ipc://../tmp/%s_push_pull", a->name);
-
-                        a->push_ctx = zmq_ctx_new();
-                        a->push_sock = zmq_socket(a->push_ctx, ZMQ_PUSH);
-                        if (zmq_bind(a->push_sock, app_push_path)) {
-                            PERROR("zmq_bind");
-                            return -1;
-                        }
-
-                        char app_req_path[__CONF_WORD_LEN] = {0};
-                        sprintf(app_req_path, "ipc://../tmp/%s_req_rep", a->name);
-
-                        a->req_ctx = zmq_ctx_new();
-                        a->req_sock = zmq_socket(a->req_ctx, ZMQ_REQ);
-                        if (zmq_bind(a->req_sock, app_req_path)) {
-                            PERROR("zmq_bind");
-                            return -1;
-                        }
-
-                        int pid;
-                        if (posix_spawn(&pid, app_path, NULL, NULL, NULL, NULL)) {
-                            cli_print(cli, "Failed to activate %s", a->name);
-                            return -1;
-                        }
-
-                        waitsec(0, 1000);
-
-                        a->activated = TRUE;
-
-                        cli_print(cli, "%s is activated", a->name);
-
-                        return 0;
                     }
                 } else {
                     cli_print(cli, "%s is already activated", name);
@@ -522,7 +473,7 @@ int application_activate(cli_t *cli, char *name)
 int application_deactivate(cli_t *cli, char *name)
 {
     if (app_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -544,28 +495,6 @@ int application_deactivate(cli_t *cli, char *name)
                             cli_print(cli, "%s is deactivated", app_ctx->app_list[i]->name);
                             return 0;
                         }
-                    // external?
-                    } else {
-                        app_t *a = app_ctx->app_list[i];
-
-                        char app_cmd[__CONF_WORD_LEN] = {0};
-                        sprintf(app_cmd, "pkill -SIGTERM %s", a->name);
-                        if (system(app_cmd) == -1) {
-                            cli_print(cli, "Failed to deactivate %s", a->name);
-                            return -1;
-                        }
-
-                        a->activated = FALSE;
-
-                        zmq_close(a->push_sock);
-                        zmq_ctx_destroy(a->push_ctx);
-
-                        zmq_close(a->req_sock);
-                        zmq_ctx_destroy(a->req_ctx);
-
-                        cli_print(cli, "%s is deactivated", app_ctx->app_list[i]->name);
-
-                        return 0;
                     }
                 } else {
                     cli_print(cli, "%s is not activated yet", name);
@@ -589,7 +518,7 @@ int application_deactivate(cli_t *cli, char *name)
 int application_start(cli_t *cli)
 {
     if (app_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -635,48 +564,6 @@ int application_start(cli_t *cli)
                         cli_print(cli, "%s is activated", app_ctx->app_list[appint]->name);
                     }
                 }
-            // external?
-            } else {
-                app_t *a = app_ctx->app_list[appint];
-
-                char app_path[__CONF_WORD_LEN] = {0};
-                sprintf(app_path, "./%s", a->name);
-                if (access(app_path, F_OK) != 0) {
-                    cli_print(cli, "%s does not exist", a->name);
-                    return -1;
-                }
-
-                char app_push_path[__CONF_WORD_LEN] = {0};
-                sprintf(app_push_path, "ipc://../tmp/%s_push_pull", a->name);
-
-                a->push_ctx = zmq_ctx_new();
-                a->push_sock = zmq_socket(a->push_ctx, ZMQ_PUSH);
-                if (zmq_bind(a->push_sock, app_push_path)) {
-                    PERROR("zmq_bind");
-                    return -1;
-                }
-
-                char app_req_path[__CONF_WORD_LEN] = {0};
-                sprintf(app_req_path, "ipc://../tmp/%s_req_rep", a->name);
-
-                a->req_ctx = zmq_ctx_new();
-                a->req_sock = zmq_socket(a->req_ctx, ZMQ_REQ);
-                if (zmq_bind(a->req_sock, app_req_path)) {
-                    PERROR("zmq_bind");
-                    return -1;
-                }
-
-                int pid;
-                if (posix_spawn(&pid, app_path, NULL, NULL, NULL, NULL)) {
-                    cli_print(cli, "Failed to activate %s", a->name);
-                    return -1;
-                }
-
-                waitsec(0, 1000);
-
-                a->activated = TRUE;
-
-                cli_print(cli, "%s is activated", a->name);
             }
         }
     }
@@ -714,48 +601,6 @@ int application_start(cli_t *cli)
                             cli_print(cli, "%s is activated", app_ctx->app_list[i]->name);
                         }
                     }
-                // external?
-                } else {
-                    app_t *a = app_ctx->app_list[i];
-
-                    char app_path[__CONF_WORD_LEN] = {0};
-                    sprintf(app_path, "./%s", a->name);
-                    if (access(app_path, F_OK) != 0) {
-                        cli_print(cli, "%s does not exist", a->name);
-                        return -1;
-                    }
-
-                    char app_push_path[__CONF_WORD_LEN] = {0};
-                    sprintf(app_push_path, "ipc://../tmp/%s_push_pull", a->name);
-
-                    a->push_ctx = zmq_ctx_new();
-                    a->push_sock = zmq_socket(a->push_ctx, ZMQ_PUSH);
-                    if (zmq_bind(a->push_sock, app_push_path)) {
-                        PERROR("zmq_bind");
-                        return -1;
-                    }
-
-                    char app_req_path[__CONF_WORD_LEN] = {0};
-                    sprintf(app_req_path, "ipc://../tmp/%s_req_rep", a->name);
-
-                    a->req_ctx = zmq_ctx_new();
-                    a->req_sock = zmq_socket(a->req_ctx, ZMQ_REQ);
-                    if (zmq_bind(a->req_sock, app_req_path)) {
-                        PERROR("zmq_bind");
-                        return -1;
-                    }
-
-                    int pid;
-                    if (posix_spawn(&pid, app_path, NULL, NULL, NULL, NULL)) {
-                        cli_print(cli, "Failed to activate %s", a->name);
-                        return -1;
-                    }
-
-                    waitsec(0, 1000);
-
-                    a->activated = TRUE;
-
-                    cli_print(cli, "%s is activated", a->name);
                 }
             }
         }
@@ -773,7 +618,7 @@ int application_start(cli_t *cli)
 int application_stop(cli_t *cli)
 {
     if (app_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -804,28 +649,6 @@ int application_stop(cli_t *cli)
                         app_ctx->app_list[i]->activated = FALSE;
                         cli_print(cli, "%s is deactivated", app_ctx->app_list[i]->name);
                     }
-                // external?
-                } else {
-                    app_t *a = app_ctx->app_list[i];
-
-                    char app_cmd[__CONF_WORD_LEN] = {0};
-                    sprintf(app_cmd, "pkill -SIGTERM %s", a->name);
-                    if (system(app_cmd) == -1) {
-                        cli_print(cli, "Failed to deactivate %s", a->name);
-                        return -1;
-                    }
-
-                    a->activated = FALSE;
-
-                    zmq_close(a->push_sock);
-                    zmq_ctx_destroy(a->push_ctx);
-
-                    zmq_close(a->req_sock);
-                    zmq_ctx_destroy(a->req_ctx);
-
-                    cli_print(cli, "%s is deactivated", a->name);
-
-                    break;
                 }
             }
         }
@@ -842,26 +665,6 @@ int application_stop(cli_t *cli)
                 app_ctx->app_list[appint]->activated = FALSE;
                 cli_print(cli, "%s is deactivated", app_ctx->app_list[appint]->name);
             }
-        // external?
-        } else {
-            app_t *a = app_ctx->app_list[appint];
-
-            char app_cmd[__CONF_WORD_LEN] = {0};
-            sprintf(app_cmd, "pkill -SIGTERM %s", a->name);
-            if (system(app_cmd) == -1) {
-                cli_print(cli, "Failed to deactivate %s", a->name);
-                return -1;
-            }
-
-            a->activated = FALSE;
-
-            zmq_close(a->push_sock);
-            zmq_ctx_destroy(a->push_ctx);
-
-            zmq_close(a->req_sock);
-            zmq_ctx_destroy(a->req_ctx);
-
-            cli_print(cli, "%s is deactivated", a->name);
         }
     }
 
@@ -879,7 +682,7 @@ int application_stop(cli_t *cli)
 int application_add_policy(cli_t *cli, char *name, char *p)
 {
     if (app_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -958,7 +761,10 @@ int application_add_policy(cli_t *cli, char *name, char *p)
                     } else if (strcmp(v, "lldp") == 0) {
                         c->odp[c->num_policies].flag |= ODP_PROTO;
                         c->odp[c->num_policies].proto |= PROTO_LLDP;
-                        cli_print(cli, "\tProtocol: LLDP");
+                    } else if (strcmp(v, "dhcp") == 0) {
+                        c->odp[c->num_policies].flag |= ODP_PROTO;
+                        c->odp[c->num_policies].proto |= PROTO_DHCP;
+                        cli_print(cli, "\tProtocol: DHCP");
                     } else if (strcmp(v, "ipv4") == 0) {
                         c->odp[c->num_policies].flag |= ODP_PROTO;
                         c->odp[c->num_policies].proto |= PROTO_IPV4;
@@ -1072,7 +878,7 @@ int application_add_policy(cli_t *cli, char *name, char *p)
 int application_del_policy(cli_t *cli, char *name, int idx)
 {
     if (app_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -1124,7 +930,7 @@ int application_del_policy(cli_t *cli, char *name, int idx)
 int application_show_policy(cli_t *cli, char *name)
 {
     if (app_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -1196,6 +1002,8 @@ int application_show_policy(cli_t *cli, char *name)
                 cli_buffer(buf, "ICMP ");
             if (c->odp[i].proto & PROTO_ARP)
                 cli_buffer(buf, "ARP ");
+            if (c->odp[i].proto & PROTO_DHCP)
+                cli_buffer(buf, "DHCP ");
             if (c->odp[i].proto & PROTO_LLDP)
                 cli_buffer(buf, "LLDP ");
 
@@ -1285,7 +1093,7 @@ int application_show_policy(cli_t *cli, char *name)
 int application_cli(cli_t *cli, char **args)
 {
     if (app_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -1506,10 +1314,10 @@ int application_load(cli_t *cli, ctx_t *ctx)
                 c->role = APP_NETWORK;
         }
 
-        // check base components
+        // check base applications
         if (c->role == APP_BASE) {
             if (strcmp(c->name, base[0]) != 0) {
-                 cli_print(cli, "Unauthorized base component");
+                 cli_print(cli, "Unauthorized base application");
                  FREE(c);
                  return -1;
             }
@@ -1744,386 +1552,6 @@ int application_load(cli_t *cli, ctx_t *ctx)
     }
 
     json_decref(json);
-
-    int ext_app_cnt = 0;
-    char ext_apps[__MAX_APPLICATIONS][__CONF_WORD_LEN];
-
-    get_external_configurations(ext_apps, &ext_app_cnt, DEFAULT_EXT_APP_PATH);
-
-    for (i=0; i<ext_app_cnt; i++) {
-        cli_print(cli, "External application configuration file: %s", ext_apps[i]);
-
-        if (access(ext_apps[i], F_OK)) {
-            cli_print(cli, "No file whose name is '%s'", ext_apps[i]);
-            return -1;
-        }
-
-        raw = str_read(ext_apps[i]);
-        conf = str_preproc(raw);
-
-        json = json_loads(conf, 0, &error);
-        if (!json) {
-            PERROR("json_loads");
-            return -1;
-        }
-
-        if (!json_is_array(json)) {
-            PERROR("json_is_array");
-            json_decref(json);
-            return -1;
-        }
-
-        int j;
-        for (j=0; j<json_array_size(json); j++) {
-            json_t *data = json_array_get(json, j);
-
-            char name[__CONF_WORD_LEN] = {0};
-            json_t *j_name = json_object_get(data, "name");
-            if (json_is_string(j_name)) {
-                strcpy(name, json_string_value(j_name));
-            }
-
-            char args[__CONF_WORD_LEN] = {0};
-            json_t *j_args = json_object_get(data, "args");
-            if (json_is_string(j_args)) {
-                strcpy(args, json_string_value(j_args));
-            }
-
-            char type[__CONF_WORD_LEN] = {0};
-            json_t *j_type = json_object_get(data, "type");
-            if (json_is_string(j_type)) {
-                strcpy(type, json_string_value(j_type));
-            }
-
-            char role[__CONF_WORD_LEN] = {0};
-            json_t *j_role = json_object_get(data, "role");
-            if (json_is_string(j_role)) {
-                strcpy(role, json_string_value(j_role));
-            }
-
-            char perm[__CONF_WORD_LEN] = {0};
-            json_t *j_perm = json_object_get(data, "perm");
-            if (json_is_string(j_perm)) {
-                strcpy(perm, json_string_value(j_perm));
-            }
-
-            char status[__CONF_WORD_LEN] = {0};
-            json_t *j_status = json_object_get(data, "status");
-            if (json_is_string(j_status)) {
-                strcpy(status, json_string_value(j_status));
-            }
-
-            // allocate a new application structure
-            app_t *c = calloc(1, sizeof(app_t));
-            if (!c) {
-                PERROR("calloc");
-                return -1;
-            }
-
-            // set an internal ID (simply for order)
-            c->id = n_apps;
-
-            // set the application name
-            if (strlen(name) == 0) {
-                cli_print(cli, "No application name");
-                FREE(c);
-                return -1;
-            } else {
-                strcpy(c->name, name);
-                cli_print(cli, "%3d: %s", c->id+1, name);
-
-                // set the actual ID
-                c->app_id = hash_func((uint32_t *)&c->name, __HASHING_NAME_LENGTH);
-
-#ifdef __SHOW_COMPONENT_ID
-                cli_print(cli, "     ID: %u", c->app_id);
-#endif /* __SHOW_COMPONENT_ID */
-            }
-
-            // set arguments
-            strcpy(c->args, args);
-            str2args(c->args, &c->argc, &c->argv[1], __CONF_ARGC);
-            c->argc++;
-            c->argv[0] = c->name;
-            if (strlen(c->args))
-                cli_print(cli, "     Arguments: %s", c->args);
-
-            // set functions
-            c->main = NULL;
-            c->handler = NULL;
-            c->cleanup = NULL;
-            c->cli = NULL;
-
-            // set a type
-            if (strlen(type) == 0) {
-                c->type = APP_GENERAL;
-            } else {
-                c->type = (strcmp(type, "autonomous") == 0) ? APP_AUTO : APP_GENERAL;
-            }
-            cli_print(cli, "     Type: %s", type);
-
-            // set a site
-            c->site = APP_EXTERNAL;
-            cli_print(cli, "     Site: external");
-
-            // set a role
-            if (strlen(role) == 0) {
-                c->role = APP_NETWORK;
-            } else {
-                if (strcmp(role, "base") == 0)
-                    c->role = APP_BASE;
-                else if (strcmp(role, "network") == 0)
-                    c->role = APP_NETWORK;
-                else if (strcmp(role, "management") == 0)
-                    c->role = APP_MANAGEMENT;
-                else if (strcmp(role, "security") == 0)
-                    c->role = APP_SECURITY;
-                else if (strcmp(role, "admin") == 0)
-                    c->role = APP_ADMIN;
-                else
-                    c->role = APP_NETWORK;
-            }
-
-            // check base components
-            if (c->role == APP_BASE) {
-                if (strcmp(c->name, base[0]) != 0) {
-                     cli_print(cli, "Unauthorized base component");
-                     FREE(c);
-                     return -1;
-                }
-            }
-            cli_print(cli, "     Role: %s", role);
-
-            // set permissions
-            int size = (strlen(perm) > APP_MAX_PERM) ? APP_MAX_PERM : strlen(perm);
-            int l;
-            for (l=0; l<size; l++) {
-                if (perm[l] == 'r') {
-                    c->perm |= APP_READ;
-                } else if (perm[l] == 'w') {
-                    c->perm |= APP_WRITE;
-                } else if (perm[l] == 'x') {
-                    c->perm |= APP_EXECUTE;
-                }
-            }
-            if (c->perm == 0) c->perm |= APP_READ;
-            cli_print(cli, "     Permission: %s", perm);
-
-            // set a status
-            if (strlen(status) == 0) {
-                c->status = APP_DISABLED;
-            } else {
-                c->status = (strcmp(status, "enabled") == 0) ? APP_ENABLED : APP_DISABLED;
-            }
-            cli_print(cli, "     Status: %s", status);
-
-            int real_event_cnt = 0;
-
-            // set inbound events
-            json_t *events = json_object_get(data, "inbounds");
-            if (json_is_array(events)) {
-                int s;
-
-                // first, check whether there is a wrong event name or not
-                for (s=0; s<json_array_size(events); s++) {
-                    json_t *event = json_array_get(events, s);
-
-                    if (app_event_type(json_string_value(event)) == AV_NUM_EVENTS) {
-                        cli_print(cli, "     Inbounds: wrong app event name");
-                        FREE(c);
-                        return -1;
-                    }
-                }
-
-                // then, set the inbound events
-                for (s=0; s<json_array_size(events); s++) {
-                    json_t *event = json_array_get(events, s);
-
-                    if (app_event_type(json_string_value(event)) == AV_NONE) {
-                        break;
-                    } else if (app_event_type(json_string_value(event)) == AV_ALL_UPSTREAM) {
-                        if (APP_BASE < c->role && c->role < APP_SECURITY) {
-                            cli_print(cli, "     Inbounds: lower-level role");
-                            FREE(c);
-                            return -1;
-                        }
-
-                        int m;
-                        for (m=AV_NONE+1; m<AV_ALL_UPSTREAM; m++) {
-                            real_event_cnt++;
-
-                            c->in_list[c->in_num] = m;
-                            c->in_num++;
-
-                            av_list[m][av_num[m]] = c;
-                            av_num[m]++;
-                        }
-                    } else if (app_event_type(json_string_value(event)) == AV_ALL_DOWNSTREAM) {
-                        if (APP_BASE < c->role && c->role < APP_SECURITY) {
-                            cli_print(cli, "     Inbounds: lower-level role");
-                            FREE(c);
-                            return -1;
-                        }
-
-                        int m;
-                        for (m=AV_ALL_UPSTREAM+1; m<AV_ALL_DOWNSTREAM; m++) {
-                            real_event_cnt++;
-
-                            c->in_list[c->in_num] = m;
-                            c->in_num++;
-
-                            av_list[m][av_num[m]] = c;
-                            av_num[m]++;
-                        }
-                    } else if (app_event_type(json_string_value(event)) == AV_WRT_INTSTREAM) {
-                        if (APP_BASE < c->role && c->role < APP_SECURITY) {
-                            cli_print(cli, "     Inbounds: lower-level role");
-                            FREE(c);
-                            return -1;
-                        }
-
-                        int m;
-                        for (m=AV_ALL_DOWNSTREAM+1; m<AV_WRT_INTSTREAM; m++) {
-                            real_event_cnt++;
-
-                            c->in_list[c->in_num] = m;
-                            c->in_num++;
-
-                            av_list[m][av_num[m]] = c;
-                            av_num[m]++;
-                        }
-                    } else if (app_event_type(json_string_value(event)) == AV_ALL_INTSTREAM) {
-                        if (APP_BASE < c->role && c->role < APP_SECURITY) {
-                            cli_print(cli, "     Inbounds: lower-level role");
-                            FREE(c);
-                            return -1;
-                        }
-
-                        int m;
-                        for (m=AV_WRT_INTSTREAM+1; m<AV_ALL_INTSTREAM; m++) {
-                            real_event_cnt++;
-
-                            c->in_list[c->in_num] = m;
-                            c->in_num++;
-
-                            av_list[m][av_num[m]] = c;
-                            av_num[m]++;
-                        }
-                    } else {
-                        real_event_cnt++;
-
-                        c->in_list[c->in_num] = app_event_type(json_string_value(event));
-                        c->in_num++;
-
-                        av_list[app_event_type(json_string_value(event))][av_num[app_event_type(json_string_value(event))]] = c;
-                        av_num[app_event_type(json_string_value(event))]++;
-                    }
-                }
-
-                if (real_event_cnt == 0) cli_print(cli, "     Inbounds: no event");
-                else if (real_event_cnt == 1) cli_print(cli, "     Inbounds: 1 event");
-                else cli_print(cli, "     Inbounds: %d events", c->in_num);
-            }
-
-            real_event_cnt = 0;
-
-            // set outbound events
-            json_t *out_events = json_object_get(data, "outbounds");
-            if (json_is_array(out_events)) {
-                int s;
-
-                // first, check whether there is a wrong event name or not
-                for (s=0; s<json_array_size(out_events); s++) {
-                    json_t *out_event = json_array_get(out_events, s);
-
-                    if (app_event_type(json_string_value(out_event)) == AV_NUM_EVENTS) {
-                        cli_print(cli, "     Outbounds: wrong event name");
-                        FREE(c);
-                        return -1;
-                    }
-                }
-
-                // then, set the outbound events
-                for (s=0; s<json_array_size(out_events); s++) {
-                    json_t *out_event = json_array_get(out_events, s);
-
-                    if (app_event_type(json_string_value(out_event)) == AV_NONE) {
-                        break;
-                    } else if (app_event_type(json_string_value(out_event)) == AV_ALL_UPSTREAM) {
-                        if (APP_BASE < c->role && c->role < APP_SECURITY) {
-                            cli_print(cli, "     Outbounds: lower-level role");
-                            FREE(c);
-                            return -1;
-                        }
-
-                        int m;
-                        for (m=AV_NONE+1; m<AV_ALL_UPSTREAM; m++) {
-                            real_event_cnt++;
-
-                            c->out_list[c->out_num] = m;
-                            c->out_num++;
-                        }
-                    } else if (app_event_type(json_string_value(out_event)) == AV_ALL_DOWNSTREAM) {
-                        if (APP_BASE < c->role && c->role < APP_SECURITY) {
-                            cli_print(cli, "     Outbounds: lower-level role");
-                            FREE(c);
-                            return -1;
-                        }
-
-                        int m;
-                        for (m=AV_ALL_UPSTREAM+1; m<AV_ALL_DOWNSTREAM; m++) {
-                            real_event_cnt++;
-
-                            c->out_list[c->out_num] = m;
-                            c->out_num++;
-                        }
-                    } else if (app_event_type(json_string_value(out_event)) == AV_WRT_INTSTREAM) {
-                        if (APP_BASE < c->role && c->role < APP_SECURITY) {
-                            cli_print(cli, "     Outbounds: lower-level role");
-                            FREE(c);
-                            return -1;
-                        }
-
-                        int m;
-                        for (m=AV_ALL_DOWNSTREAM+1; m<AV_WRT_INTSTREAM; m++) {
-                            real_event_cnt++;
-
-                            c->out_list[c->out_num] = m;
-                            c->out_num++;
-                        }
-                    } else if (app_event_type(json_string_value(out_event)) == AV_ALL_INTSTREAM) {
-                        if (APP_BASE < c->role && c->role < APP_SECURITY) {
-                            cli_print(cli, "     Outbounds: lower-level role");
-                            FREE(c);
-                            return -1;
-                        }
-
-                        int m;
-                        for (m=AV_WRT_INTSTREAM+1; m<AV_ALL_INTSTREAM; m++) {
-                            real_event_cnt++;
-
-                            c->out_list[c->out_num] = m;
-                            c->out_num++;
-                        }
-                    } else {
-                        real_event_cnt++;
-
-                        c->out_list[c->out_num] = app_event_type(json_string_value(out_event));
-                        c->out_num++;
-                    }
-                }
-
-                if (real_event_cnt == 0) cli_print(cli, "     Outbounds: no event");
-                else if (real_event_cnt == 1) cli_print(cli, "     Outbounds: 1 event");
-                else cli_print(cli, "     Outbounds: %d events", c->out_num);
-            }
-
-            app_list[n_apps] = c;
-            n_apps++;
-        }
-
-        json_decref(json);
-    }
 
     // sort applications based on the ordering policy
     for (i=1; i<AV_NUM_EVENTS; i++) {

@@ -42,15 +42,15 @@ enum {
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of applications */
-int app_to_role_cnt;
-
 /** \brief The structure for mapping app IDs and app roles */
 typedef struct _app2role_t {
     int id; /**< Application ID */
     int role; /**< Application role */
     char name[__CONF_WORD_LEN]; /**< Application name */
 } app2role_t;
+
+/** \brief The number of applications */
+int app_to_role_cnt;
 
 /** \brief The mapping table of applications and their roles */
 app2role_t *app_to_role;
@@ -60,7 +60,7 @@ app2role_t *app_to_role;
 /** \brief The structure for mapping app roles and app events */
 typedef struct _role2ev_t {
     char name[__CONF_WORD_LEN]; /**< Role */
-    uint8_t event[__MAX_APP_EVENTS]; /**< Events for the role */
+    uint8_t event[__MAX_APP_EVENTS]; /**< Events grouped by the role */
 } role2ev_t;
 
 /** \brief The mapping table of roles and their events */
@@ -166,84 +166,11 @@ static int load_app_roles(char *conf_file)
 
     json_decref(json);
 
-    int ext_app_cnt = 0;
-    char ext_apps[__MAX_APPLICATIONS][__CONF_WORD_LEN];
-
-    get_external_configurations(ext_apps, &ext_app_cnt, DEFAULT_EXT_APP_PATH);
-
-    for (i=0; i<ext_app_cnt; i++) {
-        ALOG_INFO(RBAC_ID, "External application configuration file: %s", ext_apps[i]);
-
-        if (access(ext_apps[i], F_OK)) {
-            ALOG_INFO(RBAC_ID, "No file whose name is '%s'", ext_apps[i]);
-            return -1;
-        }
-
-        raw = str_read(ext_apps[i]);
-        conf = str_preproc(raw);
-
-        json = json_loads(conf, 0, &error);
-        if (!json) {
-            PERROR("json_loads");
-            return -1;
-        }
-
-        if (!json_is_array(json)) {
-            PERROR("json_is_array");
-            json_decref(json);
-            return -1;
-        }
-
-        json_t *data = json_array_get(json, 0);
-
-        char name[__CONF_WORD_LEN] = {0};
-        json_t *j_name = json_object_get(data, "name");
-        if (json_is_string(j_name)) {
-            strcpy(name, json_string_value(j_name));
-        }
-
-        char role[__CONF_WORD_LEN] = {0};
-        json_t *j_role = json_object_get(data, "role");
-        if (json_is_string(j_role)) {
-            strcpy(role, json_string_value(j_role));
-        }
-
-        if (strlen(name) == 0) {
-            PRINTF("no application name\n");
-            return -1;
-        }
-
-        app_to_role[app_to_role_cnt].id = hash_func((uint32_t *)&name, __HASHING_NAME_LENGTH);
-
-        strcpy(app_to_role[app_to_role_cnt].name, name);
-
-        if (strlen(role) == 0) {
-            app_to_role[app_to_role_cnt].role = APP_NETWORK;
-        } else {
-            if (strcmp(role, "base") == 0)
-                app_to_role[app_to_role_cnt].role = APP_BASE;
-            else if (strcmp(role, "network") == 0)
-                app_to_role[app_to_role_cnt].role = APP_NETWORK;
-            else if (strcmp(role, "management") == 0)
-                app_to_role[app_to_role_cnt].role = APP_MANAGEMENT;
-            else if (strcmp(role, "security") == 0)
-                app_to_role[app_to_role_cnt].role = APP_SECURITY;
-            else if (strcmp(role, "admin") == 0)
-                app_to_role[app_to_role_cnt].role = APP_ADMIN;
-            else
-                app_to_role[app_to_role_cnt].role = APP_NETWORK;
-        }
-
-        app_to_role_cnt++;
-
-        json_decref(json);
-    }
-
     return 0;
 }
 
 /**
- * \brief Function to load the available events of each role
+ * \brief Function to load the events grouped by each role
  * \param role_file Application role file
  */
 static int load_events_for_roles(char *role_file)
@@ -324,20 +251,6 @@ static int load_events_for_roles(char *role_file)
     return 0;
 }
 
-/**
- * \brief Function to initialize the mapping tables of applications and their roles
- * \return None
- */
-static int reset_app_roles(void)
-{
-    app_to_role_cnt = 0;
-
-    memset(app_to_role, 0, sizeof(app2role_t) * __MAX_APPLICATIONS);
-    memset(role_to_event, 0, sizeof(role2ev_t) * NUM_APP_ROLES);
-
-    return 0;
-}
-
 /////////////////////////////////////////////////////////////////////
 
 /**
@@ -386,7 +299,10 @@ int rbac_main(int *activated, int argc, char **argv)
         return -1;
     }
 
-    reset_app_roles();
+    app_to_role_cnt = 0;
+
+    memset(app_to_role, 0, sizeof(app2role_t) * __MAX_APPLICATIONS);
+    memset(role_to_event, 0, sizeof(role2ev_t) * NUM_APP_ROLES);
     
     // load app roles
     if (load_app_roles(app_file) < 0)

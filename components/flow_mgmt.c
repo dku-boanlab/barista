@@ -27,9 +27,6 @@ int flow_mgmt_on;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of flows */
-int num_flows;
-
 /** \brief The structure of a flow table */
 typedef struct _flow_table_t {
     flow_t *head; /**< The head pointer */
@@ -37,6 +34,9 @@ typedef struct _flow_table_t {
 
     pthread_mutex_t lock; /**< The lock for management */
 } flow_table_t;
+
+/** \brief The number of flows */
+int num_flows;
 
 /** \brief Flow tables */
 flow_table_t *flow_table;
@@ -480,6 +480,8 @@ static int flow_listup(cli_t *cli)
                 strcpy(proto, "IPv4");
             else if (curr->proto & PROTO_ARP)
                 strcpy(proto, "ARP");
+            else if (curr->proto & PROTO_DHCP)
+                strcpy(proto, "DHCP");
             else if (curr->proto & PROTO_LLDP)
                 strcpy(proto, "LLDP");
             else
@@ -508,7 +510,7 @@ static int flow_listup(cli_t *cli)
                           curr->dst_mac[0], curr->dst_mac[1], curr->dst_mac[2], curr->dst_mac[3], curr->dst_mac[4], curr->dst_mac[5], 
                           curr->vlan_id, curr->vlan_pcp, proto, srcip, dstip, curr->type, curr->code,
                           curr->num_actions, curr->pkt_count, curr->byte_count);
-            } else if (curr->proto & PROTO_TCP || curr->proto & PROTO_UDP) {
+            } else if (curr->proto & PROTO_TCP || curr->proto & PROTO_UDP || curr->proto & PROTO_DHCP) {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
                                "    src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
                                "    vlan: %u, vlan_pcp: %u, %s, src_ip: %s, dst_ip: %s, src_port: %u, dst_port: %u\n"
@@ -586,6 +588,8 @@ static int flow_showup(cli_t *cli, char *dpid_str)
                 strcpy(proto, "IPv4");
             else if (curr->proto & PROTO_ARP)
                 strcpy(proto, "ARP");
+            else if (curr->proto & PROTO_DHCP)
+                strcpy(proto, "DHCP");
             else if (curr->proto & PROTO_LLDP)
                 strcpy(proto, "LLDP");
             else
@@ -614,7 +618,7 @@ static int flow_showup(cli_t *cli, char *dpid_str)
                           curr->dst_mac[0], curr->dst_mac[1], curr->dst_mac[2], curr->dst_mac[3], curr->dst_mac[4], curr->dst_mac[5],
                           curr->vlan_id, curr->vlan_pcp, proto, srcip, dstip, curr->type, curr->code,
                           curr->num_actions, curr->pkt_count, curr->byte_count);
-            } else if (curr->proto & PROTO_TCP || curr->proto & PROTO_UDP) {
+            } else if (curr->proto & PROTO_TCP || curr->proto & PROTO_UDP || curr->proto & PROTO_DHCP) {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
                                "    src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
                                "    vlan: %u, vlan_pcp: %u, %s, src_ip: %s, dst_ip: %s, src_port: %u, dst_port: %u\n"
@@ -743,6 +747,14 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
             update_flow(flow_tbl, ev->flow);
         }
         break;
+    case EV_SW_CONNECTED:
+        PRINT_EV("EV_SW_CONNECTED\n");
+        {
+            const switch_t *sw = ev->sw;
+            flow_table_t *flow_tbl = &flow_table[sw->dpid % __DEFAULT_TABLE_SIZE];
+            delete_all_flows(flow_tbl, ev->sw->dpid);
+        }
+        break;
     case EV_SW_DISCONNECTED:
         PRINT_EV("EV_SW_DISCONNECTED\n");
         {
@@ -756,8 +768,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const flow_t *flow = ev->flow;
 
-            if (flow->remote == FALSE)
-                break;
+            if (flow->remote == FALSE) break;
 
             flow_table_t *flow_tbl = &flow_table[flow->dpid % __DEFAULT_TABLE_SIZE];
             add_flow(flow_tbl, ev->flow);
@@ -768,8 +779,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const flow_t *flow = ev->flow;
 
-            if (flow->remote == FALSE)
-                break;
+            if (flow->remote == FALSE) break;
 
             flow_table_t *flow_tbl = &flow_table[flow->dpid % __DEFAULT_TABLE_SIZE];
             delete_flow(flow_tbl, ev->flow);

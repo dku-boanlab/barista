@@ -11,7 +11,6 @@
 
 #include "common.h"
 #include "app_event.h"
-#include "search.h"
 #include "hash.h"
 #include "str.h"
 

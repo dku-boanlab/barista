@@ -22,9 +22,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of hosts */
-int num_hosts;
-
 /** \brief The structure of a host table */
 typedef struct _host_table_t {
     host_t *head; /**< The head pointer */
@@ -32,6 +29,9 @@ typedef struct _host_table_t {
 
     pthread_rwlock_t lock; /**< The lock for management */
 } host_table_t;
+
+/** \brief The number of hosts */
+int num_hosts;
 
 /** \brief Host tables */
 host_table_t *host_table;
@@ -43,30 +43,11 @@ host_table_t *host_table;
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to conduct a drop action into the data plane
- * \param pktin Pktin message
- */
-static int discard_packet(const pktin_t *pktin)
-{
-    pktout_t out = {0};
-
-    PKTOUT_INIT(out, pktin);
-
-    out.num_actions = 1;
-    out.action[0].type = ACTION_DISCARD;
-
-    ev_dp_send_packet(HOST_MGMT_ID, &out);
-
-    return 0;
-}
-
-/////////////////////////////////////////////////////////////////////
-
-/**
  * \brief Function to look up a host (locked)
  * \param list Host table mapped to a MAC address
  * \param ip IP address
  * \param mac MAC address
+ * \return 0: new, 1: exist, 2: MAC conflict, 3: IP conflict
  */
 static int check_host(host_table_t *list, uint32_t ip, uint64_t mac)
 {
@@ -129,9 +110,6 @@ static int add_new_host(const pktin_t *pktin)
 #ifdef __ENABLE_CBENCH
     return 0;
 #else /* !__ENABLE_CBENCH */
-    if ((pktin->proto & (PROTO_ARP | PROTO_IPV4)) == 0)
-        return 0;
-
     struct in_addr src_ip;
     src_ip.s_addr = pktin->src_ip;
 
@@ -301,7 +279,7 @@ static int host_showup_switch(cli_t *cli, const char *dpid_str)
 {
     uint64_t dpid = strtoull(dpid_str, NULL, 0);
 
-    cli_print(cli, "<Host [%lu]>", dpid);
+    cli_print(cli, "<Host List [%lu]>", dpid);
 
     int i, cnt = 0;
     for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
@@ -458,10 +436,85 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
     case EV_DP_RECEIVE_PACKET:
         PRINT_EV("EV_DP_RECEIVE_PACKET\n");
         {
-            int ret = add_new_host(ev->pktin);
-            if (ret != 0 && ret != 1) {
-                discard_packet(ev->pktin);
-                return -1;
+            add_new_host(ev->pktin);
+        }
+        break;
+    case EV_DP_PORT_ADDED:
+        PRINT_EV("EV_DP_PORT_ADDED\n");
+        {
+            const port_t *port = ev->port;
+
+            int i;
+            for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
+                host_table_t tmp_list = {0};
+
+                pthread_rwlock_wrlock(&host_table[i].lock);
+
+                host_t *curr = host_table[i].head;
+                while (curr != NULL) {
+                    if (curr->dpid == port->dpid && curr->port == port->port) {
+                        if (tmp_list.head == NULL) {
+                            tmp_list.head = curr;
+                            tmp_list.tail = curr;
+                            curr->r_next = NULL;
+                        } else {
+                            tmp_list.tail->r_next = curr;
+                            tmp_list.tail = curr;
+                            curr->r_next = NULL;
+                        }
+
+                        num_hosts--;
+                    }
+
+                    curr = curr->next;
+                }
+
+                curr = tmp_list.head;
+                while (curr != NULL) {
+                    host_t *tmp = curr;
+
+                    curr = curr->r_next;
+
+                    if (tmp->prev != NULL && tmp->next != NULL) {
+                        tmp->prev->next = tmp->next;
+                        tmp->next->prev = tmp->prev;
+                    } else if (tmp->prev == NULL && tmp->next != NULL) {
+                        host_table[i].head = tmp->next;
+                        tmp->next->prev = NULL;
+                    } else if (tmp->prev != NULL && tmp->next == NULL) {
+                        host_table[i].tail = tmp->prev;
+                        tmp->prev->next = NULL;
+                    } else if (tmp->prev == NULL && tmp->next == NULL) {
+                        host_table[i].head = NULL;
+                        host_table[i].tail = NULL;
+                    }
+
+                    host_t out = {0};
+
+                    out.dpid = tmp->dpid;
+                    out.port = tmp->port;
+
+                    out.mac = tmp->mac;
+                    out.ip = tmp->ip;
+
+                    ev_host_deleted(HOST_MGMT_ID, &out);
+
+                    struct in_addr ip_addr;
+                    ip_addr.s_addr = out.ip;
+
+                    uint8_t macaddr[6];
+                    int2mac(out.mac, macaddr);
+
+                    LOG_INFO(HOST_MGMT_ID, "Deleted a device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
+                             out.dpid,
+                             inet_ntoa(ip_addr),
+                             macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5],
+                             out.port);
+
+                    host_enqueue(tmp);
+                }
+
+                pthread_rwlock_unlock(&host_table[i].lock);
             }
         }
         break;
@@ -524,6 +577,87 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                     out.ip = tmp->ip;
 
                     ev_host_deleted(HOST_MGMT_ID, &out);
+
+                    struct in_addr ip_addr;
+                    ip_addr.s_addr = out.ip;
+
+                    uint8_t macaddr[6];
+                    int2mac(out.mac, macaddr);
+
+                    LOG_INFO(HOST_MGMT_ID, "Deleted a device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
+                             out.dpid,
+                             inet_ntoa(ip_addr),
+                             macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5],
+                             out.port);
+
+                    host_enqueue(tmp);
+                }
+
+                pthread_rwlock_unlock(&host_table[i].lock);
+            }
+        }
+        break;
+    case EV_SW_CONNECTED:
+        PRINT_EV("EV_SW_CONNECTED\n");
+        {
+            const switch_t *sw = ev->sw;
+
+            int i;
+            for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
+                host_table_t tmp_list = {0};
+
+                pthread_rwlock_wrlock(&host_table[i].lock);
+
+                host_t *curr = host_table[i].head;
+                while (curr != NULL) {
+                    if (curr->dpid == sw->dpid) {
+                        if (tmp_list.head == NULL) {
+                            tmp_list.head = curr;
+                            tmp_list.tail = curr;
+                            curr->r_next = NULL;
+                        } else {
+                            tmp_list.tail->r_next = curr;
+                            tmp_list.tail = curr;
+                            curr->r_next = NULL;
+                        }
+
+                        num_hosts--;
+                    }
+
+                    curr = curr->next;
+                }
+
+                curr = tmp_list.head;
+                while (curr != NULL) {
+                    host_t *tmp = curr;
+
+                    curr = curr->r_next;
+
+                    if (tmp->prev != NULL && tmp->next != NULL) {
+                        tmp->prev->next = tmp->next;
+                        tmp->next->prev = tmp->prev;
+                    } else if (tmp->prev == NULL && tmp->next != NULL) {
+                        host_table[i].head = tmp->next;
+                        tmp->next->prev = NULL;
+                    } else if (tmp->prev != NULL && tmp->next == NULL) {
+                        host_table[i].tail = tmp->prev;
+                        tmp->prev->next = NULL;
+                    } else if (tmp->prev == NULL && tmp->next == NULL) {
+                        host_table[i].head = NULL;
+                        host_table[i].tail = NULL;
+                    }
+
+                    host_t out = {0};
+
+                    out.dpid = tmp->dpid;
+                    out.port = tmp->port;
+
+                    out.mac = tmp->mac;
+                    out.ip = tmp->ip;
+
+                    if (sw->remote == FALSE) {
+                        ev_host_deleted(HOST_MGMT_ID, &out);
+                    }
 
                     struct in_addr ip_addr;
                     ip_addr.s_addr = out.ip;
@@ -630,8 +764,7 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const host_t *host = ev->host;
 
-            if (host->remote == FALSE)
-                break;
+            if (host->remote == FALSE) break;
 
             uint32_t mkey = hash_func((uint32_t *)&host->mac, 2) % __DEFAULT_TABLE_SIZE;
 
@@ -690,8 +823,7 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const host_t *host = ev->host;
 
-            if (host->remote == FALSE)
-                break;
+            if (host->remote == FALSE) break;
 
             int i;
             for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {

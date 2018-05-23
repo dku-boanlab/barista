@@ -89,24 +89,50 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
         if (one_by_one) {
             c = one_by_one;
 
-            if (c->perm & COMPNT_WRITE) {
-                if (c->site == COMPNT_INTERNAL) { // internal site
-                    c->num_events[type]++;
+            if (c->activated) {
+                if (c->perm & COMPNT_WRITE) {
+                    if (c->site == COMPNT_INTERNAL) { // internal site
+                        c->num_events[type]++;
 
-                    int ret = c->handler(ev, &ev_out);
-                    if (ret && c->perm & COMPNT_EXECUTE) {
-                        break;
+                        int ret = c->handler(ev, &ev_out);
+                        if (ret && c->perm & COMPNT_EXECUTE) {
+                            break;
+                        }
+                    } else { // external site
+                        event_out_t *out = &ev_out;
+
+                        c->num_events[type]++;
+
+                        int ret = EV_SEND_EXT_MSG(id, type, len, data, out);
+                        if (ret && c->perm & COMPNT_EXECUTE) {
+                            break;
+                        }
+                    }
+                } else {
+                    if (c->site == COMPNT_INTERNAL) { // internal site
+                        c->num_events[type]++;
+
+                        int ret = c->handler(ev, NULL);
+                        if (ret && c->perm & COMPNT_EXECUTE) {
+                            break;
+                        }
+                    } else { // external site
+                        event_out_t *out = &ev_out;
+
+                        c->num_events[type]++;
+
+                        if (c->perm & COMPNT_EXECUTE) {
+                            int ret = EV_SEND_EXT_MSG(id, type, len, data, out);
+                            if (ret) {
+                                break;
+                            }
+                        } else {
+                            EV_PUSH_EXT_MSG(id, type, len, data);
+                        }
                     }
                 }
             } else {
-                if (c->site == COMPNT_INTERNAL) { // internal site
-                    c->num_events[type]++;
-
-                    int ret = c->handler(ev, NULL);
-                    if (ret && c->perm & COMPNT_EXECUTE) {
-                        break;
-                    }
-                }
+                one_by_one = NULL;
             }
         }
     }

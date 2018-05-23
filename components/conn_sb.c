@@ -18,11 +18,18 @@
 
 #include "conn_sb.h"
 
-/** \brief OpenFlow structure */
-#include "openflow10.h"
-
 /** \brief External packet I/O engine ID */
 #define CONN_SB_ID 1414923628
+
+/////////////////////////////////////////////////////////////////////
+
+/** \brief The header of OpenFlow protocol */
+struct of_header {
+    uint8_t version;
+    uint8_t type;
+    uint16_t length;
+    uint32_t xid;
+};
 
 /////////////////////////////////////////////////////////////////////
 
@@ -105,9 +112,6 @@ static int get_qsize(void)
 
 // segmented context handling part //////////////////////////////////
 
-/** \brief The size of a recv buffer */
-#define BUFFER_SIZE 8192
-
 /** \brief The structure to keep the remaining part of a raw message */
 typedef struct _context_t {
     int need; /**< The bytes it needs to read */
@@ -173,13 +177,13 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
                 bytes -= (4 - done);
                 buf_ptr += (4 - done);
 
-                need = ntohs(((struct ofp_header *)temp)->length) - 4;
+                need = ntohs(((struct of_header *)temp)->length) - 4;
                 done = 4;
             }
         }
 
         if (need == 0) {
-            struct ofp_header *ofph = (struct ofp_header *)(rx_buf + buf_ptr);
+            struct of_header *ofph = (struct of_header *)(rx_buf + buf_ptr);
 
             if (bytes < 4) {
                 memmove(temp, rx_buf + buf_ptr, bytes);
@@ -213,7 +217,7 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
                 }
             }
         } else {
-            struct ofp_header *ofph = (struct ofp_header *)temp;
+            struct of_header *ofph = (struct of_header *)temp;
 
             if (need > bytes) {
                 memmove(temp + done, rx_buf + buf_ptr, bytes);
@@ -314,6 +318,9 @@ static int relink_epoll(int epol, int fd, int flags)
 
 // worker thread handling part //////////////////////////////////////
 
+/** \brief The size of a recv buffer */
+#define BUFFER_SIZE 8192
+
 /** \brief The callback definition for domain sockets */
 typedef int (*recv_cb_t)(int sock, uint8_t *rx_buf, int bytes);
 
@@ -347,7 +354,12 @@ static void *do_tasks(void *null)
     pthread_mutex_lock(&queue_mutex);
 
     while (conn_sb_on) {
-        pthread_cond_wait(&queue_cond, &queue_mutex);
+        struct timespec time_wait;
+        time_wait.tv_sec = 1;
+        time_wait.tv_nsec = 0;
+
+        //pthread_cond_wait(&queue_cond, &queue_mutex);
+        pthread_cond_timedwait(&queue_cond, &queue_mutex, &time_wait);
 
 FETCH_ONE_FD:
         if (conn_sb_on == FALSE) { // clean up
@@ -613,8 +625,12 @@ int conn_sb_main(int *activated, int argc, char **argv)
     signal(SIGPIPE, SIG_IGN);
 
     int pid;
-    char *const argb[] = {"./barista_sb", NULL};
-    posix_spawn(&pid, "./barista_sb", NULL, NULL, argb, NULL);
+
+    char *const arg_stop[] = {"pkill", "-9", "barista_sb", NULL};
+    posix_spawn(&pid, "/usr/bin/pkill", NULL, NULL, arg_stop, NULL);
+
+    char *const arg_start[] = {"./barista_sb", NULL};
+    posix_spawn(&pid, "./barista_sb", NULL, NULL, arg_start, NULL);
 
     activate();
 

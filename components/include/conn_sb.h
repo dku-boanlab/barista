@@ -13,11 +13,11 @@
 #include "common.h"
 #include "event.h"
 
-#include <spawn.h>
 #include <fcntl.h>
-#include <signal.h>
 #include <sys/un.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <signal.h>
+#include <spawn.h>

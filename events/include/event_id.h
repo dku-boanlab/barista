@@ -35,7 +35,6 @@ enum {
     EV_SW_GET_DPID,
     EV_SW_GET_FD,
     EV_SW_GET_XID,
-    EV_SW_GET_VERSION,
     EV_WRT_INTSTREAM,
     // internal (notification)
     EV_SW_NEW_CONN,
@@ -62,4 +61,3 @@ enum {
     EV_LOG_FATAL,
     EV_NUM_EVENTS,
 };
-

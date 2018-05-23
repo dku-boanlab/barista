@@ -22,9 +22,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The size of a MAC table */
-#define MAC_HASH_SIZE 8192
-
 /** \brief The structure of a MAC entry */
 typedef struct _mac_entry_t {
     uint64_t dpid; /**< Datapath ID */
@@ -46,6 +43,9 @@ typedef struct _mac_table_t {
 
     pthread_rwlock_t lock; /**< The lock for management */
 } mac_table_t;
+
+/** \brief The size of a MAC table */
+#define MAC_HASH_SIZE 8192
 
 /** \brief MAC table */
 mac_table_t *mac_table;
@@ -79,6 +79,8 @@ int **path, **dist, **next;
 
 /** \brief The spinlock for path updates */
 pthread_rwlock_t path_lock;
+
+/////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Function to calculate shortest paths for all pairs
@@ -145,6 +147,10 @@ static int add_switch(const switch_t *sw)
         }
     }
 
+    floyd_warshall();
+
+    ALOG_INFO(L2_SHORTEST_ID, "Recalculated shortest-paths");
+
     pthread_rwlock_unlock(&path_lock);
 
     return 0;
@@ -168,6 +174,10 @@ static int del_switch(const switch_t *sw)
             break;
         }
     }
+
+    floyd_warshall();
+
+    ALOG_INFO(L2_SHORTEST_ID, "Recalculated shortest-paths");
 
     pthread_rwlock_unlock(&path_lock);
 
@@ -208,6 +218,8 @@ static int add_link(const port_t *link)
 
     floyd_warshall();
 
+    ALOG_INFO(L2_SHORTEST_ID, "Recalculated shortest-paths");
+
     pthread_rwlock_unlock(&path_lock);
 
     return 0;
@@ -231,6 +243,8 @@ static int del_link(const port_t *link)
 
     floyd_warshall();
 
+    ALOG_INFO(L2_SHORTEST_ID, "Recalculated shortest-paths");
+
     pthread_rwlock_unlock(&path_lock);
 
     return 0;
@@ -250,10 +264,7 @@ static int shortest_path(int *route, uint64_t src_dpid, uint64_t dst_dpid)
     int dst = get_index_from_dpid(dst_dpid);
 
     int u = src + 1;
-
-#if 0
     int v = dst + 1;
-#endif
 
     if (dist[src][dst] == INF) {
         pthread_rwlock_unlock(&path_lock);
@@ -261,10 +272,8 @@ static int shortest_path(int *route, uint64_t src_dpid, uint64_t dst_dpid)
     }
 
     int hop = 0;
-
     route[hop++] = u-1;
 
-#if 0
     DEBUG("%d->%d %2d %d", u-1, v-1, dist[src][dst], u-1);
 
     do {
@@ -274,7 +283,6 @@ static int shortest_path(int *route, uint64_t src_dpid, uint64_t dst_dpid)
     } while (u != v);
 
     DEBUG("\n");
-#endif
 
     pthread_rwlock_unlock(&path_lock);
 
@@ -427,29 +435,6 @@ static int send_packet(const pktin_t *pktin, uint16_t port)
 }
 
 /**
- * \brief Function to conduct an output action to send a packet to the destination
- * \param pktin Pktin message
- * \param port Port
- */
-static int send_packet_w_payload(const pktin_t *pktin, uint16_t port)
-{
-    pktout_t out = {0};
-
-    PKTOUT_INIT(out, pktin);
-
-    out.total_len = pktin->total_len;
-    memmove(out.data, pktin->data, out.total_len);
-
-    out.num_actions = 1;
-    out.action[0].type = ACTION_OUTPUT;
-    out.action[0].port = port;
-
-    av_dp_send_packet(L2_SHORTEST_ID, &out);
-
-    return 0;
-}
-
-/**
  * \brief Function to insert a flow rule into the data plane
  * \param pktin Pktin message
  * \param port Port
@@ -469,29 +454,6 @@ static int insert_flow(const pktin_t *pktin, uint16_t port)
     out.action[0].port = port;
 
     av_dp_insert_flow(L2_SHORTEST_ID, &out);
-
-    return 0;
-}
-
-/**
- * \brief Function to conduct an output action to forward a packet to the next hop
- * \param pktin Pktin message
- * \param port Port
- */
-static int send_packet_next_w_payload(const pktin_t *pktin, int hop, int *route, uint16_t port)
-{
-    pktout_t out = {0};
-
-    PKTOUT_INIT(out, pktin);
-
-    out.total_len = pktin->total_len;
-    memmove(out.data, pktin->data, out.total_len);
-
-    out.num_actions = 1;
-    out.action[0].type = ACTION_OUTPUT;
-    out.action[0].port = port;
-
-    av_dp_send_packet(L2_SHORTEST_ID, &out);
 
     return 0;
 }
@@ -549,11 +511,6 @@ static int discard_packet(const pktin_t *pktin)
 static int l2_shortest(const pktin_t *pktin)
 {
 #ifndef __ENABLE_CBENCH
-    if ((pktin->proto & (PROTO_ARP | PROTO_IPV4)) == 0) {
-        discard_packet(pktin);
-        return -1;
-    }
-
     uint64_t mac = mac2int(pktin->src_mac);
     uint32_t mkey = hash_func((uint32_t *)&mac, 2) % MAC_HASH_SIZE;
 
@@ -603,75 +560,44 @@ static int l2_shortest(const pktin_t *pktin)
     // get destination MAC
     mac = mac2int(pktin->dst_mac);
 
+    // broadcast?
+    if (mac == 0xffffffffffff) {
+        send_packet(pktin, PORT_FLOOD);
+        return 0;
+    }
+
     uint64_t dpid = 0;
     uint16_t port = 0;
 
-    // broadcast?
-    if (mac == 0xffffffffffff) {
-        int i;
-        for (i=0; i<MAC_HASH_SIZE; i++) {
-            pthread_rwlock_rdlock(&mac_table[i].lock);
+    mkey = hash_func((uint32_t *)&mac, 2) % MAC_HASH_SIZE;
 
-            mac_entry_t *curr = mac_table[i].head;
-            while (curr != NULL) {
-                if (curr->ip == pktin->dst_ip) {
-                    dpid = curr->dpid;
-                    port = curr->port;
-                    break;
-                }
-                curr = curr->next;
-            }
+    pthread_rwlock_rdlock(&mac_table[mkey].lock);
 
-            pthread_rwlock_unlock(&mac_table[i].lock);
-
-            if (dpid)
-                break;
+    // known destination?
+    curr = mac_table[mkey].head;
+    while (curr != NULL) {
+        if (curr->mac == mac) {
+            dpid = curr->dpid;
+            port = curr->port;
+            break;
         }
-
-        if (!dpid) {
-            send_packet(pktin, PORT_FLOOD);
-            return 0;
-        }
-    } else {
-        mkey = hash_func((uint32_t *)&mac, 2) % MAC_HASH_SIZE;
-
-        pthread_rwlock_rdlock(&mac_table[mkey].lock);
-
-        // known destination?
-        curr = mac_table[mkey].head;
-        while (curr != NULL) {
-            if (curr->mac == mac) {
-                dpid = curr->dpid;
-                port = curr->port;
-                break;
-            }
-            curr = curr->next;
-        }
-
-        pthread_rwlock_unlock(&mac_table[mkey].lock);
+        curr = curr->next;
     }
+
+    pthread_rwlock_unlock(&mac_table[mkey].lock);
 
     // unknown destination?
     if (port == 0) {
-        if (pktin->buffer_id == (uint32_t)-1)
-            send_packet_w_payload(pktin, PORT_FLOOD);
-        else
-            send_packet(pktin, PORT_FLOOD);
+        send_packet(pktin, PORT_FLOOD);
         return 0;
     }
 
     // source dpid is equal to destination dpid?
     if (pktin->dpid == dpid) {
         if (pktin->proto & PROTO_ARP) {
-            if (pktin->buffer_id == (uint32_t)-1)
-                send_packet_w_payload(pktin, port);
-            else
-                send_packet(pktin, port);
+            send_packet(pktin, port);
         } else {
-            if (pktin->buffer_id == (uint32_t)-1)
-                send_packet_w_payload(pktin, port);
-            else
-                insert_flow(pktin, port);
+            insert_flow(pktin, port);
         }
         return 0;
     } else {
@@ -680,10 +606,7 @@ static int l2_shortest(const pktin_t *pktin)
         int hop = shortest_path(route, pktin->dpid, dpid);
 
         if (hop > 0) {
-            if (pktin->buffer_id == (uint32_t)-1)
-                send_packet_next_w_payload(pktin, hop, route, port);
-            else
-                insert_flow_next(pktin, hop, route, port);
+            insert_flow_next(pktin, hop, route, port);
         } else {
             discard_packet(pktin);
         }
@@ -979,6 +902,61 @@ int l2_shortest_handler(const app_event_t *av, app_event_out_t *av_out)
             const pktin_t *pktin = av->pktin;
 
             l2_shortest(pktin);
+        }
+        break;
+    case AV_DP_PORT_ADDED:
+        PRINT_EV("AV_DP_PORT_ADDED\n");
+        {
+            const port_t *port = av->port;
+
+            int i;
+            for (i=0; i<MAC_HASH_SIZE; i++) {
+                mac_table_t tmp_list = {0};
+
+                pthread_rwlock_wrlock(&mac_table[i].lock);
+
+                mac_entry_t *curr = mac_table[i].head;
+                while (curr != NULL) {
+                    if (curr->dpid == port->dpid && curr->port == port->port) {
+                        if (tmp_list.head == NULL) {
+                            tmp_list.head = curr;
+                            tmp_list.tail = curr;
+                            curr->r_next = NULL;
+                        } else {
+                            tmp_list.tail->r_next = curr;
+                            tmp_list.tail = curr;
+                            curr->r_next = NULL;
+                        }
+                    }
+
+                    curr = curr->next;
+                }
+
+                curr = tmp_list.head;
+                while (curr != NULL) {
+                    mac_entry_t *tmp = curr;
+
+                    curr = curr->r_next;
+
+                    if (tmp->prev != NULL && tmp->next != NULL) {
+                        tmp->prev->next = tmp->next;
+                        tmp->next->prev = tmp->prev;
+                    } else if (tmp->prev == NULL && tmp->next != NULL) {
+                        mac_table[i].head = tmp->next;
+                        tmp->next->prev = NULL;
+                    } else if (tmp->prev != NULL && tmp->next == NULL) {
+                        mac_table[i].tail = tmp->prev;
+                        tmp->prev->next = NULL;
+                    } else if (tmp->prev == NULL && tmp->next == NULL) {
+                        mac_table[i].head = NULL;
+                        mac_table[i].tail = NULL;
+                    }
+
+                    mac_enqueue(tmp);
+                }
+
+                pthread_rwlock_unlock(&mac_table[i].lock);
+            }
         }
         break;
     case AV_DP_PORT_DELETED:

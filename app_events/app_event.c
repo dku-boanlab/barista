@@ -37,10 +37,10 @@ void *av_pull_ctx;
 /** \brief The MQ socket to pull events */
 void *av_pull_sock;
 
-/** \brief The MQ context to handle request-reply events */
+/** \brief The MQ context to handle request-response events */
 void *av_rep_ctx;
 
-/** \brief The MQ socket for applications */
+/** \brief The MQ socket to handle request-response events */
 void *av_rep_app;
 
 /** \brief The MQ socket for workers */
@@ -223,36 +223,26 @@ static void *meta_app_events(void *null)
                     case META_GT: // >
                         if (num_event > meta[j].threshold) {
                             //char **args = split_line(meta[j].cmd);
-                            //execute(args);
-                            //FREE(args);
                         }
                         break;
                     case META_GTE: // >=
                         if (num_event >= meta[j].threshold) {
                             //char **args = split_line(meta[j].cmd);
-                            //execute(args);
-                            //FREE(args);
                         }
                         break;
                     case META_LT: // <
                         if (num_event < meta[j].threshold) {
                             //char **args = split_line(meta[j].cmd);
-                            //execute(args);
-                            //FREE(args);
                         }
                         break;
                     case META_LTE: // <=
                         if (num_event <= meta[j].threshold) {
                             //char **args = split_line(meta[j].cmd);
-                            //execute(args);
-                            //FREE(args);
                         }
                         break;
                     case META_EQ: // ==
                         if (num_event == meta[j].threshold) {
                             //char **args = split_line(meta[j].cmd);
-                            //execute(args);
-                            //FREE(args);
                         }
                         break;
                     default:
@@ -288,7 +278,7 @@ static void *reply_app_events(void *null)
 
         switch (msg.type) {
 
-        // request-reply events
+        // request-response events
 
         //sw_rw_raise(...);
 
@@ -438,7 +428,7 @@ int app_event_init(ctx_t *ctx)
         av_pull_ctx = zmq_ctx_new();
         av_pull_sock = zmq_socket(av_pull_ctx, ZMQ_PULL);
 
-        if (zmq_bind(av_pull_sock, "tcp://*:5001")) {
+        if (zmq_bind(av_pull_sock, "tcp://0.0.0.0:6001")) {
             PERROR("zmq_bind");
             return -1;
         }
@@ -455,7 +445,7 @@ int app_event_init(ctx_t *ctx)
 
         av_rep_ctx = zmq_ctx_new();
         av_rep_app = zmq_socket(av_rep_ctx, ZMQ_ROUTER);
-        if (zmq_bind(av_rep_app, "tcp://*:5002")) {
+        if (zmq_bind(av_rep_app, "tcp://0.0.0.0:6002")) {
             PERROR("zmq_bind");
             return -1;
         }

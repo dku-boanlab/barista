@@ -27,9 +27,6 @@ char compnt_file[__CONF_WORD_LEN] = COMPNT_DEFAULT_CONFIG_FILE;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of components */
-int num_components;
-
 /** \brief The structure of a component configuration */
 typedef struct _component_t {
     uint32_t id; /**< Component ID */
@@ -41,6 +38,9 @@ typedef struct _component_t {
     int out_num; /**< The number of outbound events */
     int out_list[__MAX_EVENTS]; /**< The list of outbound events */
 } component_t;
+
+/** \brief The number of components */
+int num_components;
 
 /** \brief Component list */
 component_t *component;
@@ -108,7 +108,7 @@ static int config_load(char *conf_file)
             strcpy(name, json_string_value(j_name));
         }
 
-        // set the component name
+        // set a component name
         if (strlen(name) == 0) {
             PRINTF("no component name\n");
             return -1;
@@ -204,10 +204,9 @@ static int config_load(char *conf_file)
  */
 static int verify_component(uint32_t id, int type)
 {
-    int i;
+    int i, j;
     for (i=0; i<num_components; i++) {
         if (component[i].id == id) {
-            int j;
             for (j=0; j<component[i].out_num; j++)
                 if (component[i].out_list[j] == type)
                     return 0;
@@ -279,7 +278,7 @@ int cac_handler(const event_t *ev, event_out_t *ev_out)
 {
     int res = verify_component(ev->id, ev->type);
     if (res < 0) {
-        LOG_WARN(CAC_ID, "Wrong component id (caller: %u, event: %s)", ev->id, ev_str[ev->type]);
+        LOG_WARN(CAC_ID, "Wrong component ID (caller: %u, event: %s)", ev->id, ev_str[ev->type]);
         return -1;
     } else if (res > 0) {
         int i;

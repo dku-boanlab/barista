@@ -81,7 +81,7 @@ static int event_print(cli_t *cli, int id)
 int event_show(cli_t *cli, char *name)
 {
     if (compnt_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -108,9 +108,8 @@ int event_show(cli_t *cli, char *name)
     } else if (strcmp(name, "EV_ALL_INTSTREAM") == 0) {
         cli_print(cli, "<Event - EV_ALL_INTSTREAM>");
         int i;
-        for (i=EV_WRT_INTSTREAM+1; i<EV_ALL_INTSTREAM; i++) {
+        for (i=EV_WRT_INTSTREAM+1; i<EV_ALL_INTSTREAM; i++)
             event_print(cli, i);
-        }
         return 0;
     } else {
         int i;
@@ -135,7 +134,7 @@ int event_show(cli_t *cli, char *name)
 int event_list(cli_t *cli)
 {
     if (compnt_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -283,7 +282,7 @@ static int component_print(cli_t *cli, compnt_t *c, int details)
 int component_show(cli_t *cli, char *name)
 {
     if (compnt_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -308,7 +307,7 @@ int component_show(cli_t *cli, char *name)
 int component_list(cli_t *cli)
 {
     if (compnt_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -330,7 +329,7 @@ int component_list(cli_t *cli)
 int component_enable(cli_t *cli, char *name)
 {
     if (compnt_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -359,7 +358,7 @@ int component_enable(cli_t *cli, char *name)
 int component_disable(cli_t *cli, char *name)
 {
     if (compnt_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -408,7 +407,7 @@ static void *thread_main(void *c_id)
 int component_activate(cli_t *cli, char *name)
 {
     if (compnt_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -470,7 +469,7 @@ int component_activate(cli_t *cli, char *name)
 int component_deactivate(cli_t *cli, char *name)
 {
     if (compnt_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -515,7 +514,7 @@ int component_deactivate(cli_t *cli, char *name)
 int component_start(cli_t *cli)
 {
     if (compnt_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -653,7 +652,7 @@ int component_start(cli_t *cli)
 int component_stop(cli_t *cli)
 {
     if (compnt_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -746,7 +745,7 @@ int component_stop(cli_t *cli)
 int component_add_policy(cli_t *cli, char *name, char *p)
 {
     if (compnt_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -823,6 +822,10 @@ int component_add_policy(cli_t *cli, char *name, char *p)
                         c->odp[c->num_policies].flag |= ODP_PROTO;
                         c->odp[c->num_policies].proto |= PROTO_ARP;
                         cli_print(cli, "\tProtocol: ARP");
+                    } else if (strcmp(v, "dhcp") == 0) {
+                        c->odp[c->num_policies].flag |= ODP_PROTO;
+                        c->odp[c->num_policies].proto |= PROTO_DHCP;
+                        cli_print(cli, "\tProtocol: DHCP");
                     } else if (strcmp(v, "lldp") == 0) {
                         c->odp[c->num_policies].flag |= ODP_PROTO;
                         c->odp[c->num_policies].proto |= PROTO_LLDP;
@@ -940,7 +943,7 @@ int component_add_policy(cli_t *cli, char *name, char *p)
 int component_del_policy(cli_t *cli, char *name, int idx)
 {
     if (compnt_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -992,7 +995,7 @@ int component_del_policy(cli_t *cli, char *name, int idx)
 int component_show_policy(cli_t *cli, char *name)
 {
     if (compnt_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 
@@ -1064,6 +1067,8 @@ int component_show_policy(cli_t *cli, char *name)
                 cli_buffer(buf, "ICMP ");
             if (c->odp[i].proto & PROTO_ARP)
                 cli_buffer(buf, "ARP ");
+            if (c->odp[i].proto & PROTO_DHCP)
+                cli_buffer(buf, "DHCP ");
             if (c->odp[i].proto & PROTO_LLDP)
                 cli_buffer(buf, "LLDP ");
 
@@ -1153,7 +1158,7 @@ int component_show_policy(cli_t *cli, char *name)
 int component_cli(cli_t *cli, char **args)
 {
     if (compnt_ctx == NULL) {
-        cli_print(cli, "Need to load configurations first");
+        cli_print(cli, "Need to load configurations");
         return -1;
     }
 

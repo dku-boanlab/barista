@@ -11,9 +11,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of pre-allocated switches */
-#define SW_PRE_ALLOC 1024
-
 /** \brief The structure of a switch pool */
 typedef struct _sw_queue_t {
     int size; /**< the number of entries */
@@ -23,6 +20,9 @@ typedef struct _sw_queue_t {
 
     pthread_spinlock_t lock; /**< The lock for management */
 } sw_queue_t;
+
+/** \brief The number of pre-allocated switches */
+#define SW_PRE_ALLOC 1024
 
 /** \brief Switch pool */
 sw_queue_t sw_q;
@@ -77,8 +77,7 @@ static switch_t *sw_dequeue(void)
  */
 static int sw_enqueue(switch_t *old)
 {
-    if (old == NULL)
-        return -1;
+    if (old == NULL) return -1;
 
     memset(old, 0, sizeof(switch_t));
 
@@ -152,4 +151,3 @@ static int sw_q_destroy(void)
 
     return 0;
 }
-

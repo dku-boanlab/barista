@@ -133,7 +133,7 @@ static int traffic_stat_summary(cli_t *cli, char *seconds)
 {
     int sec = atoi(seconds);
     if (sec > TRAFFIC_MGMT_HISTORY) sec = TRAFFIC_MGMT_HISTORY;
-    else if (tr_history_ptr < TRAFFIC_MGMT_HISTORY && tr_history_ptr < sec) sec = tr_history_ptr;
+    else if (sec > tr_history_ptr) sec = tr_history_ptr;
 
     int ptr = tr_history_ptr - sec;
     if (ptr < 0) ptr = TRAFFIC_MGMT_HISTORY + ptr;

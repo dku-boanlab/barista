@@ -37,10 +37,10 @@ DECLARE_HANDLER_FUNC(conn_sb_handler);
 DECLARE_CLEANUP_FUNC(conn_sb_cleanup);
 DECLARE_CLI_FUNC(conn_sb_cli);
 
-DECLARE_MAIN_FUNC(ofp_main);
-DECLARE_HANDLER_FUNC(ofp_handler);
-DECLARE_CLEANUP_FUNC(ofp_cleanup);
-DECLARE_CLI_FUNC(ofp_cli);
+DECLARE_MAIN_FUNC(ofp10_main);
+DECLARE_HANDLER_FUNC(ofp10_handler);
+DECLARE_CLEANUP_FUNC(ofp10_cleanup);
+DECLARE_CLI_FUNC(ofp10_cli);
 
 DECLARE_MAIN_FUNC(switch_mgmt_main);
 DECLARE_HANDLER_FUNC(switch_mgmt_handler);
@@ -97,20 +97,15 @@ DECLARE_HANDLER_FUNC(dit_handler);
 DECLARE_CLEANUP_FUNC(dit_cleanup);
 DECLARE_CLI_FUNC(dit_cli);
 
-DECLARE_MAIN_FUNC(ofp_veri_main);
-DECLARE_HANDLER_FUNC(ofp_veri_handler);
-DECLARE_CLEANUP_FUNC(ofp_veri_cleanup);
-DECLARE_CLI_FUNC(ofp_veri_cli);
+DECLARE_MAIN_FUNC(ofp10_veri_main);
+DECLARE_HANDLER_FUNC(ofp10_veri_handler);
+DECLARE_CLEANUP_FUNC(ofp10_veri_cleanup);
+DECLARE_CLI_FUNC(ofp10_veri_cli);
 
 DECLARE_MAIN_FUNC(conflict_main);
 DECLARE_HANDLER_FUNC(conflict_handler);
 DECLARE_CLEANUP_FUNC(conflict_cleanup);
 DECLARE_CLI_FUNC(conflict_cli);
-
-DECLARE_MAIN_FUNC(flow_push_main);
-DECLARE_HANDLER_FUNC(flow_push_handler);
-DECLARE_CLEANUP_FUNC(flow_push_cleanup);
-DECLARE_CLI_FUNC(flow_push_cli);
 
 /** \brief The function pointer of a component */
 struct _compnt_func_t {
@@ -123,7 +118,7 @@ struct _compnt_func_t {
     {"log", log_main, log_handler, log_cleanup, log_cli},
     {"conn", conn_main, conn_handler, conn_cleanup, conn_cli},
     {"conn_sb", conn_sb_main, conn_sb_handler, conn_sb_cleanup, conn_sb_cli},
-    {"ofp", ofp_main, ofp_handler, ofp_cleanup, ofp_cli},
+    {"ofp10", ofp10_main, ofp10_handler, ofp10_cleanup, ofp10_cli},
     {"switch_mgmt", switch_mgmt_main, switch_mgmt_handler, switch_mgmt_cleanup, switch_mgmt_cli},
     {"host_mgmt", host_mgmt_main, host_mgmt_handler, host_mgmt_cleanup, host_mgmt_cli},
     {"topo_mgmt", topo_mgmt_main, topo_mgmt_handler, topo_mgmt_cleanup, topo_mgmt_cli},
@@ -135,8 +130,6 @@ struct _compnt_func_t {
     {"cluster", cluster_main, cluster_handler, cluster_cleanup, cluster_cli},
     {"cac", cac_main, cac_handler, cac_cleanup, cac_cli},
     {"dit", dit_main, dit_handler, dit_cleanup, dit_cli},
-    {"ofp_veri", ofp_veri_main, ofp_veri_handler, ofp_veri_cleanup, ofp_veri_cli},
+    {"ofp10_veri", ofp10_veri_main, ofp10_veri_handler, ofp10_veri_cleanup, ofp10_veri_cli},
     {"conflict", conflict_main, conflict_handler, conflict_cleanup, conflict_cli},
-    {"flow_push", flow_push_main, flow_push_handler, flow_push_cleanup, flow_push_cli},
 }; /**< The list of function pointers */
-

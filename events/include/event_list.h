@@ -40,7 +40,6 @@ void ev_dp_request_port_stats(uint32_t id, const port_t *data);
 void ev_sw_get_dpid(uint32_t id, switch_t *data);
 void ev_sw_get_fd(uint32_t id, switch_t *data);
 void ev_sw_get_xid(uint32_t id, switch_t *data);
-void ev_sw_get_version(uint32_t id, switch_t *data);
 
 // internal (notification) //////////////////////////////////////////
 
@@ -69,4 +68,3 @@ void ev_log_error(uint32_t id, char *format, ...);
 void ev_log_fatal(uint32_t id, char *format, ...);
 
 /////////////////////////////////////////////////////////////////////
-

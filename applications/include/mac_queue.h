@@ -11,9 +11,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of pre-allocated MAC entries */
-#define MAC_PRE_ALLOC 1024
-
 /** \brief The structure of a MAC pool */
 typedef struct _mac_queue_t {
     int size; /**< The number of entries */
@@ -23,6 +20,9 @@ typedef struct _mac_queue_t {
 
     pthread_spinlock_t lock; /**< The lock for management */
 } mac_queue_t;
+
+/** \brief The number of pre-allocated MAC entries */
+#define MAC_PRE_ALLOC 1024
 
 /** \brief MAC pool */
 mac_queue_t mac_q;
@@ -77,8 +77,7 @@ static mac_entry_t *mac_dequeue(void)
  */
 static int mac_enqueue(mac_entry_t *old)
 {
-    if (old == NULL)
-        return -1;
+    if (old == NULL) return -1;
 
     memset(old, 0, sizeof(mac_entry_t));
 

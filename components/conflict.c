@@ -23,9 +23,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of rules */
-int num_rules;
-
 /** \brief The structure of a rule table */
 typedef struct _rule_table_t {
     flow_t *head; /**< The head pointer */
@@ -33,6 +30,9 @@ typedef struct _rule_table_t {
 
     pthread_rwlock_t lock; /**< The lock for management */
 } rule_table_t;
+
+/** \brief The number of rules */
+int num_rules;
 
 /** \brief Rule tables */
 rule_table_t *rule_table;
@@ -269,6 +269,12 @@ int conflict_handler(const event_t *ev, event_out_t *ev_out)
                 return -1;
             }
         }
+        break;
+    case EV_DP_MODIFY_FLOW:
+        PRINT_EV("EV_DP_MODIFY_FLOW\n");
+        break;
+    case EV_DP_DELETE_FLOW:
+        PRINT_EV("EV_DP_DELETE_FLOW\n");
         break;
     case EV_FLOW_ADDED:
         PRINT_EV("EV_FLOW_ADDED\n");

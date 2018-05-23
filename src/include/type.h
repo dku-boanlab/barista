@@ -44,7 +44,7 @@ typedef struct _app_event_out_t app_event_out_t;
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The maximum length of the data field */
-#define __MAX_RAW_DATA_LEN 1460
+#define __MAX_RAW_DATA_LEN 1500
 
 /** \brief The structure of a raw message */
 typedef struct _raw_msg_t {
@@ -89,7 +89,6 @@ typedef struct _switch_t {
     uint32_t xid; /**< Transaction ID */
 
     uint32_t remote; /**< Remote events, set by cluster */
-    uint8_t version; /**< OpenFlow version */
 
     uint8_t n_tables; /**< The number of tables */
     uint32_t n_buffers; /**< The number of buffers */
@@ -111,7 +110,7 @@ typedef struct _switch_t {
 } switch_t;
 
 /** \brief The maximum number of ports */
-#define __MAX_NUM_PORTS 128
+#define __MAX_NUM_PORTS 64
 
 /** \brief The length of a MAC address */
 #define ETH_ALEN 6
@@ -134,7 +133,6 @@ enum port_features {
     PF_100MB_FD = 1 << 3,
     PF_1GB_HD   = 1 << 4,
     PF_1GB_FD   = 1 << 5,
-    PF_10GB_FD  = 1 << 6,
 };
 
 /** \brief The structure of a port */
@@ -147,7 +145,6 @@ typedef struct _port_t {
     uint32_t target_port; /**< The target port */
 
     uint32_t remote; /**< Remote events */
-    uint8_t version; /**< OpenFlow version */
 
     // base info
     uint8_t hw_addr[ETH_ALEN]; /**< MAC address */
@@ -195,12 +192,13 @@ typedef struct _host_t {
 enum proto_mask {
     PROTO_VLAN    = 1 << 0,
     PROTO_ARP     = 1 << 1,
-    PROTO_LLDP    = 1 << 2,
-    PROTO_IPV4    = 1 << 3,
-    PROTO_TCP     = 1 << 4,
-    PROTO_UDP     = 1 << 5,
-    PROTO_ICMP    = 1 << 6,
-    PROTO_UNKNOWN = 1 << 7,
+    PROTO_DHCP    = 1 << 2,
+    PROTO_LLDP    = 1 << 3,
+    PROTO_IPV4    = 1 << 4,
+    PROTO_TCP     = 1 << 5,
+    PROTO_UDP     = 1 << 6,
+    PROTO_ICMP    = 1 << 7,
+    PROTO_UNKNOWN = 1 << 8,
 };
 
 /** \brief The max size of the raw packet kept in the pktin structure */
@@ -214,7 +212,6 @@ typedef struct _pktin_t {
     uint32_t xid; /**< Transaction ID */
     uint32_t buffer_id; /**< Buffer ID */
 
-    uint8_t version; /**< OpenFlow version */
     uint8_t reason; /**< Packet-In reason */
 
     uint16_t proto; /**< Protocol */
@@ -291,7 +288,6 @@ typedef struct _action_t {
     x.port = y->port; \
     x.xid = y->xid; \
     x.buffer_id = y->buffer_id; \
-    x.version = y->version; \
 }
 
 /** \brief The structure of an outgoing packet */
@@ -301,8 +297,6 @@ typedef struct _pktout_t {
 
     uint32_t xid; /**< Transaction ID */
     uint32_t buffer_id; /**< Buffer ID */
-
-    uint8_t version; /**< OpenFlow version */
 
     uint16_t num_actions; /**< The number of actions */
     action_t action[__MAX_NUM_ACTIONS]; /**< Aactions */
@@ -361,7 +355,6 @@ enum flow_commands {
     x.idle_timeout = DEFAULT_IDLE_TIMEOUT; \
     x.hard_timeout = DEFAULT_HARD_TIMEOUT; \
     x.priority = DEFAULT_PRIORITY; \
-    x.version = y->version; \
     x.vlan_id = y->vlan_id; \
     x.vlan_pcp = y->vlan_pcp; \
     x.proto = y->proto; \
@@ -408,7 +401,6 @@ typedef struct _flow_t {
     uint16_t priority; /**< Flow priority */
 
     uint32_t remote; /**< Remote events */
-    uint8_t version; /**< OpenFlow version */
 
     // match fields
     uint32_t wildcards; /**< Wildcard bitmasks */

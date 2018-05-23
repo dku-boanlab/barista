@@ -17,13 +17,8 @@
 
 #include "ofp10.h"
 
-#include <net/ethernet.h>
-#include <netinet/ip.h>
-#include <netinet/tcp.h>
-#include <netinet/ip_icmp.h>
-
 /** \brief OpenFlow engine ID */
-#define OFP_ID 3187676738
+#define OFP_ID 2846342287
 
 /////////////////////////////////////////////////////////////////////
 
@@ -252,7 +247,6 @@ static int ofp10_features_reply(const raw_msg_t *msg)
     sw.xid = ntohl(reply->header.xid) + 1;
 
     sw.remote = FALSE;
-    sw.version = OFP_VERSION;
 
     sw.n_tables = reply->n_tables;
     sw.n_buffers = ntohl(reply->n_buffers);
@@ -357,7 +351,7 @@ static int ofp10_set_config(uint32_t fd)
     of_output.header.xid = htonl(sw.xid);
 
     of_output.flags = htons(0x0);
-    of_output.miss_send_len = htons(1514);
+    of_output.miss_send_len = htons(1500);
 
     out.data = (uint8_t *)&of_output;
 
@@ -408,11 +402,11 @@ struct ether_vlan_header {
 
 /** \brief The structure of ARP header */
 struct arphdr {
-    __be16          ar_hrd;
-    __be16          ar_pro;
-    unsigned char   ar_hln;
-    unsigned char   ar_pln;
-    __be16          ar_op;
+    __be16        ar_hrd;
+    __be16        ar_pro;
+    unsigned char ar_hln;
+    unsigned char ar_pln;
+    __be16        ar_op;
 
     uint8_t arp_sha[ETH_ALEN];
     uint8_t arp_spa[4];
@@ -420,7 +414,12 @@ struct arphdr {
     uint8_t arp_tpa[4];
 };
 
+#define DHCP_SERVER_PORT 67
+#define DHCP_CLIENT_PORT 68
+
 /////////////////////////////////////////////////////////////////////
+
+static int ofp10_packet_out(const pktout_t *pktout);
 
 /**
  * \brief Function to conduct a drop action into the data plane
@@ -449,7 +448,6 @@ static int discard_packet(const pktin_t *pktin)
 static int ofp10_packet_in(const raw_msg_t *msg)
 {
     struct ofp_packet_in *in = (struct ofp_packet_in *)msg->data;
-
     uint32_t in_port = ntohs(in->in_port);
 
     pktin_t pktin = {0};
@@ -464,7 +462,6 @@ static int ofp10_packet_in(const raw_msg_t *msg)
     pktin.xid = ntohl(in->header.xid);
     pktin.buffer_id = ntohl(in->buffer_id);
 
-    pktin.version = OFP_VERSION;
     pktin.reason = in->reason;
 
     if (in_port > __MAX_NUM_PORTS) {
@@ -523,10 +520,15 @@ static int ofp10_packet_in(const raw_msg_t *msg)
             } else if (ip_header->protocol == IPPROTO_UDP) {
                 struct tcphdr *tcp_header = (struct tcphdr *)((uint8_t *)ip_header + sizeof(struct iphdr));
 
-                pktin.proto |= PROTO_UDP;
-
                 pktin.src_port = ntohs(tcp_header->source);
                 pktin.dst_port = ntohs(tcp_header->dest);
+
+                if (pktin.dst_port == DHCP_SERVER_PORT || pktin.dst_port == DHCP_CLIENT_PORT) { // DHCP
+                    pktin.proto &= !PROTO_IPV4;
+                    pktin.proto |= PROTO_DHCP;
+                } else { // UDP
+                    pktin.proto |= PROTO_UDP;
+                }
             } else { // IPv4
                 // no pktin.src_port and pktin.dst_port
             }
@@ -596,7 +598,6 @@ static int ofp10_flow_removed(const raw_msg_t *msg)
     flow.idle_timeout = ntohs(removed->idle_timeout);
 
     flow.remote = FALSE;
-    flow.version = OFP_VERSION;
 
     // begin of match
 
@@ -715,7 +716,6 @@ static int ofp10_port_status(const raw_msg_t *msg)
     port.port = ntohs(desc->port_no);
 
     port.remote = FALSE;
-    port.version = OFP_VERSION;
 
     memmove(port.hw_addr, desc->hw_addr, ETH_ALEN);
 
@@ -745,7 +745,6 @@ static int ofp10_port_status(const raw_msg_t *msg)
     if (curr & OFPPF_100MB_FD) new_curr |= PF_100MB_FD;
     if (curr & OFPPF_1GB_HD) new_curr |= PF_1GB_HD;
     if (curr & OFPPF_1GB_FD) new_curr |= PF_1GB_FD;
-    if (curr & OFPPF_10GB_FD) new_curr |= PF_10GB_FD;
 
     port.curr = new_curr;
 
@@ -758,7 +757,6 @@ static int ofp10_port_status(const raw_msg_t *msg)
     if (advertised & OFPPF_100MB_FD) new_ad |= PF_100MB_FD;
     if (advertised & OFPPF_1GB_HD) new_ad |= PF_1GB_HD;
     if (advertised & OFPPF_1GB_FD) new_ad |= PF_1GB_FD;
-    if (advertised & OFPPF_10GB_FD) new_ad |= PF_10GB_FD;
 
     port.advertised = new_ad;
 
@@ -771,7 +769,6 @@ static int ofp10_port_status(const raw_msg_t *msg)
     if (supported & OFPPF_100MB_FD) new_sp |= PF_100MB_FD;
     if (supported & OFPPF_1GB_HD) new_sp |= PF_1GB_HD;
     if (supported & OFPPF_1GB_FD) new_sp |= PF_1GB_FD;
-    if (supported & OFPPF_10GB_FD) new_sp |= PF_10GB_FD;
 
     port.supported = new_sp;
 
@@ -784,7 +781,6 @@ static int ofp10_port_status(const raw_msg_t *msg)
     if (peer & OFPPF_100MB_FD) new_pr |= PF_100MB_FD;
     if (peer & OFPPF_1GB_HD) new_pr |= PF_1GB_HD;
     if (peer & OFPPF_1GB_FD) new_pr |= PF_1GB_FD;
-    if (peer & OFPPF_10GB_FD) new_pr |= PF_10GB_FD;
 
     port.peer = new_pr;
 
@@ -857,7 +853,6 @@ static int ofp10_stats_reply(const raw_msg_t *msg)
             flow.hard_timeout = ntohs(stats->hard_timeout);
 
             flow.remote = FALSE;
-            flow.version = OFP_VERSION;
 
             // begin of match
 
@@ -955,7 +950,6 @@ static int ofp10_stats_reply(const raw_msg_t *msg)
             flow.dpid = sw.dpid;
 
             flow.remote = FALSE;
-            flow.version = OFP_VERSION;
 
             flow.pkt_count = ntohll(stats->packet_count);
             flow.byte_count = ntohll(stats->byte_count);
@@ -991,7 +985,6 @@ static int ofp10_stats_reply(const raw_msg_t *msg)
                 port.port = ntohs(stats[i].port_no);
 
                 port.remote = FALSE;
-                port.version = OFP_VERSION;
 
                 port.rx_packets = ntohll(stats[i].rx_packets);
                 port.rx_bytes = ntohll(stats[i].rx_bytes);
@@ -1023,7 +1016,7 @@ static int ofp10_stats_reply(const raw_msg_t *msg)
  * \brief Function to process PACKET_OUT messages
  * \param pktout PKTOUT message
  */
-int ofp10_packet_out(const pktout_t *pktout)
+static int ofp10_packet_out(const pktout_t *pktout)
 {
     uint8_t pkt[__MAX_RAW_DATA_LEN] = {0};
     struct ofp_packet_out *out = (struct ofp_packet_out *)pkt;
@@ -1218,7 +1211,7 @@ int ofp10_packet_out(const pktout_t *pktout)
  * \param flow FLOW message
  * \param command Command
  */
-int ofp10_flow_mod(const flow_t *flow, int command)
+static int ofp10_flow_mod(const flow_t *flow, int command)
 {
     uint8_t pkt[__MAX_RAW_DATA_LEN] = {0};
     struct ofp_flow_mod *mod = (struct ofp_flow_mod *)pkt;
@@ -1604,7 +1597,7 @@ static int ofp10_stats_desc_request(uint32_t fd)
  * \brief Function to process STATS_REQUEST (flow) messages
  * \param flow FLOW message
  */
-int ofp10_flow_stats(const flow_t *flow)
+static int ofp10_flow_stats(const flow_t *flow)
 {
     uint8_t pkt[__MAX_RAW_DATA_LEN] = {0};
     struct ofp_stats_request *request = (struct ofp_stats_request *)pkt;
@@ -1779,7 +1772,7 @@ int ofp10_flow_stats(const flow_t *flow)
  * \brief Function to process STATS_REQUEST (aggregate) messages
  * \param flow FLOW message
  */
-int ofp10_aggregate_stats(const flow_t *flow)
+static int ofp10_aggregate_stats(const flow_t *flow)
 {
     uint8_t pkt[__MAX_RAW_DATA_LEN] = {0};
     struct ofp_stats_request *request = (struct ofp_stats_request *)pkt;
@@ -1824,7 +1817,7 @@ int ofp10_aggregate_stats(const flow_t *flow)
  * \brief Function to process STATS_REQUEST (port) messages
  * \param port PORT message
  */
-int ofp10_port_stats(const port_t *port)
+static int ofp10_port_stats(const port_t *port)
 {
     uint8_t pkt[__MAX_RAW_DATA_LEN] = {0};
     struct ofp_stats_request *request = (struct ofp_stats_request *)pkt;
@@ -1868,7 +1861,7 @@ int ofp10_port_stats(const port_t *port)
  * \brief OpenFlow 1.0 engine
  * \param msg OpenFlow message
  */
-int ofp10_engine(const raw_msg_t *msg)
+static int ofp10_engine(const raw_msg_t *msg)
 {
     struct ofp_header *ofph = (struct ofp_header *)msg->data;
 
@@ -1970,6 +1963,117 @@ int ofp10_engine(const raw_msg_t *msg)
         break;
     default:
         DEBUG("UNKNOWN\n");
+        break;
+    }
+
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief The main function
+ * \param activated The activation flag of this component
+ * \param argc The number of arguments
+ * \param argv Arguments
+ */
+int ofp10_main(int *activated, int argc, char **argv)
+{
+    LOG_INFO(OFP_ID, "Init - OpenFlow 1.0 engine");
+
+    activate();
+
+    return 0;
+}
+
+/**
+ * \brief The cleanup function
+ * \param activated The activation flag of this component
+ */
+int ofp10_cleanup(int *activated)
+{
+    LOG_INFO(OFP_ID, "Clean up - OpenFlow 1.0 engine");
+
+    deactivate();
+
+    return 0;
+}
+
+/**
+ * \brief The CLI function
+ * \param cli The CLI pointer
+ * \param args Arguments
+ */
+int ofp10_cli(cli_t *cli, char **args)
+{
+    return 0;
+}
+
+/**
+ * \brief The handler function
+ * \param ev Read-only event
+ * \param ev_out Read-write event (if this component has the write permission)
+ */
+int ofp10_handler(const event_t *ev, event_out_t *ev_out)
+{
+    switch (ev->type) {
+    case EV_OFP_MSG_IN:
+        PRINT_EV("EV_OFP_MSG_IN\n");
+        {
+            const raw_msg_t *msg = ev->msg;
+            return ofp10_engine(msg);
+        }
+        break;
+    case EV_DP_SEND_PACKET:
+        PRINT_EV("EV_DP_SEND_PACKET\n");
+        {
+            const pktout_t *pktout = ev->pktout;
+            return ofp10_packet_out(pktout);
+        }
+        break;
+    case EV_DP_INSERT_FLOW:
+        PRINT_EV("EV_DP_INSERT_FLOW\n");
+        {
+            const flow_t *flow = ev->flow;
+            return ofp10_flow_mod(flow, FLOW_ADD);
+        }
+        break;
+    case EV_DP_MODIFY_FLOW:
+        PRINT_EV("EV_DP_MODIFY_FLOW\n");
+        {
+            const flow_t *flow = ev->flow;
+            return ofp10_flow_mod(flow, FLOW_MODIFY);
+        }
+        break;
+    case EV_DP_DELETE_FLOW:
+        PRINT_EV("EV_DP_DELETE_FLOW\n");
+        {
+            const flow_t *flow = ev->flow;
+            return ofp10_flow_mod(flow, FLOW_DELETE);
+        }
+        break;
+    case EV_DP_REQUEST_FLOW_STATS:
+        PRINT_EV("EV_DP_REQUEST_FLOW_STATS\n");
+        {
+            const flow_t *flow = ev->flow;
+            return ofp10_flow_stats(flow);
+        }
+        break;
+    case EV_DP_REQUEST_AGGREGATE_STATS:
+        PRINT_EV("EV_DP_REQUEST_AGGREGATE_STATS\n");
+        {
+            const flow_t *flow = ev->flow;
+            return ofp10_aggregate_stats(flow);
+        }
+        break;
+    case EV_DP_REQUEST_PORT_STATS:
+        PRINT_EV("EV_DP_REQUEST_PORT_STATS\n");
+        {
+            const port_t *port = ev->port;
+            return ofp10_port_stats(port);
+        }
+        break;
+    default:
         break;
     }
 

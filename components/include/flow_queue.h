@@ -11,9 +11,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of pre-allocated flows */
-#define FLOW_PRE_ALLOC 65536
-
 /** \brief The structure of a flow pool */
 typedef struct _flow_queue_t {
     int size; /**< The size of entries */
@@ -23,6 +20,9 @@ typedef struct _flow_queue_t {
 
     pthread_spinlock_t lock; /**< The lock for management */
 } flow_queue_t;
+
+/** \brief The number of pre-allocated flows */
+#define FLOW_PRE_ALLOC 65536
 
 /** \brief Flow pool */
 flow_queue_t flow_q;
@@ -77,8 +77,7 @@ static flow_t *flow_dequeue(void)
  */
 static int flow_enqueue(flow_t *flow)
 {
-    if (flow == NULL)
-        return -1;
+    if (flow == NULL) return -1;
 
     memset(flow, 0, sizeof(flow_t));
 
@@ -157,4 +156,3 @@ static int flow_q_destroy(void)
 
     return 0;
 }
-

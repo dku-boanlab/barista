@@ -28,11 +28,36 @@ uint32_t rs_history_ptr;
 /** \brief The history array of resource usages */
 resource_t *rs_history;
 
-/** \brief The default resource raw file */
-char raw_file[__CONF_WORD_LEN] = DEFAULT_RAW_RESOURCE_FILE;
+/** \brief The number of CPU cores */
+int num_proc;
+
+/////////////////////////////////////////////////////////////////////
 
 /** \brief The default resource log file */
 char resource_file[__CONF_WORD_LEN] = DEFAULT_RESOURCE_FILE;
+
+/////////////////////////////////////////////////////////////////////
+
+static int monitor_resources(resource_t *rs)
+{
+    char cmd[__CONF_WORD_LEN] = {0};
+    sprintf(cmd, "ps -p $(pgrep -x barista) -o %%cpu,%%mem 2> /dev/null | tail -n 1");
+
+    FILE *pp = popen(cmd, "r");
+    if (pp != NULL) {
+        char temp[__CONF_WORD_LEN] = {0};
+
+        if (fgets(temp, __CONF_WORD_LEN-1, pp) != NULL) {
+            sscanf(temp, "%lf %lf", &rs->cpu, &rs->mem);
+        }
+
+        pclose(pp);
+    }
+
+    rs->cpu /= num_proc; // normalization (under 100%)
+
+    return 0;
+}
 
 /////////////////////////////////////////////////////////////////////
 
@@ -56,9 +81,7 @@ int resource_mgmt_main(int *activated, int argc, char **argv)
 
     memset(rs_history, 0, sizeof(resource_t) * RESOURCE_MGMT_HISTORY);
 
-    int pid;
-    char *args[] = {"./barista_rsm", NULL};
-    posix_spawn(&pid, "./barista_rsm", NULL, NULL, args, NULL);
+    num_proc = get_nprocs();
 
     LOG_INFO(RSM_ID, "Resource usage output: %s", resource_file);
     LOG_INFO(RSM_ID, "Resource monitoring period: %d sec", RESOURCE_MGMT_MONITOR_TIME);
@@ -68,27 +91,18 @@ int resource_mgmt_main(int *activated, int argc, char **argv)
     while (*activated) {
         resource_t rs = {0};
 
-        char buf[__CONF_STR_LEN] = {0};
-        char day[__CONF_SHORT_LEN] = {0};
-        char sec[__CONF_SHORT_LEN] = {0};
+        time_t timer;
+        struct tm *tm_info;
+        char now[__CONF_WORD_LEN] = {0};
+        char buf[__CONF_WORD_LEN] = {0};
 
-        FILE *rp = fopen(raw_file, "r");
-        if (rp != NULL) {
-            char temp[__CONF_WORD_LEN] = {0};
+        time(&timer);
+        tm_info = localtime(&timer);
+        strftime(now, __CONF_WORD_LEN-1, "%Y:%m:%d %H:%M:%S", tm_info);
 
-            if (fgets(temp, __CONF_WORD_LEN-1, rp) == NULL) {
-                pclose(rp);
-                continue;
-            }
+        monitor_resources(&rs);
 
-            sscanf(temp, "%s %s %lf %lf", day, sec, &rs.cpu, &rs.mem);
-
-            fclose(rp);
-        } else {
-            continue;
-        }
-
-        snprintf(buf, __CONF_STR_LEN-1, "%s %s - CPU %6.2lf MEM %6.2lf", day, sec, rs.cpu, rs.mem);
+        snprintf(buf, __CONF_STR_LEN-1, "%s - CPU %6.2lf MEM %6.2lf", now, rs.cpu, rs.mem);
 
         memmove(&rs_history[rs_history_ptr++ % RESOURCE_MGMT_HISTORY], &rs, sizeof(resource_t));
 
@@ -118,10 +132,6 @@ int resource_mgmt_cleanup(int *activated)
 
     FREE(rs_history);
 
-    int pid;
-    char *argr[] = {"pkill", "-9", "barista_rsm", NULL};
-    posix_spawn(&pid, "/usr/bin/pkill", NULL, NULL, argr, NULL);
-
     return 0;
 }
 
@@ -134,7 +144,7 @@ static int resource_stat_summary(cli_t *cli, char *seconds)
 {
     int sec = atoi(seconds);
     if (sec > RESOURCE_MGMT_HISTORY) sec = RESOURCE_MGMT_HISTORY;
-    else if (rs_history_ptr < RESOURCE_MGMT_HISTORY && rs_history_ptr < sec) sec = rs_history_ptr;
+    else if (sec > rs_history_ptr) sec = rs_history_ptr;
 
     int ptr = rs_history_ptr - sec;
     if (ptr < 0) ptr = RESOURCE_MGMT_HISTORY + ptr;

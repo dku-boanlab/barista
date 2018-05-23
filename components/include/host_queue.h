@@ -11,9 +11,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of pre-allocated hosts */
-#define HOST_PRE_ALLOC 1024
-
 /** \brief The structure of a host pool */
 typedef struct _host_queue_t {
     int size; /**< the number of entries */
@@ -23,6 +20,9 @@ typedef struct _host_queue_t {
 
     pthread_spinlock_t lock; /**< The lock for management */
 } host_queue_t;
+
+/** \brief The number of pre-allocated hosts */
+#define HOST_PRE_ALLOC 1024
 
 /** \brief Host pool */
 host_queue_t host_q;
@@ -77,8 +77,7 @@ static host_t *host_dequeue(void)
  */
 static int host_enqueue(host_t *old)
 {
-    if (old == NULL)
-        return -1;
+    if (old == NULL) return -1;
 
     memset(old, 0, sizeof(host_t));
 
@@ -155,4 +154,3 @@ static int host_q_destroy(void)
 
     return 0;
 }
-

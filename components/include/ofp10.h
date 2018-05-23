@@ -15,10 +15,7 @@
 
 #include "openflow10.h"
 
-int ofp10_engine(const raw_msg_t *msg);
-
-int ofp10_packet_out(const pktout_t *pktout);
-int ofp10_flow_mod(const flow_t *flow, int flag);
-int ofp10_flow_stats(const flow_t *flow);
-int ofp10_aggregate_stats(const flow_t *flow);
-int ofp10_port_stats(const port_t *port);
+#include <net/ethernet.h>
+#include <netinet/ip.h>
+#include <netinet/tcp.h>
+#include <netinet/ip_icmp.h>
