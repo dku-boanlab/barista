@@ -1,12 +1,14 @@
 #!/bin/bash
 
 if [ -z $1 ]; then
-    echo $0" [MY_IP_ADDRESS] [OTHER_IP_ADDRESSES(,)/none]"
+    echo $0" [MY_IP_ADDRESS] none (at a master node)"
+    echo $0" [MY_IP_ADDRESS] [OTHER_IP_ADDRESSES(,)] (at other nodes)"
     exit
 fi
 
 if [ -z $2 ]; then
-    echo $0" [MY_IP_ADDRESS] [OTHER_IP_ADDRESSES(,)/none]"
+    echo $0" [MY_IP_ADDRESS] none (at a master node)"
+    echo $0" [MY_IP_ADDRESS] [OTHER_IP_ADDRESSES(,)] (at other nodes)"
     exit
 fi
 
