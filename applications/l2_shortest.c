@@ -56,9 +56,6 @@ mac_table_t *mac_table;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The maximum number of switches */
-#define MAX_NUM_SWITCHES 10
-
 /** \brief The maximum hop counts */
 #define MAX_HOP_COUNT 30
 
@@ -90,9 +87,9 @@ static int floyd_warshall(void)
 {
     // initialze dist and next
     int i;
-    for (i=0; i<MAX_NUM_SWITCHES; i++) {
+    for (i=0; i<__MAX_NUM_SWITCHES; i++) {
         int j;
-        for (j=0; j<MAX_NUM_SWITCHES; j++) {
+        for (j=0; j<__MAX_NUM_SWITCHES; j++) {
             dist[i][j] = path[i][j];
 
             if (i != j) {
@@ -105,11 +102,11 @@ static int floyd_warshall(void)
 
     // update dist and next
     int k;
-    for (k=0; k<MAX_NUM_SWITCHES; k++) {
+    for (k=0; k<__MAX_NUM_SWITCHES; k++) {
         int i;
-        for (i=0; i<MAX_NUM_SWITCHES; i++) {
+        for (i=0; i<__MAX_NUM_SWITCHES; i++) {
             int j;
-            for (j=0; j<MAX_NUM_SWITCHES; j++) {
+            for (j=0; j<__MAX_NUM_SWITCHES; j++) {
                 if (dist[i][j] > dist[i][k] + dist[k][j]) {
                     dist[i][j] = dist[i][k] + dist[k][j];
                     next[i][j] = next[i][k];
@@ -132,19 +129,26 @@ static int add_switch(const switch_t *sw)
     pthread_rwlock_wrlock(&path_lock);
 
     int i;
-    for (i=1; i<MAX_NUM_SWITCHES; i++) {
+    for (i=1; i<__MAX_NUM_SWITCHES; i++) {
         if (dpid_list[i] == dpid) {
             pthread_rwlock_unlock(&path_lock);
             return -1;
         }
     }
 
-    for (i=1; i<MAX_NUM_SWITCHES; i++) {
+    int src = 0;
+    for (i=1; i<__MAX_NUM_SWITCHES; i++) {
         if (dpid_list[i] == 0) {
+            src = i;
             dpid_list[i] = dpid;
             DEBUG("add -> dpid_list[%d] = %lu\n", i, dpid);
             break;
         }
+    }
+
+    for (i=1; i<__MAX_NUM_SWITCHES; i++) {
+        path[src][i] = INF;
+        dport_list[src][i] = 0;
     }
 
     floyd_warshall();
@@ -166,13 +170,19 @@ static int del_switch(const switch_t *sw)
 
     pthread_rwlock_wrlock(&path_lock);
 
-    int i;
-    for (i=1; i<MAX_NUM_SWITCHES; i++) {
+    int i, src = 0;
+    for (i=1; i<__MAX_NUM_SWITCHES; i++) {
         if (dpid_list[i] == dpid) {
+            src = i;
             dpid_list[i] = 0;
             DEBUG("del -> dpid_list[%d]\n", i);
             break;
         }
+    }
+
+    for (i=1; i<__MAX_NUM_SWITCHES; i++) {
+        path[src][i] = INF;
+        dport_list[src][i] = 0;
     }
 
     floyd_warshall();
@@ -191,7 +201,7 @@ static int del_switch(const switch_t *sw)
 static int get_index_from_dpid(uint64_t dpid)
 {
     int i;
-    for (i=1; i<MAX_NUM_SWITCHES; i++) {
+    for (i=1; i<__MAX_NUM_SWITCHES; i++) {
         if (dpid_list[i] == dpid) {
             return i;
         }
@@ -303,37 +313,37 @@ static int path_init(void)
         memset(dpid_list, 0, sizeof(uint64_t) * __DEFAULT_TABLE_SIZE);
     }
 
-    dport_list = (int **)MALLOC(sizeof(int *) * MAX_NUM_SWITCHES);
+    dport_list = (int **)MALLOC(sizeof(int *) * __MAX_NUM_SWITCHES);
     if (dport_list == NULL) {
         PERROR("malloc");
         return -1;
     } else {
         int i;
-        for (i=0; i<MAX_NUM_SWITCHES; i++) {
-            dport_list[i] = (int *)MALLOC(sizeof(int) * MAX_NUM_SWITCHES);
+        for (i=0; i<__MAX_NUM_SWITCHES; i++) {
+            dport_list[i] = (int *)MALLOC(sizeof(int) * __MAX_NUM_SWITCHES);
             if (dport_list[i] == NULL) {
                 PERROR("malloc");
                 return -1;
             } else {
-                memset(dport_list[i], 0, sizeof(int) * MAX_NUM_SWITCHES);
+                memset(dport_list[i], 0, sizeof(int) * __MAX_NUM_SWITCHES);
             }
         }
     }
 
-    path = (int **)MALLOC(sizeof(int *) * MAX_NUM_SWITCHES);
+    path = (int **)MALLOC(sizeof(int *) * __MAX_NUM_SWITCHES);
     if (path == NULL) {
         PERROR("malloc");
         return -1;
     } else {
         int i;
-        for (i=0; i<MAX_NUM_SWITCHES; i++) {
-            path[i] = (int *)MALLOC(sizeof(int) * MAX_NUM_SWITCHES);
+        for (i=0; i<__MAX_NUM_SWITCHES; i++) {
+            path[i] = (int *)MALLOC(sizeof(int) * __MAX_NUM_SWITCHES);
             if (path[i] == NULL) {
                 PERROR("malloc");
                 return -1;
             } else {
                 int j;
-                for (j=0; j<MAX_NUM_SWITCHES; j++) {
+                for (j=0; j<__MAX_NUM_SWITCHES; j++) {
                     if (i == j) {
                         path[i][j] = 0;
                     } else {
@@ -344,14 +354,14 @@ static int path_init(void)
         }
     }
 
-    dist = (int **)MALLOC(sizeof(int *) * MAX_NUM_SWITCHES);
+    dist = (int **)MALLOC(sizeof(int *) * __MAX_NUM_SWITCHES);
     if (dist == NULL) {
         PERROR("malloc");
         return -1;
     } else {
         int i;
-        for (i=0; i<MAX_NUM_SWITCHES; i++) {
-            dist[i] = (int *)MALLOC(sizeof(int) * MAX_NUM_SWITCHES);
+        for (i=0; i<__MAX_NUM_SWITCHES; i++) {
+            dist[i] = (int *)MALLOC(sizeof(int) * __MAX_NUM_SWITCHES);
             if (dist[i] == NULL) {
                 PERROR("malloc");
                 return -1;
@@ -359,14 +369,14 @@ static int path_init(void)
         }
     }
 
-    next = (int **)MALLOC(sizeof(int *) * MAX_NUM_SWITCHES);
+    next = (int **)MALLOC(sizeof(int *) * __MAX_NUM_SWITCHES);
     if (next == NULL) {
         PERROR("malloc");
         return -1;
     } else {
         int i;
-        for (i=0; i<MAX_NUM_SWITCHES; i++) {
-            next[i] = (int *)MALLOC(sizeof(int) * MAX_NUM_SWITCHES);
+        for (i=0; i<__MAX_NUM_SWITCHES; i++) {
+            next[i] = (int *)MALLOC(sizeof(int) * __MAX_NUM_SWITCHES);
             if (next[i] == NULL) {
                 PERROR("malloc");
                 return -1;
@@ -390,13 +400,13 @@ static int path_destroy(void)
     FREE(dpid_list);
 
     int i;
-    for (i=0; i<MAX_NUM_SWITCHES; i++) {
+    for (i=0; i<__MAX_NUM_SWITCHES; i++) {
         FREE(dport_list[i]);
     }
 
     FREE(dport_list);
 
-    for (i=0; i<MAX_NUM_SWITCHES; i++) {
+    for (i=0; i<__MAX_NUM_SWITCHES; i++) {
         FREE(path[i]);
         FREE(dist[i]);
         FREE(next[i]);
