@@ -56,4 +56,4 @@ $(OBJ_DIR)/.%.dep: %.c $(CONFIG_MK)
 	mv $(PROG) $(BIN_DIR)
 
 clean:
-	rm -rf $(BIN_DIR)/$(PROG) $(BIN_DIR)/core $(LOG_DIR)/* $(TMP_DIR)/* $(OBJ_DIR) $(INC_DIR)
+	rm -rf $(BIN_DIR)/$(PROG) $(BIN_DIR)/core $(LOG_DIR)/* $(TMP_DIR)/* $(OBJ_DIR) $(INC_DIR) G*
