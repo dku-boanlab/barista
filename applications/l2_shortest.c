@@ -68,9 +68,6 @@ uint64_t *dpid_list;
 /** \brief The port list to jump to next switches */
 int **dport_list;
 
-/** \brief The number of links */
-int num_links;
-
 /** \brief The tables used for Floyd-Warshall algorithm */
 int **path, **dist, **next;
 
@@ -129,7 +126,7 @@ static int add_switch(const switch_t *sw)
     pthread_rwlock_wrlock(&path_lock);
 
     int i;
-    for (i=1; i<__MAX_NUM_SWITCHES; i++) {
+    for (i=0; i<__MAX_NUM_SWITCHES; i++) {
         if (dpid_list[i] == dpid) {
             pthread_rwlock_unlock(&path_lock);
             return -1;
@@ -137,7 +134,7 @@ static int add_switch(const switch_t *sw)
     }
 
     int src = 0;
-    for (i=1; i<__MAX_NUM_SWITCHES; i++) {
+    for (i=0; i<__MAX_NUM_SWITCHES; i++) {
         if (dpid_list[i] == 0) {
             src = i;
             dpid_list[i] = dpid;
@@ -146,8 +143,12 @@ static int add_switch(const switch_t *sw)
         }
     }
 
-    for (i=1; i<__MAX_NUM_SWITCHES; i++) {
-        path[src][i] = INF;
+    for (i=0; i<__MAX_NUM_SWITCHES; i++) {
+        if (src == i)
+            path[src][i] = 0;
+        else
+            path[src][i] = INF;
+
         dport_list[src][i] = 0;
     }
 
@@ -171,7 +172,7 @@ static int del_switch(const switch_t *sw)
     pthread_rwlock_wrlock(&path_lock);
 
     int i, src = 0;
-    for (i=1; i<__MAX_NUM_SWITCHES; i++) {
+    for (i=0; i<__MAX_NUM_SWITCHES; i++) {
         if (dpid_list[i] == dpid) {
             src = i;
             dpid_list[i] = 0;
@@ -180,8 +181,12 @@ static int del_switch(const switch_t *sw)
         }
     }
 
-    for (i=1; i<__MAX_NUM_SWITCHES; i++) {
-        path[src][i] = INF;
+    for (i=0; i<__MAX_NUM_SWITCHES; i++) {
+        if (src == i)
+            path[src][i] = 0;
+        else
+            path[src][i] = INF;
+
         dport_list[src][i] = 0;
     }
 
@@ -201,7 +206,7 @@ static int del_switch(const switch_t *sw)
 static int get_index_from_dpid(uint64_t dpid)
 {
     int i;
-    for (i=1; i<__MAX_NUM_SWITCHES; i++) {
+    for (i=0; i<__MAX_NUM_SWITCHES; i++) {
         if (dpid_list[i] == dpid) {
             return i;
         }
@@ -223,7 +228,7 @@ static int add_link(const port_t *link)
 
     DEBUG("add -> src: %d, dst: %d\n", src, dst);
 
-    path[src][dst] = 1;
+    path[src][dst] = src + dst;
     dport_list[src][dst] = link->port;
 
     floyd_warshall();
@@ -572,8 +577,33 @@ static int l2_shortest(const pktin_t *pktin)
 
     // broadcast?
     if (mac == 0xffffffffffff) {
-        send_packet(pktin, PORT_FLOOD);
-        return 0;
+        int pass = FALSE;
+
+        int i;
+        for (i=0; i<MAC_HASH_SIZE; i++) {
+            pthread_rwlock_rdlock(&mac_table[i].lock);
+
+            mac_entry_t *curr = mac_table[i].head;
+            while (curr != NULL) {
+                if (curr->ip == pktin->dst_ip) {
+                    mac = curr->mac;
+                    pass = TRUE;
+                    break;
+                }
+
+                curr = curr->next;
+            }
+
+            pthread_rwlock_unlock(&mac_table[i].lock);
+
+            if (pass)
+                break;
+        }
+
+        if (!pass) {
+            send_packet(pktin, PORT_FLOOD);
+            return 0;
+        }
     }
 
     uint64_t dpid = 0;
