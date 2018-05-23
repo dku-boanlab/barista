@@ -15,27 +15,27 @@
 
 # Compilation
 1. Install dependencies  
-	$ ./deps.sh  
+> $ ./deps.sh  
 2. Compile the code  
-	$ make  
+> $ make  
 3. Clean up the code  
-	$ make clean  
+> $ make clean  
 4. Setup cluster environments (optional)  
-	$ vi Makefile  
-		(CLUSTER = no -> CLUSTER = yes)  
-	$ cd cluster  
-	$ ./dep.sh  
-	$ ./setup_cluster.sh [current NOS IP address] [another NOS IP address],[the other NOS IP address]  
-		(At least 3 nodes are required)  
-	$ ./start_cluster.sh new (at the first NOS)  
-	$ ./start_cluster.sh (at the other NOSs)  
+> $ vi Makefile  
+  > (CLUSTER = no -> CLUSTER = yes)  
+> $ cd cluster  
+> $ ./dep.sh  
+> $ ./setup_cluster.sh [current NOS IP address] [another NOS IP address],[the other NOS IP address]  
+  > (At least 3 nodes are required)  
+> $ ./start_cluster.sh new (at the first NOS)  
+> $ ./start_cluster.sh (at the other NOSs)  
 
 # Execution
 - Run the Barista NOS  
-	$ cd bin  
-	$ ./barista  
+> $ cd bin  
+> $ ./barista  
 - Connect the Barista NOS  
-	$ telnet localhost 8000 (default CLI port)  
+> $ telnet localhost 8000 (default CLI port)  
 
 # CLI commands
 Barista> help  
