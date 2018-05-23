@@ -3,7 +3,7 @@ CONFIG= \
     __CLI_PORT=8000 \
     \
     __MAX_COMPONENTS=20 \
-    __MAX_EVENTS=40 \
+    __MAX_EVENTS=60 \
     __MAX_EVENT_CHAINS=10 \
     \
     __MAX_APPLICATIONS=10 \
