@@ -22,10 +22,10 @@
 #define DECLARE_CLI_FUNC(name) \
     extern int name(cli_t *cli, char **args)
 
-DECLARE_MAIN_FUNC(l2_shortest_main);
-DECLARE_HANDLER_FUNC(l2_shortest_handler);
-DECLARE_CLEANUP_FUNC(l2_shortest_cleanup);
-DECLARE_CLI_FUNC(l2_shortest_cli);
+DECLARE_MAIN_FUNC(l2_shortest_ext_main);
+DECLARE_HANDLER_FUNC(l2_shortest_ext_handler);
+DECLARE_CLEANUP_FUNC(l2_shortest_ext_cleanup);
+DECLARE_CLI_FUNC(l2_shortest_ext_cli);
 
 /** \brief The function pointer of an application */
 struct _app_func_t {
@@ -35,5 +35,5 @@ struct _app_func_t {
     app_cleanup_f cleanup; /**< The cleanup function pointer */
     app_cli_f cli; /**< The CLI function pointer */
 } g_applications[] = {
-    {"l2_shortest", l2_shortest_main, l2_shortest_handler, l2_shortest_cleanup, l2_shortest_cli},
+    {"l2_shortest_ext", l2_shortest_ext_main, l2_shortest_ext_handler, l2_shortest_ext_cleanup, l2_shortest_ext_cli},
 }; /**< The list of function pointers */

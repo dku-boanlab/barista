@@ -17,4 +17,4 @@ CONFIG= \
     \
     __NUM_THREADS=8 \
     \
-    __MAX_NUM_SWITCHES=64 \
+    __MAX_NUM_SWITCHES=128 \

@@ -29,17 +29,14 @@ static int init_app(void)
     json_t *json;
     json_error_t error;
 
-    char app_conf_file[__CONF_WORD_LEN] = {0};
-    sprintf(app_conf_file, "%s/%s/%s.conf", DEFAULT_EXT_APP_PATH, TARGET_APP, TARGET_APP);
+    PRINTF("Application configuration file: %s\n", APP_DEFAULT_CONFIG_FILE);
 
-    PRINTF("External application configuration file: %s\n", app_conf_file);
-
-    if (access(app_conf_file, F_OK)) {
-        PRINTF("No file whose name is '%s'\n", app_conf_file);
+    if (access(APP_DEFAULT_CONFIG_FILE, F_OK)) {
+        PRINTF("No file whose name is '%s'\n", APP_DEFAULT_CONFIG_FILE);
         return -1;
     }
 
-    char *raw = str_read(app_conf_file);
+    char *raw = str_read(APP_DEFAULT_CONFIG_FILE);
     char *conf = str_preproc(raw);
 
     json = json_loads(conf, 0, &error);
@@ -53,54 +50,69 @@ static int init_app(void)
         json_decref(json);
     }
 
-    json_t *data = json_array_get(json, 0);
+    int i, pass = FALSE;
+    for (i=0; i<json_array_size(json); i++) {
+        json_t *data = json_array_get(json, i);
 
-    char name[__CONF_WORD_LEN] = {0};
-    json_t *j_name = json_object_get(data, "name");
-    if (json_is_string(j_name)) {
-        strcpy(name, json_string_value(j_name));
+        char name[__CONF_WORD_LEN] = {0};
+        json_t *j_name = json_object_get(data, "name");
+        if (json_is_string(j_name)) {
+            strcpy(name, json_string_value(j_name));
+        }
+
+        if (strcmp(name, TARGET_APP) != 0)
+            continue;
+
+        char args[__CONF_WORD_LEN] = {0};
+        json_t *j_args = json_object_get(data, "args");
+        if (json_is_string(j_args)) {
+            strcpy(args, json_string_value(j_args));
+        }
+
+        char type[__CONF_WORD_LEN] = {0};
+        json_t *j_type = json_object_get(data, "type");
+        if (json_is_string(j_type)) {
+            strcpy(type, json_string_value(j_type));
+        }
+
+        // set the application name
+        if (strlen(name) == 0) {
+            PRINTF("No application name\n");
+            return -1;
+        } else {
+            strcpy(app.name, name);
+        }
+
+        // set arguments
+        strcpy(app.args, args);
+        str2args(app.args, &app.argc, &app.argv[1], __CONF_ARGC);
+        app.argc++;
+        app.argv[0] = app.name;
+
+        // set functions
+        app.main = g_applications[0].main;
+        app.handler = g_applications[0].handler;
+        app.cleanup = g_applications[0].cleanup;
+        app.cli = g_applications[0].cli;
+
+        // set a type
+        if (strlen(type) == 0) {
+            app.type = APP_GENERAL;
+        } else {
+            app.type = (strcmp(type, "autonomous") == 0) ? APP_AUTO : APP_GENERAL;
+        }
+
+        pass = TRUE;
+
+        break;
     }
 
-    char args[__CONF_WORD_LEN] = {0};
-    json_t *j_args = json_object_get(data, "args");
-    if (json_is_string(j_args)) {
-        strcpy(args, json_string_value(j_args));
-    }
-
-    char type[__CONF_WORD_LEN] = {0};
-    json_t *j_type = json_object_get(data, "type");
-    if (json_is_string(j_type)) {
-        strcpy(type, json_string_value(j_type));
-    }
-
-    // set the application name
-    if (strlen(name) == 0) {
-        PRINTF("No application name\n");
+    if (pass) {
+        app.activated = FALSE;
+    } else {
+        PRINTF("No %s in the configuration\n", TARGET_APP);
         return -1;
-    } else {
-        strcpy(app.name, name);
     }
-
-    // set arguments
-    strcpy(app.args, args);
-    str2args(app.args, &app.argc, &app.argv[1], __CONF_ARGC);
-    app.argc++;
-    app.argv[0] = app.name;
-
-    // set functions
-    app.main = g_applications[0].main;
-    app.handler = g_applications[0].handler;
-    app.cleanup = g_applications[0].cleanup;
-    app.cli = g_applications[0].cli;
-
-    // set a type
-    if (strlen(type) == 0) {
-        app.type = APP_GENERAL;
-    } else {
-        app.type = (strcmp(type, "autonomous") == 0) ? APP_AUTO : APP_GENERAL;
-    }
-
-    app.activated = FALSE;
 
     return 0;
 }

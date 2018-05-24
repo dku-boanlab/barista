@@ -452,7 +452,7 @@ int application_activate(cli_t *cli, char *name)
                     }
                 } else {
                     cli_print(cli, "%s is already activated", name);
-                    return -1;
+                    return 0;
                 }
             } else {
                 cli_print(cli, "%s is not enabled", name);
@@ -1113,6 +1113,40 @@ int application_cli(cli_t *cli, char **args)
 }
 
 /**
+ * \brief Function to free all configuration structures
+ * \param num_apps The number of registered applications
+ * \param app_list The list of the applications
+ * \param av_num The number of applications for each event
+ * \param av_list The applications listening to each event
+ */
+static int clean_structures(int num_apps, app_t **app_list, int *av_num, app_t ***av_list)
+{
+    if (app_list != NULL) {
+        int i;
+        for (i=0; i<num_apps; i++) {
+            if (app_list[i] != NULL)
+                FREE(app_list[i]);
+        }
+        FREE(app_list);
+    }
+
+    if (av_num != NULL) {
+        FREE(av_num);
+    }
+
+    if (av_list != NULL) {
+        int i;
+        for (i=0; i<__MAX_APP_EVENTS; i++) {
+            if (av_list[i] != NULL)
+                FREE(av_list[i]);
+        }
+        FREE(av_list);
+    }
+
+    return 0;
+}
+
+/**
  * \brief Function to load application configurations from a file
  * \param cli the CLI pointer
  * \param ctx The context of the Barista NOS
@@ -1160,6 +1194,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
     int *av_num = (int *)MALLOC(sizeof(int) * __MAX_APP_EVENTS);
     if (av_num == NULL) {
         PERROR("malloc");
+        clean_structures(n_apps, app_list, NULL, NULL);
         return -1;
     } else {
         memset(av_num, 0, sizeof(int) * __MAX_APP_EVENTS);
@@ -1168,6 +1203,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
     app_t ***av_list = (app_t ***)MALLOC(sizeof(app_t **) * __MAX_APP_EVENTS);
     if (av_list == NULL) {
         PERROR("malloc");
+        clean_structures(n_apps, app_list, av_num, NULL);
         return -1;
     } else {
         int i;
@@ -1175,6 +1211,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
             av_list[i] = (app_t **)MALLOC(sizeof(app_t *) * __MAX_APPLICATIONS);
             if (av_list[i] == NULL) {
                 PERROR("malloc");
+                clean_structures(n_apps, app_list, av_num, av_list);
                 return -1;
             } else {
                 memset(av_list[i], 0, sizeof(app_t *) * __MAX_APPLICATIONS);
@@ -1237,12 +1274,12 @@ int application_load(cli_t *cli, ctx_t *ctx)
             else
                 break;
         }
-        if (k == num_apps) continue;
 
         // allocate a new application structure
         app_t *c = calloc(1, sizeof(app_t));
         if (!c) {
             PERROR("calloc");
+            clean_structures(n_apps, app_list, av_num, av_list);
             return -1;
         }
 
@@ -1253,6 +1290,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
         if (strlen(name) == 0) {
             cli_print(cli, "No application name");
             FREE(c);
+            clean_structures(n_apps, app_list, av_num, av_list);
             return -1;
         } else {
             strcpy(c->name, name);
@@ -1274,12 +1312,6 @@ int application_load(cli_t *cli, ctx_t *ctx)
         if (strlen(c->args))
             cli_print(cli, "     Arguments: %s", c->args);
 
-        // set functions
-        c->main = g_applications[k].main;
-        c->handler = g_applications[k].handler;
-        c->cleanup = g_applications[k].cleanup;
-        c->cli = g_applications[k].cli;
-
         // set a type
         if (strlen(type) == 0) {
             c->type = APP_GENERAL;
@@ -1295,6 +1327,24 @@ int application_load(cli_t *cli, ctx_t *ctx)
             c->site = (strcmp(site, "internal") == 0) ? APP_INTERNAL : APP_EXTERNAL;
         }
         cli_print(cli, "     Site: %s", site);
+
+        // set functions
+        if (c->site == APP_INTERNAL) { // internal
+            if (k == num_apps) {
+                FREE(c);
+                continue;
+            }
+
+            c->main = g_applications[k].main;
+            c->handler = g_applications[k].handler;
+            c->cleanup = g_applications[k].cleanup;
+            c->cli = g_applications[k].cli;
+        } else {
+            c->main = NULL;
+            c->handler = NULL;
+            c->cleanup = NULL;
+            c->cli = NULL;
+        }
         
 	// set a role
         if (strlen(role) == 0) {
@@ -1319,6 +1369,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
             if (strcmp(c->name, base[0]) != 0) {
                  cli_print(cli, "Unauthorized base application");
                  FREE(c);
+                 clean_structures(n_apps, app_list, av_num, av_list);
                  return -1;
             }
         }
@@ -1361,6 +1412,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                 if (app_event_type(json_string_value(event)) == AV_NUM_EVENTS) {
                     cli_print(cli, "     Inbounds: wrong app event name");
                     FREE(c);
+                    clean_structures(n_apps, app_list, av_num, av_list);
                     return -1;
                 }
             }
@@ -1375,6 +1427,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                     if (APP_BASE < c->role && c->role < APP_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(c);
+                        clean_structures(n_apps, app_list, av_num, av_list);
                         return -1;
                     }
 
@@ -1392,6 +1445,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                     if (APP_BASE < c->role && c->role < APP_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(c);
+                        clean_structures(n_apps, app_list, av_num, av_list);
                         return -1;
                     }
 
@@ -1409,6 +1463,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                     if (APP_BASE < c->role && c->role < APP_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(c);
+                        clean_structures(n_apps, app_list, av_num, av_list);
                         return -1;
                     }
 
@@ -1426,6 +1481,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                     if (APP_BASE < c->role && c->role < APP_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(c);
+                        clean_structures(n_apps, app_list, av_num, av_list);
                         return -1;
                     }
 
@@ -1469,6 +1525,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                 if (app_event_type(json_string_value(out_event)) == AV_NUM_EVENTS) {
                     cli_print(cli, "     Outbounds: wrong event name");
                     FREE(c);
+                    clean_structures(n_apps, app_list, av_num, av_list);
                     return -1;
                 }
             }
@@ -1483,6 +1540,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                     if (APP_BASE < c->role && c->role < APP_SECURITY) {
                         cli_print(cli, "     Outbounds: lower-level role");
                         FREE(c);
+                        clean_structures(n_apps, app_list, av_num, av_list);
                         return -1;
                     }
 
@@ -1497,6 +1555,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                     if (APP_BASE < c->role && c->role < APP_SECURITY) {
                         cli_print(cli, "     Outbounds: lower-level role");
                         FREE(c);
+                        clean_structures(n_apps, app_list, av_num, av_list);
                         return -1;
                     }
 
@@ -1511,6 +1570,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                     if (APP_BASE < c->role && c->role < APP_SECURITY) {
                         cli_print(cli, "     Outbounds: lower-level role");
                         FREE(c);
+                        clean_structures(n_apps, app_list, av_num, av_list);
                         return -1;
                     }
 
@@ -1525,6 +1585,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                     if (APP_BASE < c->role && c->role < APP_SECURITY) {
                         cli_print(cli, "     Outbounds: lower-level role");
                         FREE(c);
+                        clean_structures(n_apps, app_list, av_num, av_list);
                         return -1;
                     }
 
@@ -1617,6 +1678,26 @@ int application_load(cli_t *cli, ctx_t *ctx)
         }
     }
 
+    // deactivate out-dated applications
+    for (i=0; i<temp_num_apps; i++) {
+        app_t *old = temp_app_list[i];
+
+        int j, pass = FALSE;
+        for (j=0; j<n_apps; j++) {
+            app_t *new = app_list[j];
+
+            if (strcmp(old->name, new->name) == 0) {
+                pass = TRUE;
+
+                break;
+            }
+        }
+
+        if (pass == FALSE) {
+            application_deactivate(cli, old->name);
+        }
+    }
+
     // replace previous pointers to new ones
     app_ctx->num_apps = n_apps;
     app_ctx->app_list = app_list;
@@ -1624,23 +1705,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
     app_ctx->av_list = av_list;
 
     // deallocate previous pointers
-    if (temp_app_list != NULL) {
-        int i;
-        for (i=0; i<temp_num_apps; i++) {
-            FREE(temp_app_list[i]);
-        }
-        FREE(temp_app_list);
-    }
-    if (temp_av_num != NULL) {
-        FREE(temp_av_num);
-    }
-    if (temp_av_list != NULL) {
-        int i;
-        for (i=0; i<__MAX_APP_EVENTS; i++) {
-            FREE(temp_av_list[i]);
-        }
-        FREE(temp_av_list);
-    }
+    clean_structures(temp_num_apps, temp_app_list, temp_av_num, temp_av_list);
 
     return 0;
 }

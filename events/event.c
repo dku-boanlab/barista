@@ -433,7 +433,7 @@ int event_init(ctx_t *ctx)
         ev_pull_ctx = zmq_ctx_new();
         ev_pull_sock = zmq_socket(ev_pull_ctx, ZMQ_PULL);
 
-        if (zmq_bind(ev_pull_sock, "tcp://0.0.0.0:5001")) {
+        if (zmq_bind(ev_pull_sock, EXT_COMP_PULL_ADDR)) {
             PERROR("zmq_bind");
             return -1;
         }
@@ -450,7 +450,7 @@ int event_init(ctx_t *ctx)
 
         ev_rep_ctx = zmq_ctx_new();
         ev_rep_comp = zmq_socket(ev_rep_ctx, ZMQ_ROUTER);
-        if (zmq_bind(ev_rep_comp, "tcp://0.0.0.0:5002")) {
+        if (zmq_bind(ev_rep_comp, EXT_COMP_REPLY_ADDR)) {
             PERROR("zmq_bind");
             return -1;
         }

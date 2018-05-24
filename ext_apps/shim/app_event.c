@@ -51,36 +51,30 @@ void *av_pull_ctx;
 /** \brief The socket to pull events */
 void *av_pull_sock;
 
-/** \brief The path to pull event */
-char app_pull_path[__CONF_WORD_LEN];
-
 /** \brief The context to reply events */
 void *av_rep_ctx;
 
 /** \brief The socket to reply events */
 void *av_rep_sock;
 
-/** \brief The path to reply event */
-char app_rep_path[__CONF_WORD_LEN];
-
 /////////////////////////////////////////////////////////////////////
 
-#define AV_PUSH_MSG(i, t, s, d) { \
+#define AV_PUSH_MSG(id, _type, size, _data) { \
     msg_t msg = {0}; \
-    msg.id = i; \
-    msg.type = t; \
-    memmove(msg.data, d, s); \
+    msg.id = id; \
+    msg.type = _type; \
+    memmove(msg.data, _data, size); \
     zmq_send(av_push_sock, &msg, sizeof(msg_t), 0); \
 }
 
-#define AV_WRITE_MSG(i, t, s, d) { \
+#define AV_WRITE_MSG(id, _type, size, _data) { \
     msg_t msg = {0}; \
-    msg.id = i; \
-    msg.type = t; \
-    memmove(msg.data, d, s); \
+    msg.id = id; \
+    msg.type = _type; \
+    memmove(msg.data, _data, size); \
     zmq_send(av_req_sock, &msg, sizeof(msg_t), 0); \
     zmq_recv(av_req_sock, &msg, sizeof(msg_t), 0); \
-    memmove(d, msg.data, s); \
+    memmove(_data, msg.data, size); \
 }
 
 // Downstream events ////////////////////////////////////////////////
@@ -95,23 +89,6 @@ void av_dp_modify_flow(uint32_t id, const flow_t *data) { AV_PUSH_MSG(id, AV_DP_
 void av_dp_delete_flow(uint32_t id, const flow_t *data) { AV_PUSH_MSG(id, AV_DP_DELETE_FLOW, sizeof(flow_t), data); }
 
 // Internal events (request-response) ///////////////////////////////
-
-/** \brief AV_SW_GET_INFO (dpid) */
-void av_sw_get_info(uint32_t id, switch_t *data) { AV_WRITE_MSG(id, AV_SW_GET_INFO, sizeof(switch_t), data); }
-/** \brief AV_SW_GET_ALL_INFO (none) */
-void av_sw_get_all_info(uint32_t id, switch_t *data) { AV_WRITE_MSG(id, AV_SW_GET_ALL_INFO, sizeof(switch_t), data); }
-/** \brief AV_HOST_GET_INFO (MAC address or IP address) */
-void av_host_get_info(uint32_t id, host_t *data) { AV_WRITE_MSG(id, AV_HOST_GET_INFO, sizeof(host_t), data); }
-/** \brief AV_HOST_GET_ALL_INFO (none) */
-void av_host_get_all_info(uint32_t id, host_t *data) { AV_WRITE_MSG(id, AV_HOST_GET_ALL_INFO, sizeof(host_t), data); }
-/** \brief AV_LINK_GET_INFO (dpid) */
-void av_link_get_info(uint32_t id, port_t *data) { AV_WRITE_MSG(id, AV_LINK_GET_INFO, sizeof(port_t), data); }
-/** \brief AV_LINK_GET_ALL_INFO (none) */
-void av_link_get_all_info(uint32_t id, port_t *data) { AV_WRITE_MSG(id, AV_LINK_GET_ALL_INFO, sizeof(port_t), data); }
-/** \brief AV_FLOW_GET_INFO (dpid) */
-void av_flow_get_info(uint32_t id, flow_t *data) { AV_WRITE_MSG(id, AV_FLOW_GET_INFO, sizeof(flow_t), data); }
-/** \brief AV_FLOW_GET_ALL_INFO (none) */
-void av_flow_get_all_info(uint32_t id, flow_t *data) { AV_WRITE_MSG(id, AV_FLOW_GET_ALL_INFO, sizeof(flow_t), data); }
 
 // Log events ///////////////////////////////////////////////////////
 
@@ -223,24 +200,6 @@ static void *reply_app_events(void *null)
             ret = app.handler(in, &out);
             break;
 
-        // downstream events
-        case AV_DP_SEND_PACKET:
-            out.length = sizeof(pktout_t);
-            ret = app.handler(in, &out);
-            break;
-        case AV_DP_INSERT_FLOW:
-            out.length = sizeof(flow_t);
-            ret = app.handler(in, &out);
-            break;
-        case AV_DP_MODIFY_FLOW:
-            out.length = sizeof(flow_t);
-            ret = app.handler(in, &out);
-            break;
-        case AV_DP_DELETE_FLOW:
-            out.length = sizeof(flow_t);
-            ret = app.handler(in, &out);
-            break;
-
         // internal events
 
         case AV_SW_CONNECTED:
@@ -333,24 +292,6 @@ static void *deliver_app_events(void *null)
             app.handler(in, &out);
             break;
 
-        // downstream events
-        case AV_DP_SEND_PACKET:
-            out.length = sizeof(pktout_t);
-            app.handler(in, &out);
-            break;
-        case AV_DP_INSERT_FLOW:
-            out.length = sizeof(flow_t);
-            app.handler(in, &out);
-            break;
-        case AV_DP_MODIFY_FLOW:
-            out.length = sizeof(flow_t);
-            app.handler(in, &out);
-            break;
-        case AV_DP_DELETE_FLOW:
-            out.length = sizeof(flow_t);
-            app.handler(in, &out);
-            break;
-
         // internal events
 
         case AV_SW_CONNECTED:
@@ -394,6 +335,8 @@ static void *deliver_app_events(void *null)
     return NULL;
 }
 
+/////////////////////////////////////////////////////////////////////
+
 /**
  * \brief Function to destroy an app event queue
  * \param ctx Context (NULL)
@@ -429,18 +372,16 @@ int app_event_init(ctx_t *ctx)
 
     av_push_ctx = zmq_ctx_new();
     av_push_sock = zmq_socket(av_push_ctx, ZMQ_PUSH);
-    if (zmq_connect(av_push_sock, "ipc://../tmp/ext_app_event_handler")) {
+    if (zmq_connect(av_push_sock, EXT_APP_PULL_ADDR)) {
         PERROR("zmq_connect");
         return -1;
     }
 
     // Pull (upstream, intstream)
 
-    sprintf(app_pull_path, "ipc://../tmp/%s_push_pull", TARGET_APP);
-
     av_pull_ctx = zmq_ctx_new();
     av_pull_sock = zmq_socket(av_pull_ctx, ZMQ_PULL);
-    if (zmq_connect(av_pull_sock, app_pull_path)) {
+    if (zmq_connect(av_pull_sock, TARGET_APP_PULL_ADDR)) {
         PERROR("zmq_connect");
         return -1;
     }
@@ -458,18 +399,16 @@ int app_event_init(ctx_t *ctx)
 
     av_req_ctx = zmq_ctx_new();
     av_req_sock = zmq_socket(av_req_ctx, ZMQ_REQ);
-    if (zmq_connect(av_req_sock, "ipc://../tmp/app_req_handler")) {
+    if (zmq_connect(av_req_sock, EXT_APP_REPLY_ADDR)) {
         PERROR("zmq_connect");
         return -1;
     }
 
     // Reply (upstream, intstream)
 
-    sprintf(app_rep_path, "ipc://../tmp/%s_req_rep", TARGET_APP);
-
     av_rep_ctx = zmq_ctx_new();
     av_rep_sock = zmq_socket(av_req_ctx, ZMQ_REP);
-    if (zmq_connect(av_rep_sock, app_rep_path)) {
+    if (zmq_connect(av_rep_sock, TARGET_APP_REPLY_ADDR)) {
         PERROR("zmq_connect");
         return -1;
     }

@@ -22,10 +22,10 @@
 #define DECLARE_CLI_FUNC(name) \
     extern int name(cli_t *cli, char **args)
 
-DECLARE_MAIN_FUNC(l2_learning_main);
-DECLARE_HANDLER_FUNC(l2_learning_handler);
-DECLARE_CLEANUP_FUNC(l2_learning_cleanup);
-DECLARE_CLI_FUNC(l2_learning_cli);
+DECLARE_MAIN_FUNC(l2_learning_ext_main);
+DECLARE_HANDLER_FUNC(l2_learning_ext_handler);
+DECLARE_CLEANUP_FUNC(l2_learning_ext_cleanup);
+DECLARE_CLI_FUNC(l2_learning_ext_cli);
 
 /** \brief The function pointer of an application */
 struct _app_func_t {
@@ -35,5 +35,5 @@ struct _app_func_t {
     app_cleanup_f cleanup; /**< The cleanup function pointer */
     app_cli_f cli; /**< The CLI function pointer */
 } g_applications[] = {
-    {"l2_learning", l2_learning_main, l2_learning_handler, l2_learning_cleanup, l2_learning_cli},
+    {"l2_learning_ext", l2_learning_ext_main, l2_learning_ext_handler, l2_learning_ext_cleanup, l2_learning_ext_cli},
 }; /**< The list of function pointers */

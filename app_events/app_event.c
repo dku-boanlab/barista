@@ -428,7 +428,7 @@ int app_event_init(ctx_t *ctx)
         av_pull_ctx = zmq_ctx_new();
         av_pull_sock = zmq_socket(av_pull_ctx, ZMQ_PULL);
 
-        if (zmq_bind(av_pull_sock, "tcp://0.0.0.0:6001")) {
+        if (zmq_bind(av_pull_sock, EXT_APP_PULL_ADDR)) {
             PERROR("zmq_bind");
             return -1;
         }
@@ -445,7 +445,7 @@ int app_event_init(ctx_t *ctx)
 
         av_rep_ctx = zmq_ctx_new();
         av_rep_app = zmq_socket(av_rep_ctx, ZMQ_ROUTER);
-        if (zmq_bind(av_rep_app, "tcp://0.0.0.0:6002")) {
+        if (zmq_bind(av_rep_app, EXT_APP_REPLY_ADDR)) {
             PERROR("zmq_bind");
             return -1;
         }

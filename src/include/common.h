@@ -30,6 +30,12 @@
 #define __DEFAULT_TABLE_SIZE 65536
 #define __HASHING_NAME_LENGTH 8
 
+#define EXT_COMP_PULL_ADDR "tcp://0.0.0.0:5001"
+#define EXT_COMP_REPLY_ADDR "tcp://0.0.0.0:5002"
+
+#define EXT_APP_PULL_ADDR "tcp://0.0.0.0:6001"
+#define EXT_APP_REPLY_ADDR "tcp://0.0.0.0:6002"
+
 #define LOG_UPDATE_TIME 1
 
 #define FLOW_MGMT_REQUEST_TIME 5
@@ -75,12 +81,6 @@
 
 /** \brief The default application role file */
 #define DEFAULT_APP_ROLE_FILE "config/app_events.role"
-
-/** \brief The default extended component path */
-#define DEFAULT_EXT_COMP_PATH "../ext_comps"
-
-/** \brief The default extended application path */
-#define DEFAULT_EXT_APP_PATH "../ext_apps"
 
 /** \brief Font color */
 /* @{ */

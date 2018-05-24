@@ -448,7 +448,7 @@ int component_activate(cli_t *cli, char *name)
                     }
                 } else {
                     cli_print(cli, "%s is already activated", name);
-                    return -1;
+                    return 0;
                 }
             } else {
                 cli_print(cli, "%s is not enabled", name);
@@ -1179,8 +1179,42 @@ int component_cli(cli_t *cli, char **args)
 }
 
 /**
+ * \brief Function to free all configuration structures
+ * \param num_compnts The number of registered components
+ * \param compnt_list The list of the components
+ * \param ev_num The number of components for each event
+ * \param ev_list The components listening to each event
+ */
+static int clean_structures(int num_compnts, compnt_t **compnt_list, int *ev_num, compnt_t ***ev_list)
+{
+    if (compnt_list != NULL) {
+        int i;
+        for (i=0; i<num_compnts; i++) {
+            if (compnt_list[i] != NULL)
+                FREE(compnt_list[i]);
+        }
+        FREE(compnt_list);
+    }
+
+    if (ev_num != NULL) {
+        FREE(ev_num);
+    }
+
+    if (ev_list != NULL) {
+        int i;
+        for (i=0; i<__MAX_EVENTS; i++) {
+            if (ev_list[i] != NULL)
+                FREE(ev_list[i]);
+        }
+        FREE(ev_list);
+    }
+
+    return 0;
+}
+
+/**
  * \brief Function to load component configurations from a file
- * \param cli the CLI pointer
+ * \param cli The CLI pointer
  * \param ctx The context of the Barista NOS
  */
 int component_load(cli_t *cli, ctx_t *ctx)
@@ -1226,6 +1260,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
     int *ev_num = (int *)MALLOC(sizeof(int) * __MAX_EVENTS);
     if (ev_num == NULL) {
         PERROR("malloc");
+        clean_structures(num_compnts, compnt_list, NULL, NULL);
         return -1;
     } else {
         memset(ev_num, 0, sizeof(int) * __MAX_EVENTS);
@@ -1234,6 +1269,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
     compnt_t ***ev_list = (compnt_t ***)MALLOC(sizeof(compnt_t **) * __MAX_EVENTS);
     if (ev_list == NULL) {
         PERROR("malloc");
+        clean_structures(num_compnts, compnt_list, ev_num, NULL);
         return -1;
     } else {
         int i;
@@ -1241,6 +1277,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
             ev_list[i] = (compnt_t **)MALLOC(sizeof(compnt_t *) * __MAX_COMPONENTS);
             if (ev_list[i] == NULL) {
                 PERROR("malloc");
+                clean_structures(num_compnts, compnt_list, ev_num, ev_list);
                 return -1;
             } else {
                 memset(ev_list[i], 0, sizeof(compnt_t *) * __MAX_COMPONENTS);
@@ -1303,12 +1340,12 @@ int component_load(cli_t *cli, ctx_t *ctx)
             else
                 break;
         }
-        if (k == num_components) continue;
 
         // allocate a new component structure
         compnt_t *c = calloc(1, sizeof(compnt_t));
         if (!c) {
              PERROR("calloc");
+             clean_structures(num_compnts, compnt_list, ev_num, ev_list);
              return -1;
         }
 
@@ -1319,6 +1356,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
         if (strlen(name) == 0) {
             cli_print(cli, "No component name");
             FREE(c);
+            clean_structures(num_compnts, compnt_list, ev_num, ev_list);
             return -1;
         } else {
             strcpy(c->name, name);
@@ -1340,12 +1378,6 @@ int component_load(cli_t *cli, ctx_t *ctx)
         if (strlen(c->args))
             cli_print(cli, "     Arguments: %s", c->args);
 
-        // set functions
-        c->main = g_components[k].main;
-        c->handler = g_components[k].handler;
-        c->cleanup = g_components[k].cleanup;
-        c->cli = g_components[k].cli;
-
         // set a type
         if (strlen(type) == 0) {
             c->type = COMPNT_GENERAL;
@@ -1361,6 +1393,24 @@ int component_load(cli_t *cli, ctx_t *ctx)
             c->site = (strcmp(site, "internal") == 0) ? COMPNT_INTERNAL : COMPNT_EXTERNAL;
         }
         cli_print(cli, "     Site: %s", site);
+
+        // set functions
+        if (c->site == COMPNT_INTERNAL) { // internal
+            if (k == num_components) {
+                FREE(c);
+                continue;
+            }
+
+            c->main = g_components[k].main;
+            c->handler = g_components[k].handler;
+            c->cleanup = g_components[k].cleanup;
+            c->cli = g_components[k].cli;
+        } else { // external
+            c->main = NULL;
+            c->handler = NULL;
+            c->cleanup = NULL;
+            c->cli = NULL;
+        }
 
         // set a role
         if (strlen(role) == 0) {
@@ -1419,6 +1469,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
                 if (event_type(json_string_value(event)) == EV_NUM_EVENTS) {
                     cli_print(cli, "     Inbounds: wrong event name");
                     FREE(c);
+                    clean_structures(num_compnts, compnt_list, ev_num, ev_list);
                     return -1;
                 }
             }
@@ -1433,6 +1484,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
                     if (c->role < COMPNT_SECURITY_V1) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(c);
+                        clean_structures(num_compnts, compnt_list, ev_num, ev_list);
                         return -1;
                     }
 
@@ -1450,6 +1502,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
                     if (c->role < COMPNT_SECURITY_V1) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(c);
+                        clean_structures(num_compnts, compnt_list, ev_num, ev_list);
                         return -1;
                     }
 
@@ -1467,6 +1520,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
                     if (c->role < COMPNT_SECURITY_V1) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(c);
+                        clean_structures(num_compnts, compnt_list, ev_num, ev_list);
                         return -1;
                     }
 
@@ -1484,6 +1538,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
                     if (c->role < COMPNT_SECURITY_V1) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(c);
+                        clean_structures(num_compnts, compnt_list, ev_num, ev_list);
                         return -1;
                     }
 
@@ -1527,22 +1582,27 @@ int component_load(cli_t *cli, ctx_t *ctx)
                 if (event_type(json_string_value(out_event)) == EV_ALL_UPSTREAM) {
                     cli_print(cli, "     Outbounds: wrong event name");
                     FREE(c);
+                    clean_structures(num_compnts, compnt_list, ev_num, ev_list);
                     return -1;
                 } else if (event_type(json_string_value(out_event)) == EV_ALL_DOWNSTREAM) {
                     cli_print(cli, "     Outbounds: wrong event name");
                     FREE(c);
+                    clean_structures(num_compnts, compnt_list, ev_num, ev_list);
                     return -1;
                 } else if (event_type(json_string_value(out_event)) == EV_WRT_INTSTREAM) {
                     cli_print(cli, "     Outbounds: wrong event name");
                     FREE(c);
+                    clean_structures(num_compnts, compnt_list, ev_num, ev_list);
                     return -1;
                 } else if (event_type(json_string_value(out_event)) == EV_ALL_INTSTREAM) {
                     cli_print(cli, "     Outbounds: wrong event name");
                     FREE(c);
+                    clean_structures(num_compnts, compnt_list, ev_num, ev_list);
                     return -1;
                 } else if (event_type(json_string_value(out_event)) == EV_NUM_EVENTS) {
                     cli_print(cli, "     Outbounds: wrong event name");
                     FREE(c);
+                    clean_structures(num_compnts, compnt_list, ev_num, ev_list);
                     return -1;
                 }
             }
@@ -1628,6 +1688,26 @@ int component_load(cli_t *cli, ctx_t *ctx)
         }
     }
 
+    // deactivate out-dated components
+    for (i=0; i<temp_num_compnts; i++) {
+        compnt_t *old = temp_compnt_list[i];
+
+        int j, pass = FALSE;
+        for (j=0; j<num_compnts; j++) {
+            compnt_t *new = compnt_list[j];
+
+            if (strcmp(old->name, new->name) == 0) {
+                pass = TRUE;
+
+                break;
+            }
+        }
+
+        if (pass == FALSE) {
+            component_deactivate(cli, old->name);
+        }
+    }
+
     // replace previous pointers to new ones
     compnt_ctx->num_compnts = num_compnts;
     compnt_ctx->compnt_list = compnt_list;
@@ -1635,23 +1715,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
     compnt_ctx->ev_list = ev_list;
 
     // deallocate previous pointers
-    if (temp_compnt_list != NULL) {
-        int i;
-        for (i=0; i<temp_num_compnts; i++) {
-            FREE(temp_compnt_list[i]);
-        }
-        FREE(temp_compnt_list);
-    }
-    if (temp_ev_num != NULL) {
-        FREE(temp_ev_num);
-    }
-    if (temp_ev_list != NULL) {
-        int i;
-        for (i=0; i<__MAX_EVENTS; i++) {
-            FREE(temp_ev_list[i]);
-        }
-        FREE(temp_ev_list);
-    }
+    clean_structures(temp_num_compnts, temp_compnt_list, temp_ev_num, temp_ev_list);
 
     return 0;
 }

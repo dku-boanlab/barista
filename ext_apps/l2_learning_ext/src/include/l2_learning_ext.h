@@ -9,4 +9,9 @@
 
 #pragma once
 
-#define TARGET_APP "l2_learning"
+#include "common.h"
+#include "app_event.h"
+#include "mac2int.h"
+#include "hash.h"
+
+#include <arpa/inet.h>

@@ -10,13 +10,8 @@
 #pragma once
 
 #include "common.h"
-
 #include "app_event.h"
-#include "application.h"
-#include "application_list.h"
-#include "application_info.h"
+#include "mac2int.h"
+#include "hash.h"
 
-#include "str.h"
-
-#include <signal.h>
-#include <jansson.h>
+#include <arpa/inet.h>

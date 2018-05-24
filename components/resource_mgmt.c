@@ -102,7 +102,7 @@ int resource_mgmt_main(int *activated, int argc, char **argv)
 
         monitor_resources(&rs);
 
-        snprintf(buf, __CONF_STR_LEN-1, "%s - CPU %6.2lf MEM %6.2lf", now, rs.cpu, rs.mem);
+        sprintf(buf, "%s - CPU %6.2lf MEM %6.2lf", now, rs.cpu, rs.mem);
 
         memmove(&rs_history[rs_history_ptr++ % RESOURCE_MGMT_HISTORY], &rs, sizeof(resource_t));
 
