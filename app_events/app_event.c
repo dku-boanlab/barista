@@ -76,22 +76,29 @@ static int log_av_raise(uint32_t id, uint16_t type, uint16_t len, const char *da
 
 /////////////////////////////////////////////////////////////////////
 
-#define AV_PUSH_EXT_MSG(id, type, size, data) { \
+#define AV_PUSH_EXT_MSG(_id, _type, _size, _data) { \
     msg_t msg = {0}; \
-    msg.id = id; \
-    msg.type = type; \
-    memmove(msg.data, data, size); \
-    zmq_send(c->push_sock, &msg, sizeof(msg_t), 0); \
+    msg.id = _id; \
+    msg.type = _type; \
+    memmove(msg.data, _data, _size); \
+    if (c->push_sock) { \
+        zmq_send(c->push_sock, &msg, sizeof(msg_t), 0); \
+    } \
 }
 
-#define AV_SEND_EXT_MSG(id, type, size, data, output) ({ \
+#define AV_SEND_EXT_MSG(_id, _type, _size, _data, _output) ({ \
     msg_t msg = {0}; \
-    msg.id = id; \
-    msg.type = type; \
-    memmove(msg.data, data, size); \
-    zmq_send(c->req_sock, &msg, sizeof(msg_t), 0); \
-    zmq_recv(c->req_sock, &msg, sizeof(msg_t), 0); \
-    memmove(output->data, msg.data, size); \
+    msg.id = _id; \
+    msg.type = _type; \
+    memmove(msg.data, _data, _size); \
+    if (c->req_sock) { \
+        if (zmq_send(c->req_sock, &msg, sizeof(msg_t), 0) != -1) { \
+            zmq_recv(c->req_sock, &msg, sizeof(msg_t), 0); \
+            memmove(_output->data, msg.data, _size); \
+        } else { \
+            msg.ret = -1; \
+        } \
+    } \
     msg.ret; \
 })
 
@@ -276,6 +283,9 @@ static void *reply_app_events(void *null)
 
         zmq_recv(recv, &msg, sizeof(msg_t), 0);
 
+        if (!av_on) break;
+        else if (msg.id == 0) continue;
+
         switch (msg.type) {
 
         // request-response events
@@ -293,6 +303,8 @@ static void *reply_app_events(void *null)
         }
 
         zmq_send(recv, &msg, sizeof(msg_t), 0);
+
+        if (!av_on) break;
     }
 
     zmq_close(recv);
@@ -321,6 +333,9 @@ static void *receive_app_events(void *null)
         msg_t msg = {0};
 
         zmq_recv(av_pull_sock, &msg, sizeof(msg_t), 0);
+
+        if (!av_on) break;
+        else if (msg.id == 0) continue;
 
         switch (msg.type) {
 
@@ -394,7 +409,7 @@ int destroy_av_workers(ctx_t *ctx)
 {
     av_on = FALSE;
 
-    waitsec(1, 0);
+    waitsec(2, 0);
 
     zmq_close(av_pull_sock);
     zmq_ctx_destroy(av_pull_ctx);
@@ -423,10 +438,15 @@ int app_event_init(ctx_t *ctx)
             return -1;
         }
 
+        av_on = TRUE;
+
         // pull (outside)
 
         av_pull_ctx = zmq_ctx_new();
         av_pull_sock = zmq_socket(av_pull_ctx, ZMQ_PULL);
+
+        const int timeout = 1000;
+        zmq_setsockopt(av_pull_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
 
         if (zmq_bind(av_pull_sock, EXT_APP_PULL_ADDR)) {
             PERROR("zmq_bind");
@@ -445,12 +465,20 @@ int app_event_init(ctx_t *ctx)
 
         av_rep_ctx = zmq_ctx_new();
         av_rep_app = zmq_socket(av_rep_ctx, ZMQ_ROUTER);
+
+        zmq_setsockopt(av_rep_app, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+        zmq_setsockopt(av_rep_app, ZMQ_SNDTIMEO, &timeout, sizeof(int));
+
         if (zmq_bind(av_rep_app, EXT_APP_REPLY_ADDR)) {
             PERROR("zmq_bind");
             return -1;
         }
 
         av_rep_work = zmq_socket(av_rep_ctx, ZMQ_DEALER);
+
+        zmq_setsockopt(av_rep_work, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+        zmq_setsockopt(av_rep_work, ZMQ_SNDTIMEO, &timeout, sizeof(int));
+
         if (zmq_bind(av_rep_work, "inproc://av_reply_workers")) {
             PERROR("zmq_bind");
             return -1;
@@ -468,8 +496,6 @@ int app_event_init(ctx_t *ctx)
             return -1;
         }
     }
-
-    av_on = TRUE;
 
     return 0;
 }

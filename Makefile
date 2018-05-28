@@ -13,8 +13,8 @@ TMP_DIR = tmp
 
 CPPFLAGS = $(addprefix -I,$(shell find $(SRC_DIR) -type d))
 
-CFLAGS = -O2 -Wall -std=gnu99
-#CFLAGS = -g -ggdb -Wall -std=gnu99
+#CFLAGS = -O2 -Wall -std=gnu99
+CFLAGS = -g -ggdb -Wall -std=gnu99
 LDFLAGS = -lpthread -ljansson -lrt -lcli -lzmq
 
 CLUSTER = no
@@ -44,6 +44,8 @@ $(PROG): $(addprefix $(OBJ_DIR)/,$(OBJ))
 	mkdir -p $(@D)
 	$(CC) -o $@ $^ $(LDFLAGS)
 	mv $(PROG) $(BIN_DIR)
+	@cd ext_apps/l2_learning_ext; make; cd ../..
+	@cd ext_apps/l2_shortest_ext; make; cd ../..
 
 $(OBJ_DIR)/%.o: %.c
 	mkdir -p $(@D)
@@ -57,3 +59,5 @@ $(OBJ_DIR)/.%.dep: %.c $(CONFIG_MK)
 
 clean:
 	rm -rf $(BIN_DIR)/$(PROG) $(BIN_DIR)/core $(LOG_DIR)/* $(TMP_DIR)/* $(OBJ_DIR) $(INC_DIR) G*
+	@cd ext_apps/l2_learning_ext; make clean; cd ../..
+	@cd ext_apps/l2_shortest_ext; make clean; cd ../..

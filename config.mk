@@ -15,6 +15,6 @@ CONFIG= \
     __MAX_POLICIES=10 \
     __MAX_POLICY_ENTRIES=10 \
     \
-    __NUM_THREADS=8 \
+    __NUM_THREADS=1 \
     \
     __MAX_NUM_SWITCHES=128 \

@@ -82,22 +82,29 @@ static int log_ev_raise(uint32_t id, uint16_t type, uint16_t len, const char *da
 
 /////////////////////////////////////////////////////////////////////
 
-#define EV_PUSH_EXT_MSG(id, type, size, data) { \
+#define EV_PUSH_EXT_MSG(_id, _type, _size, _data) { \
     msg_t msg = {0}; \
-    msg.id = id; \
-    msg.type = type; \
-    memmove(msg.data, data, size); \
-    zmq_send(c->push_sock, &msg, sizeof(msg_t), 0); \
+    msg.id = _id; \
+    msg.type = _type; \
+    memmove(msg.data, _data, _size); \
+    if (c->push_sock) { \
+        zmq_send(c->push_sock, &msg, sizeof(msg_t), 0); \
+    } \
 }
 
-#define EV_SEND_EXT_MSG(id, type, size, data, output) ({ \
+#define EV_SEND_EXT_MSG(_id, _type, _size, _data, _output) ({ \
     msg_t msg = {0}; \
-    msg.id = id; \
-    msg.type = type; \
-    memmove(msg.data, data, size); \
-    zmq_send(c->req_sock, &msg, sizeof(msg_t), 0); \
-    zmq_recv(c->req_sock, &msg, sizeof(msg_t), 0); \
-    memmove(output->data, msg.data, size); \
+    msg.id = _id; \
+    msg.type = _type; \
+    memmove(msg.data, _data, _size); \
+    if (c->req_sock) { \
+        if (zmq_send(c->req_sock, &msg, sizeof(msg_t), 0) != -1) { \
+            zmq_recv(c->req_sock, &msg, sizeof(msg_t), 0); \
+            memmove(_output->data, msg.data, _size); \
+        } else { \
+            msg.ret = -1; \
+        } \
+    } \
     msg.ret; \
 })
 
@@ -266,36 +273,26 @@ static void *meta_events(void *null)
                     case META_GT: // >
                         if (num_event > meta[j].threshold) {
                             //char **args = split_line(meta[j].cmd);
-                            //execute(args);
-                            //FREE(args);
                         }
                         break;
                     case META_GTE: // >=
                         if (num_event >= meta[j].threshold) {
                             //char **args = split_line(meta[j].cmd);
-                            //execute(args);
-                            //FREE(args);
                         }
                         break;
                     case META_LT: // <
                         if (num_event < meta[j].threshold) {
                             //char **args = split_line(meta[j].cmd);
-                            //execute(args);
-                            //FREE(args);
                         }
                         break;
                     case META_LTE: // <=
                         if (num_event <= meta[j].threshold) {
                             //char **args = split_line(meta[j].cmd);
-                            //execute(args);
-                            //FREE(args);
                         }
                         break;
                     case META_EQ: // ==
                         if (num_event == meta[j].threshold) {
                             //char **args = split_line(meta[j].cmd);
-                            //execute(args);
-                            //FREE(args);
                         }
                         break;
                     default:
@@ -375,13 +372,134 @@ static void *receive_events(void *null)
 
         zmq_recv(ev_pull_sock, &msg, sizeof(msg_t), 0);
 
+        if (!ev_on) break;
+        else if (msg.id == 0) continue;
+
         switch (msg.type) {
 
         // upstream events
 
+        // EV_OFP_MSG_IN
+
+        case EV_DP_RECEIVE_PACKET:
+            pktin_ev_raise(msg.id, EV_DP_RECEIVE_PACKET, sizeof(pktin_t), (const pktin_t *)msg.data);
+            break;
+        case EV_DP_FLOW_EXPIRED:
+            flow_ev_raise(msg.id, EV_DP_FLOW_EXPIRED, sizeof(flow_t), (const flow_t *)msg.data);
+            break;
+        case EV_DP_FLOW_DELETED:
+            flow_ev_raise(msg.id, EV_DP_FLOW_DELETED, sizeof(flow_t), (const flow_t *)msg.data);
+            break;
+        case EV_DP_FLOW_STATS:
+            flow_ev_raise(msg.id, EV_DP_FLOW_STATS, sizeof(flow_t), (const flow_t *)msg.data);
+            break;
+        case EV_DP_AGGREGATE_STATS:
+            flow_ev_raise(msg.id, EV_DP_AGGREGATE_STATS, sizeof(flow_t), (const flow_t *)msg.data);
+            break;
+        case EV_DP_PORT_ADDED:
+            port_ev_raise(msg.id, EV_DP_PORT_ADDED, sizeof(port_t), (const port_t *)msg.data);
+            break;
+        case EV_DP_PORT_MODIFIED:
+            port_ev_raise(msg.id, EV_DP_PORT_MODIFIED, sizeof(port_t), (const port_t *)msg.data);
+            break;
+        case EV_DP_PORT_DELETED:
+            port_ev_raise(msg.id, EV_DP_PORT_DELETED, sizeof(port_t), (const port_t *)msg.data);
+            break;
+        case EV_DP_PORT_STATS:
+            port_ev_raise(msg.id, EV_DP_PORT_STATS, sizeof(port_t), (const port_t *)msg.data);
+            break;
+
         // downstream events
 
+        // EV_OFP_MSG_OUT
+
+        case EV_DP_SEND_PACKET:
+            pktout_ev_raise(msg.id, EV_DP_SEND_PACKET, sizeof(pktout_t), (const pktout_t *)msg.data);
+            break;
+        case EV_DP_INSERT_FLOW:
+            flow_ev_raise(msg.id, EV_DP_INSERT_FLOW, sizeof(flow_t), (const flow_t *)msg.data);
+            break;
+        case EV_DP_MODIFY_FLOW:
+            flow_ev_raise(msg.id, EV_DP_MODIFY_FLOW, sizeof(flow_t), (const flow_t *)msg.data);
+            break;
+        case EV_DP_DELETE_FLOW:
+            flow_ev_raise(msg.id, EV_DP_DELETE_FLOW, sizeof(flow_t), (const flow_t *)msg.data);
+            break;
+        case EV_DP_REQUEST_FLOW_STATS:
+            flow_ev_raise(msg.id, EV_DP_REQUEST_FLOW_STATS, sizeof(flow_t), (const flow_t *)msg.data);
+            break;
+        case EV_DP_REQUEST_AGGREGATE_STATS:
+            flow_ev_raise(msg.id, EV_DP_REQUEST_AGGREGATE_STATS, sizeof(flow_t), (const flow_t *)msg.data);
+            break;
+        case EV_DP_REQUEST_PORT_STATS:
+            port_ev_raise(msg.id, EV_DP_REQUEST_PORT_STATS, sizeof(port_t), (const port_t *)msg.data);
+            break;
+
+        // internal events
+
+        case EV_SW_NEW_CONN:
+            sw_ev_raise(msg.id, EV_SW_NEW_CONN, sizeof(switch_t), (const switch_t *)msg.data);
+            break;
+        case EV_SW_EXPIRED_CONN:
+            sw_ev_raise(msg.id, EV_SW_EXPIRED_CONN, sizeof(switch_t), (const switch_t *)msg.data);
+            break;
+        case EV_SW_CONNECTED:
+            sw_ev_raise(msg.id, EV_SW_CONNECTED, sizeof(switch_t), (const switch_t *)msg.data);
+            break;
+        case EV_SW_DISCONNECTED:
+            sw_ev_raise(msg.id, EV_SW_DISCONNECTED, sizeof(switch_t), (const switch_t *)msg.data);
+            break;
+        case EV_SW_UPDATE_CONFIG:
+            sw_ev_raise(msg.id, EV_SW_UPDATE_CONFIG, sizeof(switch_t), (const switch_t *)msg.data);
+            break;
+        case EV_SW_UPDATE_DESC:
+            sw_ev_raise(msg.id, EV_SW_UPDATE_DESC, sizeof(switch_t), (const switch_t *)msg.data);
+            break;
+        case EV_HOST_ADDED:
+            host_ev_raise(msg.id, EV_HOST_ADDED, sizeof(host_t), (const host_t *)msg.data);
+            break;
+        case EV_HOST_DELETED:
+            host_ev_raise(msg.id, EV_HOST_DELETED, sizeof(host_t), (const host_t *)msg.data);
+            break;
+        case EV_LINK_ADDED:
+            port_ev_raise(msg.id, EV_LINK_ADDED, sizeof(port_t), (const port_t *)msg.data);
+            break;
+        case EV_LINK_DELETED:
+            port_ev_raise(msg.id, EV_LINK_DELETED, sizeof(port_t), (const port_t *)msg.data);
+            break;
+        case EV_FLOW_ADDED:
+            flow_ev_raise(msg.id, EV_FLOW_ADDED, sizeof(flow_t), (const flow_t *)msg.data);
+            break;
+        case EV_FLOW_DELETED:
+            flow_ev_raise(msg.id, EV_FLOW_DELETED, sizeof(flow_t), (const flow_t *)msg.data);
+            break;
+        case EV_RS_UPDATE_USAGE:
+            rs_ev_raise(msg.id, EV_RS_UPDATE_USAGE, sizeof(resource_t), (const resource_t *)msg.data);
+            break;
+        case EV_TR_UPDATE_STATS:
+            tr_ev_raise(msg.id, EV_TR_UPDATE_STATS, sizeof(traffic_t), (const traffic_t *)msg.data);
+            break;
+        case EV_LOG_UPDATE_MSGS:
+            log_ev_raise(msg.id, EV_LOG_UPDATE_MSGS, strlen((const char *)msg.data), (const char *)msg.data);
+            break;
+
         // log events
+
+        case EV_LOG_DEBUG:
+            log_ev_raise(msg.id, EV_LOG_DEBUG, strlen((const char *)msg.data), (const char *)msg.data);
+            break;
+        case EV_LOG_INFO:
+            log_ev_raise(msg.id, EV_LOG_INFO, strlen((const char *)msg.data), (const char *)msg.data);
+            break;
+        case EV_LOG_WARN:
+            log_ev_raise(msg.id, EV_LOG_WARN, strlen((const char *)msg.data), (const char *)msg.data);
+            break;
+        case EV_LOG_ERROR:
+            log_ev_raise(msg.id, EV_LOG_ERROR, strlen((const char *)msg.data), (const char *)msg.data);
+            break;
+        case EV_LOG_FATAL:
+            log_ev_raise(msg.id, EV_LOG_FATAL, strlen((const char *)msg.data), (const char *)msg.data);
+            break;
 
         default:
             break;
@@ -399,7 +517,7 @@ int destroy_ev_workers(ctx_t *ctx)
 {
     ev_on = FALSE;
 
-    waitsec(1, 0);
+    waitsec(2, 0);
 
     zmq_close(ev_pull_sock);
     zmq_ctx_destroy(ev_pull_ctx);
@@ -428,10 +546,15 @@ int event_init(ctx_t *ctx)
             return -1;
         }
 
+        ev_on = TRUE;
+
         // pull (outside)
 
         ev_pull_ctx = zmq_ctx_new();
         ev_pull_sock = zmq_socket(ev_pull_ctx, ZMQ_PULL);
+
+        const int timeout = 1000;
+        zmq_setsockopt(ev_pull_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
 
         if (zmq_bind(ev_pull_sock, EXT_COMP_PULL_ADDR)) {
             PERROR("zmq_bind");
@@ -473,8 +596,6 @@ int event_init(ctx_t *ctx)
             return -1;
         }
     }
-
-    ev_on = TRUE;
 
     return 0;
 }

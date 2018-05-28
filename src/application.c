@@ -57,7 +57,7 @@ static int app_event_type(const char *app_event)
 
 /**
  * \brief Function to print all applications that listen to an app event
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param id App event ID
  */
 static int app_event_print(cli_t *cli, int id)
@@ -83,7 +83,7 @@ static int app_event_print(cli_t *cli, int id)
 
 /**
  * \brief Function to print an app event and its applications
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name App event string
  */
 int app_event_show(cli_t *cli, char *name)
@@ -137,7 +137,7 @@ int app_event_show(cli_t *cli, char *name)
 
 /**
  * \brief Function to print all app events
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  */
 int app_event_list(cli_t *cli)
 {
@@ -185,7 +185,7 @@ int app_event_list(cli_t *cli)
 
 /**
  * \brief Function to print the configuration of an application
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param c Application configuration
  * \param details The flag to enable the detailed description
  */
@@ -200,8 +200,10 @@ static int application_print(cli_t *cli, app_t *c, int details)
         cli_buffer(buf, " (");
         if (c->status == APP_DISABLED)
             cli_buffer(buf, "disabled");
-        else if (c->activated)
+        else if (c->activated && (c->site == APP_INTERNAL))
             cli_buffer(buf, ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
+        else if (c->activated && (c->site == APP_EXTERNAL))
+            cli_buffer(buf, ANSI_COLOR_GREEN "ready to listen" ANSI_COLOR_RESET);
         else
             cli_buffer(buf, ANSI_COLOR_BLUE "enabled" ANSI_COLOR_RESET);
         cli_buffer(buf, ")");
@@ -280,7 +282,7 @@ static int application_print(cli_t *cli, app_t *c, int details)
 
 /**
  * \brief Function to print an application configuration
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Application name
  */
 int application_show(cli_t *cli, char *name)
@@ -306,7 +308,7 @@ int application_show(cli_t *cli, char *name)
 
 /**
  * \brief Function to print all application configurations
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  */
 int application_list(cli_t *cli)
 {
@@ -327,7 +329,7 @@ int application_list(cli_t *cli)
 
 /**
  * \brief Function to enable an application
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Application name
  */
 int application_enable(cli_t *cli, char *name)
@@ -356,7 +358,7 @@ int application_enable(cli_t *cli, char *name)
 
 /**
  * \brief Function to disable an application
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Application name
  */
 int application_disable(cli_t *cli, char *name)
@@ -405,7 +407,7 @@ static void *app_thread_main(void *a_id)
 
 /**
  * \brief Function to activate an application
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Application name
  */
 int application_activate(cli_t *cli, char *name)
@@ -449,6 +451,29 @@ int application_activate(cli_t *cli, char *name)
                                 return 0;
                             }
                         }
+                    // external?
+                    } else {
+                        app_ctx->app_list[i]->push_ctx = zmq_ctx_new();
+                        app_ctx->app_list[i]->push_sock = zmq_socket(app_ctx->app_list[i]->push_ctx, ZMQ_PUSH);
+
+                        const int timeout = 1000;
+                        zmq_setsockopt(app_ctx->app_list[i]->push_sock, ZMQ_SNDTIMEO, &timeout, sizeof(int));
+
+                        if (zmq_bind(app_ctx->app_list[i]->push_sock, app_ctx->app_list[i]->pull_addr)) {
+                            PERROR("zmq_bind");
+                            return -1;
+                        }
+
+                        app_ctx->app_list[i]->req_ctx = zmq_ctx_new();
+                        app_ctx->app_list[i]->req_sock = zmq_socket(app_ctx->app_list[i]->req_ctx, ZMQ_REQ);
+
+                        if (zmq_bind(app_ctx->app_list[i]->req_sock, app_ctx->app_list[i]->reply_addr)) {
+                            PERROR("zmq_bind");
+                            return -1;
+                        }
+
+                        app_ctx->app_list[i]->activated = TRUE;
+                        cli_print(cli, "%s is activated", app_ctx->app_list[i]->name);
                     }
                 } else {
                     cli_print(cli, "%s is already activated", name);
@@ -467,7 +492,7 @@ int application_activate(cli_t *cli, char *name)
 
 /**
  * \brief Function to deactivate an application
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Application name
  */
 int application_deactivate(cli_t *cli, char *name)
@@ -495,6 +520,16 @@ int application_deactivate(cli_t *cli, char *name)
                             cli_print(cli, "%s is deactivated", app_ctx->app_list[i]->name);
                             return 0;
                         }
+                    // external?
+                    } else {
+                        zmq_close(app_ctx->app_list[i]->push_sock);
+                        zmq_ctx_destroy(app_ctx->app_list[i]->push_ctx);
+
+                        zmq_close(app_ctx->app_list[i]->req_sock);
+                        zmq_ctx_destroy(app_ctx->app_list[i]->req_ctx);
+
+                        app_ctx->app_list[i]->activated = FALSE;
+                        cli_print(cli, "%s is deactivated", app_ctx->app_list[i]->name);
                     }
                 } else {
                     cli_print(cli, "%s is not activated yet", name);
@@ -513,7 +548,7 @@ int application_deactivate(cli_t *cli, char *name)
 
 /**
  * \brief Function to activate all enabled applications
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  */
 int application_start(cli_t *cli)
 {
@@ -601,6 +636,29 @@ int application_start(cli_t *cli)
                             cli_print(cli, "%s is activated", app_ctx->app_list[i]->name);
                         }
                     }
+                // external?
+                } else {
+                    app_ctx->app_list[i]->push_ctx = zmq_ctx_new();
+                    app_ctx->app_list[i]->push_sock = zmq_socket(app_ctx->app_list[i]->push_ctx, ZMQ_PUSH);
+
+                    const int timeout = 1000;
+                    zmq_setsockopt(app_ctx->app_list[i]->push_sock, ZMQ_SNDTIMEO, &timeout, sizeof(int));
+
+                    if (zmq_bind(app_ctx->app_list[i]->push_sock, app_ctx->app_list[i]->pull_addr)) {
+                        PERROR("zmq_bind");
+                        return -1;
+                    }
+
+                    app_ctx->app_list[i]->req_ctx = zmq_ctx_new();
+                    app_ctx->app_list[i]->req_sock = zmq_socket(app_ctx->app_list[i]->req_ctx, ZMQ_REQ);
+
+                    if (zmq_bind(app_ctx->app_list[i]->req_sock, app_ctx->app_list[i]->reply_addr)) {
+                        PERROR("zmq_bind");
+                        return -1;
+                    }
+
+                    app_ctx->app_list[i]->activated = TRUE;
+                    cli_print(cli, "%s is activated", app_ctx->app_list[i]->name);
                 }
             }
         }
@@ -613,7 +671,7 @@ int application_start(cli_t *cli)
 
 /**
  * \brief Function to deactivate all activated applications
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  */
 int application_stop(cli_t *cli)
 {
@@ -649,6 +707,16 @@ int application_stop(cli_t *cli)
                         app_ctx->app_list[i]->activated = FALSE;
                         cli_print(cli, "%s is deactivated", app_ctx->app_list[i]->name);
                     }
+                // external?
+                } else {
+                    zmq_close(app_ctx->app_list[i]->push_sock);
+                    zmq_ctx_destroy(app_ctx->app_list[i]->push_ctx);
+
+                    zmq_close(app_ctx->app_list[i]->req_sock);
+                    zmq_ctx_destroy(app_ctx->app_list[i]->req_ctx);
+
+                    app_ctx->app_list[i]->activated = FALSE;
+                    cli_print(cli, "%s is deactivated", app_ctx->app_list[i]->name);
                 }
             }
         }
@@ -675,7 +743,7 @@ int application_stop(cli_t *cli)
 
 /**
  * \brief Function to add a policy to an application
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Application name
  * \param p Operator-defined policy
  */
@@ -871,7 +939,7 @@ int application_add_policy(cli_t *cli, char *name, char *p)
 
 /**
  * \brief Function to delete a policy from an application
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Application name
  * \param idx The index of the target operator-defined policy
  */
@@ -924,7 +992,7 @@ int application_del_policy(cli_t *cli, char *name, int idx)
 
 /**
  * \brief Function to show all policies of an application
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Application name
  */
 int application_show_policy(cli_t *cli, char *name)
@@ -1087,7 +1155,7 @@ int application_show_policy(cli_t *cli, char *name)
 
 /**
  * \brief Function to deliver a command to the corresponding application
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param args Arguments
  */
 int application_cli(cli_t *cli, char **args)
@@ -1148,7 +1216,7 @@ static int clean_structures(int num_apps, app_t **app_list, int *av_num, app_t *
 
 /**
  * \brief Function to load application configurations from a file
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param ctx The context of the Barista NOS
  */
 int application_load(cli_t *cli, ctx_t *ctx)
@@ -1265,6 +1333,18 @@ int application_load(cli_t *cli, ctx_t *ctx)
             strcpy(status, json_string_value(j_status));
         }
 
+        char pull_addr[__CONF_WORD_LEN] = {0};
+        json_t *j_pull_addr = json_object_get(data, "pull_addr");
+        if (json_is_string(j_pull_addr)) {
+            strcpy(pull_addr, json_string_value(j_pull_addr));
+        }
+
+        char reply_addr[__CONF_WORD_LEN] = {0};
+        json_t *j_reply_addr = json_object_get(data, "reply_addr");
+        if (json_is_string(j_reply_addr)) {
+            strcpy(reply_addr, json_string_value(j_reply_addr));
+        }
+
         // find the index of an application to link the corresponding functions
         const int num_apps = sizeof(g_applications) / sizeof(app_func_t);
         int k;
@@ -1339,11 +1419,29 @@ int application_load(cli_t *cli, ctx_t *ctx)
             c->handler = g_applications[k].handler;
             c->cleanup = g_applications[k].cleanup;
             c->cli = g_applications[k].cli;
-        } else {
+        } else { // external
             c->main = NULL;
             c->handler = NULL;
             c->cleanup = NULL;
             c->cli = NULL;
+
+            if (strlen(pull_addr) > 0) {
+                strcpy(c->pull_addr, pull_addr);
+            } else {
+                 cli_print(cli, "No pulling address");
+                 FREE(c);
+                 clean_structures(n_apps, app_list, av_num, av_list);
+                 return -1;
+            }
+
+            if (strlen(reply_addr) > 0) {
+                strcpy(c->reply_addr, reply_addr);
+            } else {
+                 cli_print(cli, "No replying address");
+                 FREE(c);
+                 clean_structures(n_apps, app_list, av_num, av_list);
+                 return -1;
+            }
         }
         
 	// set a role

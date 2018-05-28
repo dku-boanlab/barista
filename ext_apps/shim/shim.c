@@ -177,7 +177,6 @@ void sigint_handler(int sig)
 {
     deactivate_app();
     destroy_av_workers(NULL);
-    exit(0);
 }
 
 /** \brief The SIGKILL handler definition */
@@ -188,7 +187,6 @@ void sigkill_handler(int sig)
 {
     deactivate_app();
     destroy_av_workers(NULL);
-    exit(0);
 }
 
 /** \brief The SIGTERM handler definition */
@@ -199,7 +197,6 @@ void sigterm_handler(int sig)
 {
     deactivate_app();
     destroy_av_workers(NULL);
-    exit(0);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -215,18 +212,24 @@ int main(int argc, char *argv[])
     if (app_event_init(NULL)) {
         PRINTF("Failed to initialize the external app event handler\n");
         return -1;
+    } else {
+        PRINTF("Initialized the external app event handler\n");
     }
 
     // init app
     if (init_app()) {
-        PRINTF("Failed to initialize %s", TARGET_APP);
+        PRINTF("Failed to initialize %s\n", TARGET_APP);
         return -1;
+    } else {
+        PRINTF("Initialized %s\n", TARGET_APP);
     }
 
     // activate app
     if (activate_app()) {
-        PRINTF("Failed to activate %s", TARGET_APP);
+        PRINTF("Failed to activate %s\n", TARGET_APP);
         return -1;
+    } else {
+        PRINTF("Activated %s\n", TARGET_APP);
     }
 
     // signal handlers
@@ -234,9 +237,11 @@ int main(int argc, char *argv[])
     sigkill_func = signal(SIGKILL, sigkill_handler);
     sigterm_func = signal(SIGTERM, sigterm_handler);
 
-    while(1) {
+    while(app.activated) {
         waitsec(1, 0);
     }
+
+    PRINTF("Terminated %s\n", TARGET_APP);
 
     return 0;
 }

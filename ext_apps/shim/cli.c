@@ -19,5 +19,7 @@
 
 int cli_print(cli_t *cli, char *buf)
 {
+    printf("%s\n", buf);
+
     return 0;
 }

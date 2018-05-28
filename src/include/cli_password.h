@@ -7,9 +7,6 @@
  * \author Jaehyun Nam <namjh@kaist.ac.kr>
  */
 
-#pragma once
-
-#include "common.h"
-#include "context.h"
-
-int start_cli(ctx_t *ctx);
+#define USERID "admin"
+#define USERPW "password"
+#define ADMINPW "admin_password"

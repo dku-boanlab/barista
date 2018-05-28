@@ -188,11 +188,12 @@ int main(int argc, char **argv)
         }
     }
 
-    if (daemon == TRUE)
-        daemonize();
-
     // initialize context
     ctx_init(&ctx);
+
+    // daemonize the Barista NOS
+    if (daemon == TRUE)
+        daemonize();
 
     // set autostart
     if (autostart == TRUE)

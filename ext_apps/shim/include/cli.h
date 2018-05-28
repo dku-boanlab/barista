@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <stdio.h>
+
 typedef struct _cli_t {
 } cli_t;
 

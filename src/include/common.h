@@ -105,6 +105,16 @@
 /** \brief Max function */
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
+/** \brief Timer */
+#include <time.h>
+#define waitsec(sec, nsec) \
+{ \
+    struct timespec req; \
+    req.tv_sec = sec; \
+    req.tv_nsec = nsec; \
+    nanosleep(&req, NULL); \
+}
+
 /** \brief Activation code for the main function of each component */
 #define activate() \
 { \
@@ -116,7 +126,7 @@
 #define deactivate() \
 { \
     *activated = FALSE; \
-    waitsec(0, 1000); \
+    waitsec(0, 1000 * 1000); \
 }
 
 /** \brief Allocate a space */
@@ -130,16 +140,6 @@
         free(x); \
         x = NULL; \
     } \
-}
-
-/** \brief Timer */
-#include <time.h>
-#define waitsec(sec, nsec) \
-{ \
-    struct timespec req; \
-    req.tv_sec = sec; \
-    req.tv_nsec = nsec; \
-    nanosleep(&req, NULL); \
 }
 
 /** \brief Functions to change the byte orders of 64-bit fields */

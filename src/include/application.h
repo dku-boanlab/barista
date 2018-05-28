@@ -16,6 +16,7 @@
 
 #include <jansson.h>
 #include <arpa/inet.h>
+#include <zmq.h>
 
 /** \brief The main function pointer of an application */
 typedef int (* app_main_f)(int *activated, int argc, char **argv);
@@ -84,6 +85,9 @@ struct _app_t {
 
     void *req_ctx; /**< Context to request app events */
     void *req_sock; /**< Socket to request app events */
+
+    char pull_addr[__CONF_WORD_LEN]; /**< Application-side pulling address */
+    char reply_addr[__CONF_WORD_LEN]; /**< Application-side replying address */
 
     app_main_f main; /**< The main function pointer */
     app_handler_f handler; /**< The handler function pointer */

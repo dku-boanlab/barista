@@ -727,7 +727,7 @@ int l2_shortest_cleanup(int *activated)
 
 /**
  * \brief Function to list up all MAC tables
- * \param cli The CLI pointer
+ * \param cli CLI pointer
  */
 static int list_all_entries(cli_t *cli)
 {
@@ -766,7 +766,7 @@ static int list_all_entries(cli_t *cli)
 
 /**
  * \brief Function to show the MAC table for a specific switch
- * \param cli The CLI pointer
+ * \param cli CLI pointer
  * \param dpid_str Datapath ID
  */
 static int show_entry_switch(cli_t *cli, char *dpid_str)
@@ -810,7 +810,7 @@ static int show_entry_switch(cli_t *cli, char *dpid_str)
 
 /**
  * \brief Function to find a MAC entry with a MAC address
- * \param cli The CLI pointer
+ * \param cli CLI pointer
  * \param macaddr MAC address
  */
 static int show_entry_mac(cli_t *cli, const char *macaddr)
@@ -852,7 +852,7 @@ static int show_entry_mac(cli_t *cli, const char *macaddr)
 
 /**
  * \brief Function to find a MAC entry with an IP address
- * \param cli The CLI pointer
+ * \param cli CLI pointer
  * \param ipaddr IP address
  */
 static int show_entry_ip(cli_t *cli, const char *ipaddr)
@@ -896,7 +896,7 @@ static int show_entry_ip(cli_t *cli, const char *ipaddr)
 
 /**
  * \brief The CLI function
- * \param cli The CLI pointer
+ * \param cli CLI pointer
  * \param args Arguments
  */
 int l2_shortest_cli(cli_t *cli, char **args)

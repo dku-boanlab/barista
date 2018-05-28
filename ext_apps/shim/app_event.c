@@ -59,22 +59,27 @@ void *av_rep_sock;
 
 /////////////////////////////////////////////////////////////////////
 
-#define AV_PUSH_MSG(id, _type, size, _data) { \
+#define AV_PUSH_MSG(_id, _type, _size, _data) { \
     msg_t msg = {0}; \
-    msg.id = id; \
+    msg.id = _id; \
     msg.type = _type; \
-    memmove(msg.data, _data, size); \
-    zmq_send(av_push_sock, &msg, sizeof(msg_t), 0); \
+    memmove(msg.data, _data, _size); \
+    if (av_push_sock) { \
+        zmq_send(av_push_sock, &msg, sizeof(msg_t), 0); \
+    } \
 }
 
-#define AV_WRITE_MSG(id, _type, size, _data) { \
+#define AV_WRITE_MSG(_id, _type, _size, _data) { \
     msg_t msg = {0}; \
-    msg.id = id; \
+    msg.id = _id; \
     msg.type = _type; \
-    memmove(msg.data, _data, size); \
-    zmq_send(av_req_sock, &msg, sizeof(msg_t), 0); \
-    zmq_recv(av_req_sock, &msg, sizeof(msg_t), 0); \
-    memmove(_data, msg.data, size); \
+    memmove(msg.data, _data, _size); \
+    if (av_req_sock) { \
+        if (zmq_send(av_req_sock, &msg, sizeof(msg_t), 0) != -1) { \
+            zmq_recv(av_req_sock, &msg, sizeof(msg_t), 0); \
+            memmove(_data, msg.data, _size); \
+        } \
+    } \
 }
 
 // Downstream events ////////////////////////////////////////////////
@@ -156,10 +161,15 @@ void av_log_fatal(uint32_t id, char *format, ...) {
  */
 static void *reply_app_events(void *null)
 {
+    waitsec(1, 0);
+
     while (av_worker_on) {
         msg_t msg = {0};
 
         zmq_recv(av_rep_sock, &msg, sizeof(msg), 0);
+
+        if (!av_worker_on) break;
+        else if (msg.id == 0) continue;
 
         app_event_out_t out = {0};
 
@@ -235,11 +245,15 @@ static void *reply_app_events(void *null)
             ret = app.handler(in, &out);
             break;
 
+        default:
+            break;
         }
 
         msg.ret = ret;
 
         zmq_send(av_rep_sock, &msg, sizeof(msg), 0);
+
+        if (!av_worker_on) break;
     }
 
     return NULL;
@@ -251,10 +265,15 @@ static void *reply_app_events(void *null)
  */
 static void *deliver_app_events(void *null)
 {
+    waitsec(1, 0);
+
     while (av_worker_on) {
         msg_t msg = {0};
 
         zmq_recv(av_pull_sock, &msg, sizeof(msg), 0);
+
+        if (!av_worker_on) break;
+        else if (msg.id == 0) continue;
 
         app_event_out_t out = {0};
 
@@ -345,14 +364,16 @@ int destroy_av_workers(ctx_t *ctx)
 {
     av_worker_on = FALSE;
 
+    waitsec(2, 0);
+
     zmq_close(av_push_sock);
-    zmq_ctx_destroy(av_pull_ctx);
+    zmq_ctx_destroy(av_push_ctx);
 
     zmq_close(av_pull_sock);
     zmq_ctx_destroy(av_pull_ctx);
 
     zmq_close(av_req_sock);
-    zmq_ctx_destroy(av_req_ctx);
+    //zmq_ctx_destroy(av_req_ctx);
 
     zmq_close(av_rep_sock);
     zmq_ctx_destroy(av_rep_ctx);
@@ -372,6 +393,10 @@ int app_event_init(ctx_t *ctx)
 
     av_push_ctx = zmq_ctx_new();
     av_push_sock = zmq_socket(av_push_ctx, ZMQ_PUSH);
+
+    const int timeout = 1000;
+    zmq_setsockopt(av_push_sock, ZMQ_SNDTIMEO, &timeout, sizeof(int));
+
     if (zmq_connect(av_push_sock, EXT_APP_PULL_ADDR)) {
         PERROR("zmq_connect");
         return -1;
@@ -381,6 +406,9 @@ int app_event_init(ctx_t *ctx)
 
     av_pull_ctx = zmq_ctx_new();
     av_pull_sock = zmq_socket(av_pull_ctx, ZMQ_PULL);
+
+    zmq_setsockopt(av_pull_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+
     if (zmq_connect(av_pull_sock, TARGET_APP_PULL_ADDR)) {
         PERROR("zmq_connect");
         return -1;
@@ -399,6 +427,10 @@ int app_event_init(ctx_t *ctx)
 
     av_req_ctx = zmq_ctx_new();
     av_req_sock = zmq_socket(av_req_ctx, ZMQ_REQ);
+
+    zmq_setsockopt(av_req_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+    zmq_setsockopt(av_req_sock, ZMQ_SNDTIMEO, &timeout, sizeof(int));
+
     if (zmq_connect(av_req_sock, EXT_APP_REPLY_ADDR)) {
         PERROR("zmq_connect");
         return -1;
@@ -408,6 +440,10 @@ int app_event_init(ctx_t *ctx)
 
     av_rep_ctx = zmq_ctx_new();
     av_rep_sock = zmq_socket(av_req_ctx, ZMQ_REP);
+
+    zmq_setsockopt(av_rep_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+    zmq_setsockopt(av_rep_sock, ZMQ_SNDTIMEO, &timeout, sizeof(int));
+
     if (zmq_connect(av_rep_sock, TARGET_APP_REPLY_ADDR)) {
         PERROR("zmq_connect");
         return -1;

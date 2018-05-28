@@ -39,11 +39,31 @@
 - Run the Barista NOS  
 > $ cd bin  
 > $ ./barista  
+
+- Run the Barista NOS automatically
+> $ ./barista -r
+
+- Run the Barista NOS as a daemon
+> $ ./barista -d
+
+- Run the Barista NOS with only base components
+> $ ./barista -b
+
 - Connect the Barista NOS  
 > $ telnet localhost 8000 (default CLI port)  
+> > (Default ID / 1ST_PW / 2ND_PW: admin / password / admin_password)  
 
 # CLI commands
-Barista> help  
+- Change a configuration mode
+> Barista> enable
+- Load configurations
+> Barista> load
+- Start the Barista NOS
+> Barista> start
+- Stop the Barista NOS
+> Barista> stop
+- More information?
+> Barista> help  
 
 # Documents
 - Doxygen: http://www.sdx4u.net/~barista  

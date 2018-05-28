@@ -49,7 +49,7 @@ static int event_type(const char *event)
 
 /**
  * \brief Function to print all components that listen to an event
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param id Event ID
  */
 static int event_print(cli_t *cli, int id)
@@ -75,7 +75,7 @@ static int event_print(cli_t *cli, int id)
 
 /**
  * \brief Function to print an event and its components
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Event string
  */
 int event_show(cli_t *cli, char *name)
@@ -129,7 +129,7 @@ int event_show(cli_t *cli, char *name)
 
 /**
  * \brief Function to print all events
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  */
 int event_list(cli_t *cli)
 {
@@ -177,7 +177,7 @@ int event_list(cli_t *cli)
 
 /**
  * \brief Function to print the configuration of a component
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param c Component configuration
  * \param details The flag to enable the detailed description
  */
@@ -192,8 +192,10 @@ static int component_print(cli_t *cli, compnt_t *c, int details)
         cli_buffer(buf, " (");
         if (c->status == COMPNT_DISABLED)
             cli_buffer(buf, "disabled");
-        else if (c->activated)
+        else if (c->activated && (c->site == COMPNT_INTERNAL))
             cli_buffer(buf, ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
+        else if (c->activated && (c->site == COMPNT_EXTERNAL))
+            cli_buffer(buf, ANSI_COLOR_GREEN "ready to listen" ANSI_COLOR_RESET);
         else
             cli_buffer(buf, ANSI_COLOR_BLUE "enabled" ANSI_COLOR_RESET);
         cli_buffer(buf, ")");
@@ -276,7 +278,7 @@ static int component_print(cli_t *cli, compnt_t *c, int details)
 
 /**
  * \brief Function to print a component configuration
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Component name
  */
 int component_show(cli_t *cli, char *name)
@@ -302,7 +304,7 @@ int component_show(cli_t *cli, char *name)
 
 /**
  * \brief Function to print all component configurations
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  */
 int component_list(cli_t *cli)
 {
@@ -323,7 +325,7 @@ int component_list(cli_t *cli)
 
 /**
  * \brief Function to enable a component
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Component name
  */
 int component_enable(cli_t *cli, char *name)
@@ -352,7 +354,7 @@ int component_enable(cli_t *cli, char *name)
 
 /**
  * \brief Function to disable a component
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Component name
  */
 int component_disable(cli_t *cli, char *name)
@@ -401,7 +403,7 @@ static void *thread_main(void *c_id)
 
 /**
  * \brief Function to activate a component
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Component name
  */
 int component_activate(cli_t *cli, char *name)
@@ -445,6 +447,29 @@ int component_activate(cli_t *cli, char *name)
                                 return 0;
                             }
                         }
+                    // external?
+                    } else {
+                        compnt_ctx->compnt_list[i]->push_ctx = zmq_ctx_new();
+                        compnt_ctx->compnt_list[i]->push_sock = zmq_socket(compnt_ctx->compnt_list[i]->push_ctx, ZMQ_PUSH);
+
+                        const int timeout = 1000;
+                        zmq_setsockopt(compnt_ctx->compnt_list[i]->push_sock, ZMQ_SNDTIMEO, &timeout, sizeof(int));
+
+                        if (zmq_bind(compnt_ctx->compnt_list[i]->push_sock, compnt_ctx->compnt_list[i]->pull_addr)) {
+                            PERROR("zmq_bind");
+                            return -1;
+                        }
+
+                        compnt_ctx->compnt_list[i]->req_ctx = zmq_ctx_new();
+                        compnt_ctx->compnt_list[i]->req_sock = zmq_socket(compnt_ctx->compnt_list[i]->req_ctx, ZMQ_REQ);
+
+                        if (zmq_bind(compnt_ctx->compnt_list[i]->req_sock, compnt_ctx->compnt_list[i]->reply_addr)) {
+                            PERROR("zmq_bind");
+                            return -1;
+                        }
+
+                        compnt_ctx->compnt_list[i]->activated = TRUE;
+                        cli_print(cli, "%s is activated", compnt_ctx->compnt_list[i]->name);
                     }
                 } else {
                     cli_print(cli, "%s is already activated", name);
@@ -463,7 +488,7 @@ int component_activate(cli_t *cli, char *name)
 
 /**
  * \brief Function to deactivate a component
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Component name
  */
 int component_deactivate(cli_t *cli, char *name)
@@ -491,6 +516,16 @@ int component_deactivate(cli_t *cli, char *name)
                             cli_print(cli, "%s is deactivated", compnt_ctx->compnt_list[i]->name);
                             return 0;
                         }
+                    // external?
+                    } else {
+                        zmq_close(compnt_ctx->compnt_list[i]->push_sock);
+                        zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_ctx);
+
+                        zmq_close(compnt_ctx->compnt_list[i]->req_sock);
+                        zmq_ctx_destroy(compnt_ctx->compnt_list[i]->req_ctx);
+
+                        compnt_ctx->compnt_list[i]->activated = FALSE;
+                        cli_print(cli, "%s is deactivated", compnt_ctx->compnt_list[i]->name);
                     }
                 } else {
                     cli_print(cli, "%s is not activated yet", name);
@@ -509,7 +544,7 @@ int component_deactivate(cli_t *cli, char *name)
 
 /**
  * \brief Function to activate all enabled components
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  */
 int component_start(cli_t *cli)
 {
@@ -603,6 +638,29 @@ int component_start(cli_t *cli)
                             cli_print(cli, "%s is activated", compnt_ctx->compnt_list[i]->name);
                         }
                     }
+                // external?
+                } else {
+                    compnt_ctx->compnt_list[i]->push_ctx = zmq_ctx_new();
+                    compnt_ctx->compnt_list[i]->push_sock = zmq_socket(compnt_ctx->compnt_list[i]->push_ctx, ZMQ_PUSH);
+
+                    const int timeout = 1000;
+                    zmq_setsockopt(compnt_ctx->compnt_list[i]->push_sock, ZMQ_SNDTIMEO, &timeout, sizeof(int));
+
+                    if (zmq_bind(compnt_ctx->compnt_list[i]->push_sock, compnt_ctx->compnt_list[i]->pull_addr)) {
+                        PERROR("zmq_bind");
+                        return -1;
+                    }
+
+                    compnt_ctx->compnt_list[i]->req_ctx = zmq_ctx_new();
+                    compnt_ctx->compnt_list[i]->req_sock = zmq_socket(compnt_ctx->compnt_list[i]->req_ctx, ZMQ_REQ);
+
+                    if (zmq_bind(compnt_ctx->compnt_list[i]->req_sock, compnt_ctx->compnt_list[i]->reply_addr)) {
+                        PERROR("zmq_bind");
+                        return -1;
+                    }
+
+                    compnt_ctx->compnt_list[i]->activated = TRUE;
+                    cli_print(cli, "%s is activated", compnt_ctx->compnt_list[i]->name);
                 }
             }
         }
@@ -636,6 +694,26 @@ int component_start(cli_t *cli)
                         cli_print(cli, "%s is activated", compnt_ctx->compnt_list[conn]->name);
                     }
                 }
+            // external?
+            } else {
+                compnt_ctx->compnt_list[i]->push_ctx = zmq_ctx_new();
+                compnt_ctx->compnt_list[i]->push_sock = zmq_socket(compnt_ctx->compnt_list[i]->push_ctx, ZMQ_PUSH);
+
+                if (zmq_bind(compnt_ctx->compnt_list[i]->push_sock, compnt_ctx->compnt_list[i]->pull_addr)) {
+                    PERROR("zmq_bind");
+                    return -1;
+                }
+
+                compnt_ctx->compnt_list[i]->req_ctx = zmq_ctx_new();
+                compnt_ctx->compnt_list[i]->req_sock = zmq_socket(compnt_ctx->compnt_list[i]->req_ctx, ZMQ_REQ);
+
+                if (zmq_bind(compnt_ctx->compnt_list[i]->req_sock, compnt_ctx->compnt_list[i]->reply_addr)) {
+                    PERROR("zmq_bind");
+                    return -1;
+                }
+
+                compnt_ctx->compnt_list[i]->activated = TRUE;
+                cli_print(cli, "%s is activated", compnt_ctx->compnt_list[i]->name);
             }
         }
     }
@@ -647,7 +725,7 @@ int component_start(cli_t *cli)
 
 /**
  * \brief Function to deactivate all activated components
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  */
 int component_stop(cli_t *cli)
 {
@@ -687,6 +765,16 @@ int component_stop(cli_t *cli)
                 compnt_ctx->compnt_list[conn]->activated = FALSE;
                 cli_print(cli, "%s is deactivated", compnt_ctx->compnt_list[conn]->name);
             }
+        // external?
+        } else {
+            zmq_close(compnt_ctx->compnt_list[i]->push_sock);
+            zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_ctx);
+
+            zmq_close(compnt_ctx->compnt_list[i]->req_sock);
+            zmq_ctx_destroy(compnt_ctx->compnt_list[i]->req_ctx);
+
+            compnt_ctx->compnt_list[i]->activated = FALSE;
+            cli_print(cli, "%s is deactivated", compnt_ctx->compnt_list[conn]->name);
         }
     }
 
@@ -712,6 +800,16 @@ int component_stop(cli_t *cli)
                         compnt_ctx->compnt_list[i]->activated = FALSE;
                         cli_print(cli, "%s is deactivated", compnt_ctx->compnt_list[i]->name);
                     }
+                // external?
+                } else {
+                    zmq_close(compnt_ctx->compnt_list[i]->push_sock);
+                    zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_ctx);
+
+                    zmq_close(compnt_ctx->compnt_list[i]->req_sock);
+                    zmq_ctx_destroy(compnt_ctx->compnt_list[i]->req_ctx);
+
+                    compnt_ctx->compnt_list[i]->activated = FALSE;
+                    cli_print(cli, "%s is deactivated", compnt_ctx->compnt_list[i]->name);
                 }
             }
         }
@@ -738,7 +836,7 @@ int component_stop(cli_t *cli)
 
 /**
  * \brief Function to add a policy to a component
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Component name
  * \param p Operator-defined policy
  */
@@ -936,7 +1034,7 @@ int component_add_policy(cli_t *cli, char *name, char *p)
 
 /**
  * \brief Function to delete a policy from a component
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Component name
  * \param idx The index of the target operator-defined policy
  */
@@ -989,7 +1087,7 @@ int component_del_policy(cli_t *cli, char *name, int idx)
 
 /**
  * \brief Function to show all policies of a component
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param name Component name
  */
 int component_show_policy(cli_t *cli, char *name)
@@ -1152,7 +1250,7 @@ int component_show_policy(cli_t *cli, char *name)
 
 /**
  * \brief Function to deliver a command to the corresponding component
- * \param cli the CLI pointer
+ * \param cli CLI pointer
  * \param args Arguments
  */
 int component_cli(cli_t *cli, char **args)
@@ -1214,7 +1312,7 @@ static int clean_structures(int num_compnts, compnt_t **compnt_list, int *ev_num
 
 /**
  * \brief Function to load component configurations from a file
- * \param cli The CLI pointer
+ * \param cli CLI pointer
  * \param ctx The context of the Barista NOS
  */
 int component_load(cli_t *cli, ctx_t *ctx)
@@ -1331,6 +1429,18 @@ int component_load(cli_t *cli, ctx_t *ctx)
             strcpy(status, json_string_value(j_status));
         }
 
+        char pull_addr[__CONF_WORD_LEN] = {0};
+        json_t *j_pull_addr = json_object_get(data, "pull_addr");
+        if (json_is_string(j_pull_addr)) {
+            strcpy(pull_addr, json_string_value(j_pull_addr));
+        }
+
+        char reply_addr[__CONF_WORD_LEN] = {0};
+        json_t *j_reply_addr = json_object_get(data, "reply_addr");
+        if (json_is_string(j_reply_addr)) {
+            strcpy(reply_addr, json_string_value(j_reply_addr));
+        }
+
         // find the index of a component to link the corresponding functions
         const int num_components = sizeof(g_components) / sizeof(compnt_func_t);
         int k;
@@ -1410,6 +1520,24 @@ int component_load(cli_t *cli, ctx_t *ctx)
             c->handler = NULL;
             c->cleanup = NULL;
             c->cli = NULL;
+
+            if (strlen(pull_addr) > 0) {
+                strcpy(c->pull_addr, pull_addr);
+            } else {
+                 cli_print(cli, "No pulling address");
+                 FREE(c);
+                 clean_structures(num_compnts, compnt_list, ev_num, ev_list);
+                 return -1;
+            }
+
+            if (strlen(reply_addr) > 0) {
+                strcpy(c->reply_addr, reply_addr);
+            } else {
+                 cli_print(cli, "No replying address");
+                 FREE(c);
+                 clean_structures(num_compnts, compnt_list, ev_num, ev_list);
+                 return -1;
+            }
         }
 
         // set a role

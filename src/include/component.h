@@ -16,6 +16,7 @@
 
 #include <jansson.h>
 #include <arpa/inet.h>
+#include <zmq.h>
 
 /** \brief The main function pointer of a component */
 typedef int (* compnt_main_f)(int *activated, int argc, char **argv);
@@ -85,6 +86,9 @@ struct _compnt_t {
 
     void *req_ctx; /**< Context to request events */
     void *req_sock; /**< Socket to request events */
+
+    char pull_addr[__CONF_WORD_LEN]; /**< Component-side pulling address */
+    char reply_addr[__CONF_WORD_LEN]; /**< Component-side replying address */
 
     compnt_main_f main; /**< The main function pointer */
     compnt_handler_f handler; /**< The handler function pointer */
