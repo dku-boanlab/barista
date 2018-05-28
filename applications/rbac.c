@@ -136,7 +136,7 @@ static int load_app_roles(char *conf_file)
         }
 
         if (strlen(name) == 0) {
-            PRINTF("no application name\n");
+            ALOG_DEBUG(RBAC_ID, "no application name");
             return -1;
         }
 
@@ -210,7 +210,7 @@ static int load_events_for_roles(char *role_file)
 
         int role = 0;
         if (strlen(name) == 0) {
-            PRINTF("no role type\n");
+            ALOG_DEBUG(RBAC_ID, "no role type");
             return -1;
         } else {
             if (strcmp(name, "network") == 0)
@@ -235,7 +235,7 @@ static int load_events_for_roles(char *role_file)
                 json_t *event = json_array_get(events, j);
 
                 if (app_event_type(json_string_value(event)) == AV_NUM_EVENTS) {
-                    PRINTF("wrong app event name\n");
+                    ALOG_DEBUG(RBAC_ID, "wrong app event name");
                     return -1;
                 }
             }

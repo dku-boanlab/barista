@@ -110,7 +110,7 @@ static int config_load(char *conf_file)
 
         // set a component name
         if (strlen(name) == 0) {
-            PRINTF("no component name\n");
+            LOG_DEBUG(CAC_ID, "no component name");
             return -1;
         } else {
             strcpy(component[num_components].name, name);
@@ -125,7 +125,7 @@ static int config_load(char *conf_file)
                 json_t *event = json_array_get(events, j);
 
                 if (ev_type(json_string_value(event)) == EV_NUM_EVENTS) {
-                    PRINTF("wrong event name\n");
+                    LOG_DEBUG(CAC_ID, "wrong event name");
                     return -1;
                 }
             }
@@ -174,7 +174,7 @@ static int config_load(char *conf_file)
                 json_t *out_event = json_array_get(out_events, j);
 
                 if (ev_type(json_string_value(out_event)) == EV_NUM_EVENTS) {
-                    PRINTF("wrong event name\n");
+                    LOG_DEBUG(CAC_ID, "wrong event name");
                     return -1;
                 }
             }

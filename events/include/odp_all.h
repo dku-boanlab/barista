@@ -81,7 +81,7 @@ static int ODP_FUNC(odp_t *odp, const ODP_TYPE *data)
                 if (odp[i].srcip[j] == 0) // No more src_ip
                     break;
 
-                if (odp[i].srcip[j] == data->src_ip) {
+                if ((odp[i].srcip[j] & data->src_ip) == odp[i].srcip[j]) {
                     match++;
                     break;
                 }
@@ -96,7 +96,7 @@ static int ODP_FUNC(odp_t *odp, const ODP_TYPE *data)
                 if (odp[i].dstip[j] == 0) // No more dst_ip
                     break;
 
-                if (odp[i].dstip[j] == data->dst_ip) {
+                if ((odp[i].dstip[j] & data->dst_ip) == odp[i].dstip[j]) {
                     match++;
                     break;
                 }

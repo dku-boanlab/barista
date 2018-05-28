@@ -140,6 +140,8 @@ int log_main(int *activated, int argc, char **argv)
 
     activate();
 
+    push_msg_into_queue("===========================================================\n");
+
     LOG_INFO(LOG_ID, "Init - Logging mechanism");
 
     while (*activated) {

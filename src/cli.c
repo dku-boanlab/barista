@@ -700,6 +700,45 @@ static int cli_application(struct cli_def *cli, UNUSED(const char *command), cha
     return CLI_ERROR;
 }
 
+static int cli_log(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
+{
+    int line = 20;
+
+    if (argc == 1) {
+        line = atoi(argv[0]);
+    } else if (argc > 1) {
+        return CLI_OK;
+    }
+
+    FILE *log = fopen("../log/message.log", "r");
+    if (log == NULL) {
+        PERROR("fopen");
+        return CLI_OK;
+    }
+
+    fseek(log, 0, SEEK_END);
+
+    int cnt = 0;
+    long int pos = ftell(log);
+    while (pos) {
+        fseek(log, --pos, SEEK_SET);
+        if (fgetc(log) == '\n') {
+            if (cnt++ == line)
+                break;
+        }
+    }
+
+    char buf[__CONF_STR_LEN] = {0};
+    while (fgets(buf, sizeof(buf), log) != NULL) {
+        buf[strlen(buf)-1] = '\0';
+        cli_print(cli, "%s", buf);
+    }
+
+    fclose(log);
+
+    return CLI_OK;
+}
+
 static int cli_exit(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     component_stop(cli);
@@ -849,6 +888,7 @@ int start_cli(ctx_t *ctx)
     cli_register_command(cli, NULL, "component", cli_component, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[Component Name] [Arguments...], Run a command in a component");
     cli_register_command(cli, NULL, "application", cli_application, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[Application Name] [Arguments...], Run a command in an application");
 
+    cli_register_command(cli, NULL, "log", cli_log, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[# of lines], Print out log messages");
     cli_register_command(cli, NULL, "exit", cli_exit, PRIVILEGE_PRIVILEGED, MODE_EXEC, "Terminate the Barista NOS");
 
     cli_set_auth_callback(cli, check_auth);
