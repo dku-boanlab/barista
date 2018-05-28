@@ -46,7 +46,7 @@
 - Run the Barista NOS as a daemon
 > $ ./barista -d
 
-- Run the Barista NOS with only base components
+- Run the Barista NOS with base components
 > $ ./barista -b
 
 - Connect the Barista NOS  
