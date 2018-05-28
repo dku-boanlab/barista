@@ -32,7 +32,7 @@
 > $ ./setup_cluster.sh [current NOS IP address] [another NOS IP address],[the other NOS IP address]
 > > (At least 3 nodes are required)
 
-> $ ./start_cluster.sh new (at the first NOS)
+> $ ./start_cluster.sh new (at the first NOS)  
 > $ ./start_cluster.sh (at the other NOSs)
 
 # Execution
