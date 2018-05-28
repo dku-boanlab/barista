@@ -114,7 +114,11 @@ int resource_mgmt_main(int *activated, int argc, char **argv)
 
         ev_rs_update_usage(RSM_ID, &rs);
 
-        waitsec(RESOURCE_MGMT_MONITOR_TIME, 0);
+        int i;
+        for (i=0; i<RESOURCE_MGMT_MONITOR_TIME; i++) {
+            waitsec(1, 0);
+            if (!*activated) break;
+        }
     }
 
     return 0;
@@ -129,6 +133,8 @@ int resource_mgmt_cleanup(int *activated)
     LOG_INFO(RSM_ID, "Clean up - Resource management");
 
     deactivate();
+
+    waitsec(1, 0);
 
     FREE(rs_history);
 

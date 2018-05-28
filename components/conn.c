@@ -646,6 +646,8 @@ int conn_cleanup(int *activated)
 
     conn_on = FALSE;
 
+    waitsec(1, 0);
+
     int i;
     for (i=0; i<__NUM_THREADS; i++) {
         pthread_mutex_lock(&queue_mutex);

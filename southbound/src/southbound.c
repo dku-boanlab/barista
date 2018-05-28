@@ -459,7 +459,12 @@ void *do_tasks(void *null)
     pthread_mutex_lock(&queue_mutex);
 
     while (conn_sb_on) {
-        pthread_cond_wait(&queue_cond, &queue_mutex);
+        struct timespec time_wait;
+        time_wait.tv_sec = 1;
+        time_wait.tv_nsec = 0;
+
+        //pthread_cond_wait(&queue_cond, &queue_mutex);
+        pthread_cond_timedwait(&queue_cond, &queue_mutex, &time_wait);
 
 FETCH_ONE_FD:
         if (conn_sb_on == FALSE) {
@@ -798,6 +803,8 @@ void init_sb(char *port)
 int cleanup_sb(void)
 {
     conn_sb_on = FALSE;
+
+    waitsec(1, 0);
 
     // domain socket
 

@@ -429,6 +429,8 @@ int flow_mgmt_cleanup(int *activated)
 
     flow_mgmt_on = FALSE;
 
+    waitsec(1, 0);
+
     int i;
     for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
         pthread_mutex_lock(&flow_table[i].lock);

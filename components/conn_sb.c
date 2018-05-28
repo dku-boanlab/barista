@@ -624,14 +624,6 @@ int conn_sb_main(int *activated, int argc, char **argv)
 
     signal(SIGPIPE, SIG_IGN);
 
-    int pid;
-
-    char *const arg_stop[] = {"pkill", "-9", "barista_sb", NULL};
-    posix_spawn(&pid, "/usr/bin/pkill", NULL, NULL, arg_stop, NULL);
-
-    char *const arg_start[] = {"./barista_sb", NULL};
-    posix_spawn(&pid, "./barista_sb", NULL, NULL, arg_start, NULL);
-
     activate();
 
     socket_listen(NULL);
@@ -651,9 +643,7 @@ int conn_sb_cleanup(int *activated)
 
     conn_sb_on = FALSE;
 
-    int pid;
-    char *argb[] = {"pkill", "-9", "barista_sb", NULL};
-    posix_spawn(&pid, "/usr/bin/pkill", NULL, NULL, argb, NULL);
+    waitsec(1, 0);
 
     int i;
     for (i=0; i<__NUM_THREADS; i++) {

@@ -103,7 +103,10 @@ int stat_mgmt_main(int *activated, int argc, char **argv)
 
         pthread_rwlock_unlock(&stat_lock);
 
-        waitsec(STAT_MGMT_REQUEST_TIME, 0);
+        for (i=0; i<STAT_MGMT_REQUEST_TIME; i++) {
+            waitsec(1, 0);
+            if (!*activated) break;
+        }
     }
 
     return 0;
@@ -118,6 +121,8 @@ int stat_mgmt_cleanup(int *activated)
     LOG_INFO(STAT_MGMT_ID, "Clean up - Statistics management");
 
     deactivate();
+
+    waitsec(1, 0);
 
     pthread_rwlock_destroy(&stat_lock);
 

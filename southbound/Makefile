@@ -12,8 +12,8 @@ TMP_DIR = ../tmp
 
 CPPFLAGS = $(addprefix -I,$(shell find $(SRC_DIR) -type d))
 
-#CFLAGS   = -g -ggdb -Wall -std=gnu99
-CFLAGS   = -O2 -Wall -std=gnu99
+CFLAGS   = -g -ggdb -Wall -std=gnu99
+#CFLAGS   = -O2 -Wall -std=gnu99
 LDFLAGS  = -lpthread -lrt
 
 include $(CONFIG_MK)

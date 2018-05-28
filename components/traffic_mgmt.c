@@ -101,7 +101,11 @@ int traffic_mgmt_main(int *activated, int argc, char **argv)
 
         ev_tr_update_stats(TRAFFIC_MGMT_ID, &tr);
 
-        waitsec(TRAFFIC_MGMT_MONITOR_TIME, 0);
+        int i;
+        for (i=0; i<TRAFFIC_MGMT_MONITOR_TIME; i++) {
+            waitsec(1, 0);
+            if (!*activated) break;
+        }
     }
 
     return 0;
@@ -116,6 +120,8 @@ int traffic_mgmt_cleanup(int *activated)
     LOG_INFO(TRAFFIC_MGMT_ID, "Clean up - Control traffic management");
 
     deactivate();
+
+    waitsec(1, 0);
 
     pthread_spin_destroy(&lock);
 
