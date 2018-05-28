@@ -57,11 +57,11 @@
 - Change a configuration mode
 > Barista> enable
 - Load configurations
-> Barista> load
+> Barista# load
 - Start the Barista NOS
-> Barista> start
+> Barista# start
 - Stop the Barista NOS
-> Barista> stop
+> Barista# stop
 - More information?
 > Barista> help  
 
