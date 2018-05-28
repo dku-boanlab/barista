@@ -15,6 +15,7 @@ var cli_8c =
     [ "cli_list_links", "group__cli.html#gab28a09b3279ed1f47580f4d536c83c54", null ],
     [ "cli_list_switches", "group__cli.html#gadcaf5a61bee2914ed8c7f46b891569b6", null ],
     [ "cli_load", "group__cli.html#ga20aa05db70f15ae92fad73e0a2340b0c", null ],
+    [ "cli_log", "group__cli.html#gad0b366f24388a6a3b93b181c6a24de69", null ],
     [ "cli_policy_add_application", "group__cli.html#ga5a37f5425b9b7b737813d61dc3a807fc", null ],
     [ "cli_policy_add_component", "group__cli.html#gad873427ae92d6331cf49d5313891e800", null ],
     [ "cli_policy_del_application", "group__cli.html#gac060083dc6cf471d420dcecb5a707f33", null ],

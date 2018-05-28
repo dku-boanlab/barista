@@ -1,5 +1,6 @@
 var NAVTREEINDEX7 =
 {
+"mac__queue_8h.html#a9fc95bba1f12de1bef6396aa8ff2b08e":[11,0,1,0,3,2],
 "mac__queue_8h.html#ac2fea83cb8d5bf9698b73456e5c8f20a":[11,0,1,0,3,7],
 "mac__queue_8h.html#aff8cd65b6b6d47f91393d613a3ac330e":[11,0,1,0,3,3],
 "main_8c.html":[11,0,4,5],
@@ -248,6 +249,5 @@ var NAVTREEINDEX7 =
 "struct__flow__table__t.html#a51a52413f6d547c060d8f12b815b93d2":[9,0,6,1,1],
 "struct__flow__table__t.html#ab6df925632cc6c5713843cce13cbf336":[9,0,6,1,2],
 "struct__host__queue__t.html":[10,0,17],
-"struct__host__queue__t.html#a046fb981145c2351e4937055e6b6b342":[10,0,17,2],
-"struct__host__queue__t.html#a08f6de53f1cecc3038d8fe41a2ace35b":[10,0,17,1]
+"struct__host__queue__t.html#a046fb981145c2351e4937055e6b6b342":[10,0,17,2]
 };
