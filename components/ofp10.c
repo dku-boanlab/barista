@@ -41,7 +41,7 @@ static int ofp10_hello(const raw_msg_t *msg)
     of_output.length = htons(sizeof(struct ofp_header));
     of_output.xid = of_input->xid;
 
-    out.data = (uint8_t *)&of_output;
+    memmove(out.data, &of_output, sizeof(struct ofp_header));
 
     ev_ofp_msg_out(OFP_ID, &out);
 
@@ -198,7 +198,7 @@ static int ofp10_echo_reply(const raw_msg_t *msg)
     of_output.length = htons(sizeof(struct ofp_header));
     of_output.xid = of_input->xid;
 
-    out.data = (uint8_t *)&of_output;
+    memmove(out.data, &of_output, sizeof(struct ofp_header));
 
     ev_ofp_msg_out(OFP_ID, &out);
 
@@ -224,7 +224,7 @@ static int ofp10_features_request(const raw_msg_t *msg)
     of_output.length = htons(sizeof(struct ofp_header));
     of_output.xid = ntohl(htonl(of_input->xid)+1);
 
-    out.data = (uint8_t *)&of_output;
+    memmove(out.data, &of_output, sizeof(struct ofp_header));
 
     ev_ofp_msg_out(OFP_ID, &out);
 
@@ -305,7 +305,7 @@ static int ofp10_get_config_request(uint32_t fd)
     of_output.length = htons(sizeof(struct ofp_header));
     of_output.xid = htonl(sw.xid);
 
-    out.data = (uint8_t *)&of_output;
+    memmove(out.data, &of_output, sizeof(struct ofp_header));
 
     ev_ofp_msg_out(OFP_ID, &out);
 
@@ -353,7 +353,7 @@ static int ofp10_set_config(uint32_t fd)
     of_output.flags = htons(0x0);
     of_output.miss_send_len = htons(1500);
 
-    out.data = (uint8_t *)&of_output;
+    memmove(out.data, &of_output, sizeof(struct ofp_switch_config));
 
     ev_ofp_msg_out(OFP_ID, &out);
 
@@ -382,7 +382,7 @@ static int ofp10_barrier_request(uint32_t fd)
     of_output.length = htons(sizeof(struct ofp_header));
     of_output.xid = htonl(sw.xid);
 
-    out.data = (uint8_t *)&of_output;
+    memmove(out.data, &of_output, sizeof(struct ofp_header));
 
     ev_ofp_msg_out(OFP_ID, &out);
 
@@ -1199,7 +1199,7 @@ static int ofp10_packet_out(const pktout_t *pktout)
     msg.fd = sw.fd;
     msg.length = size;
 
-    msg.data = pkt;
+    memmove(msg.data, pkt, size);
 
     ev_ofp_msg_out(OFP_ID, &msg);
     
@@ -1550,7 +1550,7 @@ static int ofp10_flow_mod(const flow_t *flow, int command)
     msg.fd = sw.fd;
     msg.length = size;
 
-    msg.data = pkt;
+    memmove(msg.data, pkt, size);
 
     ev_ofp_msg_out(OFP_ID, &msg);
 
@@ -1586,7 +1586,7 @@ static int ofp10_stats_desc_request(uint32_t fd)
     out.fd = fd;
     out.length = size;
 
-    out.data = pkt;
+    memmove(out.data, pkt, size);
 
     ev_ofp_msg_out(OFP_ID, &out);
 
@@ -1761,7 +1761,7 @@ static int ofp10_flow_stats(const flow_t *flow)
     msg.fd = sw.fd;
     msg.length = size;
 
-    msg.data = pkt;
+    memmove(msg.data, pkt, size);
 
     ev_ofp_msg_out(OFP_ID, &msg);
 
@@ -1806,7 +1806,7 @@ static int ofp10_aggregate_stats(const flow_t *flow)
     msg.fd = sw.fd;
     msg.length = size;
 
-    msg.data = pkt;
+    memmove(msg.data, pkt, size);
 
     ev_ofp_msg_out(OFP_ID, &msg);
 
@@ -1848,7 +1848,7 @@ static int ofp10_port_stats(const port_t *port)
     msg.fd = sw.fd;
     msg.length = size;
 
-    msg.data = pkt;
+    memmove(msg.data, pkt, size);
 
     ev_ofp_msg_out(OFP_ID, &msg);
 

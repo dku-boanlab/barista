@@ -3,10 +3,10 @@
  */
 
 /**
- * \defgroup app_shim
+ * \defgroup compnt_shim
  * @{
- * \defgroup app_load External Application Loader
- * \brief Functions to execute an external application
+ * \defgroup compnt_load External Component Loader
+ * \brief Functions to execute an external component
  * @{
  */
 
@@ -17,26 +17,26 @@
 
 #include "shim.h"
 
-/** \brief The configuration of an application */
-app_t app;
+/** \brief The configuration of a component */
+compnt_t compnt;
 
 /**
- * \brief Function to initialize an application
+ * \brief Function to initialize a component
  * \return None
  */
-static int init_app(void)
+static int init_compnt(void)
 {
     json_t *json;
     json_error_t error;
 
-    PRINTF("Application configuration file: %s\n", APP_DEFAULT_CONFIG_FILE);
+    PRINTF("Component configuration file: %s\n", COMPNT_DEFAULT_CONFIG_FILE);
 
-    if (access(APP_DEFAULT_CONFIG_FILE, F_OK)) {
-        PRINTF("No file whose name is '%s'\n", APP_DEFAULT_CONFIG_FILE);
+    if (access(COMPNT_DEFAULT_CONFIG_FILE, F_OK)) {
+        PRINTF("No file whose name is '%s'\n", COMPNT_DEFAULT_CONFIG_FILE);
         return -1;
     }
 
-    char *raw = str_read(APP_DEFAULT_CONFIG_FILE);
+    char *raw = str_read(COMPNT_DEFAULT_CONFIG_FILE);
     char *conf = str_preproc(raw);
 
     json = json_loads(conf, 0, &error);
@@ -60,7 +60,7 @@ static int init_app(void)
             strcpy(name, json_string_value(j_name));
         }
 
-        if (strcmp(name, TARGET_APP) != 0)
+        if (strcmp(name, TARGET_COMPNT) != 0)
             continue;
 
         char args[__CONF_WORD_LEN] = {0};
@@ -75,31 +75,31 @@ static int init_app(void)
             strcpy(type, json_string_value(j_type));
         }
 
-        // set the application name
+        // set the component name
         if (strlen(name) == 0) {
-            PRINTF("No application name\n");
+            PRINTF("No component name\n");
             return -1;
         } else {
-            strcpy(app.name, name);
+            strcpy(compnt.name, name);
         }
 
         // set arguments
-        strcpy(app.args, args);
-        str2args(app.args, &app.argc, &app.argv[1], __CONF_ARGC);
-        app.argc++;
-        app.argv[0] = app.name;
+        strcpy(compnt.args, args);
+        str2args(compnt.args, &compnt.argc, &compnt.argv[1], __CONF_ARGC);
+        compnt.argc++;
+        compnt.argv[0] = compnt.name;
 
         // set functions
-        app.main = g_applications[0].main;
-        app.handler = g_applications[0].handler;
-        app.cleanup = g_applications[0].cleanup;
-        app.cli = g_applications[0].cli;
+        compnt.main = g_components[0].main;
+        compnt.handler = g_components[0].handler;
+        compnt.cleanup = g_components[0].cleanup;
+        compnt.cli = g_components[0].cli;
 
         // set a type
         if (strlen(type) == 0) {
-            app.type = APP_GENERAL;
+            compnt.type = COMPNT_GENERAL;
         } else {
-            app.type = (strcmp(type, "autonomous") == 0) ? APP_AUTO : APP_GENERAL;
+            compnt.type = (strcmp(type, "autonomous") == 0) ? COMPNT_AUTO : COMPNT_GENERAL;
         }
 
         pass = TRUE;
@@ -108,9 +108,9 @@ static int init_app(void)
     }
 
     if (pass) {
-        app.activated = FALSE;
+        compnt.activated = FALSE;
     } else {
-        PRINTF("No %s in the configuration\n", TARGET_APP);
+        PRINTF("No %s in the configuration\n", TARGET_COMPNT);
         return -1;
     }
 
@@ -118,34 +118,34 @@ static int init_app(void)
 }
 
 /**
- * \brief Function to execute the main function of an application
+ * \brief Function to execute the main function of a component
  * \param null NULL
  */
-static void *app_thread_main(void *null)
+static void *thread_main(void *null)
 {
-    if (app.main(&app.activated, app.argc, app.argv) < 0) {
-        app.activated = FALSE;
+    if (compnt.main(&compnt.activated, compnt.argc, compnt.argv) < 0) {
+        compnt.activated = FALSE;
         return NULL;
     } else {
-        return &app;
+        return &compnt;
     }
 }
 
 /**
- * \brief Function to activate an application
+ * \brief Function to activate a component
  * \return None
  */
-static int activate_app(void)
+static int activate_compnt(void)
 {
     // general type?
-    if (app.type == APP_GENERAL) {
-        if (app_thread_main(NULL) == NULL) {
+    if (compnt.type == COMPNT_GENERAL) {
+        if (thread_main(NULL) == NULL) {
             return -1;
         }
     // autonomous type?
     } else {
         pthread_t thread;
-        if (pthread_create(&thread, NULL, &app_thread_main, NULL)) {
+        if (pthread_create(&thread, NULL, &thread_main, NULL)) {
             PERROR("pthread_create");
             return -1;
         }
@@ -155,12 +155,12 @@ static int activate_app(void)
 }
 
 /**
- * \brief Function to deactivate an application
+ * \brief Function to deactivate a component
  * \return None
  */
-static int deactivate_app(void)
+static int deactivate_compnt(void)
 {
-    if (app.cleanup(&app.activated) < 0) {
+    if (compnt.cleanup(&compnt.activated) < 0) {
         return -1;
     }
 
@@ -175,8 +175,8 @@ void (*sigint_func)(int);
 /** \brief Function to handle the SIGINT signal */
 void sigint_handler(int sig)
 {
-    deactivate_app();
-    destroy_av_workers(NULL);
+    deactivate_compnt();
+    destroy_ev_workers(NULL);
 }
 
 /** \brief The SIGKILL handler definition */
@@ -185,8 +185,8 @@ void (*sigkill_func)(int);
 /** \brief Function to handle the SIGKILL signal */
 void sigkill_handler(int sig)
 {
-    deactivate_app();
-    destroy_av_workers(NULL);
+    deactivate_compnt();
+    destroy_ev_workers(NULL);
 }
 
 /** \brief The SIGTERM handler definition */
@@ -195,41 +195,41 @@ void (*sigterm_func)(int);
 /** \brief Function to handle the SIGTERM signal */
 void sigterm_handler(int sig)
 {
-    deactivate_app();
-    destroy_av_workers(NULL);
+    deactivate_compnt();
+    destroy_ev_workers(NULL);
 }
 
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to execute an external application
+ * \brief Function to execute an external component
  * \param argc The number of arguments
  * \param argv Arguments
  */
 int main(int argc, char *argv[])
 {
-    // init app event handler
-    if (app_event_init(NULL)) {
-        PRINTF("Failed to initialize the external app event handler\n");
+    // init event handler
+    if (event_init(NULL)) {
+        PRINTF("Failed to initialize the external event handler\n");
         return -1;
     } else {
-        PRINTF("Initialized the external app event handler\n");
+        PRINTF("Initialized the external event handler\n");
     }
 
-    // init app
-    if (init_app()) {
-        PRINTF("Failed to initialize %s\n", TARGET_APP);
+    // init component
+    if (init_compnt()) {
+        PRINTF("Failed to initialize %s\n", TARGET_COMPNT);
         return -1;
     } else {
-        PRINTF("Initialized %s\n", TARGET_APP);
+        PRINTF("Initialized %s\n", TARGET_COMPNT);
     }
 
-    // activate app
-    if (activate_app()) {
-        PRINTF("Failed to activate %s\n", TARGET_APP);
+    // activate component
+    if (activate_compnt()) {
+        PRINTF("Failed to activate %s\n", TARGET_COMPNT);
         return -1;
     } else {
-        PRINTF("Activated %s\n", TARGET_APP);
+        PRINTF("Activated %s\n", TARGET_COMPNT);
     }
 
     // signal handlers
@@ -239,11 +239,11 @@ int main(int argc, char *argv[])
 
     waitsec(1, 0);
 
-    while(app.activated) {
+    while(compnt.activated) {
         waitsec(1, 0);
     }
 
-    PRINTF("Terminated %s\n", TARGET_APP);
+    PRINTF("Terminated %s\n", TARGET_COMPNT);
 
     return 0;
 }

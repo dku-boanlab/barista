@@ -209,7 +209,7 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
                     if (msg.length == 0)
                         return -1;
 
-                    msg.data = rx_buf + buf_ptr;
+                    memmove(msg.data, rx_buf + buf_ptr, msg.length);
 
                     ev_ofp_msg_in(CONN_ID, &msg);
 
@@ -238,7 +238,7 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
                     return -1;
 
                 memmove(temp + done, rx_buf + buf_ptr, need);
-                msg.data = temp;
+                memmove(msg.data, temp, msg.length);
 
                 ev_ofp_msg_in(CONN_ID, &msg);
 

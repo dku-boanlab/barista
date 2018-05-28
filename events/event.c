@@ -326,6 +326,9 @@ static void *reply_events(void *null)
 
         zmq_recv(recv, &msg, sizeof(msg_t), 0);
 
+        if (!ev_on) break;
+        else if (msg.id == 0) continue;
+
         switch (msg.type) {
 
         // request-response events
@@ -343,6 +346,8 @@ static void *reply_events(void *null)
         }
 
         zmq_send(recv, &msg, sizeof(msg_t), 0);
+
+        if (!ev_on) break;
     }
 
     zmq_close(recv);
@@ -379,8 +384,9 @@ static void *receive_events(void *null)
 
         // upstream events
 
-        // EV_OFP_MSG_IN
-
+        case EV_OFP_MSG_IN:
+            raw_ev_raise(msg.id, EV_OFP_MSG_IN, sizeof(raw_msg_t), (const raw_msg_t *)msg.data);
+            break;
         case EV_DP_RECEIVE_PACKET:
             pktin_ev_raise(msg.id, EV_DP_RECEIVE_PACKET, sizeof(pktin_t), (const pktin_t *)msg.data);
             break;
@@ -411,8 +417,9 @@ static void *receive_events(void *null)
 
         // downstream events
 
-        // EV_OFP_MSG_OUT
-
+        case EV_OFP_MSG_OUT:
+            raw_ev_raise(msg.id, EV_OFP_MSG_OUT, sizeof(raw_msg_t), (const raw_msg_t *)msg.data);
+            break;
         case EV_DP_SEND_PACKET:
             pktout_ev_raise(msg.id, EV_DP_SEND_PACKET, sizeof(pktout_t), (const pktout_t *)msg.data);
             break;

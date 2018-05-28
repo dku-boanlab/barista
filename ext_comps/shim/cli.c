@@ -3,9 +3,9 @@
  */
 
 /**
- * \defgroup app_shim
+ * \defgroup compnt_shim
  * @{
- * \defgroup app_alt Application CLI Alternative
+ * \defgroup compnt_alt Component CLI Alternative
  * \brief Functions to convert CLI messages to logging messages
  * @{
  */

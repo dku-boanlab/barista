@@ -696,24 +696,24 @@ int component_start(cli_t *cli)
                 }
             // external?
             } else {
-                compnt_ctx->compnt_list[i]->push_ctx = zmq_ctx_new();
-                compnt_ctx->compnt_list[i]->push_sock = zmq_socket(compnt_ctx->compnt_list[i]->push_ctx, ZMQ_PUSH);
+                compnt_ctx->compnt_list[conn]->push_ctx = zmq_ctx_new();
+                compnt_ctx->compnt_list[conn]->push_sock = zmq_socket(compnt_ctx->compnt_list[conn]->push_ctx, ZMQ_PUSH);
 
-                if (zmq_bind(compnt_ctx->compnt_list[i]->push_sock, compnt_ctx->compnt_list[i]->pull_addr)) {
+                if (zmq_bind(compnt_ctx->compnt_list[conn]->push_sock, compnt_ctx->compnt_list[conn]->pull_addr)) {
                     PERROR("zmq_bind");
                     return -1;
                 }
 
-                compnt_ctx->compnt_list[i]->req_ctx = zmq_ctx_new();
-                compnt_ctx->compnt_list[i]->req_sock = zmq_socket(compnt_ctx->compnt_list[i]->req_ctx, ZMQ_REQ);
+                compnt_ctx->compnt_list[conn]->req_ctx = zmq_ctx_new();
+                compnt_ctx->compnt_list[conn]->req_sock = zmq_socket(compnt_ctx->compnt_list[conn]->req_ctx, ZMQ_REQ);
 
-                if (zmq_bind(compnt_ctx->compnt_list[i]->req_sock, compnt_ctx->compnt_list[i]->reply_addr)) {
+                if (zmq_bind(compnt_ctx->compnt_list[conn]->req_sock, compnt_ctx->compnt_list[conn]->reply_addr)) {
                     PERROR("zmq_bind");
                     return -1;
                 }
 
-                compnt_ctx->compnt_list[i]->activated = TRUE;
-                cli_print(cli, "%s is activated", compnt_ctx->compnt_list[i]->name);
+                compnt_ctx->compnt_list[conn]->activated = TRUE;
+                cli_print(cli, "%s is activated", compnt_ctx->compnt_list[conn]->name);
             }
         }
     }
@@ -767,13 +767,13 @@ int component_stop(cli_t *cli)
             }
         // external?
         } else {
-            zmq_close(compnt_ctx->compnt_list[i]->push_sock);
-            zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_ctx);
+            zmq_close(compnt_ctx->compnt_list[conn]->push_sock);
+            zmq_ctx_destroy(compnt_ctx->compnt_list[conn]->push_ctx);
 
-            zmq_close(compnt_ctx->compnt_list[i]->req_sock);
-            zmq_ctx_destroy(compnt_ctx->compnt_list[i]->req_ctx);
+            zmq_close(compnt_ctx->compnt_list[conn]->req_sock);
+            zmq_ctx_destroy(compnt_ctx->compnt_list[conn]->req_ctx);
 
-            compnt_ctx->compnt_list[i]->activated = FALSE;
+            compnt_ctx->compnt_list[conn]->activated = FALSE;
             cli_print(cli, "%s is deactivated", compnt_ctx->compnt_list[conn]->name);
         }
     }

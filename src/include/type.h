@@ -51,9 +51,7 @@ typedef struct _raw_msg_t {
     uint32_t fd; /**< Network socket */
     uint16_t length; /**< The length of a message */
 
-    uint8_t *data; /**< Pointer indicating the data */
-
-    struct _raw_msg_t *prev, *next;
+    uint8_t data[__MAX_RAW_DATA_LEN]; /**< Pointer indicating the data */
 } raw_msg_t;
 
 /** \brief The maximum length of data structures */
@@ -67,8 +65,6 @@ typedef struct _msg_t {
     uint8_t data[__MAX_STRUCT_SIZE]; /**< Data */
 
     int ret; /**< Return value */
-
-    struct _msg_t *prev, *next;
 } msg_t;
 
 /////////////////////////////////////////////////////////////////////

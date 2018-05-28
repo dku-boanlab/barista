@@ -5,7 +5,7 @@
 /**
  * \ingroup compnt
  * @{
- * \defgroup conn_sb External Packet I/O Engine
+ * \defgroup conn_ext External Packet I/O Engine
  * \brief (Base) external packet I/O engine
  * @{
  */
@@ -16,10 +16,10 @@
  * \author Yeonkeun Kim <yeonk@kaist.ac.kr>
  */
 
-#include "conn_sb.h"
+#include "conn_ext.h"
 
-/** \brief External packet I/O engine ID */
-#define CONN_SB_ID 1414923628
+/** \brief Packet I/O engine ID */
+#define CONN_EXT_ID 1651030346
 
 /////////////////////////////////////////////////////////////////////
 
@@ -33,47 +33,47 @@ struct of_header {
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The running flag for external packet I/O engine */
-int conn_sb_on;
+/** \brief The running flag for packet I/O engine */
+int conn_on;
 
 // socket queue handling part ///////////////////////////////////////
 
-/** \brief The size of a domain socket queue */
+/** \brief The size of a network socket queue */
 #define MAXQLEN 1024
 
-/** \brief The pointer of the first entry in a domain socket queue */
+/** \brief The pointer of the first entry in a network socket queue */
 #define FIRST &queue[0]
 
-/** \brief The pointer of the last entry in a domain socket queue */
+/** \brief The pointer of the last entry in a network socket queue */
 #define LAST  &queue[MAXQLEN - 1]
 
-/** \brief Domain socket queue */
+/** \brief Network socket queue */
 int queue[MAXQLEN];
 
-/** \brief The head and tail pointers of a domain socket queue */
+/** \brief The head and tail pointers of a network socket queue */
 int *head, *tail;
 
-/** \brief The number of entries in a domain socket queue */
-int sb_size = 0;
+/** \brief The number of entries in a network socket queue */
+int size = 0;
 
 /**
- * \brief Function to initialize a domain socket queue
+ * \brief Function to initialize a network socket queue
  * \return None
  */
 static void init_queue(void)
 {
     memset(queue, 0, sizeof(int) * MAXQLEN);
     head = tail = NULL;
-    sb_size = 0;
+    size = 0;
 }
 
 /**
- * \brief Function to push a socket into a domain socket queue
- * \param v Domain socket
+ * \brief Function to push a socket into a network socket queue
+ * \param v Network socket
  */
 static void push_back(int v)
 {
-    if (sb_size == 0) {
+    if (size == 0) {
         head = tail = FIRST;
     } else {
         tail = (LAST - tail > 0) ? tail + 1 : FIRST;
@@ -81,33 +81,33 @@ static void push_back(int v)
 
     *tail = v;
 
-    sb_size++;
+    size++;
 }
 
 /**
- * \brief Function to pop a socket from a domain socket queue
- * \return Domain socket
+ * \brief Function to pop a socket from a network socket queue
+ * \return Network socket
  */
 static int pop_front(void)
 {
     int ret = -1;
 
-    if (sb_size > 0) {
+    if (size > 0) {
         ret = *head;
         head = (LAST - head > 0) ? head + 1 : FIRST;
-        sb_size--;
+        size--;
     }
 
     return ret;
 }
 
 /**
- * \brief Function to get the number of domain sockets in a domain socket queue
- * \return The number of domain sockets in a domain socket queue
+ * \brief Function to get the number of network sockets in a network socket queue
+ * \return The number of network sockets in a network socket queue
  */
 static int get_qsize(void)
 {
-    return sb_size;
+    return size;
 }
 
 // segmented context handling part //////////////////////////////////
@@ -137,7 +137,7 @@ static void init_context(void)
 
 /**
  * \brief Function to clean up a context buffer
- * \param sock Domain socket
+ * \param sock Network socket
  */
 static void clean_context(int sock)
 {
@@ -148,8 +148,8 @@ static void clean_context(int sock)
 // message handling part ////////////////////////////////////////////
 
 /**
- * \brief Function to handle incoming messages from domain sockets
- * \param sock Domain socket
+ * \brief Function to handle incoming messages from network sockets
+ * \param sock Network socket
  * \param rx_buf Input buffer
  * \param bytes The size of the input buffer
  */
@@ -206,9 +206,12 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
                     msg.fd = sock;
                     msg.length = ntohs(ofph->length);
 
-                    msg.data = rx_buf + buf_ptr;
+                    if (msg.length == 0)
+                        return -1;
 
-                    ev_ofp_msg_in(CONN_SB_ID, &msg);
+                    memmove(msg.data, rx_buf + buf_ptr, msg.length);
+
+                    ev_ofp_msg_in(CONN_EXT_ID, &msg);
 
                     bytes -= len;
                     buf_ptr += len;
@@ -231,10 +234,13 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
                 msg.fd = sock;
                 msg.length = ntohs(ofph->length);
 
-                memmove(temp + done, rx_buf + buf_ptr, need);
-                msg.data = temp;
+                if (msg.length == 0)
+                    return -1;
 
-                ev_ofp_msg_in(CONN_SB_ID, &msg);
+                memmove(temp + done, rx_buf + buf_ptr, need);
+                memmove(msg.data, temp, msg.length);
+
+                ev_ofp_msg_in(CONN_EXT_ID, &msg);
 
                 bytes -= need;
                 buf_ptr += need;
@@ -255,10 +261,10 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 /** \brief The maximum number of events */
 #define MAXEVENTS 1024
 
-/** \brief Epoll for domain sockets */
+/** \brief Epoll for network sockets */
 int epoll;
 
-/** \brief The event list for domain sockets */
+/** \brief The event list for network sockets */
 struct epoll_event events[MAXEVENTS];
 
 /**
@@ -321,11 +327,11 @@ static int relink_epoll(int epol, int fd, int flags)
 /** \brief The size of a recv buffer */
 #define BUFFER_SIZE 8192
 
-/** \brief The callback definition for domain sockets */
+/** \brief The callback definition for network sockets */
 typedef int (*recv_cb_t)(int sock, uint8_t *rx_buf, int bytes);
 
-/** \brief The callback initialization for domain sockets */
-recv_cb_t sb_recv_cb = NULL;
+/** \brief The callback initialization for network sockets */
+recv_cb_t recv_cb = NULL;
 
 /** \brief Mutexlock for workers */
 pthread_mutex_t queue_mutex;
@@ -334,16 +340,16 @@ pthread_mutex_t queue_mutex;
 pthread_cond_t queue_cond;
 
 /**
- * \brief Function to register a callback function for domain sockets
- * \param cb The callback function for domain sockets
+ * \brief Function to register a callback function for network sockets
+ * \param cb The callback function for network sockets
  */
 static void recv_cb_register(recv_cb_t cb)
 {
-    sb_recv_cb = cb;
+    recv_cb = cb;
 }
 
 /**
- * \brief Function to receive raw messages from domain sockets
+ * \brief Function to receive raw messages from network sockets
  * \return NULL
  */
 static void *do_tasks(void *null)
@@ -353,7 +359,7 @@ static void *do_tasks(void *null)
 
     pthread_mutex_lock(&queue_mutex);
 
-    while (conn_sb_on) {
+    while (conn_on) {
         struct timespec time_wait;
         time_wait.tv_sec = 1;
         time_wait.tv_nsec = 0;
@@ -362,7 +368,7 @@ static void *do_tasks(void *null)
         pthread_cond_timedwait(&queue_cond, &queue_mutex, &time_wait);
 
 FETCH_ONE_FD:
-        if (conn_sb_on == FALSE) { // clean up
+        if (conn_on == FALSE) { // clean up
             pthread_mutex_unlock(&queue_mutex);
             break;
         }
@@ -385,7 +391,7 @@ FETCH_ONE_FD:
                 break;
             }
 
-            bytes = sb_recv_cb(wsock, rx_buf, bytes);
+            bytes = recv_cb(wsock, rx_buf, bytes);
             if (bytes == -1) {
                 done = 1;
                 break;
@@ -396,7 +402,7 @@ FETCH_ONE_FD:
             // closed connection
             switch_t sw = {0};
             sw.fd = wsock;
-            ev_sw_expired_conn(CONN_SB_ID, &sw);
+            ev_sw_expired_conn(CONN_EXT_ID, &sw);
 
             clean_context(wsock);
             close(wsock);
@@ -405,7 +411,7 @@ FETCH_ONE_FD:
                 // closed connection
                 switch_t sw = {0};
                 sw.fd = wsock;
-                ev_sw_expired_conn(CONN_SB_ID, &sw);
+                ev_sw_expired_conn(CONN_EXT_ID, &sw);
 
                 clean_context(wsock);
                 close(wsock);
@@ -423,7 +429,7 @@ FETCH_ONE_FD:
 }
 
 /**
- * \brief Function to initialize domain socket workers
+ * \brief Function to initialize network socket workers
  * \return None
  */
 static void init_workers(void)
@@ -442,12 +448,9 @@ static void init_workers(void)
     }
 }
 
-// domain socket handling part //////////////////////////////////////
+// network socket handling part /////////////////////////////////////
 
-/** \brief Domain socket path */
-#define DS_PATH "../tmp/sb_comm"
-
-/** \brief Domain socket */
+/** \brief Network socket */
 int sc;
 
 /**
@@ -477,45 +480,45 @@ static int nonblocking_mode(const int fd)
 }
 
 /**
- * \brief Function to initialize a domain socket
- * \return None
+ * \brief Function to initialize a socket
+ * \param port Port number
  */
-static int init_socket(void)
+static int init_socket(uint16_t port)
 {
-    if ((sc = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
+    struct sockaddr_in server;
+    int option = 1;
+
+    if ((sc = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         PERROR("socket");
         return -1;
     }
 
+    if (setsockopt(sc, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) {
+        PERROR("setsockopt");
+    }
+
     if (nonblocking_mode(sc) < 0) {
-        PERROR("nonblocking_mode");
         close(sc);
         return -1;
     }
 
-    struct sockaddr_un local_addr;
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = INADDR_ANY;
+    server.sin_port = htons(port);
 
-    bzero(&local_addr, sizeof(struct sockaddr_un));
-    local_addr.sun_family = AF_UNIX;
-    strcpy(local_addr.sun_path, DS_PATH);
-    unlink(local_addr.sun_path);
-
-    int len = strlen(local_addr.sun_path) + sizeof(local_addr.sun_family);
-
-    if (bind(sc, (struct sockaddr *)&local_addr, len) == -1) {
+    if (bind(sc, (struct sockaddr *)&server, sizeof(server)) < 0) {
         PERROR("bind");
         close(sc);
         return -1;
     }
 
-    if (listen(sc, SOMAXCONN) == -1) {
+    if (listen(sc, SOMAXCONN) < 0) {
         PERROR("listen");
         close(sc);
         return -1;
     }
 
     if (link_epoll(epoll, sc, EPOLLIN | EPOLLET) < 0) {
-        PERROR("link_epoll");
         close(sc);
         return -1;
     }
@@ -524,7 +527,7 @@ static int init_socket(void)
 }
 
 /**
- * \brief Function to receive connections from domain sockets
+ * \brief Function to receive connections from network sockets
  * \return NULL
  */
 static void *socket_listen(void *arg)
@@ -534,10 +537,10 @@ static void *socket_listen(void *arg)
     struct sockaddr_in client;
     socklen_t len = sizeof(struct sockaddr);
 
-    while (conn_sb_on) {
+    while (conn_on) {
         nums = epoll_wait(epoll, events, MAXEVENTS, 100);
 
-        if (conn_sb_on == FALSE) break;
+        if (conn_on == FALSE) break;
 
         int i;
         for (i=0; i<nums; i++) {
@@ -556,13 +559,13 @@ static void *socket_listen(void *arg)
                     // new connection
                     switch_t sw = {0};
                     sw.fd = csock;
-                    ev_sw_new_conn(CONN_SB_ID, &sw);
+                    ev_sw_new_conn(CONN_EXT_ID, &sw);
 
                     if (nonblocking_mode(csock) < 0) {
                         // closed connection
                         switch_t sw = {0};
                         sw.fd = csock;
-                        ev_sw_expired_conn(CONN_SB_ID, &sw);
+                        ev_sw_expired_conn(CONN_EXT_ID, &sw);
 
                         close(csock);
                         break;
@@ -572,7 +575,7 @@ static void *socket_listen(void *arg)
                         // closed connection
                         switch_t sw = {0};
                         sw.fd = csock;
-                        ev_sw_expired_conn(CONN_SB_ID, &sw);
+                        ev_sw_expired_conn(CONN_EXT_ID, &sw);
 
                         close(csock);
                         break;
@@ -596,7 +599,7 @@ static void *socket_listen(void *arg)
     close(epoll);
     close(sc);
 
-    LOG_INFO(CONN_SB_ID, "Closed a socket");
+    LOG_INFO(CONN_EXT_ID, "Closed a socket");
 
     return NULL;
 }
@@ -609,18 +612,18 @@ static void *socket_listen(void *arg)
  * \param argc The number of arguments
  * \param argv Arguments
  */
-int conn_sb_main(int *activated, int argc, char **argv)
+int conn_ext_main(int *activated, int argc, char **argv)
 {
-    LOG_INFO(CONN_SB_ID, "Init - External packet I/O engine");
+    LOG_INFO(CONN_EXT_ID, "Init - External packet I/O engine");
 
-    conn_sb_on = TRUE;
+    conn_on = TRUE;
 
     init_context();
     recv_cb_register(msg_proc);
 
     init_epoll();
     init_workers();
-    init_socket();
+    init_socket(__DEFAULT_PORT);
 
     signal(SIGPIPE, SIG_IGN);
 
@@ -635,13 +638,13 @@ int conn_sb_main(int *activated, int argc, char **argv)
  * \brief The cleanup function
  * \param activated The activation flag of this component
  */
-int conn_sb_cleanup(int *activated)
+int conn_ext_cleanup(int *activated)
 {
-    LOG_INFO(CONN_SB_ID, "Clean up - External packet I/O engine");
+    LOG_INFO(CONN_EXT_ID, "Clean up - External acket I/O engine");
 
     deactivate();
 
-    conn_sb_on = FALSE;
+    conn_on = FALSE;
 
     waitsec(1, 0);
 
@@ -668,7 +671,7 @@ int conn_sb_cleanup(int *activated)
  * \param cli The CLI pointer
  * \param args Arguments
  */
-int conn_sb_cli(cli_t *cli, char **args)
+int conn_ext_cli(cli_t *cli, char **args)
 {
     return 0;
 }
@@ -678,7 +681,7 @@ int conn_sb_cli(cli_t *cli, char **args)
  * \param ev Read-only event
  * \param ev_out Read-write event (if this component has the write permission)
  */
-int conn_sb_handler(const event_t *ev, event_out_t *ev_out)
+int conn_ext_handler(const event_t *ev, event_out_t *ev_out)
 {
     switch (ev->type) {
     case EV_OFP_MSG_OUT:

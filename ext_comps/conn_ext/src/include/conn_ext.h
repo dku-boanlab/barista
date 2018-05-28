@@ -14,9 +14,9 @@
 #include "event.h"
 
 #include <fcntl.h>
+#include <netdb.h>
 #include <sys/un.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <signal.h>
