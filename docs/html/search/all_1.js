@@ -48,7 +48,6 @@ var searchData=
   ['app_5fmain_5ff',['app_main_f',['../ext__apps_2shim_2include_2application_8h.html#a218ccb61e274947c81682e1fddfcddf4',1,'app_main_f():&#160;application.h'],['../src_2include_2application_8h.html#a218ccb61e274947c81682e1fddfcddf4',1,'app_main_f():&#160;application.h']]],
   ['application_20management',['Application Management',['../group__app__mgmt.html',1,'']]],
   ['app_5fon',['app_on',['../struct__ctx__t.html#a4278518290e1dfa4daeb205173d55cc0',1,'_ctx_t']]],
-  ['app_5fshim',['App_shim',['../group__app__shim.html',1,'']]],
   ['app_5ft',['app_t',['../ext__apps_2shim_2include_2type_8h.html#abeae138381d3b1446b8e92ee37e292a1',1,'app_t():&#160;type.h'],['../ext__comps_2shim_2include_2type_8h.html#abeae138381d3b1446b8e92ee37e292a1',1,'app_t():&#160;type.h'],['../src_2include_2type_8h.html#abeae138381d3b1446b8e92ee37e292a1',1,'app_t():&#160;type.h']]],
   ['app_5fthread_5fmain',['app_thread_main',['../group__app__load.html#ga80d4e1d995021f53bfbe30fc1d8a5545',1,'app_thread_main(void *null):&#160;shim.c'],['../group__app__mgmt.html#ga90bb17f2c3bc2f6b2704756bb18e6ce7',1,'app_thread_main(void *a_id):&#160;application.c']]],
   ['app_5fto_5frole',['app_to_role',['../group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8',1,'rbac.c']]],

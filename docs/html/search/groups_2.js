@@ -7,7 +7,6 @@ var searchData=
   ['component_20cli_20alternative',['Component CLI Alternative',['../group__compnt__alt.html',1,'']]],
   ['component_20event_20handler',['Component Event Handler',['../group__compnt__event.html',1,'']]],
   ['component_20management',['Component Management',['../group__compnt__mgmt.html',1,'']]],
-  ['compnt_5fshim',['Compnt_shim',['../group__compnt__shim.html',1,'']]],
   ['context_20management',['Context Management',['../group__context.html',1,'']]],
   ['control_20message_20integrity',['Control Message Integrity',['../group__dit.html',1,'']]],
   ['control_20traffic_20management',['Control Traffic Management',['../group__traffic__mgmt.html',1,'']]]

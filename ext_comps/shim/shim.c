@@ -3,7 +3,7 @@
  */
 
 /**
- * \defgroup compnt_shim
+ * \defgroup compnt_shim External Component Handler
  * @{
  * \defgroup compnt_load External Component Loader
  * \brief Functions to execute an external component

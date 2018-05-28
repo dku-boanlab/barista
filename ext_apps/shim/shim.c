@@ -3,7 +3,7 @@
  */
 
 /**
- * \defgroup app_shim
+ * \defgroup app_shim External Application Handler
  * @{
  * \defgroup app_load External Application Loader
  * \brief Functions to execute an external application

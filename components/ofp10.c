@@ -3,7 +3,7 @@
  */
 
 /**
- * \ingroup ofp
+ * \ingroup compnt
  * @{
  * \defgroup ofp10 OpenFlow 1.0 Engine
  * \brief (Base) OpenFlow 1.0 engine

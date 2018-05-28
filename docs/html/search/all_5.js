@@ -1,7 +1,9 @@
 var searchData=
 [
   ['external_20application_20loader',['External Application Loader',['../group__app__load.html',1,'']]],
+  ['external_20application_20handler',['External Application Handler',['../group__app__shim.html',1,'']]],
   ['external_20component_20loader',['External Component Loader',['../group__compnt__load.html',1,'']]],
+  ['external_20component_20handler',['External Component Handler',['../group__compnt__shim.html',1,'']]],
   ['external_20packet_20i_2fo_20engine',['External Packet I/O Engine',['../group__conn__ext.html',1,'']]],
   ['epoll',['epoll',['../group__conn.html#gabfe417b7f92583a96388dd5396951c68',1,'epoll():&#160;conn.c'],['../group__conn__ext.html#gabfe417b7f92583a96388dd5396951c68',1,'epoll():&#160;conn_ext.c']]],
   ['eth_5falen',['ETH_ALEN',['../ext__apps_2shim_2include_2type_8h.html#a9822d89774e0d6ddaa06503950130423',1,'ETH_ALEN():&#160;type.h'],['../ext__comps_2shim_2include_2type_8h.html#a9822d89774e0d6ddaa06503950130423',1,'ETH_ALEN():&#160;type.h'],['../src_2include_2type_8h.html#a9822d89774e0d6ddaa06503950130423',1,'ETH_ALEN():&#160;type.h']]],

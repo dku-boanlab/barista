@@ -92,7 +92,7 @@ static void daemonize(void)
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief Function to print the Barista logo */
+/** \brief Function to print out the Barista logo */
 static void print_logo(void)
 {
     char tiny_log[] = {
@@ -135,7 +135,7 @@ static void print_logo(void)
         PRINTF("\n%s\n", tiny_log);
 }
 
-/** \brief Function to print the Barista usage */
+/** \brief Function to print out the Barista usage */
 static void print_usage(char *name)
 {
     PRINTF("Usage:\n");

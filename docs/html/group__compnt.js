@@ -9,6 +9,7 @@ var group__compnt =
     [ "Flow Management", "group__flow__mgmt.html", "group__flow__mgmt" ],
     [ "Host Management", "group__host__mgmt.html", "group__host__mgmt" ],
     [ "Log Management", "group__log.html", "group__log" ],
+    [ "OpenFlow 1.0 Engine", "group__ofp10.html", "group__ofp10" ],
     [ "OpenFlow 1.0 Message Verification", "group__ofp__veri.html", "group__ofp__veri" ],
     [ "Resource Management", "group__resource__mgmt.html", "group__resource__mgmt" ],
     [ "Statistics Management", "group__stat__mgmt.html", "group__stat__mgmt" ],
