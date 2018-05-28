@@ -1,6 +1,6 @@
 var group__events =
 [
-    [ "event.c", "event_8c.html", null ],
+    [ "event.c", "events_2event_8c.html", null ],
     [ "FUNC_NAME", "group__events.html#gaf0d6b9e45ca9d895948eb6b1d206d752", null ],
     [ "FUNC_NAME", "group__events.html#gaf0d6b9e45ca9d895948eb6b1d206d752", null ],
     [ "FUNC_NAME", "group__events.html#gaf0d6b9e45ca9d895948eb6b1d206d752", null ],

@@ -5,7 +5,7 @@ var dir_74b77db838fca204c81ae8864cd83d58 =
     [ "arr_queue.h", "arr__queue_8h.html", "arr__queue_8h" ],
     [ "cac.h", "cac_8h.html", null ],
     [ "cluster.h", "cluster_8h.html", null ],
-    [ "component_list.h", "component__list_8h.html", "component__list_8h" ],
+    [ "component_list.h", "components_2include_2component__list_8h.html", "components_2include_2component__list_8h" ],
     [ "conflict.h", "conflict_8h.html", null ],
     [ "conn.h", "conn_8h.html", null ],
     [ "dit.h", "dit_8h.html", null ],

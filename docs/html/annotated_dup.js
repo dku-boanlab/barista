@@ -7,6 +7,7 @@ var annotated_dup =
     [ "_app_func_t", "struct__app__func__t.html", "struct__app__func__t" ],
     [ "_app_t", "struct__app__t.html", "struct__app__t" ],
     [ "_arr_queue_t", "struct__arr__queue__t.html", "struct__arr__queue__t" ],
+    [ "_cli_t", "struct__cli__t.html", null ],
     [ "_compnt_func_t", "struct__compnt__func__t.html", "struct__compnt__func__t" ],
     [ "_compnt_t", "struct__compnt__t.html", "struct__compnt__t" ],
     [ "_component_t", "struct__component__t.html", "struct__component__t" ],

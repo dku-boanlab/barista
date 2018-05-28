@@ -1,6 +1,6 @@
 var group__app__events =
 [
-    [ "app_event.c", "app__event_8c.html", null ],
+    [ "app_event.c", "app__events_2app__event_8c.html", null ],
     [ "FUNC_NAME", "group__app__events.html#gaf0d6b9e45ca9d895948eb6b1d206d752", null ],
     [ "FUNC_NAME", "group__app__events.html#gaf0d6b9e45ca9d895948eb6b1d206d752", null ],
     [ "FUNC_NAME", "group__app__events.html#gaf0d6b9e45ca9d895948eb6b1d206d752", null ],

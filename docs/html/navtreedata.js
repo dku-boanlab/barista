@@ -32,7 +32,6 @@ var NAVTREE =
     [ "CLI commands", "index.html#help", null ],
     [ "Author", "index.html#develop", null ],
     [ "Contributors", "index.html#contribute", null ],
-    [ "Introduction", "md_README.html", null ],
     [ "Modules", "modules.html", "modules" ],
     [ "Data Structures", "annotated.html", [
       [ "Data Structures", "annotated.html", "annotated_dup" ],
@@ -58,16 +57,21 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-".html",
-"dir_03a6cfce30b88f6a84e388fa6a89390f.html",
-"group__app__events.html#gaba3205e91001cc90cb67374d8adbdf40",
-"group__cluster.html",
-"group__events.html#ga0f0d431e4c90184f07692fd2c08f03e7",
-"group__hash.html",
-"group__ofp10.html#gac1e23f40c66c572b2853a68e171e0fd2",
-"mac__queue_8h.html#a9fc95bba1f12de1bef6396aa8ff2b08e",
-"struct__host__queue__t.html#a08f6de53f1cecc3038d8fe41a2ace35b",
-"type_8h.html#a7148fb1bc61436bb8b0dac9c668c0041"
+"annotated.html",
+"ext__apps_2shim_2include_2common_8h.html#ab61592b199b04e96daf2f3bc67a43ecc",
+"ext__comps_2shim_2event_8c_source.html",
+"ext__comps_2shim_2include_2type_8h.html#ab480869cd41cbc04fb8f90afa1777c51a5f132a807997b59ada2c2a35d78d4b33",
+"group__app__events.html#ga19d41710cdf9bb52a6beba980d644ec5",
+"group__apphdlr.html#gab5f15a4e62b30374d90ed01534a42bd6",
+"group__compnt__event.html#gab26765481b36370eeeb2b49bda0437d4",
+"group__conn__ext.html#ga210af1d04c8870416a556f0e9a5194fd",
+"group__events.html#ga9ac5b08dedaf24777e3c94c4b536c5e1",
+"group__l2__learning__ext.html#ga35eeae9cd46bbb1fd9338ec9a39587da",
+"group__ofp10.html#ga743397c06d77c0c82547b8f34adb3a70",
+"host__queue_8h.html",
+"src_2include_2type_8h.html#a2d3d00299a067f67c863080811fe1833",
+"struct__arr__queue__t.html#a7ad12e60ace715cacc07a97e6fbab746",
+"struct__pktin__t.html#ad44052133b743b47193d023cf88e5e0b"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
