@@ -27,8 +27,8 @@
 > $ vi Makefile
 > > (CLUSTER = no -> CLUSTER = yes)
 
-> $ cd cluster
-> $ ./dep.sh
+> $ cd cluster  
+> $ ./dep.sh  
 > $ ./setup_cluster.sh [current NOS IP address] [another NOS IP address],[the other NOS IP address]
 > > (At least 3 nodes are required)
 
