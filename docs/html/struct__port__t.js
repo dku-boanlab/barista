@@ -1,0 +1,25 @@
+var struct__port__t =
+[
+    [ "advertised", "struct__port__t.html#a0239e7e9665b5484378c7988ff280577", null ],
+    [ "config", "struct__port__t.html#ae297827a0ef93a598c2a16cc4e858b46", null ],
+    [ "curr", "struct__port__t.html#ad3025f63f4ffcf558b826a46e9eff093", null ],
+    [ "dpid", "struct__port__t.html#a89615a07e3b8d685bc11d35c1ddcb75b", null ],
+    [ "hw_addr", "struct__port__t.html#a6d399225e6f3dfea944aefffe7181271", null ],
+    [ "next", "struct__port__t.html#a66b1e8cc5980068d5a18796a58ce755d", null ],
+    [ "old_rx_bytes", "struct__port__t.html#a8cc0fb2a2d9b2b179024da4b58c42a78", null ],
+    [ "old_rx_packets", "struct__port__t.html#ab305bbbff06fc4353b2d1cf8c403176d", null ],
+    [ "old_tx_bytes", "struct__port__t.html#a30dc2233881d7db66bfb1631e281a421", null ],
+    [ "old_tx_packets", "struct__port__t.html#a2eee26d8c4085442cbab4ee7404809f2", null ],
+    [ "peer", "struct__port__t.html#a0215b451bb3d954ce6cfe9675066d060", null ],
+    [ "port", "struct__port__t.html#af6c1dd511e6e2b67278ac9f400a3ca71", null ],
+    [ "prev", "struct__port__t.html#a986a03adfcf77fd576de168487d54187", null ],
+    [ "remote", "struct__port__t.html#ace659f8eec5bb298192b9dd774c26d04", null ],
+    [ "rx_bytes", "struct__port__t.html#a7f44036c4ec6d6e6a330e9b4b9f23fe8", null ],
+    [ "rx_packets", "struct__port__t.html#a32a7948e082831e9799e6a178c85aefe", null ],
+    [ "state", "struct__port__t.html#ae813842d6caa33349e99232e486edd7b", null ],
+    [ "supported", "struct__port__t.html#a9a013c0189afdb7052f75019be2df276", null ],
+    [ "target_dpid", "struct__port__t.html#af4bd789ef5c7d2f921923e9cb9f28e13", null ],
+    [ "target_port", "struct__port__t.html#a3bc243067dfaff910d4baac3df5ccfa5", null ],
+    [ "tx_bytes", "struct__port__t.html#a50ba194370bf4dc1be071af75d0ece57", null ],
+    [ "tx_packets", "struct__port__t.html#aab12bbb07d815c4c0598a9791e7eddb5", null ]
+];

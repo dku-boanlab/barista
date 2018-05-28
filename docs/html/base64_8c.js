@@ -1,0 +1,9 @@
+var base64_8c =
+[
+    [ "MAX_BUFFER_SIZE", "group__base64.html#gad4d796b98c583d49e83adabd74a63bf6", null ],
+    [ "PADDING", "group__base64.html#ga3eebd09a9a94c914de17855816e6ac45", null ],
+    [ "base64_decode", "group__base64.html#ga9592908668c9385a71cb455ef9d43606", null ],
+    [ "base64_encode", "group__base64.html#gafb775ab9e007317f3f758ea45ca855d5", null ],
+    [ "dec_table", "group__base64.html#ga56d73b5a687c0bfc766422ac1197964d", null ],
+    [ "enc_table", "group__base64.html#ga2eaf27cd35529f09e02627b0d6691f4b", null ]
+];
