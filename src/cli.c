@@ -23,7 +23,6 @@
 #include "application.h"
 #include "app_event.h"
 
-#include <spawn.h>
 #include <signal.h>
 #include <strings.h>
 #include <sys/types.h>
@@ -819,6 +818,7 @@ int start_cli(ctx_t *ctx)
     cli_set_idle_timeout_callback(cli, 600, idle_timeout);
 
     cli_register_command(cli, NULL, "load", cli_load, PRIVILEGE_PRIVILEGED, MODE_EXEC, "Load configurations");
+
     cli_register_command(cli, NULL, "start", cli_start, PRIVILEGE_PRIVILEGED, MODE_EXEC, "Start the Barista NOS");
     cli_register_command(cli, NULL, "stop", cli_stop, PRIVILEGE_PRIVILEGED, MODE_EXEC, "Stop the Barista NOS");
 

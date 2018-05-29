@@ -23,17 +23,17 @@
 3. Clean up the code
 > $ make clean
 
-4. Setup cluster environments (optional)
+4. Setup cluster environments (option)
 > $ vi Makefile
 > > (CLUSTER = no -> CLUSTER = yes)
 
 > $ cd cluster  
 > $ ./dep.sh  
-> $ ./setup_cluster.sh [current NOS IP address] [another NOS IP address],[the other NOS IP address]
+> $ ./setup_cluster.sh [current node IP address] [another node IP address],[the other node IP address]
 > > (At least 3 nodes are required)
 
-> $ ./start_cluster.sh new (at the first NOS)  
-> $ ./start_cluster.sh (at the other NOSs)
+> $ ./start_cluster.sh new (at a master node)  
+> $ ./start_cluster.sh (at the other nodes)
 
 # Execution
 - Run the Barista NOS
@@ -66,7 +66,8 @@
 > Barista> help
 
 # Documents
-- Doxygen: http://www.sdx4u.net/~barista
+- Documents: http://http://www.sdx4u.net/category/barista
+- Source browser: http://www.sdx4u.net/~barista
 
 # Author
 - Jaehyun Nam <namjh@kaist.ac.kr>

@@ -139,7 +139,7 @@ static void print_logo(void)
 static void print_usage(char *name)
 {
     PRINTF("Usage:\n");
-    PRINTF("\t%s -c [config file] -a [app config file] -r auto -o base -d\n", name);
+    PRINTF("\t%s -c [config file] -a [app config file] -b -r -d\n", name);
 }
 
 /////////////////////////////////////////////////////////////////////
