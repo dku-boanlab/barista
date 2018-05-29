@@ -23,18 +23,6 @@
 3. Clean up the code
 > $ make clean
 
-4. Setup cluster environments (option)
-> $ vi Makefile
-> > (CLUSTER = no -> CLUSTER = yes)
-
-> $ cd cluster  
-> $ ./dep.sh  
-> $ ./setup_cluster.sh [current node IP address] [another node IP address],[the other node IP address]
-> > (At least 3 nodes are required)
-
-> $ ./start_cluster.sh new (at a master node)  
-> $ ./start_cluster.sh (at the other nodes)
-
 # Execution
 - Run the Barista NOS
 > $ cd bin
