@@ -39,7 +39,7 @@
 
 - Connect the Barista NOS
 > $ telnet localhost 8000 (default CLI port)
-> > (Default ID / 1ST_PW / 2ND_PW: admin / password / admin_password)  
+> (Default ID / 1ST_PW / 2ND_PW: admin / password / admin_password)  
 
 # CLI commands
 - Change a configuration mode
