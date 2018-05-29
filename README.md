@@ -66,7 +66,7 @@
 > Barista> help
 
 # Documents
-- Documents: http://http://www.sdx4u.net/category/barista
+- Documents: http://www.sdx4u.net/category/barista
 - Source browser: http://www.sdx4u.net/~barista
 
 # Author
