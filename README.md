@@ -25,7 +25,7 @@
 
 # Execution
 - Run the Barista NOS
-> $ cd bin
+> $ cd bin  
 > $ ./barista
 
 - Run the Barista NOS automatically
