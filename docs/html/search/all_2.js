@@ -10,7 +10,7 @@ var searchData=
   ['batch_5flogs',['BATCH_LOGS',['../group__log.html#ga5f50e39a1020c152f212ac0a1b59b37d',1,'log.c']]],
   ['batch_5fsize',['BATCH_SIZE',['../group__cluster.html#ga9ae2958e436c566413867028fc829ec0',1,'cluster.c']]],
   ['buffer_5fid',['buffer_id',['../struct__pktin__t.html#a3e6fddf4b61c5260cf5787879587f00d',1,'_pktin_t::buffer_id()'],['../struct__pktout__t.html#aef00588e8f3d3a05760e874efb43a27b',1,'_pktout_t::buffer_id()'],['../struct__flow__t.html#a9e8ff3ead22b2be689295411f89eb280',1,'_flow_t::buffer_id()']]],
-  ['buffer_5fsize',['BUFFER_SIZE',['../group__conn.html#ga6b20d41d6252e9871430c242cb1a56e7',1,'BUFFER_SIZE():&#160;conn.c'],['../group__conn__ext.html#ga6b20d41d6252e9871430c242cb1a56e7',1,'BUFFER_SIZE():&#160;conn_ext.c']]],
+  ['buffer_5fsize',['BUFFER_SIZE',['../group__conn.html#ga6b20d41d6252e9871430c242cb1a56e7',1,'BUFFER_SIZE():&#160;conn.c'],['../group__conn.html#ga6b20d41d6252e9871430c242cb1a56e7',1,'BUFFER_SIZE():&#160;conn.c']]],
   ['byte_5fcount',['byte_count',['../struct__switch__t.html#ac5474e74d631a8bb5e9b2fb40eccdcd4',1,'_switch_t::byte_count()'],['../struct__flow__t.html#a296e4b785ec8767ce57c6aecb025935b',1,'_flow_t::byte_count()']]],
   ['base_20framework',['Base Framework',['../group__framework.html',1,'']]]
 ];

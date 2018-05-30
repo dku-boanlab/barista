@@ -5,6 +5,6 @@ var ext__comps_2shim_2include_2component_8h =
     [ "compnt_cli_f", "ext__comps_2shim_2include_2component_8h.html#a71ea57a48f5818d4cf9de20e3ac21929", null ],
     [ "compnt_handler_f", "ext__comps_2shim_2include_2component_8h.html#a73911d64fb3cbc1ca092164c17a95a0c", null ],
     [ "compnt_main_f", "ext__comps_2shim_2include_2component_8h.html#a7593be98ae3d5513241453bb82af1e6b", null ],
-    [ "COMPNT_GENERAL", "ext__comps_2shim_2include_2component_8h.html#a4caf8d8f829279fba122163d961608a4a9d56f931d2b3afaec9c20fd0cf52c606", null ],
-    [ "COMPNT_AUTO", "ext__comps_2shim_2include_2component_8h.html#a4caf8d8f829279fba122163d961608a4aa3eadf3eb057412b99b454d1004debe5", null ]
+    [ "COMPNT_GENERAL", "ext__comps_2shim_2include_2component_8h.html#a96a58e29e8dbf2b5bdeb775cba46556ea9d56f931d2b3afaec9c20fd0cf52c606", null ],
+    [ "COMPNT_AUTO", "ext__comps_2shim_2include_2component_8h.html#a96a58e29e8dbf2b5bdeb775cba46556eaa3eadf3eb057412b99b454d1004debe5", null ]
 ];

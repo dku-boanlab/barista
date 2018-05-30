@@ -3,7 +3,7 @@
  */
 
 /**
- * \defgroup app_shim
+ * \ingroup app_shim
  * @{
  * \defgroup app_alt Application CLI Alternative
  * \brief Functions to convert CLI messages to logging messages
@@ -23,3 +23,9 @@ int cli_print(cli_t *cli, char *buf)
 
     return 0;
 }
+
+/**
+ * @}
+ *
+ * @}
+ */

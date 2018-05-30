@@ -3,7 +3,7 @@
  */
 
 /**
- * \defgroup compnt_shim
+ * \ingroup compnt_shim
  * @{
  * \defgroup compnt_alt Component CLI Alternative
  * \brief Functions to convert CLI messages to logging messages
@@ -23,3 +23,9 @@ int cli_print(cli_t *cli, char *buf)
 
     return 0;
 }
+
+/**
+ * @}
+ *
+ * @}
+ */

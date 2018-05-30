@@ -1,6 +1,7 @@
 var group__l2__learning =
 [
-    [ "l2_learning.c", "l2__learning_8c.html", null ],
+    [ "l2_learning.c", "applications_2l2__learning_8c.html", null ],
+    [ "l2_learning.c", "ext__apps_2l2__learning_2src_2l2__learning_8c.html", null ],
     [ "_mac_entry_t", "struct__mac__entry__t.html", [
       [ "dpid", "struct__mac__entry__t.html#ab3f356e58133eeeaadff43af1d690f73", null ],
       [ "ip", "struct__mac__entry__t.html#a03000d7cff85bb5f85c2aff2a97c9922", null ],
@@ -16,8 +17,12 @@ var group__l2__learning =
       [ "tail", "struct__mac__table__t.html#a15567c72fe6e38e1f4a356b0288f9cca", null ]
     ] ],
     [ "L2_LEARNING_ID", "group__l2__learning.html#ga2d870a14cef737fb8d2087520245e932", null ],
+    [ "L2_LEARNING_ID", "group__l2__learning.html#ga2d870a14cef737fb8d2087520245e932", null ],
+    [ "MAC_HASH_SIZE", "group__l2__learning.html#gaccc754ffcfef9ff2ba11ed7a25d1706d", null ],
     [ "MAC_HASH_SIZE", "group__l2__learning.html#gaccc754ffcfef9ff2ba11ed7a25d1706d", null ],
     [ "mac_entry_t", "group__l2__learning.html#ga82dec970b121ba4f60a6782a2c413465", null ],
+    [ "mac_entry_t", "group__l2__learning.html#ga82dec970b121ba4f60a6782a2c413465", null ],
+    [ "mac_table_t", "group__l2__learning.html#ga333c23be6b9aaac9b0d00de7487f16de", null ],
     [ "mac_table_t", "group__l2__learning.html#ga333c23be6b9aaac9b0d00de7487f16de", null ],
     [ "discard_packet", "group__l2__learning.html#ga582214ec1ccbf5513fe239352e14c114", null ],
     [ "insert_flow", "group__l2__learning.html#ga1bddd401e0024a9e1ee4aa363c4b7f5d", null ],
@@ -31,5 +36,6 @@ var group__l2__learning =
     [ "show_entry_ip", "group__l2__learning.html#gadcdfd2e59b53034c46fd78b575bb3cb4", null ],
     [ "show_entry_mac", "group__l2__learning.html#ga0c71ed2256c1097185dad1106358b699", null ],
     [ "show_entry_switch", "group__l2__learning.html#gaa1874587fd5ee02afafdfde21a6d79af", null ],
+    [ "mac_table", "group__l2__learning.html#ga7c73e86e2ede576de9fc99ef90910d39", null ],
     [ "mac_table", "group__l2__learning.html#ga7c73e86e2ede576de9fc99ef90910d39", null ]
 ];

@@ -10,7 +10,7 @@ var searchData=
   ['appint_2eh',['appint.h',['../appint_8h.html',1,'']]],
   ['application_2ec',['application.c',['../application_8c.html',1,'']]],
   ['application_2eh',['application.h',['../ext__apps_2shim_2include_2application_8h.html',1,'(Global Namespace)'],['../src_2include_2application_8h.html',1,'(Global Namespace)']]],
-  ['application_5finfo_2eh',['application_info.h',['../l2__learning__ext_2src_2include_2application__info_8h.html',1,'(Global Namespace)'],['../l2__shortest__ext_2src_2include_2application__info_8h.html',1,'(Global Namespace)']]],
-  ['application_5flist_2eh',['application_list.h',['../applications_2include_2application__list_8h.html',1,'(Global Namespace)'],['../ext__apps_2l2__learning__ext_2src_2include_2application__list_8h.html',1,'(Global Namespace)'],['../ext__apps_2l2__shortest__ext_2src_2include_2application__list_8h.html',1,'(Global Namespace)']]],
+  ['application_5finfo_2eh',['application_info.h',['../l2__learning_2src_2include_2application__info_8h.html',1,'(Global Namespace)'],['../l2__shortest_2src_2include_2application__info_8h.html',1,'(Global Namespace)'],['../rbac_2src_2include_2application__info_8h.html',1,'(Global Namespace)']]],
+  ['application_5flist_2eh',['application_list.h',['../applications_2include_2application__list_8h.html',1,'(Global Namespace)'],['../ext__apps_2l2__learning_2src_2include_2application__list_8h.html',1,'(Global Namespace)'],['../ext__apps_2l2__shortest_2src_2include_2application__list_8h.html',1,'(Global Namespace)'],['../ext__apps_2rbac_2src_2include_2application__list_8h.html',1,'(Global Namespace)']]],
   ['arr_5fqueue_2eh',['arr_queue.h',['../arr__queue_8h.html',1,'']]]
 ];

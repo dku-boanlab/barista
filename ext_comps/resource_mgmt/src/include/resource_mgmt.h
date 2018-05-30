@@ -1,0 +1,1 @@
+../../../../components/include/resource_mgmt.h

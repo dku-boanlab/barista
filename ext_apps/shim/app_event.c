@@ -459,3 +459,9 @@ int app_event_init(ctx_t *ctx)
 
     return 0;
 }
+
+/**
+ * @}
+ *
+ * @}
+ */

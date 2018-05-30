@@ -4,8 +4,7 @@ var searchData=
   ['external_20application_20handler',['External Application Handler',['../group__app__shim.html',1,'']]],
   ['external_20component_20loader',['External Component Loader',['../group__compnt__load.html',1,'']]],
   ['external_20component_20handler',['External Component Handler',['../group__compnt__shim.html',1,'']]],
-  ['external_20packet_20i_2fo_20engine',['External Packet I/O Engine',['../group__conn__ext.html',1,'']]],
-  ['epoll',['epoll',['../group__conn.html#gabfe417b7f92583a96388dd5396951c68',1,'epoll():&#160;conn.c'],['../group__conn__ext.html#gabfe417b7f92583a96388dd5396951c68',1,'epoll():&#160;conn_ext.c']]],
+  ['epoll',['epoll',['../group__conn.html#gabfe417b7f92583a96388dd5396951c68',1,'epoll():&#160;conn.c'],['../group__conn.html#gabfe417b7f92583a96388dd5396951c68',1,'epoll():&#160;conn.c']]],
   ['eth_5falen',['ETH_ALEN',['../ext__apps_2shim_2include_2type_8h.html#a9822d89774e0d6ddaa06503950130423',1,'ETH_ALEN():&#160;type.h'],['../ext__comps_2shim_2include_2type_8h.html#a9822d89774e0d6ddaa06503950130423',1,'ETH_ALEN():&#160;type.h'],['../src_2include_2type_8h.html#a9822d89774e0d6ddaa06503950130423',1,'ETH_ALEN():&#160;type.h']]],
   ['ether_5fvlan_5fheader',['ether_vlan_header',['../structether__vlan__header.html',1,'']]],
   ['ev_5fctx',['ev_ctx',['../group__events.html#ga62b3d62c8174bd5c493ea25749dbb4f6',1,'event.c']]],
@@ -66,7 +65,7 @@ var searchData=
   ['ev_5ftr_5fupdate_5fstats',['ev_tr_update_stats',['../group__events.html#gabe9ee881db49d948954fb29b0143f6ce',1,'ev_tr_update_stats(uint32_t id, const traffic_t *data):&#160;event.c'],['../group__events.html#gabe9ee881db49d948954fb29b0143f6ce',1,'ev_tr_update_stats(uint32_t id, const traffic_t *data):&#160;event.c'],['../group__compnt__event.html#gabe9ee881db49d948954fb29b0143f6ce',1,'ev_tr_update_stats(uint32_t id, const traffic_t *data):&#160;event.c'],['../group__events.html#gabe9ee881db49d948954fb29b0143f6ce',1,'ev_tr_update_stats(uint32_t id, const traffic_t *data):&#160;event.c']]],
   ['ev_5ftype',['ev_type',['../group__cac.html#ga7c778124901cad76d6d158215d4c72e7',1,'cac.c']]],
   ['ev_5fworker_5fon',['ev_worker_on',['../group__compnt__event.html#gaaa913a8b23bd2b41b9940f60811199b1',1,'event.c']]],
-  ['event',['event',['../struct__role2ev__t.html#a8dda9bdabc7efad4dab26847c6529105',1,'_role2ev_t']]],
+  ['event',['event',['../struct__role2ev__t.html#a56047b4eba584eed257bacd7d7106b11',1,'_role2ev_t']]],
   ['event_2ec',['event.c',['../events_2event_8c.html',1,'(Global Namespace)'],['../ext__comps_2shim_2event_8c.html',1,'(Global Namespace)']]],
   ['event_2eh',['event.h',['../events_2include_2event_8h.html',1,'(Global Namespace)'],['../ext__comps_2shim_2include_2event_8h.html',1,'(Global Namespace)']]],
   ['event_5fdirect_5fraise_2eh',['event_direct_raise.h',['../event__direct__raise_8h.html',1,'']]],
@@ -80,7 +79,5 @@ var searchData=
   ['event_5fstring',['event_string',['../group__compnt__mgmt.html#gaef4a933c60c4fb6a2e8a729f5166cbf0',1,'component.c']]],
   ['event_5ft',['event_t',['../events_2include_2event_8h.html#aeb8418cd149cd25b20356d1794d6e9fd',1,'event_t():&#160;event.h'],['../ext__apps_2shim_2include_2type_8h.html#a99c9052cf99492b837f842e7deec0eaf',1,'event_t():&#160;type.h'],['../ext__comps_2shim_2include_2event_8h.html#aeb8418cd149cd25b20356d1794d6e9fd',1,'event_t():&#160;event.h'],['../ext__comps_2shim_2include_2type_8h.html#a99c9052cf99492b837f842e7deec0eaf',1,'event_t():&#160;type.h'],['../src_2include_2type_8h.html#a99c9052cf99492b837f842e7deec0eaf',1,'event_t():&#160;type.h']]],
   ['event_5ftype',['event_type',['../group__compnt__mgmt.html#gacc7e15fe18548558ccbb4b292b4bebf5',1,'component.c']]],
-  ['events',['events',['../group__conn.html#ga4e877bade6ee20fe548c0f400a1f3414',1,'events():&#160;conn.c'],['../group__conn__ext.html#ga4e877bade6ee20fe548c0f400a1f3414',1,'events():&#160;conn_ext.c'],['../group__events.html',1,'(Global Namespace)']]],
-  ['external_20l2_20learning',['External L2 Learning',['../group__l2__learning__ext.html',1,'']]],
-  ['external_20l2_20shortest_2dpath',['External L2 Shortest-Path',['../group__l2__shortest__ext.html',1,'']]]
+  ['events',['events',['../group__conn.html#ga4e877bade6ee20fe548c0f400a1f3414',1,'events():&#160;conn.c'],['../group__conn.html#ga4e877bade6ee20fe548c0f400a1f3414',1,'events():&#160;conn.c'],['../group__events.html',1,'(Global Namespace)']]]
 ];

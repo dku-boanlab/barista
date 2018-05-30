@@ -1,5 +1,5 @@
 var struct__role2ev__t =
 [
-    [ "event", "struct__role2ev__t.html#a8dda9bdabc7efad4dab26847c6529105", null ],
-    [ "name", "struct__role2ev__t.html#afdbc2d6e1de92038f2fb6da76b94ae25", null ]
+    [ "event", "struct__role2ev__t.html#a56047b4eba584eed257bacd7d7106b11", null ],
+    [ "name", "struct__role2ev__t.html#af5c5de040bce28d6bddfa8e44c326d04", null ]
 ];

@@ -711,3 +711,9 @@ int event_init(ctx_t *ctx)
 
     return 0;
 }
+
+/**
+ * @}
+ *
+ * @}
+ */

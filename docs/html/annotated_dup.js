@@ -21,6 +21,11 @@ var annotated_dup =
     [ "_host_queue_t", "struct__host__queue__t.html", "struct__host__queue__t" ],
     [ "_host_t", "struct__host__t.html", "struct__host__t" ],
     [ "_host_table_t", "struct__host__table__t.html", "struct__host__table__t" ],
+    [ "_lldp_chassis_id", "struct__lldp__chassis__id.html", "struct__lldp__chassis__id" ],
+    [ "_lldp_eol", "struct__lldp__eol.html", "struct__lldp__eol" ],
+    [ "_lldp_port_id", "struct__lldp__port__id.html", "struct__lldp__port__id" ],
+    [ "_lldp_system_desc", "struct__lldp__system__desc.html", "struct__lldp__system__desc" ],
+    [ "_lldp_ttl", "struct__lldp__ttl.html", "struct__lldp__ttl" ],
     [ "_mac_entry_t", "struct__mac__entry__t.html", "struct__mac__entry__t" ],
     [ "_mac_queue_t", "struct__mac__queue__t.html", "struct__mac__queue__t" ],
     [ "_mac_table_t", "struct__mac__table__t.html", "struct__mac__table__t" ],
@@ -42,5 +47,6 @@ var annotated_dup =
     [ "arphdr", "structarphdr.html", "structarphdr" ],
     [ "ether_vlan_header", "structether__vlan__header.html", "structether__vlan__header" ],
     [ "meta_event_t", "structmeta__event__t.html", "structmeta__event__t" ],
-    [ "of_header", "structof__header.html", "structof__header" ]
+    [ "of_header", "structof__header.html", "structof__header" ],
+    [ "tlv_header", "structtlv__header.html", "structtlv__header" ]
 ];

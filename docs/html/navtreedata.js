@@ -49,7 +49,7 @@ var NAVTREE =
         [ "Variables", "globals_vars.html", null ],
         [ "Typedefs", "globals_type.html", null ],
         [ "Enumerations", "globals_enum.html", null ],
-        [ "Macros", "globals_defs.html", null ]
+        [ "Macros", "globals_defs.html", "globals_defs" ]
       ] ]
     ] ]
   ] ]
@@ -58,20 +58,22 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"ext__apps_2shim_2include_2common_8h.html#aca16e6a49eb51333c5fd3eee19487315",
-"ext__comps_2shim_2include_2cli_8h_source.html",
-"ext__comps_2shim_2include_2type_8h.html#ab480869cd41cbc04fb8f90afa1777c51a74f3b551e6eed6d09bd435174f420722",
-"group__app__events.html#ga1ab9fac633b6d978b39eebbd2aa45671",
-"group__apphdlr.html#gacef9ba062254c712e94a1ed97023fa9a",
-"group__compnt__event.html#gab6b98138c5042361f616ca8cb15e29e6",
-"group__conn__ext.html#ga29ed0b3f71f889f3840bf65277a203f4",
-"group__events.html#ga9ac5b08dedaf24777e3c94c4b536c5e1",
-"group__l2__learning__ext.html#ga35eeae9cd46bbb1fd9338ec9a39587da",
-"group__ofp10.html#ga788511387de9491ffe00439e2f1a2b7e",
-"host__queue_8h.html",
-"src_2include_2type_8h.html#a2d3d00299a067f67c863080811fe1833",
-"struct__arr__queue__t.html#a7ad12e60ace715cacc07a97e6fbab746",
-"struct__pktin__t.html#ad44052133b743b47193d023cf88e5e0b"
+"ext__apps_2l2__learning_2src_2include_2l2__learning_8h_source.html",
+"ext__apps_2shim_2include_2type_8h.html#a8bbd6b5994ddcfac4aa698b036e5be5d",
+"ext__comps_2shim_2include_2common_8h.html#ae11df11cded3cee687db491552f94be5",
+"ext__comps_2stat__mgmt_2src_2include_2component__list_8h.html#af196d91108eca42bbd7e98271b90f7b5",
+"group__app__events.html#ga19d41710cdf9bb52a6beba980d644ec5",
+"group__apphdlr.html#gab5f15a4e62b30374d90ed01534a42bd6",
+"group__compnt__event.html#gab26765481b36370eeeb2b49bda0437d4",
+"group__conn.html#gaa462bab367c8aac56ebc986ad8f4e30c",
+"group__events.html#gaacbf543f90f1b0ab7f5d5d2be05cacdb",
+"group__l2__learning.html#ga3485ba07903c1070388bb8d10e4ae7e3",
+"group__ofp10.html#ga6dd186178e8f696ca7ff208a4708c20f",
+"group__str.html#gaf943bff9ed900ce286de8e55ded079e9",
+"rbac_2src_2include_2application__info_8h.html#a9580c8ddce40ccb0a938fc2912a3b099",
+"src_2include_2type_8h.html#aa054718ce09f4a3ba68742b45b2b5577a03cf2cf598c505d6c900bd734a1ee7c4",
+"struct__event__out__t.html#a6428ca49a3e6e35b01ca4cce2cd6466a",
+"struct__traffic__t.html#a8232fbd955f9bfb1613c2b94863a2cbd"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

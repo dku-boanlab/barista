@@ -15,6 +15,5 @@ var group__compnt =
     [ "Statistics Management", "group__stat__mgmt.html", "group__stat__mgmt" ],
     [ "Switch Management", "group__switch__mgmt.html", "group__switch__mgmt" ],
     [ "Topology Management", "group__topo__mgmt.html", "group__topo__mgmt" ],
-    [ "Control Traffic Management", "group__traffic__mgmt.html", "group__traffic__mgmt" ],
-    [ "External Packet I/O Engine", "group__conn__ext.html", "group__conn__ext" ]
+    [ "Control Traffic Management", "group__traffic__mgmt.html", "group__traffic__mgmt" ]
 ];

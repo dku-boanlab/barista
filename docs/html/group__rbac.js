@@ -1,17 +1,21 @@
 var group__rbac =
 [
-    [ "rbac.c", "rbac_8c.html", null ],
+    [ "rbac.c", "applications_2rbac_8c.html", null ],
+    [ "rbac.c", "ext__apps_2rbac_2src_2rbac_8c.html", null ],
     [ "_app2role_t", "struct__app2role__t.html", [
       [ "id", "struct__app2role__t.html#aeb9bc69dcaeef1283fbc9bc488f07a42", null ],
-      [ "name", "struct__app2role__t.html#a0fbef3ced1f5259b3b8cde51b8c98083", null ],
+      [ "name", "struct__app2role__t.html#a40127d15a07d7d5fe1b367c50ad12693", null ],
       [ "role", "struct__app2role__t.html#a100fb367eb1a439f0b04ca5cb456751c", null ]
     ] ],
     [ "_role2ev_t", "struct__role2ev__t.html", [
-      [ "event", "struct__role2ev__t.html#a8dda9bdabc7efad4dab26847c6529105", null ],
-      [ "name", "struct__role2ev__t.html#afdbc2d6e1de92038f2fb6da76b94ae25", null ]
+      [ "event", "struct__role2ev__t.html#a56047b4eba584eed257bacd7d7106b11", null ],
+      [ "name", "struct__role2ev__t.html#af5c5de040bce28d6bddfa8e44c326d04", null ]
     ] ],
     [ "RBAC_ID", "group__rbac.html#gac8db2013fc2eb52fe724edd16b1d9524", null ],
+    [ "RBAC_ID", "group__rbac.html#gac8db2013fc2eb52fe724edd16b1d9524", null ],
     [ "app2role_t", "group__rbac.html#ga6de051b8ace9a53ab4b829af51741cc9", null ],
+    [ "app2role_t", "group__rbac.html#ga6de051b8ace9a53ab4b829af51741cc9", null ],
+    [ "role2ev_t", "group__rbac.html#ga9ead28aa59c1296620f85eadb3b32cf7", null ],
     [ "role2ev_t", "group__rbac.html#ga9ead28aa59c1296620f85eadb3b32cf7", null ],
     [ "app_event_type", "group__rbac.html#gab67fe7e9ecb05676abd54c97d3f66a6b", null ],
     [ "check_app_role", "group__rbac.html#ga3aa558ac4a340dd87a5042b09c7c88e3", null ],
@@ -22,9 +26,15 @@ var group__rbac =
     [ "rbac_handler", "group__rbac.html#ga8dc5e2e2c6c4e1213bce8e2e29e046ef", null ],
     [ "rbac_main", "group__rbac.html#ga6359f01be9c0a23cf5fb2716282d631e", null ],
     [ "app_ev_list", "group__rbac.html#ga44b19fe8d4eb6fd35ce1492820d3a39f", null ],
+    [ "app_ev_list", "group__rbac.html#ga44b19fe8d4eb6fd35ce1492820d3a39f", null ],
+    [ "app_file", "group__rbac.html#ga308ecc19f4f0761e82d7fa6a20cd94cd", null ],
     [ "app_file", "group__rbac.html#ga308ecc19f4f0761e82d7fa6a20cd94cd", null ],
     [ "app_to_role", "group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8", null ],
+    [ "app_to_role", "group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8", null ],
+    [ "app_to_role_cnt", "group__rbac.html#ga19c24f7fed9eeebb002fbd8bfc8222d9", null ],
     [ "app_to_role_cnt", "group__rbac.html#ga19c24f7fed9eeebb002fbd8bfc8222d9", null ],
     [ "role_file", "group__rbac.html#ga89894d666bcd5b3b7106cb5f7316e6ed", null ],
+    [ "role_file", "group__rbac.html#ga89894d666bcd5b3b7106cb5f7316e6ed", null ],
+    [ "role_to_event", "group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c", null ],
     [ "role_to_event", "group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c", null ]
 ];
