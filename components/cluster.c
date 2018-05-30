@@ -402,6 +402,13 @@ int cluster_main(int *activated, int argc, char **argv)
                         ev_flow_deleted(CLUSTER_ID, flow);
                     }
                     break;
+                case EV_DP_FLOW_STATS:
+                    {
+                        flow_t *flow = (flow_t *)data;
+                        flow->remote = TRUE;
+                        ev_dp_flow_stats(CLUSTER_ID, flow);
+                    }
+                    break;
                 default:
                     break;
                 }
@@ -544,8 +551,7 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
         {
             const port_t *port = ev->port;
 
-            if (port->remote == TRUE)
-                break;
+            if (port->remote == TRUE) break;
 
             char sql_query[__CONF_LSTR_LEN] = {0};
             snprintf(sql_query, __CONF_LSTR_LEN-1, "update Barista.links set "
@@ -563,8 +569,7 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
         {
             const switch_t *sw = ev->sw;
 
-            if (sw->remote == TRUE)
-                break;
+            if (sw->remote == TRUE) break;
 
             char sql_query[__CONF_LSTR_LEN] = {0};
             snprintf(sql_query, __CONF_LSTR_LEN-1, "delete from Barista.switches where dpid = %lu and ctrl_ip = '%s';", 
@@ -579,8 +584,7 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
         {
             const switch_t *sw = ev->sw;
 
-            if (sw->remote == TRUE)
-                break;
+            if (sw->remote == TRUE) break;
 
             char sql_query[__CONF_LSTR_LEN] = {0};
             snprintf(sql_query, __CONF_LSTR_LEN-1, "insert into Barista.switches (dpid, version, num_tables, num_buffers, "
@@ -601,8 +605,7 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
         {
             const switch_t *sw = ev->sw;
 
-            if (sw->remote == TRUE)
-                break;
+            if (sw->remote == TRUE) break;
 
             char sql_query[__CONF_LSTR_LEN] = {0};
             snprintf(sql_query, __CONF_LSTR_LEN-1, "update Barista.switches set mfr_desc = '%s', hw_desc = '%s', "
@@ -619,8 +622,7 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
         {
             const host_t *host = ev->host;
 
-            if (host->remote == TRUE)
-                break;
+            if (host->remote == TRUE) break;
 
             uint8_t mac[ETH_ALEN];
             int2mac(host->mac, mac);
@@ -643,8 +645,7 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
         {
             const host_t *host = ev->host;
 
-            if (host->remote == TRUE)
-                break;
+            if (host->remote == TRUE) break;
 
             uint8_t mac[ETH_ALEN];
             int2mac(host->mac, mac);
@@ -668,8 +669,7 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
         {
             const port_t *link = ev->port;
 
-            if (link->remote == TRUE)
-                break;
+            if (link->remote == TRUE) break;
 
             char sql_query[__CONF_LSTR_LEN] = {0};
             snprintf(sql_query, __CONF_LSTR_LEN-1, "insert into Barista.links (src_dpid, src_port, dst_dpid, dst_port, ctrl_ip) "
@@ -685,8 +685,7 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
         {
             const port_t *link = ev->port;
 
-            if (link->remote == TRUE)
-                break;
+            if (link->remote == TRUE) break;
 
             char sql_query[__CONF_LSTR_LEN] = {0};
             snprintf(sql_query, __CONF_LSTR_LEN-1, "delete from Barista.links "
@@ -702,8 +701,7 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
         {
             const flow_t *flow = ev->flow;
 
-            if (flow->remote == TRUE)
-                break;
+            if (flow->remote == TRUE) break;
 
             char proto[__CONF_SHORT_LEN] = {0};
             if (flow->proto & PROTO_TCP)
@@ -716,6 +714,8 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
                 strcpy(proto, "IPv4");
             else if (flow->proto & PROTO_ARP)
                 strcpy(proto, "ARP");
+            else if (flow->proto & PROTO_DHCP)
+                strcpy(proto, "DHCP");
             else if (flow->proto & PROTO_LLDP)
                 strcpy(proto, "LLDP");
             else
@@ -760,8 +760,7 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
         {
             const flow_t *flow = ev->flow;
 
-            if (flow->remote == TRUE)
-                break;
+            if (flow->remote == TRUE) break;
 
             char proto[__CONF_SHORT_LEN] = {0};
             if (flow->proto & PROTO_TCP)
@@ -774,6 +773,8 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
                 strcpy(proto, "IPv4");
             else if (flow->proto & PROTO_ARP)
                 strcpy(proto, "ARP");
+            else if (flow->proto & PROTO_DHCP)
+                strcpy(proto, "DHCP");
             else if (flow->proto & PROTO_LLDP)
                 strcpy(proto, "LLDP");
             else
@@ -827,6 +828,8 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
                 strcpy(proto, "IPv4");
             else if (flow->proto & PROTO_ARP)
                 strcpy(proto, "ARP");
+            else if (flow->proto & PROTO_DHCP)
+                strcpy(proto, "DHCP");
             else if (flow->proto & PROTO_LLDP)
                 strcpy(proto, "LLDP");
             else
