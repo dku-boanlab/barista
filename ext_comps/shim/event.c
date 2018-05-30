@@ -34,7 +34,7 @@ int ev_worker_on;
 /** \brief The context to push events */
 void *ev_push_ctx;
 
-/** \biref The socket to push events */
+/** \brief The socket to push events */
 void *ev_push_sock;
 
  /** \brief The context to request events */

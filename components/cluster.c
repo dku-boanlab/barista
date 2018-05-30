@@ -524,7 +524,7 @@ int cluster_cleanup(int *activated)
  * \param cli The CLI pointer
  * \param args Arguments
  */
-int cluster_cli(char **args)
+int cluster_cli(cli_t *cli, char **args)
 {
     return 0;
 }

@@ -387,7 +387,7 @@ int application_disable(cli_t *cli, char *name)
 
 /**
  * \brief The thread for an autonomous application
- * \param arg Application ID
+ * \param a_id Application ID
  */
 static void *app_thread_main(void *a_id)
 {

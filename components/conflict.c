@@ -246,7 +246,7 @@ int conflict_cleanup(int *activated)
  * \param cli The CLI pointer
  * \param args Arguments
  */
-int conflict_cli(char **args)
+int conflict_cli(cli_t *cli, char **args)
 {
     return 0;
 }

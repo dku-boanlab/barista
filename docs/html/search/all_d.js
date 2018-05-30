@@ -35,7 +35,7 @@ var searchData=
   ['ofp10_5fveri_2ec',['ofp10_veri.c',['../ofp10__veri_8c.html',1,'']]],
   ['ofp10_5fveri_2eh',['ofp10_veri.h',['../ofp10__veri_8h.html',1,'']]],
   ['ofp10_5fveri_5fcleanup',['ofp10_veri_cleanup',['../group__ofp__veri.html#ga90b0bd15529dc50e92d8422cfc4314ea',1,'ofp10_veri_cleanup(int *activated):&#160;ofp10_veri.c'],['../group__ofp__veri.html#ga90b0bd15529dc50e92d8422cfc4314ea',1,'ofp10_veri_cleanup(int *activated):&#160;ofp10_veri.c']]],
-  ['ofp10_5fveri_5fcli',['ofp10_veri_cli',['../group__ofp__veri.html#gabe4443667b96a28c4e2aa861571fbeb3',1,'ofp10_veri.c']]],
+  ['ofp10_5fveri_5fcli',['ofp10_veri_cli',['../group__ofp__veri.html#gaee5da855fd05e02638739bc555a1d184',1,'ofp10_veri_cli(cli_t *cli, char **args):&#160;ofp10_veri.c'],['../group__ofp__veri.html#gaee5da855fd05e02638739bc555a1d184',1,'ofp10_veri_cli(cli_t *cli, char **args):&#160;ofp10_veri.c']]],
   ['ofp10_5fveri_5fhandler',['ofp10_veri_handler',['../group__ofp__veri.html#ga657984a9db3cbb2b9f0e89334e7a76d8',1,'ofp10_veri_handler(const event_t *ev, event_out_t *ev_out):&#160;ofp10_veri.c'],['../group__ofp__veri.html#ga657984a9db3cbb2b9f0e89334e7a76d8',1,'ofp10_veri_handler(const event_t *ev, event_out_t *ev_out):&#160;ofp10_veri.c']]],
   ['ofp10_5fveri_5fid',['OFP10_VERI_ID',['../group__ofp__veri.html#ga5d8c55bf441c82f621ebc65015a29562',1,'ofp10_veri.c']]],
   ['ofp10_5fveri_5fmain',['ofp10_veri_main',['../group__ofp__veri.html#ga67a6f7eb5da43e7b0af7751668de9e59',1,'ofp10_veri_main(int *activated, int argc, char **argv):&#160;ofp10_veri.c'],['../group__ofp__veri.html#ga67a6f7eb5da43e7b0af7751668de9e59',1,'ofp10_veri_main(int *activated, int argc, char **argv):&#160;ofp10_veri.c']]],

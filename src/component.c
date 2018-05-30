@@ -383,7 +383,7 @@ int component_disable(cli_t *cli, char *name)
 
 /**
  * \brief The thread for an autonomous component
- * \param arg Component ID
+ * \param c_id Component ID
  */
 static void *thread_main(void *c_id)
 {

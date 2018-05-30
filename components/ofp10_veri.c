@@ -332,7 +332,7 @@ int ofp10_veri_cleanup(int *activated)
  * \param cli The CLI pointer
  * \param args Arguments
  */
-int ofp10_veri_cli(char **args)
+int ofp10_veri_cli(cli_t *cli, char **args)
 {
     return 0;
 }
