@@ -599,6 +599,26 @@ int component_start(cli_t *cli)
                         cli_print(cli, "%s is activated", compnt_ctx->compnt_list[cluster]->name);
                     }
                 }
+            // external?
+            } else {
+                compnt_ctx->compnt_list[cluster]->push_ctx = zmq_ctx_new();
+                compnt_ctx->compnt_list[cluster]->push_sock = zmq_socket(compnt_ctx->compnt_list[cluster]->push_ctx, ZMQ_PUSH);
+
+                if (zmq_bind(compnt_ctx->compnt_list[cluster]->push_sock, compnt_ctx->compnt_list[cluster]->pull_addr)) {
+                    PERROR("zmq_bind");
+                    return -1;
+                }
+
+                compnt_ctx->compnt_list[cluster]->req_ctx = zmq_ctx_new();
+                compnt_ctx->compnt_list[cluster]->req_sock = zmq_socket(compnt_ctx->compnt_list[cluster]->req_ctx, ZMQ_REQ);
+
+                if (zmq_bind(compnt_ctx->compnt_list[cluster]->req_sock, compnt_ctx->compnt_list[cluster]->reply_addr)) {
+                    PERROR("zmq_bind");
+                    return -1;
+                }
+
+                compnt_ctx->compnt_list[cluster]->activated = TRUE;
+                cli_print(cli, "%s is activated", compnt_ctx->compnt_list[cluster]->name);
             }
         }
     }

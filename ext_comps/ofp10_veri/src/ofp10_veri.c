@@ -1,0 +1,1 @@
+../../../components/ofp10_veri.c
