@@ -5,7 +5,6 @@ USE Barista;
 DROP TABLE IF EXISTS switches;
 CREATE TABLE switches ( \
 	dpid         BIGINT UNSIGNED NOT NULL, \
-        version      INT    UNSIGNED, \
 	num_tables   INT    UNSIGNED, \
 	num_buffers  INT    UNSIGNED, \
 	capabilities INT    UNSIGNED, \

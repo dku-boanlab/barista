@@ -587,13 +587,13 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
             if (sw->remote == TRUE) break;
 
             char sql_query[__CONF_LSTR_LEN] = {0};
-            snprintf(sql_query, __CONF_LSTR_LEN-1, "insert into Barista.switches (dpid, version, num_tables, num_buffers, "
+            snprintf(sql_query, __CONF_LSTR_LEN-1, "insert into Barista.switches (dpid, num_tables, num_buffers, "
                                                    "capabilities, actions, ctrl_ip) "
-                                                   "values (%lu, %u, %u, %u, %u, %u, '%s') "
-                                                   "on duplicate key update dpid = %lu, version = %u, num_tables = %u, "
+                                                   "values (%lu, %u, %u, %u, %u, '%s') "
+                                                   "on duplicate key update dpid = %lu, num_tables = %u, "
                                                    "num_buffers = %u, capabilities = %u, actions = %u, ctrl_ip = '%s';", 
-                                                   sw->dpid, sw->version, sw->n_tables, sw->n_buffers, sw->capabilities, 
-                                                   sw->actions, ctrl_ip, sw->dpid, sw->version, sw->n_tables, sw->n_buffers, 
+                                                   sw->dpid, sw->n_tables, sw->n_buffers, sw->capabilities, 
+                                                   sw->actions, ctrl_ip, sw->dpid, sw->n_tables, sw->n_buffers, 
                                                    sw->capabilities, sw->actions, ctrl_ip);
             push_query_into_queue(sql_query);
 
