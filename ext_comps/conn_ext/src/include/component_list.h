@@ -14,7 +14,7 @@
     extern int name(int *activated, int argc, char **argv)
 /** \brief The macro for the handler function of a component */
 #define DECLARE_HANDLER_FUNC(name) \
-    extern int name(const event_t *av, event_out_t *av_out)
+    extern int name(const event_t *ev, event_out_t *ev_out)
 /** \brief The macro for the cleanup function of a component */
 #define DECLARE_CLEANUP_FUNC(name) \
     extern int name(int *activated)
