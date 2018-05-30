@@ -290,14 +290,6 @@ static void *reply_app_events(void *null)
 
         // request-response events
 
-        //sw_rw_raise(...);
-
-        //port_rw_raise(...);
-
-        //host_rw_raise(...);
-
-        //flow_rw_raise(...);
-
         default:
             break;
         }

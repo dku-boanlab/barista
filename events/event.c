@@ -333,13 +333,15 @@ static void *reply_events(void *null)
 
         // request-response events
 
-        //sw_rw_raise(...);
-
-        //port_rw_raise(...);
-
-        //host_rw_raise(...);
-
-        //flow_rw_raise(...);
+        case EV_SW_GET_DPID:
+            sw_rw_raise(msg.id, EV_SW_GET_DPID, sizeof(switch_t), (switch_t *)msg.data);
+            break;
+        case EV_SW_GET_FD:
+            sw_rw_raise(msg.id, EV_SW_GET_FD, sizeof(switch_t), (switch_t *)msg.data);
+            break;
+        case EV_SW_GET_XID:
+            sw_rw_raise(msg.id, EV_SW_GET_XID, sizeof(switch_t), (switch_t *)msg.data);
+            break;
 
         default:
             break;
