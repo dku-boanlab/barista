@@ -18,6 +18,7 @@ var events_2include_2event__list_8h =
     [ "ev_dp_send_packet", "group__events.html#gac47f056b371aa44bf446c212e6e558d5", null ],
     [ "ev_flow_added", "group__events.html#ga21e364d8c736a4327e49604c65712595", null ],
     [ "ev_flow_deleted", "group__events.html#ga81cae3e675b4f6b77e748177d9999bde", null ],
+    [ "ev_flow_modified", "group__events.html#ga21fc1b857ba3e115d4f8e1da1f43d856", null ],
     [ "ev_host_added", "group__events.html#ga5c90fb2be3a35012bdc730564cffe0c2", null ],
     [ "ev_host_deleted", "group__events.html#ga15eea3fe988698ced373e23636c170f0", null ],
     [ "ev_link_added", "group__events.html#gab6b98138c5042361f616ca8cb15e29e6", null ],

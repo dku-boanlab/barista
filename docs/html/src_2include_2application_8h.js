@@ -3,7 +3,7 @@ var src_2include_2application_8h =
     [ "_app_t", "struct__app__t.html", "struct__app__t" ],
     [ "app_cleanup_f", "src_2include_2application_8h.html#a80f6606a28a607b7e90c765c035f5326", null ],
     [ "app_cli_f", "src_2include_2application_8h.html#ad50ac7947e222092cb7b2e099896a46a", null ],
-    [ "app_handler_f", "src_2include_2application_8h.html#aee6b95b4468d341a346bd33d629741a6", null ],
+    [ "app_handler_f", "src_2include_2application_8h.html#af6dd21d0c5d090017deef5438b3a3e79", null ],
     [ "app_main_f", "src_2include_2application_8h.html#a218ccb61e274947c81682e1fddfcddf4", null ],
     [ "APP_GENERAL", "src_2include_2application_8h.html#aa156d1cebb38c8a65846c4d9c006012aa86a63a7a087532269bf2d603151aa80f", null ],
     [ "APP_AUTO", "src_2include_2application_8h.html#aa156d1cebb38c8a65846c4d9c006012aab6e2a6d9a4cd09e5aeaf5a6b609a249c", null ],
