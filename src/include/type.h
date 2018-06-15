@@ -44,12 +44,13 @@ typedef struct _app_event_out_t app_event_out_t;
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The maximum length of the data field */
-#define __MAX_RAW_DATA_LEN 1500
+#define __MAX_RAW_DATA_LEN 8192
 
 /** \brief The structure of a raw message */
 typedef struct _raw_msg_t {
     uint32_t fd; /**< Network socket */
     uint16_t length; /**< The length of a message */
+    uint16_t pad; /**< Pad */
 
     uint8_t data[__MAX_RAW_DATA_LEN]; /**< Pointer indicating the data */
 } raw_msg_t;
@@ -61,6 +62,7 @@ typedef struct _raw_msg_t {
 typedef struct _msg_t {
     uint32_t id; /**< Trigger ID */
     uint16_t type; /**< Event type */
+    uint16_t pad; /**< Pad */
 
     uint8_t data[__MAX_STRUCT_SIZE]; /**< Data */
 

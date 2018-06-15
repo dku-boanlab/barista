@@ -77,8 +77,7 @@ static flow_t *arr_dequeue(void)
  */
 static int arr_enqueue(flow_t *flow)
 {
-    if (flow == NULL)
-        return -1;
+    if (flow == NULL) return -1;
 
     memset(flow, 0, sizeof(flow_t));
 
@@ -155,4 +154,3 @@ static int arr_q_destroy(void)
 
     return 0;
 }
-

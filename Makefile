@@ -17,8 +17,8 @@ CPPFLAGS = $(addprefix -I,$(shell find $(SRC_DIR) -type d))
 CFLAGS = -g -ggdb -Wall -std=gnu99
 LDFLAGS = -lpthread -ljansson -lrt -lcli -lzmq
 
-#CLUSTER = no
-CLUSTER = yes
+CLUSTER = no
+#CLUSTER = yes
 ifeq ($(CLUSTER), yes)
 	CFLAGS += -I/usr/include/mysql -D__ENABLE_CLUSTER
 	LDFLAGS += -L/usr/lib -lmysqlclient

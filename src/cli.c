@@ -961,10 +961,6 @@ int start_cli(ctx_t *ctx)
         } else {
             PRINTF("No operator-defined policy\n");
         }
-
-        if (system("touch /tmp/barista.lock") != 0) {
-            cli_print(cli, "Failed to create /tmp/barista.lock\n");
-        }
     }
 
     sigint_func = signal(SIGINT, sigint_handler);

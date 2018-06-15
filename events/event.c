@@ -183,6 +183,8 @@ void ev_link_added(uint32_t id, const port_t *data) { port_ev_raise(id, EV_LINK_
 void ev_link_deleted(uint32_t id, const port_t *data) { port_ev_raise(id, EV_LINK_DELETED, sizeof(port_t), (const port_t *)data); }
 /** \brief EV_FLOW_ADDED */
 void ev_flow_added(uint32_t id, const flow_t *data) { flow_ev_raise(id, EV_FLOW_ADDED, sizeof(flow_t), (const flow_t *)data); }
+/** \brief EV_FLOW_MODIFIED */
+void ev_flow_modified(uint32_t id, const flow_t *data) { flow_ev_raise(id, EV_FLOW_MODIFIED, sizeof(flow_t), (const flow_t *)data); }
 /** \brief EV_FLOW_DELETED */
 void ev_flow_deleted(uint32_t id, const flow_t *data) { flow_ev_raise(id, EV_FLOW_DELETED, sizeof(flow_t), (const flow_t *)data); }
 /** \brief EV_RS_UPDATE_USAGE */

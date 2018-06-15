@@ -826,13 +826,14 @@ int application_add_policy(cli_t *cli, char *name, char *p)
                         c->odp[c->num_policies].flag |= ODP_PROTO;
                         c->odp[c->num_policies].proto |= PROTO_ARP;
                         cli_print(cli, "\tProtocol: ARP");
-                    } else if (strcmp(v, "lldp") == 0) {
-                        c->odp[c->num_policies].flag |= ODP_PROTO;
-                        c->odp[c->num_policies].proto |= PROTO_LLDP;
                     } else if (strcmp(v, "dhcp") == 0) {
                         c->odp[c->num_policies].flag |= ODP_PROTO;
                         c->odp[c->num_policies].proto |= PROTO_DHCP;
                         cli_print(cli, "\tProtocol: DHCP");
+                    } else if (strcmp(v, "lldp") == 0) {
+                        c->odp[c->num_policies].flag |= ODP_PROTO;
+                        c->odp[c->num_policies].proto |= PROTO_LLDP;
+                        cli_print(cli, "\tProtocol: LLDP");
                     } else if (strcmp(v, "ipv4") == 0) {
                         c->odp[c->num_policies].flag |= ODP_PROTO;
                         c->odp[c->num_policies].proto |= PROTO_IPV4;
@@ -1701,6 +1702,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                     c->out_num++;
                 }
             }
+
             if (real_event_cnt == 0) cli_print(cli, "     Outbounds: no event");
             else if (real_event_cnt == 1) cli_print(cli, "     Outbounds: 1 event");
             else cli_print(cli, "     Outbounds: %d events", c->out_num);

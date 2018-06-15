@@ -54,6 +54,7 @@ void ev_host_deleted(uint32_t id, const host_t *data);
 void ev_link_added(uint32_t id, const port_t *data);
 void ev_link_deleted(uint32_t id, const port_t *data);
 void ev_flow_added(uint32_t id, const flow_t *data);
+void ev_flow_modified(uint32_t id, const flow_t *data);
 void ev_flow_deleted(uint32_t id, const flow_t *data);
 void ev_rs_update_usage(uint32_t id, const resource_t *data);
 void ev_tr_update_stats(uint32_t id, const traffic_t *data);

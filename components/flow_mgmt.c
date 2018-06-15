@@ -140,9 +140,64 @@ static int add_flow(flow_table_t *list, const flow_t *flow)
  */
 static int modify_flow(flow_table_t *list, const flow_t *flow)
 {
-    //TODO complete modify_flow
+    int ret = TRUE;
 
-    return 0;
+    pthread_mutex_lock(&list->lock);
+
+    flow_t *curr = list->head;
+    while (curr != NULL) {
+        if (FLOW_COMPARE(curr, flow)) {
+            ret = FALSE;
+            break;
+        }
+
+        curr = curr->next;
+    }
+
+    if (!ret) {
+        curr->dpid = flow->dpid;
+        curr->port = flow->port;
+
+        curr->insert_time = time(NULL);
+
+        curr->idle_timeout = flow->idle_timeout;
+        curr->hard_timeout = flow->hard_timeout;
+
+        curr->wildcards = flow->wildcards;
+
+        curr->vlan_id = flow->vlan_id;
+        curr->vlan_pcp = flow->vlan_pcp;
+
+        curr->proto = flow->proto;
+
+        curr->remote = flow->remote;
+
+        memmove(curr->src_mac, flow->src_mac, ETH_ALEN);
+        memmove(curr->dst_mac, flow->dst_mac, ETH_ALEN);
+
+        curr->src_ip = flow->src_ip;
+        curr->dst_ip = flow->dst_ip;
+
+        curr->src_port = flow->src_port;
+        curr->dst_port = flow->dst_port;
+
+        curr->num_actions = flow->num_actions;
+        memmove(curr->action, flow->action, sizeof(action_t) * curr->num_actions);
+
+        curr->prev = curr->next = curr->r_next = NULL;
+
+        flow_t out = {0};
+        memmove(&out, curr, sizeof(flow_t));
+
+        pthread_mutex_unlock(&list->lock);
+
+        if (curr->remote == FALSE)
+            ev_flow_modified(FLOW_MGMT_ID, &out);
+    } else {
+        pthread_mutex_unlock(&list->lock);
+    }
+
+    return ret;
 }
 
 /**

@@ -1767,6 +1767,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
                 c->out_list[c->out_num] = event_type(json_string_value(out_event));
                 c->out_num++;
             }
+
             if (real_event_cnt == 0) cli_print(cli, "     Outbounds: no event");
             else if (real_event_cnt == 1) cli_print(cli, "     Outbounds: 1 event");
             else cli_print(cli, "     Outbounds: %d events", c->out_num);

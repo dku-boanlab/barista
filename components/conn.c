@@ -157,6 +157,8 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 {
     context_t *c = &context[sock];
 
+    //printf("bytes = %d\n", bytes);
+
     uint8_t *temp = c->temp;
     int need = c->need;
     int done = c->done;

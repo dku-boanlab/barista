@@ -21,7 +21,7 @@
 /** \brief The main function pointer of an application */
 typedef int (* app_main_f)(int *activated, int argc, char **argv);
 /** \brief The handler function pointer of an application */
-typedef int (* app_handler_f)(const app_event_t *ev, app_event_out_t *ev_out);
+typedef int (* app_handler_f)(const app_event_t *av, app_event_out_t *av_out);
 /** \brief The cleanup function pointer of an application */
 typedef int (* app_cleanup_f)(int *activated);
 /** \brief The cli function pointer of an application */
