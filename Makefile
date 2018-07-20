@@ -44,22 +44,6 @@ $(PROG): $(addprefix $(OBJ_DIR)/,$(OBJ))
 	mkdir -p $(@D)
 	$(CC) -o $@ $^ $(LDFLAGS)
 	mv $(PROG) $(BIN_DIR)
-	@cd ext_comps/conn; make; cd ../..
-	@cd ext_comps/ofp10; make; cd ../..
-	@cd ext_comps/switch_mgmt; make; cd ../..
-	@cd ext_comps/host_mgmt; make; cd ../..
-	@cd ext_comps/topo_mgmt; make; cd ../..
-	@cd ext_comps/flow_mgmt; make; cd ../..
-	@cd ext_comps/stat_mgmt; make; cd ../..
-	@cd ext_comps/resource_mgmt; make; cd ../..
-	@cd ext_comps/traffic_mgmt; make; cd ../..
-	@cd ext_comps/cac; make; cd ../..
-	@cd ext_comps/dit; make; cd ../..
-	@cd ext_comps/ofp10_veri; make; cd ../..
-	@cd ext_comps/conflict; make; cd ../..
-	@cd ext_apps/l2_learning; make; cd ../..
-	@cd ext_apps/l2_shortest; make; cd ../..
-	@cd ext_apps/rbac; make; cd ../..
 
 $(OBJ_DIR)/%.o: %.c
 	mkdir -p $(@D)
@@ -73,19 +57,3 @@ $(OBJ_DIR)/.%.dep: %.c $(CONFIG_MK)
 
 clean:
 	rm -rf $(BIN_DIR)/$(PROG) $(BIN_DIR)/core $(LOG_DIR)/* $(TMP_DIR)/* $(OBJ_DIR) $(INC_DIR) G*
-	@cd ext_comps/conn; make clean; cd ../..
-	@cd ext_comps/ofp10; make clean; cd ../..
-	@cd ext_comps/switch_mgmt; make clean; cd ../..
-	@cd ext_comps/host_mgmt; make clean; cd ../..
-	@cd ext_comps/topo_mgmt; make clean; cd ../..
-	@cd ext_comps/flow_mgmt; make clean; cd ../..
-	@cd ext_comps/stat_mgmt; make clean; cd ../..
-	@cd ext_comps/resource_mgmt; make clean; cd ../..
-	@cd ext_comps/traffic_mgmt; make clean; cd ../..
-	@cd ext_comps/cac; make clean; cd ../..
-	@cd ext_comps/dit; make clean; cd ../..
-	@cd ext_comps/ofp10_veri; make clean; cd ../..
-	@cd ext_comps/conflict; make clean; cd ../..
-	@cd ext_apps/l2_learning; make clean; cd ../..
-	@cd ext_apps/l2_shortest; make clean; cd ../..
-	@cd ext_apps/rbac; make clean; cd ../..

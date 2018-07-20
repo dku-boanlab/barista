@@ -1033,13 +1033,6 @@ static int ofp10_packet_out(const pktout_t *pktout)
     for (i=0; i<pktout->num_actions; i++) {
         switch (pktout->action[i].type) {
         case ACTION_DISCARD:
-            {
-                struct ofp_action_output *output = (struct ofp_action_output *)(pkt + size);
-
-                output->len = htons(sizeof(struct ofp_action_output));
-
-                size += sizeof(struct ofp_action_output);
-            }
             break;
         case ACTION_OUTPUT:
             {
@@ -1395,9 +1388,6 @@ static int ofp10_flow_mod(const flow_t *flow, int command)
     for (i=0; i<flow->num_actions; i++) {
         switch (flow->action[i].type) {
         case ACTION_DISCARD:
-            {
-                size += sizeof(struct ofp_action_output);
-            }
             break;
         case ACTION_OUTPUT:
             {
