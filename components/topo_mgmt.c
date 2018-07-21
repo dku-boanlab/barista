@@ -146,6 +146,9 @@ static int send_lldp(uint64_t dpid, port_t *port)
  */
 static int discard_packet(const pktin_t *pktin)
 {
+    if (pktin->buffer_id == 0xffffffff)
+        return -1;
+
     pktout_t out = {0};
 
     PKTOUT_INIT(out, pktin);
