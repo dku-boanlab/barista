@@ -11,9 +11,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of pre-allocated flows */
-#define ARR_PRE_ALLOC 65536
-
 /** \brief The structure of a flow pool */
 typedef struct _arr_queue_t {
     int size; /**< The size of entries */
@@ -23,6 +20,9 @@ typedef struct _arr_queue_t {
 
     pthread_spinlock_t lock; /**< The lock for management */
 } arr_queue_t;
+
+/** \brief The number of pre-allocated flows */
+#define ARR_PRE_ALLOC 65536
 
 /** \brief Flow pool */
 arr_queue_t arr_q;
@@ -35,15 +35,15 @@ arr_queue_t arr_q;
  */
 static flow_t *arr_dequeue(void)
 {
-    flow_t *new = NULL;
+    flow_t *arr = NULL;
 
     pthread_spin_lock(&arr_q.lock);
 
     if (arr_q.head == NULL) {
         pthread_spin_unlock(&arr_q.lock);
 
-        new = (flow_t *)CALLOC(1, sizeof(flow_t));
-        if (new == NULL) {
+        arr = (flow_t *)CALLOC(1, sizeof(flow_t));
+        if (arr == NULL) {
             PERROR("calloc");
             return NULL;
         }
@@ -52,12 +52,12 @@ static flow_t *arr_dequeue(void)
         arr_q.size--;
         pthread_spin_unlock(&arr_q.lock);
 
-        return new;
+        return arr;
     } else if (arr_q.head == arr_q.tail) {
-        new = arr_q.head;
+        arr = arr_q.head;
         arr_q.head = arr_q.tail = NULL;
     } else {
-        new = arr_q.head;
+        arr = arr_q.head;
         arr_q.head = arr_q.head->next;
         arr_q.head->prev = NULL;
     }
@@ -66,9 +66,9 @@ static flow_t *arr_dequeue(void)
 
     pthread_spin_unlock(&arr_q.lock);
 
-    memset(new, 0, sizeof(flow_t));
+    memset(arr, 0, sizeof(flow_t));
 
-    return new;
+    return arr;
 }
 
 /**
@@ -120,13 +120,13 @@ static int arr_q_init(void)
 
     int i;
     for (i=0; i<ARR_PRE_ALLOC; i++) {
-        flow_t *new = (flow_t *)MALLOC(sizeof(flow_t));
-        if (new == NULL) {
+        flow_t *arr = (flow_t *)MALLOC(sizeof(flow_t));
+        if (arr == NULL) {
             PERROR("malloc");
             return -1;
         }
 
-        arr_enqueue(new);
+        arr_enqueue(arr);
     }
 
     return 0;
@@ -149,7 +149,6 @@ static int arr_q_destroy(void)
     }
 
     pthread_spin_unlock(&arr_q.lock);
-
     pthread_spin_destroy(&arr_q.lock);
 
     return 0;

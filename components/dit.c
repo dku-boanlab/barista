@@ -68,10 +68,7 @@ int dit_cli(cli_t *cli, char **args)
 int dit_handler(const event_t *ev, event_out_t *ev_out)
 {
     uint32_t old_checksum = ev_out->checksum;
-    uint32_t checksum = 0;
-
-    ev_out->checksum = 0;
-    checksum = hash_func((uint32_t *)ev->msg, ev->length / sizeof(uint32_t));
+    uint32_t checksum = hash_func((uint32_t *)ev->msg, ev->length / sizeof(uint32_t));
 
     if (old_checksum == 0) {
         // generate checksum

@@ -25,9 +25,6 @@
 /** \brief The batch size of logs */
 #define BATCH_LOGS 1024
 
-/** \brief The default log file */
-char log_file[__CONF_WORD_LEN] = DEFAULT_LOG_FILE;
-
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The number of log messages */
@@ -38,6 +35,9 @@ char **msgs;
 
 /** \brief The lock for queue management */
 pthread_spinlock_t log_lock;
+
+/** \brief The default log file */
+char log_file[__CONF_WORD_LEN] = DEFAULT_LOG_FILE;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -96,10 +96,6 @@ static int push_msgs_into_file(char *msg)
         write_msg = 0;
 
         fclose(fp);
-    } else {
-        pthread_spin_unlock(&log_lock);
-
-        return -1;
     }
 
     pthread_spin_unlock(&log_lock);
@@ -117,6 +113,8 @@ static int push_msgs_into_file(char *msg)
  */
 int log_main(int *activated, int argc, char **argv)
 {
+    write_msg = 0;
+
     msgs = (char **)MALLOC(sizeof(char *) * BATCH_LOGS);
     if (msgs == NULL) {
         PERROR("malloc");
@@ -155,10 +153,13 @@ int log_main(int *activated, int argc, char **argv)
                     fputs(msgs[i], fp);
                     memset(msgs[i], 0, __CONF_STR_LEN);
                 }
+
                 write_msg = 0;
+
                 fclose(fp);
             } else {
                 pthread_spin_unlock(&log_lock);
+
                 continue;
             }
         }
@@ -190,6 +191,7 @@ int log_cleanup(int *activated)
             for (i=0; i<write_msg; i++) {
                 fputs(msgs[i], fp);
             }
+
             fclose(fp);
         }
     }

@@ -272,9 +272,15 @@ int conflict_handler(const event_t *ev, event_out_t *ev_out)
         break;
     case EV_DP_MODIFY_FLOW:
         PRINT_EV("EV_DP_MODIFY_FLOW\n");
+        {
+            //
+        }
         break;
     case EV_DP_DELETE_FLOW:
         PRINT_EV("EV_DP_DELETE_FLOW\n");
+        {
+            //
+        }
         break;
     case EV_FLOW_ADDED:
         PRINT_EV("EV_FLOW_ADDED\n");

@@ -22,16 +22,16 @@
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief The number of CPU cores */
+int num_proc;
+
+/////////////////////////////////////////////////////////////////////
+
 /** \brief The pointer to record resource usages in a history array */
 uint32_t rs_history_ptr;
 
 /** \brief The history array of resource usages */
 resource_t *rs_history;
-
-/** \brief The number of CPU cores */
-int num_proc;
-
-/////////////////////////////////////////////////////////////////////
 
 /** \brief The default resource log file */
 char resource_file[__CONF_WORD_LEN] = DEFAULT_RESOURCE_FILE;
@@ -116,8 +116,8 @@ int resource_mgmt_main(int *activated, int argc, char **argv)
 
         int i;
         for (i=0; i<RESOURCE_MGMT_MONITOR_TIME; i++) {
-            waitsec(1, 0);
             if (!*activated) break;
+            waitsec(1, 0);
         }
     }
 
@@ -181,7 +181,7 @@ static int resource_stat_summary(cli_t *cli, char *seconds)
  */
 int resource_mgmt_cli(cli_t *cli, char **args)
 {
-    if (args[0] != NULL && strcmp(args[0], "stat") == 0 && args[1] != NULL) {
+    if (args[0] != NULL && strcmp(args[0], "stat") == 0 && args[1] != NULL && args[2] == NULL) {
         resource_stat_summary(cli, args[1]);
         return 0;
     }

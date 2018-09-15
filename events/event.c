@@ -40,11 +40,8 @@ void *ev_pull_sock;
 /** \brief The MQ context to handle request-reply events */
 void *ev_rep_ctx;
 
-/** \brief The MQ socket for components */
-void *ev_rep_comp;
-
-/** \brief The MQ socket for workers */
-void *ev_rep_work;
+/** \brief The MQ sockets for components and workers */
+void *ev_rep_comp, *ev_rep_work;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -528,7 +525,7 @@ int destroy_ev_workers(ctx_t *ctx)
 {
     ev_on = FALSE;
 
-    waitsec(2, 0);
+    waitsec(1, 0);
 
     zmq_close(ev_pull_sock);
     zmq_ctx_destroy(ev_pull_ctx);

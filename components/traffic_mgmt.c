@@ -25,6 +25,8 @@
 /** \brief Traffic statistics */
 traffic_t traffic;
 
+/////////////////////////////////////////////////////////////////////
+
 /** \brief The pointer to record traffic statistics in a history array */
 uint32_t tr_history_ptr;
 
@@ -47,11 +49,11 @@ char traffic_file[__CONF_WORD_LEN] = DEFAULT_TRAFFIC_FILE;
  */
 int traffic_mgmt_main(int *activated, int argc, char **argv)
 {
-    LOG_INFO(TRAFFIC_MGMT_ID, "Init - Control traffic management");
-
-    memset(&traffic, 0, sizeof(traffic_t));
+    LOG_INFO(TRAFFIC_MGMT_ID, "Init - Control channel management");
 
     tr_history_ptr = 0;
+
+    memset(&traffic, 0, sizeof(traffic_t));
 
     tr_history = (traffic_t *)MALLOC(sizeof(traffic_t) * TRAFFIC_MGMT_HISTORY);
     if (tr_history == NULL) {
@@ -103,8 +105,8 @@ int traffic_mgmt_main(int *activated, int argc, char **argv)
 
         int i;
         for (i=0; i<TRAFFIC_MGMT_MONITOR_TIME; i++) {
-            waitsec(1, 0);
             if (!*activated) break;
+            waitsec(1, 0);
         }
     }
 
@@ -117,7 +119,7 @@ int traffic_mgmt_main(int *activated, int argc, char **argv)
  */
 int traffic_mgmt_cleanup(int *activated)
 {
-    LOG_INFO(TRAFFIC_MGMT_ID, "Clean up - Control traffic management");
+    LOG_INFO(TRAFFIC_MGMT_ID, "Clean up - Control channel management");
 
     deactivate();
 

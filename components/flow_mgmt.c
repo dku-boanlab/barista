@@ -32,7 +32,7 @@ typedef struct _flow_table_t {
     flow_t *head; /**< The head pointer */
     flow_t *tail; /**< The tail pointer */
 
-    pthread_mutex_t lock; /**< The lock for management */
+    pthread_spinlock_t lock; /**< The lock for management */
 } flow_table_t;
 
 /** \brief The number of flows */
@@ -56,11 +56,12 @@ static int add_flow(flow_table_t *list, const flow_t *flow)
 {
     int ret = TRUE;
 
-    pthread_mutex_lock(&list->lock);
+    pthread_spin_lock(&list->lock);
 
     flow_t *curr = list->head;
     while (curr != NULL) {
         if (FLOW_COMPARE(curr, flow)) {
+            curr->insert_time = time(NULL);
             ret = FALSE;
             break;
         }
@@ -68,12 +69,11 @@ static int add_flow(flow_table_t *list, const flow_t *flow)
         curr = curr->next;
     }
 
-    pthread_mutex_unlock(&list->lock);
+    pthread_spin_unlock(&list->lock);
 
     if (ret) {
         flow_t *new = flow_dequeue();
         if (new == NULL) {
-            PERROR("flow_q_dequeue");
             return FALSE;
         }
 
@@ -111,7 +111,7 @@ static int add_flow(flow_table_t *list, const flow_t *flow)
         flow_t out = {0};
         memmove(&out, new, sizeof(flow_t));
 
-        pthread_mutex_lock(&list->lock);
+        pthread_spin_lock(&list->lock);
 
         if (list->head == NULL) {
             list->head = new;
@@ -124,7 +124,7 @@ static int add_flow(flow_table_t *list, const flow_t *flow)
 
         num_flows++;
 
-        pthread_mutex_unlock(&list->lock);
+        pthread_spin_unlock(&list->lock);
 
         if (new->remote == FALSE)
             ev_flow_added(FLOW_MGMT_ID, &out);
@@ -142,7 +142,7 @@ static int modify_flow(flow_table_t *list, const flow_t *flow)
 {
     int ret = TRUE;
 
-    pthread_mutex_lock(&list->lock);
+    pthread_spin_lock(&list->lock);
 
     flow_t *curr = list->head;
     while (curr != NULL) {
@@ -189,12 +189,12 @@ static int modify_flow(flow_table_t *list, const flow_t *flow)
         flow_t out = {0};
         memmove(&out, curr, sizeof(flow_t));
 
-        pthread_mutex_unlock(&list->lock);
+        pthread_spin_unlock(&list->lock);
 
         if (curr->remote == FALSE)
             ev_flow_modified(FLOW_MGMT_ID, &out);
     } else {
-        pthread_mutex_unlock(&list->lock);
+        pthread_spin_unlock(&list->lock);
     }
 
     return ret;
@@ -209,7 +209,7 @@ static int delete_flow(flow_table_t *list, const flow_t *flow)
 {
     flow_table_t tmp_list = {0};
 
-    pthread_mutex_lock(&list->lock);
+    pthread_spin_lock(&list->lock);
 
     flow_t *curr = list->head;
     while (curr != NULL) {
@@ -258,7 +258,7 @@ static int delete_flow(flow_table_t *list, const flow_t *flow)
         flow_enqueue(tmp);
     }
 
-    pthread_mutex_unlock(&list->lock);
+    pthread_spin_unlock(&list->lock);
 
     return 0;
 }
@@ -272,7 +272,7 @@ static int delete_all_flows(flow_table_t *list, const uint64_t dpid)
 {
     flow_table_t tmp_list = {0};
 
-    pthread_mutex_lock(&list->lock);
+    pthread_spin_lock(&list->lock);
 
     flow_t *curr = list->head;
     while (curr != NULL) {
@@ -321,7 +321,7 @@ static int delete_all_flows(flow_table_t *list, const uint64_t dpid)
         flow_enqueue(tmp);
     }
 
-    pthread_mutex_unlock(&list->lock);
+    pthread_spin_unlock(&list->lock);
 
     return 0;
 }
@@ -333,7 +333,7 @@ static int delete_all_flows(flow_table_t *list, const uint64_t dpid)
  */
 static int update_flow(flow_table_t *list, const flow_t *flow)
 {
-    pthread_mutex_lock(&list->lock);
+    pthread_spin_lock(&list->lock);
 
     flow_t *curr = list->head;
     while (curr != NULL) {
@@ -347,7 +347,7 @@ static int update_flow(flow_table_t *list, const flow_t *flow)
         curr = curr->next;
     }
 
-    pthread_mutex_unlock(&list->lock);
+    pthread_spin_unlock(&list->lock);
 
     return 0;
 }
@@ -360,69 +360,63 @@ static int update_flow(flow_table_t *list, const flow_t *flow)
  */
 void *timeout_thread(void *arg)
 {
-    time_t previous_time = time(NULL);
-    time_t current_time = time(NULL);
-
     while (flow_mgmt_on) {
-        previous_time = current_time;
-        current_time = time(NULL);
+        time_t current_time = time(NULL);
 
-        if (previous_time != current_time) {
-            int i;
-            for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-                flow_table_t tmp_list = {0};
+        int i;
+        for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
+            flow_table_t tmp_list = {0};
 
-                pthread_mutex_lock(&flow_table[i].lock);
+            pthread_spin_lock(&flow_table[i].lock);
 
-                flow_t *curr = flow_table[i].head;
-                while (curr != NULL) {
-                    if ((current_time - curr->insert_time) > curr->hard_timeout) {
-                        if (tmp_list.head == NULL) {
-                            tmp_list.head = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        } else {
-                            tmp_list.tail->r_next = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        }
-
-                        num_flows--;
+            flow_t *curr = flow_table[i].head;
+            while (curr != NULL) {
+                if ((current_time - curr->insert_time) > curr->hard_timeout + 10) {
+                    if (tmp_list.head == NULL) {
+                        tmp_list.head = curr;
+                        tmp_list.tail = curr;
+                        curr->r_next = NULL;
+                    } else {
+                        tmp_list.tail->r_next = curr;
+                        tmp_list.tail = curr;
+                        curr->r_next = NULL;
                     }
 
-                    curr = curr->next;
+                    num_flows--;
                 }
 
-                curr = tmp_list.head;
-                while (curr != NULL) {
-                    flow_t *tmp = curr;
-
-                    curr = curr->r_next;
-
-                    if (tmp->prev != NULL && tmp->next != NULL) {
-                        tmp->prev->next = tmp->next;
-                        tmp->next->prev = tmp->prev;
-                    } else if (tmp->prev == NULL && tmp->next != NULL) {
-                        flow_table[i].head = tmp->next;
-                        tmp->next->prev = NULL;
-                    } else if (tmp->prev != NULL && tmp->next == NULL) {
-                        flow_table[i].tail = tmp->prev;
-                        tmp->prev->next = NULL;
-                    } else if (tmp->prev == NULL && tmp->next == NULL) {
-                        flow_table[i].head = NULL;
-                        flow_table[i].tail = NULL;
-                    }
-
-                    tmp->prev = tmp->next = tmp->r_next = NULL;
-
-                    if (tmp->remote == FALSE)
-                        ev_flow_deleted(FLOW_MGMT_ID, tmp);
-
-                    flow_enqueue(tmp);
-                }
-
-                pthread_mutex_unlock(&flow_table[i].lock);
+                curr = curr->next;
             }
+
+            curr = tmp_list.head;
+            while (curr != NULL) {
+                flow_t *tmp = curr;
+
+                curr = curr->r_next;
+
+                if (tmp->prev != NULL && tmp->next != NULL) {
+                    tmp->prev->next = tmp->next;
+                    tmp->next->prev = tmp->prev;
+                } else if (tmp->prev == NULL && tmp->next != NULL) {
+                    flow_table[i].head = tmp->next;
+                    tmp->next->prev = NULL;
+                } else if (tmp->prev != NULL && tmp->next == NULL) {
+                    flow_table[i].tail = tmp->prev;
+                    tmp->prev->next = NULL;
+                } else if (tmp->prev == NULL && tmp->next == NULL) {
+                    flow_table[i].head = NULL;
+                    flow_table[i].tail = NULL;
+                }
+
+                tmp->prev = tmp->next = tmp->r_next = NULL;
+
+                if (tmp->remote == FALSE)
+                    ev_flow_deleted(FLOW_MGMT_ID, tmp);
+
+                flow_enqueue(tmp);
+            }
+
+            pthread_spin_unlock(&flow_table[i].lock);
         }
 
         waitsec(1, 0);
@@ -457,7 +451,7 @@ int flow_mgmt_main(int *activated, int argc, char **argv)
 
     int i;
     for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-        pthread_mutex_init(&flow_table[i].lock, NULL);
+        pthread_spin_init(&flow_table[i].lock, PTHREAD_PROCESS_PRIVATE);
     }
 
     flow_q_init();
@@ -488,7 +482,7 @@ int flow_mgmt_cleanup(int *activated)
 
     int i;
     for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-        pthread_mutex_lock(&flow_table[i].lock);
+        pthread_spin_lock(&flow_table[i].lock);
 
         flow_t *curr = flow_table[i].head;
         while (curr != NULL) {
@@ -497,8 +491,8 @@ int flow_mgmt_cleanup(int *activated)
             FREE(tmp);
         }
 
-        pthread_mutex_unlock(&flow_table[i].lock);
-        pthread_mutex_destroy(&flow_table[i].lock);
+        pthread_spin_unlock(&flow_table[i].lock);
+        pthread_spin_destroy(&flow_table[i].lock);
     }
 
     flow_q_destroy();
@@ -521,7 +515,7 @@ static int flow_listup(cli_t *cli)
     cli_print(cli, "  The total number of flows: %d", num_flows);
 
     for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-        pthread_mutex_lock(&flow_table[i].lock);
+        pthread_spin_lock(&flow_table[i].lock);
 
         flow_t *curr = flow_table[i].head;
         while (curr != NULL) {
@@ -529,6 +523,8 @@ static int flow_listup(cli_t *cli)
 
             if (curr->proto & PROTO_TCP)
                 strcpy(proto, "TCP");
+            else if (curr->proto & PROTO_DHCP)
+                strcpy(proto, "DHCP");
             else if (curr->proto & PROTO_UDP)
                 strcpy(proto, "UDP");
             else if (curr->proto & PROTO_ICMP)
@@ -537,8 +533,6 @@ static int flow_listup(cli_t *cli)
                 strcpy(proto, "IPv4");
             else if (curr->proto & PROTO_ARP)
                 strcpy(proto, "ARP");
-            else if (curr->proto & PROTO_DHCP)
-                strcpy(proto, "DHCP");
             else if (curr->proto & PROTO_LLDP)
                 strcpy(proto, "LLDP");
             else
@@ -605,7 +599,7 @@ static int flow_listup(cli_t *cli)
             curr = curr->next;
         }
 
-        pthread_mutex_unlock(&flow_table[i].lock);
+        pthread_spin_unlock(&flow_table[i].lock);
     }
 
     return 0;
@@ -625,7 +619,7 @@ static int flow_showup(cli_t *cli, char *dpid_str)
     cli_print(cli, "<Flow Table for Switch [%lu]>", dpid);
 
     for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-        pthread_mutex_lock(&flow_table[i].lock);
+        pthread_spin_lock(&flow_table[i].lock);
 
         flow_t *curr = flow_table[i].head;
         while (curr != NULL) {
@@ -637,6 +631,8 @@ static int flow_showup(cli_t *cli, char *dpid_str)
             char proto[__CONF_SHORT_LEN] = {0};
             if (curr->proto & PROTO_TCP)
                 strcpy(proto, "TCP");
+            else if (curr->proto & PROTO_DHCP)
+                strcpy(proto, "DHCP");
             else if (curr->proto & PROTO_UDP)
                 strcpy(proto, "UDP");
             else if (curr->proto & PROTO_ICMP)
@@ -645,8 +641,6 @@ static int flow_showup(cli_t *cli, char *dpid_str)
                 strcpy(proto, "IPv4");
             else if (curr->proto & PROTO_ARP)
                 strcpy(proto, "ARP");
-            else if (curr->proto & PROTO_DHCP)
-                strcpy(proto, "DHCP");
             else if (curr->proto & PROTO_LLDP)
                 strcpy(proto, "LLDP");
             else
@@ -713,7 +707,7 @@ static int flow_showup(cli_t *cli, char *dpid_str)
             curr = curr->next;
         }
 
-        pthread_mutex_unlock(&flow_table[i].lock);
+        pthread_spin_unlock(&flow_table[i].lock);
     }
 
     if (!cnt)

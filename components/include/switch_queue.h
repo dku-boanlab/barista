@@ -35,15 +35,15 @@ sw_queue_t sw_q;
  */
 static switch_t *sw_dequeue(void)
 {
-    switch_t *new = NULL;
+    switch_t *sw = NULL;
 
     pthread_spin_lock(&sw_q.lock);
 
     if (sw_q.head == NULL) {
         pthread_spin_unlock(&sw_q.lock);
 
-        new = (switch_t *)CALLOC(1, sizeof(switch_t));
-        if (new == NULL) {
+        sw = (switch_t *)CALLOC(1, sizeof(switch_t));
+        if (sw == NULL) {
             PERROR("calloc");
             return NULL;
         }
@@ -52,12 +52,12 @@ static switch_t *sw_dequeue(void)
         sw_q.size--;
         pthread_spin_unlock(&sw_q.lock);
 
-        return new;
+        return sw;
     } else if (sw_q.head == sw_q.tail) {
-        new = sw_q.head;
+        sw = sw_q.head;
         sw_q.head = sw_q.tail = NULL;
     } else {
-        new = sw_q.head;
+        sw = sw_q.head;
         sw_q.head = sw_q.head->next;
         sw_q.head->prev = NULL;
     }
@@ -66,9 +66,9 @@ static switch_t *sw_dequeue(void)
 
     pthread_spin_unlock(&sw_q.lock);
 
-    memset(new, 0, sizeof(switch_t));
+    memset(sw, 0, sizeof(switch_t));
 
-    return new;
+    return sw;
 }
 
 /**
@@ -119,13 +119,13 @@ static int sw_q_init(void)
 
     int i;
     for (i=0; i<SW_PRE_ALLOC; i++) {
-        switch_t *new = (switch_t *)MALLOC(sizeof(switch_t));
-        if (new == NULL) {
+        switch_t *sw = (switch_t *)MALLOC(sizeof(switch_t));
+        if (sw == NULL) {
             PERROR("malloc");
             return -1;
         }
 
-        sw_enqueue(new);
+        sw_enqueue(sw);
     }
 
     return 0;

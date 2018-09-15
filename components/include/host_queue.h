@@ -35,15 +35,15 @@ host_queue_t host_q;
  */
 static host_t *host_dequeue(void)
 {
-    host_t *new = NULL;
+    host_t *host = NULL;
 
     pthread_spin_lock(&host_q.lock);
 
     if (host_q.head == NULL) {
         pthread_spin_unlock(&host_q.lock);
 
-        new = (host_t *)CALLOC(1, sizeof(host_t));
-        if (new == NULL) {
+        host = (host_t *)CALLOC(1, sizeof(host_t));
+        if (host == NULL) {
             PERROR("calloc");
             return NULL;
         }
@@ -52,12 +52,12 @@ static host_t *host_dequeue(void)
         host_q.size--;
         pthread_spin_unlock(&host_q.lock);
 
-        return new;
+        return host;
     } else if (host_q.head == host_q.tail) {
-        new = host_q.head;
+        host = host_q.head;
         host_q.head = host_q.tail = NULL;
     } else {
-        new = host_q.head;
+        host = host_q.head;
         host_q.head = host_q.head->next;
         host_q.head->prev = NULL;
     }
@@ -66,9 +66,9 @@ static host_t *host_dequeue(void)
 
     pthread_spin_unlock(&host_q.lock);
 
-    memset(new, 0, sizeof(host_t));
+    memset(host, 0, sizeof(host_t));
 
-    return new;
+    return host;
 }
 
 /**
@@ -120,13 +120,13 @@ static int host_q_init(void)
 
     int i;
     for (i=0; i<HOST_PRE_ALLOC; i++) {
-        host_t *new = (host_t *)MALLOC(sizeof(host_t));
-        if (new == NULL) {
+        host_t *host = (host_t *)MALLOC(sizeof(host_t));
+        if (host == NULL) {
             PERROR("malloc");
             return -1;
         }
 
-        host_enqueue(new);
+        host_enqueue(host);
     }
 
     return 0;
@@ -149,8 +149,6 @@ static int host_q_destroy(void)
 
     pthread_spin_unlock(&host_q.lock);
     pthread_spin_destroy(&host_q.lock);
-
-    memset(&host_q, 0, sizeof(host_queue_t));
 
     return 0;
 }

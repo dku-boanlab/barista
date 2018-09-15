@@ -20,8 +20,6 @@ typedef struct _app_event_t {
     const uint32_t id; /**< Application ID */
     const uint16_t type; /**< App event type */
     const uint16_t length; /**< The length of data */
-    const uint16_t prev; /**< The app event before the previous app event */
-    const uint16_t last; /**< The previous app event */
     const uint32_t checksum; /**< Checksum */
 
     // body
@@ -44,8 +42,6 @@ typedef struct _app_event_out_t {
     uint32_t id; /**< Application ID */
     uint16_t type; /**< App event type */
     uint16_t length; /**< The length of data */
-    uint16_t prev; /**< The app event before the previous app event */
-    uint16_t last; /**< The previous app event */
     uint32_t checksum; /**< Checksum */
 
     // body

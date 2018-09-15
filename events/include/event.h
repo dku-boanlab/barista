@@ -20,8 +20,6 @@ typedef struct _event_t {
     const uint32_t id; /**< Component ID */
     const uint16_t type; /**< Event type */
     const uint16_t length; /**< The length of data */
-    const uint16_t prev; /**< The event before the previous event */
-    const uint16_t last; /**< The previous event */
     const uint32_t checksum; /**< Checksum */
 
     // body
@@ -49,8 +47,6 @@ typedef struct _event_out_t {
     uint32_t id; /**< Component ID */
     uint16_t type; /**< Event type */
     uint16_t length; /**< The length of data */
-    uint16_t prev; /**< The event before the previous event */
-    uint16_t last; /**< The previous event */
     uint32_t checksum; /**< Checksum */
 
     // body

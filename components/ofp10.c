@@ -34,14 +34,12 @@ static int ofp10_hello(const raw_msg_t *msg)
     out.length = sizeof(struct ofp_header);
 
     struct ofp_header *of_input = (struct ofp_header *)msg->data;
-    struct ofp_header of_output;
+    struct ofp_header *of_output = (struct ofp_header *)out.data;
 
-    of_output.version = OFP_VERSION;
-    of_output.type = OFPT_HELLO;
-    of_output.length = htons(sizeof(struct ofp_header));
-    of_output.xid = of_input->xid;
-
-    memmove(out.data, &of_output, sizeof(struct ofp_header));
+    of_output->version = OFP_VERSION;
+    of_output->type = OFPT_HELLO;
+    of_output->length = htons(sizeof(struct ofp_header));
+    of_output->xid = of_input->xid;
 
     ev_ofp_msg_out(OFP_ID, &out);
 
@@ -191,14 +189,12 @@ static int ofp10_echo_reply(const raw_msg_t *msg)
     out.length = sizeof(struct ofp_header);
 
     struct ofp_header *of_input = (struct ofp_header *)msg->data;
-    struct ofp_header of_output;
+    struct ofp_header *of_output = (struct ofp_header *)out.data;
 
-    of_output.version = OFP_VERSION;
-    of_output.type = OFPT_ECHO_REPLY;
-    of_output.length = htons(sizeof(struct ofp_header));
-    of_output.xid = of_input->xid;
-
-    memmove(out.data, &of_output, sizeof(struct ofp_header));
+    of_output->version = OFP_VERSION;
+    of_output->type = OFPT_ECHO_REPLY;
+    of_output->length = htons(sizeof(struct ofp_header));
+    of_output->xid = of_input->xid;
 
     ev_ofp_msg_out(OFP_ID, &out);
 
@@ -217,14 +213,12 @@ static int ofp10_features_request(const raw_msg_t *msg)
     out.length = sizeof(struct ofp_header);
 
     struct ofp_header *of_input = (struct ofp_header *)msg->data;
-    struct ofp_header of_output;
+    struct ofp_header *of_output = (struct ofp_header *)out.data;
 
-    of_output.version = OFP_VERSION;
-    of_output.type = OFPT_FEATURES_REQUEST;
-    of_output.length = htons(sizeof(struct ofp_header));
-    of_output.xid = ntohl(htonl(of_input->xid)+1);
-
-    memmove(out.data, &of_output, sizeof(struct ofp_header));
+    of_output->version = OFP_VERSION;
+    of_output->type = OFPT_FEATURES_REQUEST;
+    of_output->length = htons(sizeof(struct ofp_header));
+    of_output->xid = ntohl(htonl(of_input->xid)+1);
 
     ev_ofp_msg_out(OFP_ID, &out);
 
@@ -283,6 +277,7 @@ static int ofp10_features_reply(const raw_msg_t *msg)
     return 0;
 }
 
+#if 0
 /**
  * \brief Function to generate GET_CONFIG_REQUEST messages
  * \param fd Socket
@@ -294,24 +289,24 @@ static int ofp10_get_config_request(uint32_t fd)
     out.fd = fd;
     out.length = sizeof(struct ofp_header);
 
-    struct ofp_header of_output;
+    struct ofp_header *of_output = (struct ofp_header *)out.data;
 
     switch_t sw = {0};
     sw.fd = fd;
     ev_sw_get_xid(OFP_ID, &sw);
 
-    of_output.version = OFP_VERSION;
-    of_output.type = OFPT_GET_CONFIG_REQUEST;
-    of_output.length = htons(sizeof(struct ofp_header));
-    of_output.xid = htonl(sw.xid);
-
-    memmove(out.data, &of_output, sizeof(struct ofp_header));
+    of_output->version = OFP_VERSION;
+    of_output->type = OFPT_GET_CONFIG_REQUEST;
+    of_output->length = htons(sizeof(struct ofp_header));
+    of_output->xid = htonl(sw.xid);
 
     ev_ofp_msg_out(OFP_ID, &out);
 
     return 0;
 }
+#endif
 
+#if 0
 /**
  * \brief Function to process GET_CONFIG_REPLY messages
  * \param msg GET_CONFIG_REPLY message
@@ -327,7 +322,9 @@ static int ofp10_get_config_reply(const raw_msg_t *msg)
 
     return 0;
 }
+#endif
 
+#if 0
 /**
  * \brief Function to generate SET_CONFIG messages
  * \param fd Socket
@@ -339,27 +336,27 @@ static int ofp10_set_config(uint32_t fd)
     out.fd = fd;
     out.length = sizeof(struct ofp_switch_config);
 
-    struct ofp_switch_config of_output;
+    struct ofp_switch_config *of_output = (struct ofp_switch_config *)out.data;
 
     switch_t sw = {0};
     sw.fd = fd;
     ev_sw_get_xid(OFP_ID, &sw);
 
-    of_output.header.version = OFP_VERSION;
-    of_output.header.type = OFPT_SET_CONFIG;
-    of_output.header.length = htons(sizeof(struct ofp_switch_config));
-    of_output.header.xid = htonl(sw.xid);
+    of_output->header.version = OFP_VERSION;
+    of_output->header.type = OFPT_SET_CONFIG;
+    of_output->header.length = htons(sizeof(struct ofp_switch_config));
+    of_output->header.xid = htonl(sw.xid);
 
-    of_output.flags = htons(0x0);
-    of_output.miss_send_len = htons(1500);
-
-    memmove(out.data, &of_output, sizeof(struct ofp_switch_config));
+    of_output->flags = htons(0x0);
+    of_output->miss_send_len = htons(1500);
 
     ev_ofp_msg_out(OFP_ID, &out);
 
     return 0;
 }
+#endif
 
+#if 0
 /**
  * \brief Function to generate BARRIER_REQUEST messages
  * \param fd Socket
@@ -371,23 +368,22 @@ static int ofp10_barrier_request(uint32_t fd)
     out.fd = fd;
     out.length = sizeof(struct ofp_header);
 
-    struct ofp_header of_output;
+    struct ofp_header *of_output = (struct ofp_header *)out.data;
 
     switch_t sw = {0};
     sw.fd = fd;
     ev_sw_get_xid(OFP_ID, &sw);
 
-    of_output.version = OFP_VERSION;
-    of_output.type = OFPT_BARRIER_REQUEST;
-    of_output.length = htons(sizeof(struct ofp_header));
-    of_output.xid = htonl(sw.xid);
-
-    memmove(out.data, &of_output, sizeof(struct ofp_header));
+    of_output->version = OFP_VERSION;
+    of_output->type = OFPT_BARRIER_REQUEST;
+    of_output->length = htons(sizeof(struct ofp_header));
+    of_output->xid = htonl(sw.xid);
 
     ev_ofp_msg_out(OFP_ID, &out);
 
     return 0;
 }
+#endif
 
 /////////////////////////////////////////////////////////////////////
 
@@ -419,28 +415,6 @@ struct arphdr {
 
 /////////////////////////////////////////////////////////////////////
 
-static int ofp10_packet_out(const pktout_t *pktout);
-
-/**
- * \brief Function to conduct a drop action into the data plane
- * \param pktin Pktin message
- */
-static int discard_packet(const pktin_t *pktin)
-{
-    pktout_t out = {0};
-
-    PKTOUT_INIT(out, pktin);
-
-    out.num_actions = 1;
-    out.action[0].type = ACTION_DISCARD;
-
-    ofp10_packet_out(&out);
-
-    return 0;
-}
-
-/////////////////////////////////////////////////////////////////////
-
 /**
  * \brief Function to process PACKET_IN messages
  * \param msg PACKET_IN message
@@ -450,11 +424,15 @@ static int ofp10_packet_in(const raw_msg_t *msg)
     struct ofp_packet_in *in = (struct ofp_packet_in *)msg->data;
     uint32_t in_port = ntohs(in->in_port);
 
-    pktin_t pktin = {0};
+    if (in_port > __MAX_NUM_PORTS) {
+        return -1;
+    }
 
     switch_t sw = {0};
     sw.fd = msg->fd;
     ev_sw_get_dpid(OFP_ID, &sw);
+
+    pktin_t pktin = {0};
 
     pktin.dpid = sw.dpid;
     pktin.port = in_port;
@@ -463,11 +441,6 @@ static int ofp10_packet_in(const raw_msg_t *msg)
     pktin.buffer_id = ntohl(in->buffer_id);
 
     pktin.reason = in->reason;
-
-    if (in_port > __MAX_NUM_PORTS) {
-        discard_packet(&pktin);
-        return -1;
-    }
 
     pktin.total_len = ntohs(in->total_len);
     uint8_t *data = (uint8_t *)msg->data + sizeof(struct ofp_packet_in) - 2;
@@ -493,80 +466,62 @@ static int ofp10_packet_in(const raw_msg_t *msg)
     memmove(pktin.src_mac, eth_header->ether_shost, ETH_ALEN);
     memmove(pktin.dst_mac, eth_header->ether_dhost, ETH_ALEN);
 
-    switch (ether_type) {
-    case 0x0800: // IPv4
-        {
-            struct iphdr *ip_header = (struct iphdr *)(data + base);
+    if (ether_type == 0x0800) { // IPv4
+        struct iphdr *ip_header = (struct iphdr *)(data + base);
 
-            pktin.proto |= PROTO_IPV4;
+        pktin.proto |= PROTO_IPV4;
 
-            pktin.src_ip = ip_header->saddr;
-            pktin.dst_ip = ip_header->daddr;
+        pktin.src_ip = ip_header->saddr;
+        pktin.dst_ip = ip_header->daddr;
 
-            if (ip_header->protocol == IPPROTO_ICMP) {
-                struct icmphdr *icmp_header = (struct icmphdr *)((uint8_t *)ip_header + sizeof(struct iphdr));
+        if (ip_header->protocol == IPPROTO_ICMP) {
+            struct icmphdr *icmp_header = (struct icmphdr *)((uint8_t *)ip_header + sizeof(struct iphdr));
 
-                pktin.proto |= PROTO_ICMP;
+            pktin.proto |= PROTO_ICMP;
 
-                pktin.type = icmp_header->type;
-                pktin.code = icmp_header->code;
-            } else if (ip_header->protocol == IPPROTO_TCP) {
-                struct tcphdr *tcp_header = (struct tcphdr *)((uint8_t *)ip_header + sizeof(struct iphdr));
+            pktin.type = icmp_header->type;
+            pktin.code = icmp_header->code;
+        } else if (ip_header->protocol == IPPROTO_TCP) {
+            struct tcphdr *tcp_header = (struct tcphdr *)((uint8_t *)ip_header + sizeof(struct iphdr));
 
-                pktin.proto |= PROTO_TCP;
+            pktin.proto |= PROTO_TCP;
 
-                pktin.src_port = ntohs(tcp_header->source);
-                pktin.dst_port = ntohs(tcp_header->dest);
-            } else if (ip_header->protocol == IPPROTO_UDP) {
-                struct tcphdr *tcp_header = (struct tcphdr *)((uint8_t *)ip_header + sizeof(struct iphdr));
+            pktin.src_port = ntohs(tcp_header->source);
+            pktin.dst_port = ntohs(tcp_header->dest);
+        } else if (ip_header->protocol == IPPROTO_UDP) {
+            struct tcphdr *tcp_header = (struct tcphdr *)((uint8_t *)ip_header + sizeof(struct iphdr));
 
-                pktin.src_port = ntohs(tcp_header->source);
-                pktin.dst_port = ntohs(tcp_header->dest);
+            pktin.proto |= PROTO_UDP;
 
-                if (pktin.dst_port == DHCP_SERVER_PORT || pktin.dst_port == DHCP_CLIENT_PORT) { // DHCP
-                    pktin.proto &= !PROTO_IPV4;
-                    pktin.proto |= PROTO_DHCP;
-                } else { // UDP
-                    pktin.proto |= PROTO_UDP;
-                }
-            } else { // IPv4
-                // no pktin.src_port and pktin.dst_port
+            pktin.src_port = ntohs(tcp_header->source);
+            pktin.dst_port = ntohs(tcp_header->dest);
+
+            if (pktin.dst_port == DHCP_SERVER_PORT || pktin.dst_port == DHCP_CLIENT_PORT) { // DHCP
+                pktin.proto |= PROTO_DHCP;
             }
+        } else { // IPv4
+            // no pktin.src_port and pktin.dst_port
         }
-        break;
-    case 0x0806: // ARP
-        {
-            struct arphdr *arp_header = (struct arphdr *)(data + base);
+    } else if (ether_type == 0x0806) { // ARP
+        struct arphdr *arp_header = (struct arphdr *)(data + base);
 
-            pktin.proto |= PROTO_ARP;
+        pktin.proto |= PROTO_ARP;
 
-            uint32_t *src_ip = (uint32_t *)arp_header->arp_spa;
-            uint32_t *dst_ip = (uint32_t *)arp_header->arp_tpa;
+        uint32_t *src_ip = (uint32_t *)arp_header->arp_spa;
+        uint32_t *dst_ip = (uint32_t *)arp_header->arp_tpa;
 
-            pktin.src_ip = *src_ip;
-            pktin.dst_ip = *dst_ip;
+        pktin.src_ip = *src_ip;
+        pktin.dst_ip = *dst_ip;
 
-            pktin.opcode = ntohs(arp_header->ar_op);
+        pktin.opcode = ntohs(arp_header->ar_op);
 
-            // no pktin.dst_port
-        }
-        break;
-    case 0x88cc: // LLDP
-        {
-            pktin.proto |= PROTO_LLDP;
-
-            // no pktin.src_ip, pktin.dst_ip, pktin.src_port, pktin.dst_port
-        }
-        break;
-    default:
-        {
-            pktin.proto |= PROTO_UNKNOWN;
-
-            discard_packet(&pktin);
-
-            return -1;
-        }
-        break;
+        // no pktin.dst_port
+    } else if (ether_type == 0x88cc) { // LLDP
+        pktin.proto |= PROTO_LLDP;
+        // no pktin.src_ip, pktin.dst_ip, pktin.src_port, pktin.dst_port
+    } else {
+        pktin.proto |= PROTO_UNKNOWN;
+        return -1;
     }
 
     ev_dp_receive_packet(OFP_ID, &pktin);
@@ -582,11 +537,11 @@ static int ofp10_flow_removed(const raw_msg_t *msg)
 {
     struct ofp_flow_removed *removed = (struct ofp_flow_removed *)msg->data;
 
-    flow_t flow = {0};
-
     switch_t sw = {0};
     sw.fd = msg->fd;
     ev_sw_get_dpid(OFP_ID, &sw);
+
+    flow_t flow = {0};
 
     flow.dpid = sw.dpid;
     flow.port = ntohs(removed->match.in_port);
@@ -703,14 +658,14 @@ static int ofp10_port_status(const raw_msg_t *msg)
     struct ofp_port_status *status = (struct ofp_port_status *)msg->data;
     struct ofp_phy_port *desc = (struct ofp_phy_port *)&status->desc;
 
-    if (ntohs(desc->port_no) == 0 || ntohs(desc->port_no) > __MAX_NUM_PORTS)
+    if (ntohs(desc->port_no) > __MAX_NUM_PORTS)
         return -1;
-
-    port_t port = {0};
 
     switch_t sw = {0};
     sw.fd = msg->fd;
     ev_sw_get_dpid(OFP_ID, &sw);
+
+    port_t port = {0};
 
     port.dpid = sw.dpid;
     port.port = ntohs(desc->port_no);
@@ -789,9 +744,7 @@ static int ofp10_port_status(const raw_msg_t *msg)
         ev_dp_port_added(OFP_ID, &port);
         break;
     case OFPPR_MODIFY:
-        if (port.config & OFPPC_PORT_DOWN) {
-            ev_dp_port_deleted(OFP_ID, &port);
-        } else if (port.state & OFPPS_LINK_DOWN) {
+        if (port.config & OFPPC_PORT_DOWN || port.state & OFPPS_LINK_DOWN) {
             ev_dp_port_deleted(OFP_ID, &port);
         } else {
             ev_dp_port_modified(OFP_ID, &port);
@@ -837,11 +790,11 @@ static int ofp10_stats_reply(const raw_msg_t *msg)
         {
             struct ofp_flow_stats *stats = (struct ofp_flow_stats *)reply->body;
 
-            flow_t flow = {0};
-
             switch_t sw = {0};
             sw.fd = msg->fd;
             ev_sw_get_dpid(OFP_ID, &sw);
+
+            flow_t flow = {0};
 
             flow.dpid = sw.dpid;
             flow.port = ntohs(stats->match.in_port);
@@ -941,11 +894,11 @@ static int ofp10_stats_reply(const raw_msg_t *msg)
         {
             struct ofp_aggregate_stats_reply *stats = (struct ofp_aggregate_stats_reply *)reply->body;
 
-            flow_t flow = {0};
-
             switch_t sw = {0};
             sw.fd = msg->fd;
             ev_sw_get_dpid(OFP_ID, &sw);
+
+            flow_t flow = {0};
 
             flow.dpid = sw.dpid;
 
@@ -976,7 +929,7 @@ static int ofp10_stats_reply(const raw_msg_t *msg)
 
             int i;
             for (i=0; i<entries; i++) {
-                if (ntohs(stats[i].port_no) == 0 || ntohs(stats[i].port_no) > __MAX_NUM_PORTS)
+                if (ntohs(stats[i].port_no) > __MAX_NUM_PORTS)
                     continue;
 
                 port_t port = {0};
@@ -1544,7 +1497,7 @@ static int ofp10_flow_mod(const flow_t *flow, int command)
 
     ev_ofp_msg_out(OFP_ID, &msg);
 
-    ofp10_barrier_request(msg.fd);
+    //ofp10_barrier_request(msg.fd);
 
     return 0;
 }
@@ -1555,9 +1508,13 @@ static int ofp10_flow_mod(const flow_t *flow, int command)
  */
 static int ofp10_stats_desc_request(uint32_t fd)
 {
-    uint8_t pkt[__MAX_RAW_DATA_LEN] = {0};
-    struct ofp_stats_request *request = (struct ofp_stats_request *)pkt;
+    raw_msg_t out = {0};
+
+    struct ofp_stats_request *request = (struct ofp_stats_request *)out.data;
     int size = sizeof(struct ofp_stats_request);
+
+    out.fd = fd;
+    out.length = size;
 
     switch_t sw = {0};
     sw.fd = fd;
@@ -1571,13 +1528,6 @@ static int ofp10_stats_desc_request(uint32_t fd)
     request->type = htons(OFPST_DESC);
     request->flags = htons(0);
 
-    raw_msg_t out = {0};
-
-    out.fd = fd;
-    out.length = size;
-
-    memmove(out.data, pkt, size);
-
     ev_ofp_msg_out(OFP_ID, &out);
 
     return 0;
@@ -1589,14 +1539,18 @@ static int ofp10_stats_desc_request(uint32_t fd)
  */
 static int ofp10_flow_stats(const flow_t *flow)
 {
-    uint8_t pkt[__MAX_RAW_DATA_LEN] = {0};
-    struct ofp_stats_request *request = (struct ofp_stats_request *)pkt;
+    raw_msg_t out = {0};
+
+    struct ofp_stats_request *request = (struct ofp_stats_request *)out.data;
     int size = sizeof(struct ofp_stats_request) + sizeof(struct ofp_flow_stats_request);
 
     switch_t sw = {0};
     sw.dpid = flow->dpid;
     ev_sw_get_fd(OFP_ID, &sw);
     ev_sw_get_xid(OFP_ID, &sw);
+
+    out.fd = sw.fd;
+    out.length = size;
 
     request->header.version = OFP_VERSION;
     request->header.type = OFPT_STATS_REQUEST;
@@ -1605,7 +1559,7 @@ static int ofp10_flow_stats(const flow_t *flow)
 
     request->type = htons(OFPST_FLOW);
 
-    struct ofp_flow_stats_request *stat = (struct ofp_flow_stats_request *)(pkt + sizeof(struct ofp_stats_request));
+    struct ofp_flow_stats_request *stat = (struct ofp_flow_stats_request *)(out.data + sizeof(struct ofp_stats_request));
 
     // begin of match
 
@@ -1746,14 +1700,7 @@ static int ofp10_flow_stats(const flow_t *flow)
     stat->table_id = 0xff;
     stat->out_port = htons(OFPP_NONE);
 
-    raw_msg_t msg;
-
-    msg.fd = sw.fd;
-    msg.length = size;
-
-    memmove(msg.data, pkt, size);
-
-    ev_ofp_msg_out(OFP_ID, &msg);
+    ev_ofp_msg_out(OFP_ID, &out);
 
     return 0;
 }
@@ -1764,14 +1711,18 @@ static int ofp10_flow_stats(const flow_t *flow)
  */
 static int ofp10_aggregate_stats(const flow_t *flow)
 {
-    uint8_t pkt[__MAX_RAW_DATA_LEN] = {0};
-    struct ofp_stats_request *request = (struct ofp_stats_request *)pkt;
+    raw_msg_t out = {0};
+
+    struct ofp_stats_request *request = (struct ofp_stats_request *)out.data;
     int size = sizeof(struct ofp_stats_request) + sizeof(struct ofp_flow_stats_request);
 
     switch_t sw = {0};
     sw.dpid = flow->dpid;
     ev_sw_get_fd(OFP_ID, &sw);
     ev_sw_get_xid(OFP_ID, &sw);
+
+    out.fd = sw.fd;
+    out.length = size;
 
     request->header.version = OFP_VERSION;
     request->header.type = OFPT_STATS_REQUEST;
@@ -1780,7 +1731,7 @@ static int ofp10_aggregate_stats(const flow_t *flow)
 
     request->type = htons(OFPST_AGGREGATE);
 
-    struct ofp_aggregate_stats_request *stat = (struct ofp_aggregate_stats_request *)(pkt + sizeof(struct ofp_stats_request));
+    struct ofp_aggregate_stats_request *stat = (struct ofp_aggregate_stats_request *)(out.data + sizeof(struct ofp_stats_request));
 
     // begin of match
 
@@ -1791,14 +1742,7 @@ static int ofp10_aggregate_stats(const flow_t *flow)
     stat->table_id = 0xff;
     stat->out_port = htons(OFPP_NONE);
 
-    raw_msg_t msg = {0};
-
-    msg.fd = sw.fd;
-    msg.length = size;
-
-    memmove(msg.data, pkt, size);
-
-    ev_ofp_msg_out(OFP_ID, &msg);
+    ev_ofp_msg_out(OFP_ID, &out);
 
     return 0;
 }
@@ -1809,14 +1753,18 @@ static int ofp10_aggregate_stats(const flow_t *flow)
  */
 static int ofp10_port_stats(const port_t *port)
 {
-    uint8_t pkt[__MAX_RAW_DATA_LEN] = {0};
-    struct ofp_stats_request *request = (struct ofp_stats_request *)pkt;
+    raw_msg_t out = {0};
+
+    struct ofp_stats_request *request = (struct ofp_stats_request *)out.data;
     int size = sizeof(struct ofp_stats_request) + sizeof(struct ofp_port_stats_request);
 
     switch_t sw = {0};
     sw.dpid = port->dpid;
     ev_sw_get_fd(OFP_ID, &sw);
     ev_sw_get_xid(OFP_ID, &sw);
+
+    out.fd = sw.fd;
+    out.length = size;
 
     request->header.version = OFP_VERSION;
     request->header.type = OFPT_STATS_REQUEST;
@@ -1825,7 +1773,7 @@ static int ofp10_port_stats(const port_t *port)
 
     request->type = htons(OFPST_PORT);
 
-    struct ofp_port_stats_request *stat = (struct ofp_port_stats_request *)(pkt + sizeof(struct ofp_stats_request));
+    struct ofp_port_stats_request *stat = (struct ofp_port_stats_request *)(out.data + sizeof(struct ofp_stats_request));
 
     if (port->port == PORT_NONE)
         stat->port_no = htons(OFPP_NONE);
@@ -1833,14 +1781,7 @@ static int ofp10_port_stats(const port_t *port)
         stat->port_no = htons(port->port);
     }
 
-    raw_msg_t msg = {0};
-
-    msg.fd = sw.fd;
-    msg.length = size;
-
-    memmove(msg.data, pkt, size);
-
-    ev_ofp_msg_out(OFP_ID, &msg);
+    ev_ofp_msg_out(OFP_ID, &out);
 
     return 0;
 }
@@ -1885,10 +1826,10 @@ static int ofp10_engine(const raw_msg_t *msg)
         DEBUG("OFPT_FEATURES_REPLY\n");
         ofp10_features_reply(msg);
 
-        ofp10_set_config(msg->fd);
-        ofp10_barrier_request(msg->fd);
+        //ofp10_set_config(msg->fd);
+        //ofp10_barrier_request(msg->fd);
 
-        ofp10_get_config_request(msg->fd);
+        //ofp10_get_config_request(msg->fd);
         ofp10_stats_desc_request(msg->fd);
         break;
     case OFPT_GET_CONFIG_REQUEST:
@@ -1897,7 +1838,7 @@ static int ofp10_engine(const raw_msg_t *msg)
         break;
     case OFPT_GET_CONFIG_REPLY:
         DEBUG("OFPT_GET_CONFIG_REPLY\n");
-        ofp10_get_config_reply(msg);
+        //ofp10_get_config_reply(msg);
         break;
     case OFPT_SET_CONFIG:
         DEBUG("OFPT_SET_CONFIG\n");

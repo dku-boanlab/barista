@@ -35,15 +35,15 @@ flow_queue_t flow_q;
  */
 static flow_t *flow_dequeue(void)
 {
-    flow_t *new = NULL;
+    flow_t *flow = NULL;
 
     pthread_spin_lock(&flow_q.lock);
 
     if (flow_q.head == NULL) {
         pthread_spin_unlock(&flow_q.lock);
 
-        new = (flow_t *)CALLOC(1, sizeof(flow_t));
-        if (new == NULL) {
+        flow = (flow_t *)CALLOC(1, sizeof(flow_t));
+        if (flow == NULL) {
             PERROR("calloc");
             return NULL;
         }
@@ -52,12 +52,12 @@ static flow_t *flow_dequeue(void)
         flow_q.size--;
         pthread_spin_unlock(&flow_q.lock);
 
-        return new;
+        return flow;
     } else if (flow_q.head == flow_q.tail) {
-        new = flow_q.head;
+        flow = flow_q.head;
         flow_q.head = flow_q.tail = NULL;
     } else {
-        new = flow_q.head;
+        flow = flow_q.head;
         flow_q.head = flow_q.head->next;
         flow_q.head->prev = NULL;
     }
@@ -66,9 +66,9 @@ static flow_t *flow_dequeue(void)
 
     pthread_spin_unlock(&flow_q.lock);
 
-    memset(new, 0, sizeof(flow_t));
+    memset(flow, 0, sizeof(flow_t));
 
-    return new;
+    return flow;
 }
 
 /**
@@ -120,13 +120,13 @@ static int flow_q_init(void)
 
     int i;
     for (i=0; i<FLOW_PRE_ALLOC; i++) {
-        flow_t *new = (flow_t *)MALLOC(sizeof(flow_t));
-        if (new == NULL) {
+        flow_t *flow = (flow_t *)MALLOC(sizeof(flow_t));
+        if (flow == NULL) {
             PERROR("malloc");
             return -1;
         }
 
-        flow_enqueue(new);
+        flow_enqueue(flow);
     }
 
     return 0;
@@ -149,10 +149,7 @@ static int flow_q_destroy(void)
     }
 
     pthread_spin_unlock(&flow_q.lock);
-
     pthread_spin_destroy(&flow_q.lock);
-
-    memset(&flow_q, 0, sizeof(flow_queue_t));
 
     return 0;
 }

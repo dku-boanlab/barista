@@ -157,8 +157,6 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 {
     context_t *c = &context[sock];
 
-    //printf("bytes = %d\n", bytes);
-
     uint8_t *temp = c->temp;
     int need = c->need;
     int done = c->done;
@@ -192,6 +190,7 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 
                 need = 0;
                 done = bytes;
+
                 bytes = 0;
             } else {
                 uint16_t len = ntohs(ofph->length);
@@ -201,6 +200,7 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 
                     need = len - bytes;
                     done = bytes;
+
                     bytes = 0;
                 } else {
                     raw_msg_t msg = {0};
@@ -217,6 +217,7 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 
                     bytes -= len;
                     buf_ptr += len;
+
                     need = 0;
                     done = 0;
                 }
@@ -229,6 +230,7 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 
                 need -= bytes;
                 done += bytes;
+
                 bytes = 0;
             } else {
                 raw_msg_t msg = {0};
@@ -246,6 +248,7 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 
                 bytes -= need;
                 buf_ptr += need;
+
                 need = 0;
                 done = 0;
             }
@@ -487,14 +490,12 @@ static int nonblocking_mode(const int fd)
  */
 static int init_socket(uint16_t port)
 {
-    struct sockaddr_in server;
-    int option = 1;
-
     if ((sc = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         PERROR("socket");
         return -1;
     }
 
+    int option = 1;
     if (setsockopt(sc, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) {
         PERROR("setsockopt");
     }
@@ -504,6 +505,7 @@ static int init_socket(uint16_t port)
         return -1;
     }
 
+    struct sockaddr_in server;
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
     server.sin_port = htons(port);

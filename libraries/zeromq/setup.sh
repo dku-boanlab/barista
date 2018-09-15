@@ -16,7 +16,3 @@ cd ..
 
 # remove the source files
 rm -rf zeromq-4.2.2
-
-# install ZeroMQ python library
-sudo apt-get install -y python-dev python-pip
-sudo pip install pyzmq

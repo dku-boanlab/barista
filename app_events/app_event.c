@@ -40,11 +40,8 @@ void *av_pull_sock;
 /** \brief The MQ context to handle request-response events */
 void *av_rep_ctx;
 
-/** \brief The MQ socket to handle request-response events */
-void *av_rep_app;
-
-/** \brief The MQ socket for workers */
-void *av_rep_work;
+/** \brief The MQ socket for applications and workers */
+void *av_rep_app, *av_rep_work;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -401,7 +398,7 @@ int destroy_av_workers(ctx_t *ctx)
 {
     av_on = FALSE;
 
-    waitsec(2, 0);
+    waitsec(1, 0);
 
     zmq_close(av_pull_sock);
     zmq_ctx_destroy(av_pull_ctx);

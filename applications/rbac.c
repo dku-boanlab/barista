@@ -136,13 +136,12 @@ static int load_app_roles(char *conf_file)
         }
 
         if (strlen(name) == 0) {
-            ALOG_DEBUG(RBAC_ID, "no application name");
+            ALOG_ERROR(RBAC_ID, "No application name");
             return -1;
+        } else {
+            app_to_role[app_to_role_cnt].id = hash_func((uint32_t *)&name, __HASHING_NAME_LENGTH);
+            strcpy(app_to_role[app_to_role_cnt].name, name);
         }
-
-        app_to_role[app_to_role_cnt].id = hash_func((uint32_t *)&name, __HASHING_NAME_LENGTH);
-
-        strcpy(app_to_role[app_to_role_cnt].name, name);
 
         if (strlen(role) == 0) {
             app_to_role[app_to_role_cnt].role = APP_NETWORK;
@@ -157,8 +156,10 @@ static int load_app_roles(char *conf_file)
                 app_to_role[app_to_role_cnt].role = APP_SECURITY;
             else if (strcmp(role, "admin") == 0)
                 app_to_role[app_to_role_cnt].role = APP_ADMIN;
-            else
-                app_to_role[app_to_role_cnt].role = APP_NETWORK;
+            else {
+                ALOG_ERROR(RBAC_ID, "Non-existent role type");
+                return -1;
+            }
         }
 
         app_to_role_cnt++;
@@ -210,7 +211,7 @@ static int load_events_for_roles(char *role_file)
 
         int role = 0;
         if (strlen(name) == 0) {
-            ALOG_DEBUG(RBAC_ID, "no role type");
+            ALOG_ERROR(RBAC_ID, "No role type");
             return -1;
         } else {
             if (strcmp(name, "network") == 0)
@@ -221,8 +222,10 @@ static int load_events_for_roles(char *role_file)
                 role = APP_SECURITY;
             else if (strcmp(name, "admin") == 0)
                 role = APP_ADMIN;
-            else
-                continue;
+            else {
+                ALOG_ERROR(RBAC_ID, "Non-existent role type");
+                return -1;
+            }
         }
 
         strcpy(role_to_event[role].name, name);
@@ -235,7 +238,7 @@ static int load_events_for_roles(char *role_file)
                 json_t *event = json_array_get(events, j);
 
                 if (app_event_type(json_string_value(event)) == AV_NUM_EVENTS) {
-                    ALOG_DEBUG(RBAC_ID, "wrong app event name");
+                    ALOG_ERROR(RBAC_ID, "Wrong app event name");
                     return -1;
                 }
             }
@@ -305,12 +308,18 @@ int rbac_main(int *activated, int argc, char **argv)
     memset(role_to_event, 0, sizeof(role2ev_t) * NUM_APP_ROLES);
     
     // load app roles
-    if (load_app_roles(app_file) < 0)
+    if (load_app_roles(app_file) < 0) {
+        FREE(role_to_event);
+        FREE(app_to_role);
         return -1;
+    }
 
     // load app events for each role
-    if (load_events_for_roles(role_file) < 0)
+    if (load_events_for_roles(role_file) < 0) {
+        FREE(role_to_event);
+        FREE(app_to_role);
         return -1;
+    }
 
     activate();
 

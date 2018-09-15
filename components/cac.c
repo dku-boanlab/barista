@@ -110,7 +110,7 @@ static int config_load(char *conf_file)
 
         // set a component name
         if (strlen(name) == 0) {
-            LOG_DEBUG(CAC_ID, "no component name");
+            LOG_ERROR(CAC_ID, "No component name");
             return -1;
         } else {
             strcpy(component[num_components].name, name);
@@ -125,7 +125,7 @@ static int config_load(char *conf_file)
                 json_t *event = json_array_get(events, j);
 
                 if (ev_type(json_string_value(event)) == EV_NUM_EVENTS) {
-                    LOG_DEBUG(CAC_ID, "wrong event name");
+                    LOG_ERROR(CAC_ID, "Wrong event name");
                     return -1;
                 }
             }
@@ -174,7 +174,7 @@ static int config_load(char *conf_file)
                 json_t *out_event = json_array_get(out_events, j);
 
                 if (ev_type(json_string_value(out_event)) == EV_NUM_EVENTS) {
-                    LOG_DEBUG(CAC_ID, "wrong event name");
+                    LOG_ERROR(CAC_ID, "Wrong event name");
                     return -1;
                 }
             }
@@ -236,8 +236,10 @@ int cac_main(int *activated, int argc, char **argv)
         return -1;
     }
 
-    if (config_load(compnt_file) < 0)
+    if (config_load(compnt_file) < 0) {
+        FREE(component);
         return -1;
+    }
 
     activate();
 
@@ -277,6 +279,7 @@ int cac_cli(cli_t *cli, char **args)
 int cac_handler(const event_t *ev, event_out_t *ev_out)
 {
     int res = verify_component(ev->id, ev->type);
+
     if (res < 0) {
         LOG_WARN(CAC_ID, "Wrong component ID (caller: %u, event: %s)", ev->id, ev_str[ev->type]);
         return -1;

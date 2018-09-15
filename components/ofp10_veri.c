@@ -289,7 +289,6 @@ static int ofp_msg_verification(uint32_t id, const raw_msg_t *msg)
     case OFPT_QUEUE_GET_CONFIG_REPLY:
         // do nothing
         break;
-
     default:
         break;
     }
@@ -350,7 +349,8 @@ int ofp10_veri_handler(const event_t *ev, event_out_t *ev_out)
         {
             const raw_msg_t *msg = ev->msg;
             if (ofp_msg_verification(ev->id, msg)) {
-                return -1;
+                //return -1;
+                return 0;
             }
         }
         break;
@@ -359,7 +359,8 @@ int ofp10_veri_handler(const event_t *ev, event_out_t *ev_out)
         {
             const raw_msg_t *msg = ev->msg;
             if (ofp_msg_verification(ev->id, msg)) {
-                return -1;
+                //return -1;
+                return 0;
             }
         }
         break;

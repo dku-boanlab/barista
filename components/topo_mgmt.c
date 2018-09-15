@@ -26,10 +26,13 @@
 /** \brief The default TTL value */
 #define DEFAULT_TTL 64
 
+/////////////////////////////////////////////////////////////////////
+
 /** \brief The structure of a topology */
 typedef struct _topo_t {
     uint64_t dpid; /**< Datapath ID */
     uint32_t remote; /**< Remote switch */
+
     port_t port[__MAX_NUM_PORTS]; /**< Ports */
 } topo_t;
 
@@ -136,27 +139,6 @@ static int send_lldp(uint64_t dpid, port_t *port)
     pktout.action[0].port = port->port;
 
     ev_dp_send_packet(TOPO_MGMT_ID, &pktout);
-
-    return 0;
-}
-
-/**
- * \brief Function to conduct a drop action into the data plane
- * \param pktin Pktin message
- */
-static int discard_packet(const pktin_t *pktin)
-{
-    if (pktin->buffer_id == 0xffffffff)
-        return -1;
-
-    pktout_t out = {0};
-
-    PKTOUT_INIT(out, pktin);
-
-    out.num_actions = 1;
-    out.action[0].type = ACTION_DISCARD;
-
-    ev_dp_send_packet(TOPO_MGMT_ID, &out);
 
     return 0;
 }
@@ -270,8 +252,8 @@ int topo_mgmt_main(int *activated, int argc, char **argv)
         pthread_rwlock_unlock(&topo_lock);
 
         for (i=0; i<TOPO_MGMT_REQUEST_TIME; i++) {
-            waitsec(1, 0);
             if (!*activated) break;
+            waitsec(1, 0);
         }
     }
 
@@ -449,8 +431,6 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                     LOG_INFO(TOPO_MGMT_ID, "Detected a new link {(%lu, %u) -> (%lu, %u)}", src_dpid, src_port, dst_dpid, dst_port);
                 }
 
-                discard_packet(pktin);
-
                 return -1;
             }
         }
@@ -534,6 +514,7 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                         topo[i].port[port->port].port = port->port;
                         memmove(&topo[i].port[port->port].hw_addr, port->hw_addr, ETH_ALEN);
                     }
+
                     break;
                 }
             }
@@ -644,6 +625,7 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                         LOG_INFO(TOPO_MGMT_ID, "Detected a new link {(%lu, %u) -> (%lu, %u)}", 
                                  link->dpid, link->port, link->target_dpid, link->target_port);
                     }
+
                     break;
                 }
             }
@@ -670,6 +652,7 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                         LOG_INFO(TOPO_MGMT_ID, "Deleted a link {(%lu, %u) -> (%lu, %u)}",
                                  link->dpid, link->port, link->target_dpid, link->target_port);
                     }
+
                     break;
                 }
             }

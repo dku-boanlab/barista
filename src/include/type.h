@@ -107,8 +107,7 @@ typedef struct _switch_t {
     struct _switch_t *next; /**< The next entry in the switch list */
 } switch_t;
 
-/** \brief The maximum number of ports */
-#define __MAX_NUM_PORTS 64
+/////////////////////////////////////////////////////////////////////
 
 /** \brief The length of a MAC address */
 #define ETH_ALEN 6
@@ -170,6 +169,8 @@ typedef struct _port_t {
     struct _port_t *next; /**< The next entry in the port list */
 } port_t;
 
+/////////////////////////////////////////////////////////////////////
+
 /** \brief The structure of a host */
 typedef struct _host_t {
     uint64_t dpid; /**< Datapath ID */
@@ -186,6 +187,8 @@ typedef struct _host_t {
     struct _host_t *r_next; /**< The next entry for removal */
 } host_t;
 
+/////////////////////////////////////////////////////////////////////
+
 /** \brief Protocol masks */
 enum proto_mask {
     PROTO_VLAN    = 1 << 0,
@@ -201,6 +204,9 @@ enum proto_mask {
 
 /** \brief The max size of the raw packet kept in the pktin structure */
 #define __MAX_PKT_SIZE 1514
+
+/** \brief Broadcast MAC address */
+#define __BROADCAST_MAC 0xffffffffffff
 
 /** \brief The structure of an incoming packet */
 typedef struct _pktin_t {
@@ -228,6 +234,7 @@ typedef struct _pktin_t {
         uint16_t type; /**< ICMP type */
         uint16_t opcode; /**< ARP opcode */
     };
+
     union {
         uint16_t dst_port; /**< Destination port */
         uint16_t code; /**< ICMP code */
@@ -236,6 +243,8 @@ typedef struct _pktin_t {
     uint16_t total_len; /**< The length of data */
     uint8_t data[__MAX_PKT_SIZE]; /**< Ethernet frame */
 } pktin_t;
+
+/////////////////////////////////////////////////////////////////////
 
 /** \brief The action list supported by Barista */
 enum {
@@ -280,6 +289,8 @@ typedef struct _action_t {
     }; 
 } action_t;
 
+/////////////////////////////////////////////////////////////////////
+
 /** \brief Function to initialize a pktout using pktin */
 #define PKTOUT_INIT(x, y) { \
     x.dpid = y->dpid; \
@@ -302,6 +313,8 @@ typedef struct _pktout_t {
     uint16_t total_len; /**< The length of raw data */
     uint8_t data[__MAX_PKT_SIZE]; /**< Ethernet frame (available when buffer_id = -1) */
 } pktout_t;
+
+/////////////////////////////////////////////////////////////////////
 
 /** \brief Default idle timeout */
 #define DEFAULT_IDLE_TIMEOUT 10
@@ -443,6 +456,8 @@ typedef struct _flow_t {
     struct _flow_t *r_next; /**< The next entry for removal */
 } flow_t;
 
+/////////////////////////////////////////////////////////////////////
+
 /** \brief The structure of traffic usage */
 typedef struct _traffic_t {
     // traffic (inbound)
@@ -453,6 +468,8 @@ typedef struct _traffic_t {
     uint64_t out_pkt_cnt; /**< The packet count of outgoing OpenFlow messages */
     uint64_t out_byte_cnt; /**< The byte count of outgoing OpenFlow messages */
 } traffic_t;
+
+/////////////////////////////////////////////////////////////////////
 
 /** \brief The structure of resource usage */
 typedef struct _resource_t {

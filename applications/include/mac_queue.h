@@ -35,15 +35,15 @@ mac_queue_t mac_q;
  */
 static mac_entry_t *mac_dequeue(void)
 {
-    mac_entry_t *new = NULL;
+    mac_entry_t *mac = NULL;
 
     pthread_spin_lock(&mac_q.lock);
 
     if (mac_q.head == NULL) {
         pthread_spin_unlock(&mac_q.lock);
 
-        new = (mac_entry_t *)CALLOC(1, sizeof(mac_entry_t));
-        if (new == NULL) {
+        mac = (mac_entry_t *)CALLOC(1, sizeof(mac_entry_t));
+        if (mac == NULL) {
             PERROR("calloc");
             return NULL;
         }
@@ -52,12 +52,12 @@ static mac_entry_t *mac_dequeue(void)
         mac_q.size--;
         pthread_spin_unlock(&mac_q.lock);
 
-        return new;
+        return mac;
     } else if (mac_q.head == mac_q.tail) {
-        new = mac_q.head;
+        mac = mac_q.head;
         mac_q.head = mac_q.tail = NULL;
     } else {
-        new = mac_q.head;
+        mac = mac_q.head;
         mac_q.head = mac_q.head->next;
         mac_q.head->prev = NULL;
     }
@@ -66,9 +66,9 @@ static mac_entry_t *mac_dequeue(void)
 
     pthread_spin_unlock(&mac_q.lock);
 
-    memset(new, 0, sizeof(mac_entry_t));
+    memset(mac, 0, sizeof(mac_entry_t));
 
-    return new;
+    return mac;
 }
 
 /**
@@ -119,13 +119,13 @@ static int mac_q_init(void)
 
     int i;
     for (i=0; i<MAC_PRE_ALLOC; i++) {
-        mac_entry_t *new = (mac_entry_t *)MALLOC(sizeof(mac_entry_t));
-        if (new == NULL) {
+        mac_entry_t *mac = (mac_entry_t *)MALLOC(sizeof(mac_entry_t));
+        if (mac == NULL) {
             PERROR("malloc");
             return -1;
         }
 
-        mac_enqueue(new);
+        mac_enqueue(mac);
     }
 
     return 0;

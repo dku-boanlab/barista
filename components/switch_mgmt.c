@@ -282,9 +282,9 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             pthread_rwlock_unlock(&switches.lock);
 
-            if (tmp->dpid == 0) { // closed without handshake
+            if (tmp->dpid == 0) {
                 LOG_DEBUG(SWITCH_MGMT_ID, "Closed (FD=%d)", sw->fd);
-            } else { // disconnected
+            } else {
                 num_switches--;
 
                 switch_t out = {0};
@@ -323,7 +323,6 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
             if (pass == FALSE) {
                 switch_t *new = sw_dequeue();
                 if (new == NULL) {
-                    PERROR("sw_dequeue");
                     return -1;
                 }
 

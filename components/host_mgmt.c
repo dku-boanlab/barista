@@ -42,6 +42,60 @@ host_table_t *host_table;
 
 /////////////////////////////////////////////////////////////////////
 
+static int clean_up_tmp_list(int i, host_table_t *tmp_list, int remote)
+{
+    host_t *curr = tmp_list->head;
+
+    while (curr != NULL) {
+        host_t *tmp = curr;
+
+        curr = curr->r_next;
+
+        if (tmp->prev != NULL && tmp->next != NULL) {
+            tmp->prev->next = tmp->next;
+            tmp->next->prev = tmp->prev;
+        } else if (tmp->prev == NULL && tmp->next != NULL) {
+            host_table[i].head = tmp->next;
+            tmp->next->prev = NULL;
+        } else if (tmp->prev != NULL && tmp->next == NULL) {
+            host_table[i].tail = tmp->prev;
+            tmp->prev->next = NULL;
+        } else if (tmp->prev == NULL && tmp->next == NULL) {
+            host_table[i].head = NULL;
+            host_table[i].tail = NULL;
+        }
+
+        host_t out = {0};
+
+        out.dpid = tmp->dpid;
+        out.port = tmp->port;
+
+        out.mac = tmp->mac;
+        out.ip = tmp->ip;
+
+        if (remote == FALSE) {
+            ev_host_deleted(HOST_MGMT_ID, &out);
+        }
+
+        struct in_addr ip_addr;
+        ip_addr.s_addr = out.ip;
+
+        uint8_t macaddr[6];
+        int2mac(out.mac, macaddr);
+
+        LOG_INFO(HOST_MGMT_ID, "Deleted a device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
+                 out.dpid, inet_ntoa(ip_addr),
+                 macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5],
+                 out.port);
+
+        host_enqueue(tmp);
+    }
+
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////
+
 /**
  * \brief Function to look up a host (locked)
  * \param list Host table mapped to a MAC address
@@ -51,18 +105,17 @@ host_table_t *host_table;
  */
 static int check_host(host_table_t *list, uint32_t ip, uint64_t mac)
 {
-    host_t *curr = list->head;
+    host_t *curr = NULL; 
 
-    while (curr != NULL) {
+    for (curr = list->head; curr != NULL; curr = curr->next) {
         if (curr->ip == ip && curr->mac == mac) {
             return 1;
         } else if (curr->ip == ip && curr->mac != mac) {
             uint8_t orig[ETH_ALEN], in[ETH_ALEN];
+            struct in_addr orig_ip;
 
             int2mac(curr->mac, orig);
             int2mac(mac, in);
-
-            struct in_addr orig_ip;
 
             orig_ip.s_addr = curr->ip;
 
@@ -73,14 +126,13 @@ static int check_host(host_table_t *list, uint32_t ip, uint64_t mac)
 
             return 2;
         } else if (curr->mac == mac && curr->ip != ip) {
+            uint8_t m[ETH_ALEN];
             struct in_addr orig, in;
+
+            int2mac(curr->mac, m);
 
             orig.s_addr = curr->ip;
             in.s_addr = ip;
-
-            uint8_t m[ETH_ALEN];
-
-            int2mac(curr->mac, m);
 
             if (strcmp(inet_ntoa(orig), inet_ntoa(in)) != 0) {
                 LOG_WARN(HOST_MGMT_ID, "Wrong IP address (MAC: %02x:%02x:%02x:%02x:%02x:%02x, "
@@ -92,8 +144,6 @@ static int check_host(host_table_t *list, uint32_t ip, uint64_t mac)
 
             return 3;
         }
-
-        curr = curr->next;
     }
 
     return 0;
@@ -109,22 +159,19 @@ static int add_new_host(const pktin_t *pktin)
 {
 #ifdef __ENABLE_CBENCH
     return 0;
-#else /* !__ENABLE_CBENCH */
+#endif /* __ENABLE_CBENCH */
+
     struct in_addr src_ip;
     src_ip.s_addr = pktin->src_ip;
 
     if (strncmp(inet_ntoa(src_ip), "169.254.", 8) == 0)
         return -1;
 
-    if (strncmp(inet_ntoa(src_ip), "0.0.0.0", 7) == 0)
-        return -1;
-
     uint64_t mac = mac2int(pktin->src_mac);
     uint32_t mkey = hash_func((uint32_t *)&mac, 2) % __DEFAULT_TABLE_SIZE;
 
-    int ret = 0;
     pthread_rwlock_rdlock(&host_table[mkey].lock);
-    ret = check_host(&host_table[mkey], pktin->src_ip, mac);
+    int ret = check_host(&host_table[mkey], pktin->src_ip, mac);
     pthread_rwlock_unlock(&host_table[mkey].lock);
 
     if (ret == 0) {
@@ -159,14 +206,12 @@ static int add_new_host(const pktin_t *pktin)
         ev_host_added(HOST_MGMT_ID, new);
 
         LOG_INFO(HOST_MGMT_ID, "Detected a new device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
-                 pktin->dpid,
-                 inet_ntoa(src_ip),
+                 pktin->dpid, inet_ntoa(src_ip),
                  pktin->src_mac[0], pktin->src_mac[1], pktin->src_mac[2], pktin->src_mac[3], pktin->src_mac[4], pktin->src_mac[5],
                  pktin->port);
     }
 
     return ret;
-#endif /* !__ENABLE_CBENCH */
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -249,8 +294,8 @@ static int host_listup(cli_t *cli)
     for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
         pthread_rwlock_rdlock(&host_table[i].lock);
 
-        host_t *curr = host_table[i].head;
-        while (curr != NULL) {
+        host_t *curr = NULL;
+        for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
             uint8_t macaddr[6];
             int2mac(curr->mac, macaddr);
 
@@ -260,8 +305,6 @@ static int host_listup(cli_t *cli)
             cli_print(cli, "  Host #%d\n    DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u", 
                       ++cnt, curr->dpid, inet_ntoa(ip_addr), 
                       macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], curr->port);
-
-            curr = curr->next;
         }
 
         pthread_rwlock_unlock(&host_table[i].lock);
@@ -285,8 +328,8 @@ static int host_showup_switch(cli_t *cli, const char *dpid_str)
     for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
         pthread_rwlock_rdlock(&host_table[i].lock);
 
-        host_t *curr = host_table[i].head;
-        while (curr != NULL) {
+        host_t *curr = NULL;
+        for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
             if (curr->dpid == dpid) {
                 uint8_t mac[6];
                 int2mac(curr->mac, mac);
@@ -298,8 +341,6 @@ static int host_showup_switch(cli_t *cli, const char *dpid_str)
                           ++cnt, curr->dpid, inet_ntoa(ip_addr),
                           mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], curr->port);
             }
-
-            curr = curr->next;
         }
 
         pthread_rwlock_unlock(&host_table[i].lock);
@@ -325,8 +366,8 @@ static int host_showup_ip(cli_t *cli, const char *ipaddr)
     for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
         pthread_rwlock_rdlock(&host_table[i].lock);
 
-        host_t *curr = host_table[i].head;
-        while (curr != NULL) {
+        host_t *curr = NULL;
+        for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
             struct in_addr ip_addr;
             inet_aton(ipaddr, &ip_addr);
 
@@ -338,8 +379,6 @@ static int host_showup_ip(cli_t *cli, const char *ipaddr)
                           ++cnt, curr->dpid, ipaddr,
                           macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], curr->port);
             }
-
-            curr = curr->next;
         }
 
         pthread_rwlock_unlock(&host_table[i].lock);
@@ -368,8 +407,8 @@ static int host_showup_mac(cli_t *cli, const char *macaddr)
     for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
         pthread_rwlock_rdlock(&host_table[i].lock);
 
-        host_t *curr = host_table[i].head;
-        while (curr != NULL) {
+        host_t *curr = NULL;
+        for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
             if (curr->mac == imac) {
                 struct in_addr ip_addr;
                 ip_addr.s_addr = curr->ip;
@@ -378,8 +417,6 @@ static int host_showup_mac(cli_t *cli, const char *macaddr)
                           ++cnt, curr->dpid, inet_ntoa(ip_addr),
                           mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], curr->port);
             }
-
-            curr = curr->next;
         }
 
         pthread_rwlock_unlock(&host_table[i].lock);
@@ -436,7 +473,8 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
     case EV_DP_RECEIVE_PACKET:
         PRINT_EV("EV_DP_RECEIVE_PACKET\n");
         {
-            add_new_host(ev->pktin);
+            const pktin_t *pktin = ev->pktin;
+            add_new_host(pktin);
         }
         break;
     case EV_DP_PORT_ADDED:
@@ -450,8 +488,8 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
                 pthread_rwlock_wrlock(&host_table[i].lock);
 
-                host_t *curr = host_table[i].head;
-                while (curr != NULL) {
+                host_t *curr = NULL;
+                for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
                     if (curr->dpid == port->dpid && curr->port == port->port) {
                         if (tmp_list.head == NULL) {
                             tmp_list.head = curr;
@@ -465,54 +503,9 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
                         num_hosts--;
                     }
-
-                    curr = curr->next;
                 }
 
-                curr = tmp_list.head;
-                while (curr != NULL) {
-                    host_t *tmp = curr;
-
-                    curr = curr->r_next;
-
-                    if (tmp->prev != NULL && tmp->next != NULL) {
-                        tmp->prev->next = tmp->next;
-                        tmp->next->prev = tmp->prev;
-                    } else if (tmp->prev == NULL && tmp->next != NULL) {
-                        host_table[i].head = tmp->next;
-                        tmp->next->prev = NULL;
-                    } else if (tmp->prev != NULL && tmp->next == NULL) {
-                        host_table[i].tail = tmp->prev;
-                        tmp->prev->next = NULL;
-                    } else if (tmp->prev == NULL && tmp->next == NULL) {
-                        host_table[i].head = NULL;
-                        host_table[i].tail = NULL;
-                    }
-
-                    host_t out = {0};
-
-                    out.dpid = tmp->dpid;
-                    out.port = tmp->port;
-
-                    out.mac = tmp->mac;
-                    out.ip = tmp->ip;
-
-                    ev_host_deleted(HOST_MGMT_ID, &out);
-
-                    struct in_addr ip_addr;
-                    ip_addr.s_addr = out.ip;
-
-                    uint8_t macaddr[6];
-                    int2mac(out.mac, macaddr);
-
-                    LOG_INFO(HOST_MGMT_ID, "Deleted a device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
-                             out.dpid,
-                             inet_ntoa(ip_addr),
-                             macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5],
-                             out.port);
-
-                    host_enqueue(tmp);
-                }
+                clean_up_tmp_list(i, &tmp_list, FALSE);
 
                 pthread_rwlock_unlock(&host_table[i].lock);
             }
@@ -529,8 +522,8 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
                 pthread_rwlock_wrlock(&host_table[i].lock);
 
-                host_t *curr = host_table[i].head;
-                while (curr != NULL) {
+                host_t *curr = NULL;
+                for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
                     if (curr->dpid == port->dpid && curr->port == port->port) {
                         if (tmp_list.head == NULL) {
                             tmp_list.head = curr;
@@ -544,54 +537,9 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
                         num_hosts--;
                     }
-
-                    curr = curr->next;
                 }
 
-                curr = tmp_list.head;
-                while (curr != NULL) {
-                    host_t *tmp = curr;
-
-                    curr = curr->r_next;
-
-                    if (tmp->prev != NULL && tmp->next != NULL) {
-                        tmp->prev->next = tmp->next;
-                        tmp->next->prev = tmp->prev;
-                    } else if (tmp->prev == NULL && tmp->next != NULL) {
-                        host_table[i].head = tmp->next;
-                        tmp->next->prev = NULL;
-                    } else if (tmp->prev != NULL && tmp->next == NULL) {
-                        host_table[i].tail = tmp->prev;
-                        tmp->prev->next = NULL;
-                    } else if (tmp->prev == NULL && tmp->next == NULL) {
-                        host_table[i].head = NULL;
-                        host_table[i].tail = NULL;
-                    }
-
-                    host_t out = {0};
-
-                    out.dpid = tmp->dpid;
-                    out.port = tmp->port;
-
-                    out.mac = tmp->mac;
-                    out.ip = tmp->ip;
-
-                    ev_host_deleted(HOST_MGMT_ID, &out);
-
-                    struct in_addr ip_addr;
-                    ip_addr.s_addr = out.ip;
-
-                    uint8_t macaddr[6];
-                    int2mac(out.mac, macaddr);
-
-                    LOG_INFO(HOST_MGMT_ID, "Deleted a device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
-                             out.dpid,
-                             inet_ntoa(ip_addr),
-                             macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5],
-                             out.port);
-
-                    host_enqueue(tmp);
-                }
+                clean_up_tmp_list(i, &tmp_list, FALSE);
 
                 pthread_rwlock_unlock(&host_table[i].lock);
             }
@@ -608,8 +556,8 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
                 pthread_rwlock_wrlock(&host_table[i].lock);
 
-                host_t *curr = host_table[i].head;
-                while (curr != NULL) {
+                host_t *curr = NULL;
+                for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
                     if (curr->dpid == sw->dpid) {
                         if (tmp_list.head == NULL) {
                             tmp_list.head = curr;
@@ -623,56 +571,9 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
                         num_hosts--;
                     }
-
-                    curr = curr->next;
                 }
 
-                curr = tmp_list.head;
-                while (curr != NULL) {
-                    host_t *tmp = curr;
-
-                    curr = curr->r_next;
-
-                    if (tmp->prev != NULL && tmp->next != NULL) {
-                        tmp->prev->next = tmp->next;
-                        tmp->next->prev = tmp->prev;
-                    } else if (tmp->prev == NULL && tmp->next != NULL) {
-                        host_table[i].head = tmp->next;
-                        tmp->next->prev = NULL;
-                    } else if (tmp->prev != NULL && tmp->next == NULL) {
-                        host_table[i].tail = tmp->prev;
-                        tmp->prev->next = NULL;
-                    } else if (tmp->prev == NULL && tmp->next == NULL) {
-                        host_table[i].head = NULL;
-                        host_table[i].tail = NULL;
-                    }
-
-                    host_t out = {0};
-
-                    out.dpid = tmp->dpid;
-                    out.port = tmp->port;
-
-                    out.mac = tmp->mac;
-                    out.ip = tmp->ip;
-
-                    if (sw->remote == FALSE) {
-                        ev_host_deleted(HOST_MGMT_ID, &out);
-                    }
-
-                    struct in_addr ip_addr;
-                    ip_addr.s_addr = out.ip;
-
-                    uint8_t macaddr[6];
-                    int2mac(out.mac, macaddr);
-
-                    LOG_INFO(HOST_MGMT_ID, "Deleted a device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
-                             out.dpid,
-                             inet_ntoa(ip_addr),
-                             macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5],
-                             out.port);
-
-                    host_enqueue(tmp);
-                }
+                clean_up_tmp_list(i, &tmp_list, sw->remote);
 
                 pthread_rwlock_unlock(&host_table[i].lock);
             }
@@ -689,8 +590,8 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
                 pthread_rwlock_wrlock(&host_table[i].lock);
 
-                host_t *curr = host_table[i].head;
-                while (curr != NULL) {
+                host_t *curr = NULL;
+                for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
                     if (curr->dpid == sw->dpid) {
                         if (tmp_list.head == NULL) {
                             tmp_list.head = curr;
@@ -704,56 +605,9 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
                         num_hosts--;
                     }
-
-                    curr = curr->next;
                 }
 
-                curr = tmp_list.head;
-                while (curr != NULL) {
-                    host_t *tmp = curr;
-
-                    curr = curr->r_next;
-
-                    if (tmp->prev != NULL && tmp->next != NULL) {
-                        tmp->prev->next = tmp->next;
-                        tmp->next->prev = tmp->prev;
-                    } else if (tmp->prev == NULL && tmp->next != NULL) {
-                        host_table[i].head = tmp->next;
-                        tmp->next->prev = NULL;
-                    } else if (tmp->prev != NULL && tmp->next == NULL) {
-                        host_table[i].tail = tmp->prev;
-                        tmp->prev->next = NULL;
-                    } else if (tmp->prev == NULL && tmp->next == NULL) {
-                        host_table[i].head = NULL;
-                        host_table[i].tail = NULL;
-                    }
-
-                    host_t out = {0};
-
-                    out.dpid = tmp->dpid;
-                    out.port = tmp->port;
-
-                    out.mac = tmp->mac;
-                    out.ip = tmp->ip;
-
-                    if (sw->remote == FALSE) {
-                        ev_host_deleted(HOST_MGMT_ID, &out);
-                    }
-
-                    struct in_addr ip_addr;
-                    ip_addr.s_addr = out.ip;
-
-                    uint8_t macaddr[6];
-                    int2mac(out.mac, macaddr);
-
-                    LOG_INFO(HOST_MGMT_ID, "Deleted a device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
-                             out.dpid,
-                             inet_ntoa(ip_addr),
-                             macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5],
-                             out.port);
-
-                    host_enqueue(tmp);
-                }
+                clean_up_tmp_list(i, &tmp_list, sw->remote);
 
                 pthread_rwlock_unlock(&host_table[i].lock);
             }
@@ -768,9 +622,8 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             uint32_t mkey = hash_func((uint32_t *)&host->mac, 2) % __DEFAULT_TABLE_SIZE;
 
-            int res = 0;
             pthread_rwlock_rdlock(&host_table[mkey].lock);
-            res = check_host(&host_table[mkey], host->ip, host->mac);
+            int res = check_host(&host_table[mkey], host->ip, host->mac);
             pthread_rwlock_unlock(&host_table[mkey].lock);
 
             if (res == 0) {
@@ -811,8 +664,7 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                 int2mac(new->mac, macaddr);
 
                 LOG_INFO(HOST_MGMT_ID, "Detected a new device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
-                         new->dpid,
-                         inet_ntoa(ip_addr),
+                         new->dpid, inet_ntoa(ip_addr),
                          macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5],
                          new->port);
             }
@@ -831,8 +683,8 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
                 pthread_rwlock_wrlock(&host_table[i].lock);
 
-                host_t *curr = host_table[i].head;
-                while (curr != NULL) {
+                host_t *curr = NULL;
+                for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
                     if (curr->dpid == host->dpid && curr->port == host->port && curr->ip == host->ip && curr->mac == host->mac) {
                         if (tmp_list.head == NULL) {
                             tmp_list.head = curr;
@@ -846,44 +698,9 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
                         num_hosts--;
                     }
-
-                    curr = curr->next;
                 }
 
-                curr = tmp_list.head;
-                while (curr != NULL) {
-                    host_t *tmp = curr;
-
-                    curr = curr->r_next;
-
-                    if (tmp->prev != NULL && tmp->next != NULL) {
-                        tmp->prev->next = tmp->next;
-                        tmp->next->prev = tmp->prev;
-                    } else if (tmp->prev == NULL && tmp->next != NULL) {
-                        host_table[i].head = tmp->next;
-                        tmp->next->prev = NULL;
-                    } else if (tmp->prev != NULL && tmp->next == NULL) {
-                        host_table[i].tail = tmp->prev;
-                        tmp->prev->next = NULL;
-                    } else if (tmp->prev == NULL && tmp->next == NULL) {
-                        host_table[i].head = NULL;
-                        host_table[i].tail = NULL;
-                    }
-
-                    struct in_addr ip_addr;
-                    ip_addr.s_addr = tmp->ip;
-
-                    uint8_t macaddr[6];
-                    int2mac(tmp->mac, macaddr);
-
-                    LOG_INFO(HOST_MGMT_ID, "Deleted a device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
-                             tmp->dpid,
-                             inet_ntoa(ip_addr),
-                             macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5],
-                             tmp->port);
-
-                    host_enqueue(tmp);
-                }
+                clean_up_tmp_list(i, &tmp_list, TRUE);
 
                 pthread_rwlock_unlock(&host_table[i].lock);
             }
