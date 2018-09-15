@@ -1,1 +1,0 @@
-../../../components/ofp10.c
