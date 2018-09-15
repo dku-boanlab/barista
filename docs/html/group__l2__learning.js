@@ -24,7 +24,6 @@ var group__l2__learning =
     [ "mac_entry_t", "group__l2__learning.html#ga82dec970b121ba4f60a6782a2c413465", null ],
     [ "mac_table_t", "group__l2__learning.html#ga333c23be6b9aaac9b0d00de7487f16de", null ],
     [ "mac_table_t", "group__l2__learning.html#ga333c23be6b9aaac9b0d00de7487f16de", null ],
-    [ "discard_packet", "group__l2__learning.html#ga582214ec1ccbf5513fe239352e14c114", null ],
     [ "insert_flow", "group__l2__learning.html#ga1bddd401e0024a9e1ee4aa363c4b7f5d", null ],
     [ "l2_learning", "group__l2__learning.html#gaeddba12ac1286e7a9975f3352246ea5a", null ],
     [ "l2_learning_cleanup", "group__l2__learning.html#ga7f0170c42ef4efc818de7499bff88a2e", null ],

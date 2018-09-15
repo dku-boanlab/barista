@@ -76,6 +76,5 @@ var group__events =
     [ "ev_pull_ctx", "group__events.html#ga8e937734df7beb787b3998c8ed2a41e2", null ],
     [ "ev_pull_sock", "group__events.html#gaa58e7aa1a0a76726f72a64fc4ebec1a6", null ],
     [ "ev_rep_comp", "group__events.html#ga742fd73c411806dc823282b4e8a79643", null ],
-    [ "ev_rep_ctx", "group__events.html#ga8e78b3aad179268d8891b81d8b0cf1ef", null ],
-    [ "ev_rep_work", "group__events.html#gac328f97bb20b57094ef10a5e8a3a99bd", null ]
+    [ "ev_rep_ctx", "group__events.html#ga8e78b3aad179268d8891b81d8b0cf1ef", null ]
 ];

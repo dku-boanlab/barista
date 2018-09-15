@@ -6,5 +6,6 @@ var dir_b0856f6b0d80ccb263b2f415c91f9e17 =
     [ "common.h", "src_2include_2common_8h.html", "src_2include_2common_8h" ],
     [ "component.h", "src_2include_2component_8h.html", "src_2include_2component_8h" ],
     [ "context.h", "src_2include_2context_8h.html", "src_2include_2context_8h" ],
+    [ "db_password.h", "db__password_8h.html", "db__password_8h" ],
     [ "type.h", "src_2include_2type_8h.html", "src_2include_2type_8h" ]
 ];

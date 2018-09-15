@@ -4,6 +4,7 @@ var ext__comps_2host__mgmt_2src_2host__mgmt_8c =
     [ "host_table_t", "group__host__mgmt.html#ga7fab2791e00836344e7366d3f4aee7ae", null ],
     [ "add_new_host", "group__host__mgmt.html#ga6d768f9a87bc8af06af52fd4b942932f", null ],
     [ "check_host", "group__host__mgmt.html#ga5fc6007558fbfb5d076660f74e9f0c8e", null ],
+    [ "clean_up_tmp_list", "group__host__mgmt.html#ga63092caa06249f154a3061b133ce2b50", null ],
     [ "host_listup", "group__host__mgmt.html#ga596a5ec85d6535ebbaa30cc17aeae452", null ],
     [ "host_mgmt_cleanup", "group__host__mgmt.html#ga5fb152929ab5d25f05f20f46b9c3b42f", null ],
     [ "host_mgmt_cli", "group__host__mgmt.html#ga779deb88bf8b0e40e6e5ae5b8619d123", null ],

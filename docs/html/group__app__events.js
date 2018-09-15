@@ -49,6 +49,5 @@ var group__app__events =
     [ "av_pull_ctx", "group__app__events.html#gaba21f7f75cbc4de9544db81b6f61d9b0", null ],
     [ "av_pull_sock", "group__app__events.html#ga191e7573458d0fe7063a0691956fc9a2", null ],
     [ "av_rep_app", "group__app__events.html#ga3b17e59522416587abf53e9ed2df59cd", null ],
-    [ "av_rep_ctx", "group__app__events.html#ga8c18247fcb9315d7947052844a967ba7", null ],
-    [ "av_rep_work", "group__app__events.html#ga9787a57d52b9bc7967d004e0632ddab0", null ]
+    [ "av_rep_ctx", "group__app__events.html#ga8c18247fcb9315d7947052844a967ba7", null ]
 ];
