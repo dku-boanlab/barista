@@ -14,9 +14,6 @@
 /** \brief The structure of the key context */
 typedef struct _ctx_t ctx_t;
 
-/** \brief The structure of the CLI context */
-typedef struct cli_def cli_t;
-
 /** \brief The structure of a component */
 typedef struct _compnt_t compnt_t;
 
@@ -40,6 +37,9 @@ typedef struct _app_event_t app_event_t;
 
 /** \brief The structure of a read-write application event */
 typedef struct _app_event_out_t app_event_out_t;
+
+/** \brief The structure of the CLI context */
+typedef struct cli_def cli_t;
 
 /////////////////////////////////////////////////////////////////////
 

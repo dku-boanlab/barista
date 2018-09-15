@@ -20,7 +20,4 @@
 
 #include <mysql.h>
 
-#define CLUSTER_MYID "barista"
-#define CLUSTER_MYPW "barista"
-
 #endif /* __ENABLE_CLUSTER */

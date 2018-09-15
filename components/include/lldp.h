@@ -84,4 +84,3 @@ typedef struct _lldp_system_desc {
     struct tlv_header hdr;
     uint8_t data[0];
 } lldp_system_desc;
-

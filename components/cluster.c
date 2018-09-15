@@ -17,6 +17,8 @@
 
 #include "cluster.h"
 
+#include "db_password.h"
+
 /** \brief Cluster ID */
 #define CLUSTER_ID 235171752
 
@@ -35,6 +37,8 @@ char ctrl_ip[__CONF_SHORT_LEN];
 
 /** \brief The batch size of queries */
 #define BATCH_SIZE 1024
+
+/////////////////////////////////////////////////////////////////////
 
 /** \brief The number of queries in a waiting queue */
 int write_query;
@@ -266,7 +270,11 @@ int cluster_main(int *activated, int argc, char **argv)
         return -1;
     }
 
-#endif /* __ENABLED_CLUSTER */
+#else /* !__ENABLE_CLUSTER */
+
+    LOG_INFO(CLUSTER_ID, "Cluster is not enabled");
+
+#endif /* !__ENABLED_CLUSTER */
 
     activate();
 
@@ -518,7 +526,6 @@ int cluster_cleanup(int *activated)
     }
 
     pthread_spin_unlock(&cluster_lock);
-
     pthread_spin_destroy(&cluster_lock);
 
 #endif /* __ENABLE_CLUSTER */
@@ -706,6 +713,8 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
             char proto[__CONF_SHORT_LEN] = {0};
             if (flow->proto & PROTO_TCP)
                 strcpy(proto, "TCP");
+            else if (flow->proto & PROTO_DHCP)
+                strcpy(proto, "DHCP");
             else if (flow->proto & PROTO_UDP)
                 strcpy(proto, "UDP");
             else if (flow->proto & PROTO_ICMP)
@@ -714,8 +723,6 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
                 strcpy(proto, "IPv4");
             else if (flow->proto & PROTO_ARP)
                 strcpy(proto, "ARP");
-            else if (flow->proto & PROTO_DHCP)
-                strcpy(proto, "DHCP");
             else if (flow->proto & PROTO_LLDP)
                 strcpy(proto, "LLDP");
             else
@@ -765,6 +772,8 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
             char proto[__CONF_SHORT_LEN] = {0};
             if (flow->proto & PROTO_TCP)
                 strcpy(proto, "TCP");
+            else if (flow->proto & PROTO_DHCP)
+                strcpy(proto, "DHCP");
             else if (flow->proto & PROTO_UDP)
                 strcpy(proto, "UDP");
             else if (flow->proto & PROTO_ICMP)
@@ -773,8 +782,6 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
                 strcpy(proto, "IPv4");
             else if (flow->proto & PROTO_ARP)
                 strcpy(proto, "ARP");
-            else if (flow->proto & PROTO_DHCP)
-                strcpy(proto, "DHCP");
             else if (flow->proto & PROTO_LLDP)
                 strcpy(proto, "LLDP");
             else
@@ -820,6 +827,8 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
             char proto[__CONF_SHORT_LEN] = {0};
             if (flow->proto & PROTO_TCP)
                 strcpy(proto, "TCP");
+            else if (flow->proto & PROTO_DHCP)
+                strcpy(proto, "DHCP");
             else if (flow->proto & PROTO_UDP)
                 strcpy(proto, "UDP");
             else if (flow->proto & PROTO_ICMP)
@@ -828,8 +837,6 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
                 strcpy(proto, "IPv4");
             else if (flow->proto & PROTO_ARP)
                 strcpy(proto, "ARP");
-            else if (flow->proto & PROTO_DHCP)
-                strcpy(proto, "DHCP");
             else if (flow->proto & PROTO_LLDP)
                 strcpy(proto, "LLDP");
             else
