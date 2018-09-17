@@ -23,11 +23,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The default TTL value */
-#define DEFAULT_TTL 64
-
-/////////////////////////////////////////////////////////////////////
-
 /** \brief The structure of a topology */
 typedef struct _topo_t {
     uint64_t dpid; /**< Datapath ID */
@@ -154,10 +149,9 @@ static int send_lldp(uint64_t dpid, port_t *port)
  */
 static int insert_link(uint64_t src_dpid, uint16_t src_port, uint64_t dst_dpid, uint16_t dst_port)
 {
-    if (src_dpid == 0 || src_port == 0 || src_port > __MAX_NUM_PORTS)
+    if (src_dpid == 0 || src_port == 0)
         return 0;
-
-    if (dst_dpid == 0 || dst_port == 0 || dst_port > __MAX_NUM_PORTS)
+    else if (dst_dpid == 0 || dst_port == 0)
         return 0;
 
     pthread_rwlock_rdlock(&topo_lock);
@@ -166,9 +160,7 @@ static int insert_link(uint64_t src_dpid, uint16_t src_port, uint64_t dst_dpid, 
     for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
         if (topo[i].dpid == src_dpid) { // check source dpid
             if (topo[i].port[src_port].port == src_port) { // check source port
-                if (topo[i].port[src_port].target_dpid == dst_dpid && topo[i].port[src_port].target_port == dst_port) {
-                    break;
-                } else if (topo[i].port[src_port].target_dpid == 0 && topo[i].port[src_port].target_port == 0) {
+                if (topo[i].port[src_port].target_dpid == 0 && topo[i].port[src_port].target_port == 0) {
                     pthread_rwlock_unlock(&topo_lock);
 
                     pthread_rwlock_wrlock(&topo_lock);
@@ -190,6 +182,8 @@ static int insert_link(uint64_t src_dpid, uint16_t src_port, uint64_t dst_dpid, 
                     ev_link_added(TOPO_MGMT_ID, &link);
 
                     return 1;
+                } else if (topo[i].port[src_port].target_dpid == dst_dpid && topo[i].port[src_port].target_port == dst_port) {
+                    break;
                 } else {
                     DEBUG("Inconsistent link {(%lu, %u) -> (%lu, %u)} -> {(%lu, %u) -> (%lu, %u)}\n",
                           src_dpid, src_port, topo[i].port[src_port].target_dpid, topo[i].port[src_port].target_port,
@@ -432,6 +426,11 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                 }
 
                 return -1;
+            } else if (pktin->proto & PROTO_ARP) {
+                // check broadcast
+                // check stp
+                // if incoming port != one of ports for stp
+                // drop it
             }
         }
         break;

@@ -22,9 +22,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The size of a MAC table */
-#define MAC_HASH_SIZE 8192
-
 /** \brief The structure of a MAC entry */
 typedef struct _mac_entry_t {
     uint64_t dpid; /**< Datapath ID */
@@ -46,6 +43,9 @@ typedef struct _mac_table_t {
 
     pthread_rwlock_t lock; /**< The lock for management */
 } mac_table_t;
+
+/** \brief The size of a MAC table */
+#define MAC_HASH_SIZE 8192
 
 /** \brief MAC table */
 mac_table_t *mac_table;

@@ -9,7 +9,11 @@
 
 #pragma once
 
+/** \brief LLDP ethernet type */
 #define ETHERTYPE_LLDP 0x88cc
+
+/** \brief The default TTL value */
+#define DEFAULT_TTL 64
 
 struct tlv_header {
     union {

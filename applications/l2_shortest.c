@@ -63,10 +63,10 @@ mac_table_t *mac_table;
 #define INF 99999
 
 /** \brief The list to convert datapath IDs to small numbers */
-uint64_t *dpid_list;
+uint64_t *node_list;
 
 /** \brief The port list to jump to next switches */
-int **dport_list;
+int **edge_list;
 
 /** \brief The tables used for Floyd-Warshall algorithm */
 int **path, **dist, **next;
@@ -127,7 +127,7 @@ static int add_switch(const switch_t *sw)
 
     int i;
     for (i=0; i<__MAX_NUM_SWITCHES; i++) {
-        if (dpid_list[i] == dpid) {
+        if (node_list[i] == dpid) {
             pthread_rwlock_unlock(&path_lock);
             return -1;
         }
@@ -135,10 +135,12 @@ static int add_switch(const switch_t *sw)
 
     int src = 0;
     for (i=0; i<__MAX_NUM_SWITCHES; i++) {
-        if (dpid_list[i] == 0) {
+        if (node_list[i] == 0) {
             src = i;
-            dpid_list[i] = dpid;
-            DEBUG("add -> dpid_list[%d] = %lu\n", i, dpid);
+            node_list[i] = dpid;
+
+            DEBUG("add -> node_list[%d] = %lu\n", i, dpid);
+
             break;
         }
     }
@@ -149,7 +151,7 @@ static int add_switch(const switch_t *sw)
         else
             path[src][i] = INF;
 
-        dport_list[src][i] = 0;
+        edge_list[src][i] = 0;
     }
 
     floyd_warshall();
@@ -165,7 +167,7 @@ static int add_switch(const switch_t *sw)
  * \brief Function to remove an existing switch
  * \param sw Existing switch
  */
-static int del_switch(const switch_t *sw)
+static int delete_switch(const switch_t *sw)
 {
     uint64_t dpid = sw->dpid;
 
@@ -173,10 +175,12 @@ static int del_switch(const switch_t *sw)
 
     int i, src = 0;
     for (i=0; i<__MAX_NUM_SWITCHES; i++) {
-        if (dpid_list[i] == dpid) {
+        if (node_list[i] == dpid) {
             src = i;
-            dpid_list[i] = 0;
-            DEBUG("del -> dpid_list[%d]\n", i);
+            node_list[i] = 0;
+
+            DEBUG("del -> node_list[%d]\n", i);
+
             break;
         }
     }
@@ -187,7 +191,7 @@ static int del_switch(const switch_t *sw)
         else
             path[src][i] = INF;
 
-        dport_list[src][i] = 0;
+        edge_list[src][i] = 0;
     }
 
     floyd_warshall();
@@ -207,7 +211,7 @@ static int get_index_from_dpid(uint64_t dpid)
 {
     int i;
     for (i=0; i<__MAX_NUM_SWITCHES; i++) {
-        if (dpid_list[i] == dpid) {
+        if (node_list[i] == dpid) {
             return i;
         }
     }
@@ -226,10 +230,10 @@ static int add_link(const port_t *link)
     int src = get_index_from_dpid(link->dpid);
     int dst = get_index_from_dpid(link->target_dpid);
 
-    DEBUG("add -> src: %d, dst: %d\n", src, dst);
+    DEBUG("add -> edge(src: %d, dst: %d)\n", src, dst);
 
     path[src][dst] = src + dst;
-    dport_list[src][dst] = link->port;
+    edge_list[src][dst] = link->port;
 
     floyd_warshall();
 
@@ -251,10 +255,10 @@ static int del_link(const port_t *link)
     int src = get_index_from_dpid(link->dpid);
     int dst = get_index_from_dpid(link->target_dpid);
 
-    DEBUG("del -> src: %d, dst: %d\n", src, dst);
+    DEBUG("del -> edge(src: %d, dst: %d)\n", src, dst);
 
     path[src][dst] = INF;
-    dport_list[src][dst] = 0;
+    edge_list[src][dst] = 0;
 
     floyd_warshall();
 
@@ -295,6 +299,8 @@ static int shortest_path(int *route, uint64_t src_dpid, uint64_t dst_dpid)
         u = next[u-1][v-1];
         route[hop++] = u-1;
         DEBUG("->%d", u-1);
+
+        break;
     } while (u != v);
 
     DEBUG("\n");
@@ -310,27 +316,27 @@ static int shortest_path(int *route, uint64_t src_dpid, uint64_t dst_dpid)
  */
 static int path_init(void)
 {
-    dpid_list = (uint64_t *)MALLOC(sizeof(uint64_t) * __DEFAULT_TABLE_SIZE);
-    if (dpid_list == NULL) {
+    node_list = (uint64_t *)MALLOC(sizeof(uint64_t) * __MAX_NUM_SWITCHES);
+    if (node_list == NULL) {
         PERROR("malloc");
         return -1;
     } else {
-        memset(dpid_list, 0, sizeof(uint64_t) * __DEFAULT_TABLE_SIZE);
+        memset(node_list, 0, sizeof(uint64_t) * __MAX_NUM_SWITCHES);
     }
 
-    dport_list = (int **)MALLOC(sizeof(int *) * __MAX_NUM_SWITCHES);
-    if (dport_list == NULL) {
+    edge_list = (int **)MALLOC(sizeof(int *) * __MAX_NUM_SWITCHES);
+    if (edge_list == NULL) {
         PERROR("malloc");
         return -1;
     } else {
         int i;
         for (i=0; i<__MAX_NUM_SWITCHES; i++) {
-            dport_list[i] = (int *)MALLOC(sizeof(int) * __MAX_NUM_SWITCHES);
-            if (dport_list[i] == NULL) {
+            edge_list[i] = (int *)MALLOC(sizeof(int) * __MAX_NUM_SWITCHES);
+            if (edge_list[i] == NULL) {
                 PERROR("malloc");
                 return -1;
             } else {
-                memset(dport_list[i], 0, sizeof(int) * __MAX_NUM_SWITCHES);
+                memset(edge_list[i], 0, sizeof(int) * __MAX_NUM_SWITCHES);
             }
         }
     }
@@ -402,14 +408,14 @@ static int path_destroy(void)
 {
     pthread_rwlock_wrlock(&path_lock);
 
-    FREE(dpid_list);
+    FREE(node_list);
 
     int i;
     for (i=0; i<__MAX_NUM_SWITCHES; i++) {
-        FREE(dport_list[i]);
+        FREE(edge_list[i]);
     }
 
-    FREE(dport_list);
+    FREE(edge_list);
 
     for (i=0; i<__MAX_NUM_SWITCHES; i++) {
         FREE(path[i]);
@@ -492,27 +498,9 @@ static int insert_flow_next(const pktin_t *pktin, int hop, int *route, uint16_t 
 
     out.num_actions = 1;
     out.action[0].type = ACTION_OUTPUT;
-    out.action[0].port = dport_list[route[0]][route[1]];
+    out.action[0].port = edge_list[route[0]][route[1]];
 
     av_dp_insert_flow(L2_SHORTEST_ID, &out);
-
-    return 0;
-}
-
-/**
- * \brief Function to conduct a drop action into the data plane
- * \param pktin Pktin message
- */
-static int discard_packet(const pktin_t *pktin)
-{
-    pktout_t out = {0};
-
-    PKTOUT_INIT(out, pktin);
-
-    out.num_actions = 1;
-    out.action[0].type = ACTION_DISCARD;
-
-    av_dp_send_packet(L2_SHORTEST_ID, &out);
 
     return 0;
 }
@@ -525,7 +513,11 @@ static int discard_packet(const pktin_t *pktin)
  */
 static int l2_shortest(const pktin_t *pktin)
 {
-#ifndef __ENABLE_CBENCH
+#ifdef __ENABLE_CBENCH
+    send_packet(pktin, PORT_FLOOD);
+    return 0;
+#endif /* __ENABLE_CBENCH */
+
     uint64_t mac = mac2int(pktin->src_mac);
     uint32_t mkey = hash_func((uint32_t *)&mac, 2) % MAC_HASH_SIZE;
 
@@ -534,7 +526,7 @@ static int l2_shortest(const pktin_t *pktin)
     // check source MAC
     mac_entry_t *curr = mac_table[mkey].head;
     while (curr != NULL) {
-        if (curr->mac == mac) {
+        if (curr->dpid == pktin->dpid && curr->mac == mac) {
             break;
         }
         curr = curr->next;
@@ -546,7 +538,6 @@ static int l2_shortest(const pktin_t *pktin)
     if (curr == NULL) {
         curr = mac_dequeue();
         if (curr == NULL) {
-            discard_packet(pktin);
             return -1;
         }
 
@@ -576,10 +567,10 @@ static int l2_shortest(const pktin_t *pktin)
     mac = mac2int(pktin->dst_mac);
 
     // broadcast?
-    if (mac == 0xffffffffffff) {
-        int pass = FALSE;
+    if (mac == __BROADCAST_MAC) {
+        int i, pass = FALSE;
 
-        int i;
+        // do we know the destination?
         for (i=0; i<MAC_HASH_SIZE; i++) {
             pthread_rwlock_rdlock(&mac_table[i].lock);
 
@@ -600,6 +591,7 @@ static int l2_shortest(const pktin_t *pktin)
                 break;
         }
 
+        // don't know where to forward
         if (!pass) {
             send_packet(pktin, PORT_FLOOD);
             return 0;
@@ -613,7 +605,7 @@ static int l2_shortest(const pktin_t *pktin)
 
     pthread_rwlock_rdlock(&mac_table[mkey].lock);
 
-    // known destination?
+    // where to forward?
     curr = mac_table[mkey].head;
     while (curr != NULL) {
         if (curr->mac == mac) {
@@ -634,11 +626,11 @@ static int l2_shortest(const pktin_t *pktin)
 
     // source dpid is equal to destination dpid?
     if (pktin->dpid == dpid) {
-        if (pktin->proto & PROTO_ARP) {
-            send_packet(pktin, port);
-        } else {
+        if (pktin->proto & PROTO_IPV4) // IPv4
             insert_flow(pktin, port);
-        }
+        else if (pktin->proto & PROTO_ARP) // ARP
+            send_packet(pktin, port);
+
         return 0;
     } else {
         // get the shortest path from src to dst
@@ -647,16 +639,10 @@ static int l2_shortest(const pktin_t *pktin)
 
         if (hop > 0) {
             insert_flow_next(pktin, hop, route, port);
-        } else {
-            discard_packet(pktin);
         }
     }
 
     return 0;
-#else /* __ENABLE_CBENCH */
-    send_packet(pktin, PORT_FLOOD);
-    return 0;
-#endif /* __ENABLE_CBENCH */
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -683,7 +669,6 @@ int l2_shortest_main(int *activated, int argc, char **argv)
     }
 
     mac_q_init();
-
     path_init();
 
     activate();
@@ -717,7 +702,6 @@ int l2_shortest_cleanup(int *activated)
     }
 
     mac_q_destroy();
-
     path_destroy();
 
     FREE(mac_table);
@@ -737,8 +721,8 @@ static int list_all_entries(cli_t *cli)
     for (i=0; i<MAC_HASH_SIZE; i++) {
         pthread_rwlock_rdlock(&mac_table[i].lock);
 
-        mac_entry_t *curr = mac_table[i].head;
-        while (curr != NULL) {
+        mac_entry_t *curr = NULL;
+        for (curr = mac_table[i].head; curr != NULL; curr = curr->next, cnt++) {
             uint8_t mac[ETH_ALEN];
             int2mac(curr->mac, mac);
 
@@ -749,10 +733,6 @@ static int list_all_entries(cli_t *cli)
             ip_addr.s_addr = curr->ip;
 
             cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, inet_ntoa(ip_addr), curr->port);
-
-            cnt++;
-
-            curr = curr->next;
         }
 
         pthread_rwlock_unlock(&mac_table[i].lock);
@@ -779,8 +759,8 @@ static int show_entry_switch(cli_t *cli, char *dpid_str)
     for (i=0; i<MAC_HASH_SIZE; i++) {
         pthread_rwlock_rdlock(&mac_table[i].lock);
 
-        mac_entry_t *curr = mac_table[i].head;
-        while (curr != NULL) {
+        mac_entry_t *curr = NULL;
+        for (curr = mac_table[i].head; curr != NULL; curr = curr->next) {
             if (curr->dpid == dpid) {
                 uint8_t mac[ETH_ALEN];
                 int2mac(curr->mac, mac);
@@ -795,8 +775,6 @@ static int show_entry_switch(cli_t *cli, char *dpid_str)
 
                 cnt++;
             }
-
-            curr = curr->next;
         }
 
         pthread_rwlock_unlock(&mac_table[i].lock);
@@ -827,8 +805,8 @@ static int show_entry_mac(cli_t *cli, const char *macaddr)
     for (i=0; i<MAC_HASH_SIZE; i++) {
         pthread_rwlock_rdlock(&mac_table[i].lock);
 
-        mac_entry_t *curr = mac_table[i].head;
-        while (curr != NULL) {
+        mac_entry_t *curr = NULL;
+        for (curr = mac_table[i].head; curr != NULL; curr = curr->next) {
             if (curr->mac == imac) {
                 struct in_addr ip_addr;
                 ip_addr.s_addr = curr->ip;
@@ -837,8 +815,6 @@ static int show_entry_mac(cli_t *cli, const char *macaddr)
 
                 cnt++;
             }
-
-            curr = curr->next;
         }
 
         pthread_rwlock_unlock(&mac_table[i].lock);
@@ -868,8 +844,8 @@ static int show_entry_ip(cli_t *cli, const char *ipaddr)
     for (i=0; i<MAC_HASH_SIZE; i++) {
         pthread_rwlock_rdlock(&mac_table[i].lock);
 
-        mac_entry_t *curr = mac_table[i].head;
-        while (curr != NULL) {
+        mac_entry_t *curr = NULL;
+        for (curr = mac_table[i].head; curr != NULL; curr = curr->next) {
             if (curr->ip == ip) {
                 uint8_t mac[ETH_ALEN];
                 int2mac(curr->mac, mac);
@@ -881,8 +857,6 @@ static int show_entry_ip(cli_t *cli, const char *ipaddr)
 
                 cnt++;
             }
-
-            curr = curr->next;
         }
 
         pthread_rwlock_unlock(&mac_table[i].lock);
@@ -940,7 +914,6 @@ int l2_shortest_handler(const app_event_t *av, app_event_out_t *av_out)
         PRINT_EV("AV_DP_RECEIVE_PACKET\n");
         {
             const pktin_t *pktin = av->pktin;
-
             l2_shortest(pktin);
         }
         break;
@@ -1116,7 +1089,7 @@ int l2_shortest_handler(const app_event_t *av, app_event_out_t *av_out)
                 pthread_rwlock_unlock(&mac_table[i].lock);
             }
 
-            del_switch(sw);
+            delete_switch(sw);
         }
         break;
     case AV_LINK_ADDED:
