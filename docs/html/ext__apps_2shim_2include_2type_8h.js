@@ -18,6 +18,7 @@ var ext__apps_2shim_2include_2type_8h =
     [ "__MAX_PKT_SIZE", "ext__apps_2shim_2include_2type_8h.html#a121e52dbe103ed040b9c3f3cfa3cfa78", null ],
     [ "__MAX_RAW_DATA_LEN", "ext__apps_2shim_2include_2type_8h.html#ae6161bd2b768b3cd9ff7a3cff8ad5561", null ],
     [ "__MAX_STRUCT_SIZE", "ext__apps_2shim_2include_2type_8h.html#a7fc917f1486a2f3e62deaf56081eac68", null ],
+    [ "__MAX_ZMQ_MSG_SIZE", "ext__apps_2shim_2include_2type_8h.html#a2f2cdabe4d16efba0cc19b0a6f615dc7", null ],
     [ "__NUM_OF_ODP_FIELDS", "ext__apps_2shim_2include_2type_8h.html#ac904825d761fbc3e5efba261961b13f8", null ],
     [ "DEFAULT_HARD_TIMEOUT", "ext__apps_2shim_2include_2type_8h.html#a5eee36c091a947f5dba2528d413957eb", null ],
     [ "DEFAULT_IDLE_TIMEOUT", "ext__apps_2shim_2include_2type_8h.html#ac4443576db942904226079acba322551", null ],

@@ -1,4 +1,4 @@
-var components_2conn_8c =
+var conn_8c =
 [
     [ "BUFFER_SIZE", "group__conn.html#ga6b20d41d6252e9871430c242cb1a56e7", null ],
     [ "CONN_ID", "group__conn.html#ga0e6bef893e1046aaffd9dba81a7a0a16", null ],

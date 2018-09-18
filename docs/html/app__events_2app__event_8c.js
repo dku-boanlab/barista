@@ -1,7 +1,5 @@
 var app__events_2app__event_8c =
 [
-    [ "AV_PUSH_EXT_MSG", "group__app__events.html#ga1eac6960d35132f0cfc2a9fb07fd48a0", null ],
-    [ "AV_SEND_EXT_MSG", "group__app__events.html#gaca85fd2d56c1b3b18602849d89695fcb", null ],
     [ "FUNC_DATA", "group__app__events.html#ga9d1a1797e2441c144ad1fa62ec24db00", null ],
     [ "FUNC_DATA", "group__app__events.html#ga9d1a1797e2441c144ad1fa62ec24db00", null ],
     [ "FUNC_DATA", "group__app__events.html#ga9d1a1797e2441c144ad1fa62ec24db00", null ],
@@ -65,7 +63,6 @@ var app__events_2app__event_8c =
     [ "av_log_warn", "group__app__events.html#gaf04ac413bc7fd67255a4550657686035", null ],
     [ "av_sw_connected", "group__app__events.html#gac40b8ee2349a993f63bd0b87368c8024", null ],
     [ "av_sw_disconnected", "group__app__events.html#ga535ff16bed17a55cd00b8761e41b116a", null ],
-    [ "destroy_av_workers", "group__app__events.html#ga904aaa708d9083bb6399bf94aaf850c5", null ],
     [ "flow_av_raise", "group__app__events.html#gaba3205e91001cc90cb67374d8adbdf40", null ],
     [ "host_av_raise", "group__app__events.html#ga1f8c1c72f6ebe77d4254421823b26840", null ],
     [ "log_av_raise", "group__app__events.html#ga5cf946cae6a8056076cfd7929568dae8", null ],
@@ -73,15 +70,12 @@ var app__events_2app__event_8c =
     [ "pktin_av_raise", "group__app__events.html#gae3fa859397ab4c876e744de37b5dff22", null ],
     [ "pktout_av_raise", "group__app__events.html#ga35178604dfc941de182a4337d04fb9be", null ],
     [ "port_av_raise", "group__app__events.html#ga36729542bdc5c3f855bbeefb2ed5d833", null ],
-    [ "receive_app_events", "group__app__events.html#ga3828dfd44ccbb3454d7dc642cf3a67a1", null ],
-    [ "reply_app_events", "group__app__events.html#gaf556cf32ba7c3353d9b353b2954c07bd", null ],
-    [ "reply_proxy", "group__app__events.html#gaa20d68b61733cb1aad1ada7082514a5b", null ],
     [ "sw_av_raise", "group__app__events.html#ga7b1e01ce119f62498e10ccdff3c30092", null ],
     [ "av_ctx", "group__app__events.html#gaaba4b363cad53ca48711755dd65d3375", null ],
     [ "av_on", "group__app__events.html#ga6c4dc5732e37b2a3e712d2151ace64ca", null ],
     [ "av_pull_ctx", "group__app__events.html#gaba21f7f75cbc4de9544db81b6f61d9b0", null ],
     [ "av_pull_sock", "group__app__events.html#ga191e7573458d0fe7063a0691956fc9a2", null ],
     [ "av_rep_app", "group__app__events.html#ga3b17e59522416587abf53e9ed2df59cd", null ],
-    [ "av_rep_ctx", "group__app__events.html#ga8c18247fcb9315d7947052844a967ba7", null ],
+    [ "av_rep_ctx", "group__app__events.html#ga144b79ece9d6bfb3394e268586e9420a", null ],
     [ "av_rep_work", "group__app__events.html#gaaf07acd45b0289a22860d83077a4a341", null ]
 ];

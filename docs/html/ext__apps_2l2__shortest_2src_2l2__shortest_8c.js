@@ -9,8 +9,7 @@ var ext__apps_2l2__shortest_2src_2l2__shortest_8c =
     [ "add_link", "group__l2__shortest.html#gac8d816efe902e558d2bd0729af64831f", null ],
     [ "add_switch", "group__l2__shortest.html#gab05b906ade2bc214ca24016e3c88c032", null ],
     [ "del_link", "group__l2__shortest.html#ga56985e98d341aa2110dad8e1cce7187f", null ],
-    [ "del_switch", "group__l2__shortest.html#gace1e531c8504a8a29f20a6249fa81db2", null ],
-    [ "discard_packet", "group__l2__shortest.html#ga582214ec1ccbf5513fe239352e14c114", null ],
+    [ "delete_switch", "group__l2__shortest.html#gaf630a8f9415f7b0504a18adb03f4770a", null ],
     [ "floyd_warshall", "group__l2__shortest.html#gaa7b2e12d9e394391f39e35632bbfea43", null ],
     [ "get_index_from_dpid", "group__l2__shortest.html#gad9500cfab33cd491a4c1bf0b9d43a50a", null ],
     [ "insert_flow", "group__l2__shortest.html#ga1bddd401e0024a9e1ee4aa363c4b7f5d", null ],
@@ -29,10 +28,10 @@ var ext__apps_2l2__shortest_2src_2l2__shortest_8c =
     [ "show_entry_mac", "group__l2__shortest.html#ga0c71ed2256c1097185dad1106358b699", null ],
     [ "show_entry_switch", "group__l2__shortest.html#gaa1874587fd5ee02afafdfde21a6d79af", null ],
     [ "dist", "group__l2__shortest.html#ga09a12c9d2045a62c96348df46ea3bf77", null ],
-    [ "dpid_list", "group__l2__shortest.html#ga3a26984e3233d06a5defd11b9e3e5aaf", null ],
-    [ "dport_list", "group__l2__shortest.html#ga8d4f69bc6a8f31e2a6804abfc418d837", null ],
+    [ "edge_list", "group__l2__shortest.html#gafd2980205f2599492a900331da45da4c", null ],
     [ "mac_table", "group__l2__shortest.html#ga7c73e86e2ede576de9fc99ef90910d39", null ],
     [ "next", "group__l2__shortest.html#gaa9a54cd6a5357f1c796eca4d822527ae", null ],
+    [ "node_list", "group__l2__shortest.html#ga7a94ce193fd9280dee13a61c86aacc50", null ],
     [ "path", "group__l2__shortest.html#gad3812bfe527af9e1f0e7e23f6a42f7e6", null ],
     [ "path_lock", "group__l2__shortest.html#ga7f90cd838b89e5f104637c11f835cc79", null ]
 ];

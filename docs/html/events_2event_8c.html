@@ -93,7 +93,7 @@ $(document).ready(function(){initNavTree('events_2event_8c.html','');});
 <div class="textblock"><code>#include &quot;<a class="el" href="events_2include_2event_8h_source.html">event.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="src_2include_2component_8h_source.html">component.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="src_2include_2cli_8h_source.html">cli.h</a>&quot;</code><br />
-<code>#include &lt;zmq.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="event__zmq__pack_8h_source.html">event_zmq_pack.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="odp__partial_8h_source.html">odp_partial.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="odp__all_8h_source.html">odp_all.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="event__rw__raise_8h_source.html">event_rw_raise.h</a>&quot;</code><br />
@@ -101,10 +101,6 @@ $(document).ready(function(){initNavTree('events_2event_8c.html','');});
 </div>
 <p><a href="events_2event_8c_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="memitem:ga2cf9fb993098b564f888a000c035017a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><b>EV_PUSH_EXT_MSG</b>(_id,  _type,  _size,  _data)</td></tr>
-<tr class="separator:ga2cf9fb993098b564f888a000c035017a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf9a4794a4108e92aaa3a9de7328e5910"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><b>EV_SEND_EXT_MSG</b>(_id,  _type,  _size,  _data,  _output)</td></tr>
-<tr class="separator:gaf9a4794a4108e92aaa3a9de7328e5910"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0f0d431e4c90184f07692fd2c08f03e7"><td class="memItemLeft" align="right" valign="top">
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>ODP_FUNC</b>&#160;&#160;&#160;compare_switch</td></tr>
 <tr class="separator:ga0f0d431e4c90184f07692fd2c08f03e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -268,16 +264,15 @@ static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
 <tr class="separator:ga8a1224213c0ed4fc7476428dd48d8502"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga8e937734df7beb787b3998c8ed2a41e2"><td class="memItemLeft" align="right" valign="top">
 void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__events.html#ga8e937734df7beb787b3998c8ed2a41e2">ev_pull_ctx</a></td></tr>
-<tr class="memdesc:ga8e937734df7beb787b3998c8ed2a41e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">The MQ context to pull events. <br /></td></tr>
+<tr class="memdesc:ga8e937734df7beb787b3998c8ed2a41e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">The MQ contexts to pull events and to handle request-response events. <br /></td></tr>
 <tr class="separator:ga8e937734df7beb787b3998c8ed2a41e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafaaaa569a9110ebd13b8859e7b7a87e6"><td class="memItemLeft" align="right" valign="top">
+void *&#160;</td><td class="memItemRight" valign="bottom"><b>ev_rep_ctx</b></td></tr>
+<tr class="separator:gafaaaa569a9110ebd13b8859e7b7a87e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa58e7aa1a0a76726f72a64fc4ebec1a6"><td class="memItemLeft" align="right" valign="top">
 void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__events.html#gaa58e7aa1a0a76726f72a64fc4ebec1a6">ev_pull_sock</a></td></tr>
 <tr class="memdesc:gaa58e7aa1a0a76726f72a64fc4ebec1a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">The MQ socket to pull events. <br /></td></tr>
 <tr class="separator:gaa58e7aa1a0a76726f72a64fc4ebec1a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga8e78b3aad179268d8891b81d8b0cf1ef"><td class="memItemLeft" align="right" valign="top">
-void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__events.html#ga8e78b3aad179268d8891b81d8b0cf1ef">ev_rep_ctx</a></td></tr>
-<tr class="memdesc:ga8e78b3aad179268d8891b81d8b0cf1ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">The MQ context to handle request-reply events. <br /></td></tr>
-<tr class="separator:ga8e78b3aad179268d8891b81d8b0cf1ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga742fd73c411806dc823282b4e8a79643"><td class="memItemLeft" align="right" valign="top">
 void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__events.html#ga742fd73c411806dc823282b4e8a79643">ev_rep_comp</a></td></tr>
 <tr class="memdesc:ga742fd73c411806dc823282b4e8a79643"><td class="mdescLeft">&#160;</td><td class="mdescRight">The MQ sockets for components and workers. <br /></td></tr>
@@ -499,18 +494,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
 <tr class="memitem:gaa954f4955a9c29cbb40ef9fadcacb6f9"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__events.html#gaa954f4955a9c29cbb40ef9fadcacb6f9">meta_events</a> (void *null)</td></tr>
 <tr class="memdesc:gaa954f4955a9c29cbb40ef9fadcacb6f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to process meta events.  <a href="group__events.html#gaa954f4955a9c29cbb40ef9fadcacb6f9">More...</a><br /></td></tr>
 <tr class="separator:gaa954f4955a9c29cbb40ef9fadcacb6f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gabf6fb99c307e00919cf7247c91e04966"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__events.html#gabf6fb99c307e00919cf7247c91e04966">reply_events</a> (void *null)</td></tr>
-<tr class="memdesc:gabf6fb99c307e00919cf7247c91e04966"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to process requests from components.  <a href="group__events.html#gabf6fb99c307e00919cf7247c91e04966">More...</a><br /></td></tr>
-<tr class="separator:gabf6fb99c307e00919cf7247c91e04966"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaa20d68b61733cb1aad1ada7082514a5b"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__events.html#gaa20d68b61733cb1aad1ada7082514a5b">reply_proxy</a> (void *null)</td></tr>
-<tr class="memdesc:gaa20d68b61733cb1aad1ada7082514a5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to connect work threads to component threads via a queue proxy.  <a href="group__events.html#gaa20d68b61733cb1aad1ada7082514a5b">More...</a><br /></td></tr>
-<tr class="separator:gaa20d68b61733cb1aad1ada7082514a5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga5266b76f1f78c9ee4f85dc1a0023d3a2"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__events.html#ga5266b76f1f78c9ee4f85dc1a0023d3a2">receive_events</a> (void *null)</td></tr>
-<tr class="memdesc:ga5266b76f1f78c9ee4f85dc1a0023d3a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to receive events from external components.  <a href="group__events.html#ga5266b76f1f78c9ee4f85dc1a0023d3a2">More...</a><br /></td></tr>
-<tr class="separator:ga5266b76f1f78c9ee4f85dc1a0023d3a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga12697d941df7ea6a970f96e057e5e3f8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__events.html#ga12697d941df7ea6a970f96e057e5e3f8">destroy_ev_workers</a> (<a class="el" href="ext__apps_2shim_2include_2type_8h.html#a5ed27b3e6415ccc1f46d7fdad784fb2f">ctx_t</a> *<a class="el" href="group__base.html#gad523ab2261510345d5fdbd38e893e918">ctx</a>)</td></tr>
-<tr class="memdesc:ga12697d941df7ea6a970f96e057e5e3f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to destroy an event queue.  <a href="group__events.html#ga12697d941df7ea6a970f96e057e5e3f8">More...</a><br /></td></tr>
-<tr class="separator:ga12697d941df7ea6a970f96e057e5e3f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga7b733b7313a7aae3359e71892f49ed53"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__events.html#ga7b733b7313a7aae3359e71892f49ed53">event_init</a> (<a class="el" href="ext__apps_2shim_2include_2type_8h.html#a5ed27b3e6415ccc1f46d7fdad784fb2f">ctx_t</a> *<a class="el" href="group__base.html#gad523ab2261510345d5fdbd38e893e918">ctx</a>)</td></tr>
 <tr class="memdesc:ga7b733b7313a7aae3359e71892f49ed53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to initialize the event handler.  <a href="group__events.html#ga7b733b7313a7aae3359e71892f49ed53">More...</a><br /></td></tr>
 <tr class="separator:ga7b733b7313a7aae3359e71892f49ed53"><td class="memSeparator" colspan="2">&#160;</td></tr>

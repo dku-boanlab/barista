@@ -7,8 +7,6 @@ var group__topo__mgmt =
       [ "port", "struct__topo__t.html#a9339dd009048f5f08d3be1d99f1fcdbd", null ],
       [ "remote", "struct__topo__t.html#a58ee123f08ce3aa924b6ef4bff882488", null ]
     ] ],
-    [ "DEFAULT_TTL", "group__topo__mgmt.html#gaa9b73542f958f4edfe5ebea8efe0ff8b", null ],
-    [ "DEFAULT_TTL", "group__topo__mgmt.html#gaa9b73542f958f4edfe5ebea8efe0ff8b", null ],
     [ "TOPO_MGMT_ID", "group__topo__mgmt.html#gaeb54cc6c432777c6f8e90d49740b55c7", null ],
     [ "TOPO_MGMT_ID", "group__topo__mgmt.html#gaeb54cc6c432777c6f8e90d49740b55c7", null ],
     [ "topo_t", "group__topo__mgmt.html#ga2ffcdb0f2f71925c7be76e71146a8844", null ],

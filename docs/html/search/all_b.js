@@ -23,8 +23,8 @@ var searchData=
   ['malloc',['MALLOC',['../ext__apps_2shim_2include_2common_8h.html#a8b0d099b80f0aa5bd8194f892227ad75',1,'MALLOC():&#160;common.h'],['../ext__comps_2shim_2include_2common_8h.html#a8b0d099b80f0aa5bd8194f892227ad75',1,'MALLOC():&#160;common.h'],['../src_2include_2common_8h.html#a8b0d099b80f0aa5bd8194f892227ad75',1,'MALLOC():&#160;common.h']]],
   ['max',['MAX',['../ext__apps_2shim_2include_2common_8h.html#afa99ec4acc4ecb2dc3c2d05da15d0e3f',1,'MAX():&#160;common.h'],['../ext__comps_2shim_2include_2common_8h.html#afa99ec4acc4ecb2dc3c2d05da15d0e3f',1,'MAX():&#160;common.h'],['../src_2include_2common_8h.html#afa99ec4acc4ecb2dc3c2d05da15d0e3f',1,'MAX():&#160;common.h']]],
   ['max_5fhop_5fcount',['MAX_HOP_COUNT',['../group__l2__shortest.html#ga2bf3d073146cba3b5c11ee9f71e2f15d',1,'MAX_HOP_COUNT():&#160;l2_shortest.c'],['../group__l2__shortest.html#ga2bf3d073146cba3b5c11ee9f71e2f15d',1,'MAX_HOP_COUNT():&#160;l2_shortest.c']]],
-  ['maxevents',['MAXEVENTS',['../group__conn.html#ga0fd5398346cc50f42e3f7241eb68ba48',1,'MAXEVENTS():&#160;conn.c'],['../group__conn.html#ga0fd5398346cc50f42e3f7241eb68ba48',1,'MAXEVENTS():&#160;conn.c']]],
-  ['maxqlen',['MAXQLEN',['../group__conn.html#ga9b4c759c7e4736afcd45a051237263ca',1,'MAXQLEN():&#160;conn.c'],['../group__conn.html#ga9b4c759c7e4736afcd45a051237263ca',1,'MAXQLEN():&#160;conn.c']]],
+  ['maxevents',['MAXEVENTS',['../group__conn.html#ga0fd5398346cc50f42e3f7241eb68ba48',1,'conn.c']]],
+  ['maxqlen',['MAXQLEN',['../group__conn.html#ga9b4c759c7e4736afcd45a051237263ca',1,'conn.c']]],
   ['mem',['mem',['../struct__resource__t.html#a1f470d1c242f978f018b0a2c3959200a',1,'_resource_t']]],
   ['meta_5fapp_5fevent',['meta_app_event',['../struct__ctx__t.html#a4472f920d16d698834116467d7678cc4',1,'_ctx_t']]],
   ['meta_5fapp_5fevents',['meta_app_events',['../group__app__events.html#ga371711804d31480b5982b0e959d1f23d',1,'app_event.c']]],
@@ -35,7 +35,7 @@ var searchData=
   ['min',['MIN',['../ext__apps_2shim_2include_2common_8h.html#a3acffbd305ee72dcd4593c0d8af64a4f',1,'MIN():&#160;common.h'],['../ext__comps_2shim_2include_2common_8h.html#a3acffbd305ee72dcd4593c0d8af64a4f',1,'MIN():&#160;common.h'],['../src_2include_2common_8h.html#a3acffbd305ee72dcd4593c0d8af64a4f',1,'MIN():&#160;common.h']]],
   ['modify_5fflow',['modify_flow',['../group__flow__mgmt.html#gabdfa696270c9bd934cd7fa487c1245e6',1,'modify_flow(flow_table_t *list, const flow_t *flow):&#160;flow_mgmt.c'],['../group__flow__mgmt.html#gabdfa696270c9bd934cd7fa487c1245e6',1,'modify_flow(flow_table_t *list, const flow_t *flow):&#160;flow_mgmt.c']]],
   ['msg',['msg',['../struct__event__t.html#a8d90bfcf6a95ae9ff67359bbd80315f3',1,'_event_t']]],
-  ['msg_5fproc',['msg_proc',['../group__conn.html#ga1bc09eb8f78cc9be53df000e389270cb',1,'msg_proc(int sock, uint8_t *rx_buf, int bytes):&#160;conn.c'],['../group__conn.html#ga1bc09eb8f78cc9be53df000e389270cb',1,'msg_proc(int sock, uint8_t *rx_buf, int bytes):&#160;conn.c']]],
+  ['msg_5fproc',['msg_proc',['../group__conn.html#ga1bc09eb8f78cc9be53df000e389270cb',1,'conn.c']]],
   ['msg_5ft',['msg_t',['../ext__apps_2shim_2include_2type_8h.html#abb831098e1334cd59d2c5e374416680e',1,'msg_t():&#160;type.h'],['../ext__comps_2shim_2include_2type_8h.html#abb831098e1334cd59d2c5e374416680e',1,'msg_t():&#160;type.h'],['../src_2include_2type_8h.html#abb831098e1334cd59d2c5e374416680e',1,'msg_t():&#160;type.h']]],
   ['msgs',['msgs',['../group__log.html#ga03a531c783583709ed5c8df0ffa34c3c',1,'log.c']]]
 ];

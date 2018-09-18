@@ -1,7 +1,5 @@
 var ext__comps_2shim_2event_8c =
 [
-    [ "EV_PUSH_MSG", "group__compnt__event.html#ga9c18636449ecdeeaa46a15bf5a4f729b", null ],
-    [ "EV_WRITE_MSG", "group__compnt__event.html#gab0a1a6ee61f80707de11d1eab954af5f", null ],
     [ "deliver_events", "group__compnt__event.html#gaa427d71f97839d1e116fdb02c288a05b", null ],
     [ "destroy_ev_workers", "group__compnt__event.html#ga12697d941df7ea6a970f96e057e5e3f8", null ],
     [ "ev_dp_aggregate_stats", "group__compnt__event.html#ga389bfd60a98c39c688bde0f8fbfadc7b", null ],
@@ -34,6 +32,7 @@ var ext__comps_2shim_2event_8c =
     [ "ev_log_warn", "group__compnt__event.html#ga9ac5b08dedaf24777e3c94c4b536c5e1", null ],
     [ "ev_ofp_msg_in", "group__compnt__event.html#ga69cf0a377a1c7809def81c2ef3956dd3", null ],
     [ "ev_ofp_msg_out", "group__compnt__event.html#gab26765481b36370eeeb2b49bda0437d4", null ],
+    [ "ev_push_msg", "group__compnt__event.html#ga20ab8a74fa9ad9c5acde665861feb222", null ],
     [ "ev_rs_update_usage", "group__compnt__event.html#ga07151f76a0479506895727bbe7cd30c7", null ],
     [ "ev_sw_connected", "group__compnt__event.html#ga078379f2d33e59f345963cb5feac9a61", null ],
     [ "ev_sw_disconnected", "group__compnt__event.html#gaef66fd9c1c9f2388e0d8da6248f09d08", null ],
@@ -52,9 +51,9 @@ var ext__comps_2shim_2event_8c =
     [ "ev_pull_sock", "group__compnt__event.html#gaa58e7aa1a0a76726f72a64fc4ebec1a6", null ],
     [ "ev_push_ctx", "group__compnt__event.html#ga7a993f0a5f5cd17c031e612beeb98d05", null ],
     [ "ev_push_sock", "group__compnt__event.html#gacf2882112bb4976d591438f5ec01fb54", null ],
-    [ "ev_rep_ctx", "group__compnt__event.html#ga8e78b3aad179268d8891b81d8b0cf1ef", null ],
-    [ "ev_rep_sock", "group__compnt__event.html#ga189176adc297cc58b013e0aaa61f23a8", null ],
-    [ "ev_req_ctx", "group__compnt__event.html#ga013541153da85d38a552513341a172f2", null ],
-    [ "ev_req_sock", "group__compnt__event.html#ga2656c3c2b3c9ce4e008a20766eb28d8f", null ],
+    [ "ev_rep_ctx", "group__compnt__event.html#gafaaaa569a9110ebd13b8859e7b7a87e6", null ],
+    [ "ev_rep_sock", "group__compnt__event.html#ga62f65092f0c90b43d1fbf5525844903c", null ],
+    [ "ev_req_ctx", "group__compnt__event.html#ga57bf0e4ea36ecab4b156d13345aebd88", null ],
+    [ "ev_req_sock", "group__compnt__event.html#ga235686e6fc2d2dbfdad84fe81720e2ab", null ],
     [ "ev_worker_on", "group__compnt__event.html#gaaa913a8b23bd2b41b9940f60811199b1", null ]
 ];

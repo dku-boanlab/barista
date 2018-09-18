@@ -1,8 +1,8 @@
 var structofp__desc__stats =
 [
-    [ "dp_desc", "structofp__desc__stats.html#af21c3dae76e301ebe95d410b212a6207", null ],
-    [ "hw_desc", "structofp__desc__stats.html#a6b0e47afee33e62db5ef524a8cb42bbf", null ],
-    [ "mfr_desc", "structofp__desc__stats.html#a9e5d0fc44301173f926ce1fe997287f5", null ],
-    [ "serial_num", "structofp__desc__stats.html#a3a99f63d9a23c19440be476d260cb3f9", null ],
-    [ "sw_desc", "structofp__desc__stats.html#a38d87ca8b0dcaaeba322fed708f1828e", null ]
+    [ "dp_desc", "structofp__desc__stats.html#abfdb3d57df7227e18f096e01148b9a6b", null ],
+    [ "hw_desc", "structofp__desc__stats.html#aee2ef59a9da2f156c5e8575cefb327da", null ],
+    [ "mfr_desc", "structofp__desc__stats.html#aae33a9bf6768ab5a064174d95e0bf95c", null ],
+    [ "serial_num", "structofp__desc__stats.html#a346b5577d320ae51429f8b84cf098db2", null ],
+    [ "sw_desc", "structofp__desc__stats.html#a218f401e6eb87e9de1f2d39f6ff69bd1", null ]
 ];

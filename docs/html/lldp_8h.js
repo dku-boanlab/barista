@@ -6,6 +6,7 @@ var lldp_8h =
     [ "_lldp_port_id", "struct__lldp__port__id.html", "struct__lldp__port__id" ],
     [ "_lldp_ttl", "struct__lldp__ttl.html", "struct__lldp__ttl" ],
     [ "_lldp_system_desc", "struct__lldp__system__desc.html", "struct__lldp__system__desc" ],
+    [ "DEFAULT_TTL", "lldp_8h.html#aa9b73542f958f4edfe5ebea8efe0ff8b", null ],
     [ "ETHERTYPE_LLDP", "lldp_8h.html#af3c0afff0e15701a0ceeb8820bb00976", null ],
     [ "lldp_chassis_id", "lldp_8h.html#a0c657494da4390c031ae4ceae14a4c52", null ],
     [ "lldp_eol", "lldp_8h.html#a2152fa53f1a39c5db29ff1fa61333b66", null ],

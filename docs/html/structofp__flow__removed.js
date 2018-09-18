@@ -8,8 +8,8 @@ var structofp__flow__removed =
     [ "idle_timeout", "structofp__flow__removed.html#abbc37b77297631143b1d6c720fc6684a", null ],
     [ "match", "structofp__flow__removed.html#a08db019b64672ff5a8f87c55aa06e619", null ],
     [ "packet_count", "structofp__flow__removed.html#a38cb4f5e6a5ee4afbcb23f2e0c297dbb", null ],
-    [ "pad", "structofp__flow__removed.html#a37f1a9fb031119a06461928a916005b0", null ],
-    [ "pad2", "structofp__flow__removed.html#a32b2f8b0aefd51d73376e5e80a838570", null ],
+    [ "pad", "structofp__flow__removed.html#a77304695de0bf73afca4f989e77431c0", null ],
+    [ "pad2", "structofp__flow__removed.html#a2d7a4e3803e61f56facaf4bd8740dca6", null ],
     [ "priority", "structofp__flow__removed.html#ad9431d3bc20d784195906315197ed44b", null ],
     [ "reason", "structofp__flow__removed.html#aa5ccdfb4fe344591d1d20d42d1619a06", null ]
 ];

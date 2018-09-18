@@ -11,6 +11,7 @@ var group__app__event =
     [ "av_log_fatal", "group__app__event.html#ga968875607daed636c15d8cd5af6a4348", null ],
     [ "av_log_info", "group__app__event.html#ga0e0155ce344ae7edce736d24a7480197", null ],
     [ "av_log_warn", "group__app__event.html#gaf04ac413bc7fd67255a4550657686035", null ],
+    [ "av_push_msg", "group__app__event.html#ga6eb08496f816d4a0926e4f719fdf5e14", null ],
     [ "deliver_app_events", "group__app__event.html#ga0fd335b5e96f177ba2009017d694dbf7", null ],
     [ "destroy_av_workers", "group__app__event.html#ga904aaa708d9083bb6399bf94aaf850c5", null ],
     [ "reply_app_events", "group__app__event.html#gaf556cf32ba7c3353d9b353b2954c07bd", null ],
@@ -19,9 +20,5 @@ var group__app__event =
     [ "av_pull_sock", "group__app__event.html#ga191e7573458d0fe7063a0691956fc9a2", null ],
     [ "av_push_ctx", "group__app__event.html#gaa9b37f0c26de8c4cde5e6ffdbe2229e2", null ],
     [ "av_push_sock", "group__app__event.html#ga7718e9aa98f200ef0fbb189e198474e0", null ],
-    [ "av_rep_ctx", "group__app__event.html#ga8c18247fcb9315d7947052844a967ba7", null ],
-    [ "av_rep_sock", "group__app__event.html#ga9f1de729d65f039c0765af9215498c6c", null ],
-    [ "av_req_ctx", "group__app__event.html#gaa881839db3fd0d6b5c933813b86ddd74", null ],
-    [ "av_req_sock", "group__app__event.html#gaaa3259e99044cfb0e39d6dcedc1fcfc2", null ],
     [ "av_worker_on", "group__app__event.html#ga38a71fac2156d4c6fd695a60e35d365c", null ]
 ];

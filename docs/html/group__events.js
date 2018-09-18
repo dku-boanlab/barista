@@ -12,7 +12,6 @@ var group__events =
     [ "FUNC_NAME", "group__events.html#gaf0d6b9e45ca9d895948eb6b1d206d752", null ],
     [ "FUNC_NAME", "group__events.html#gaf0d6b9e45ca9d895948eb6b1d206d752", null ],
     [ "FUNC_NAME", "group__events.html#gaf0d6b9e45ca9d895948eb6b1d206d752", null ],
-    [ "destroy_ev_workers", "group__events.html#ga12697d941df7ea6a970f96e057e5e3f8", null ],
     [ "ev_dp_aggregate_stats", "group__events.html#ga389bfd60a98c39c688bde0f8fbfadc7b", null ],
     [ "ev_dp_delete_flow", "group__events.html#gac31582e1c1e2728f9ea883ba38562595", null ],
     [ "ev_dp_flow_deleted", "group__events.html#ga5c630aa5fa0c63f1c732f375d8dc2233", null ],
@@ -64,9 +63,6 @@ var group__events =
     [ "pktout_ev_raise", "group__events.html#ga2b0db9c7f4bdefc0085254b0f7c74fc3", null ],
     [ "port_ev_raise", "group__events.html#ga8000e2338b868a4b07003464f747c626", null ],
     [ "raw_ev_raise", "group__events.html#ga6b8fd4387d36b27dd586bc142dd050a9", null ],
-    [ "receive_events", "group__events.html#ga5266b76f1f78c9ee4f85dc1a0023d3a2", null ],
-    [ "reply_events", "group__events.html#gabf6fb99c307e00919cf7247c91e04966", null ],
-    [ "reply_proxy", "group__events.html#gaa20d68b61733cb1aad1ada7082514a5b", null ],
     [ "rs_ev_raise", "group__events.html#gab9290b8bfae1c772a72c38380fce2e86", null ],
     [ "sw_ev_raise", "group__events.html#ga009d25a68b13cd45a3ec66f6dbe601d7", null ],
     [ "sw_rw_raise", "group__events.html#gaaef77a40e675373ca21ceda4a2b6da54", null ],
@@ -75,6 +71,5 @@ var group__events =
     [ "ev_on", "group__events.html#ga8a1224213c0ed4fc7476428dd48d8502", null ],
     [ "ev_pull_ctx", "group__events.html#ga8e937734df7beb787b3998c8ed2a41e2", null ],
     [ "ev_pull_sock", "group__events.html#gaa58e7aa1a0a76726f72a64fc4ebec1a6", null ],
-    [ "ev_rep_comp", "group__events.html#ga742fd73c411806dc823282b4e8a79643", null ],
-    [ "ev_rep_ctx", "group__events.html#ga8e78b3aad179268d8891b81d8b0cf1ef", null ]
+    [ "ev_rep_comp", "group__events.html#ga742fd73c411806dc823282b4e8a79643", null ]
 ];

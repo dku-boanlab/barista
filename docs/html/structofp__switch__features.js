@@ -6,6 +6,6 @@ var structofp__switch__features =
     [ "header", "structofp__switch__features.html#a8a68e360bbaccba533af92291e0ebb1d", null ],
     [ "n_buffers", "structofp__switch__features.html#a0d5d0c052a47b571e80ca3d82df2517f", null ],
     [ "n_tables", "structofp__switch__features.html#a1464fc7f98f2341b19a066fde92ecef5", null ],
-    [ "pad", "structofp__switch__features.html#a7f839121254c58f31cee2c32993f995e", null ],
-    [ "ports", "structofp__switch__features.html#aa7269a33101ad34901ea13e9b0228590", null ]
+    [ "pad", "structofp__switch__features.html#aa786d392775dc717309e5159e6bbcdbf", null ],
+    [ "ports", "structofp__switch__features.html#a06c4d2800d977d2651f1f248e963a6a8", null ]
 ];
