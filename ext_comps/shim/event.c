@@ -31,55 +31,34 @@ int ev_worker_on;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The context to push events */
-void *ev_push_ctx;
+/** \brief The context to push and request events */
+void *ev_push_ctx, *ev_req_ctx;
 
-/** \brief The socket to push events */
-void *ev_push_sock;
-
- /** \brief The context to request events */
-void *ev_req_ctx;
-
-/** \brief The socket to request events */
-void *ev_req_sock;
+/** \brief The socket to push and request events */
+void *ev_push_sock, *ev_req_sock;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The context to pull events */
-void *ev_pull_ctx;
+/** \brief The context to pull and reply events */
+void *ev_pull_ctx, *ev_rep_ctx;
 
-/** \brief The socket to pull events */
-void *ev_pull_sock;
-
-/** \brief The context to reply events */
-void *ev_rep_ctx;
-
-/** \brief The socket to reply events */
-void *ev_rep_sock;
+/** \brief The socket to pull and reply events */
+void *ev_pull_sock, *ev_rep_sock;
 
 /////////////////////////////////////////////////////////////////////
 
-#define EV_PUSH_MSG(_id, _type, _size, _data) { \
-    msg_t msg = {0}; \
-    msg.id = _id; \
-    msg.type = _type; \
-    memmove(msg.data, _data, _size); \
-    if (ev_push_sock) { \
-        zmq_send(ev_push_sock, &msg, sizeof(msg_t), 0); \
-    } \
-}
+static int ev_push_msg(uint32_t id, uint16_t type, uint16_t size, const void *data)
+{
+    msg_t msg = {0};
+    msg.id = id;
+    msg.type = type;
+    memmove(msg.data, data, size);
 
-#define EV_WRITE_MSG(_id, _type, _size, _data) { \
-    msg_t msg = {0}; \
-    msg.id = _id; \
-    msg.type = _type; \
-    memmove(msg.data, _data, _size); \
-    if (ev_req_sock) { \
-        if (zmq_send(ev_req_sock, &msg, sizeof(msg_t), 0) != -1) { \
-            zmq_recv(ev_req_sock, &msg, sizeof(msg_t), 0); \
-            memmove(_data, msg.data, _size); \
-        } \
-    } \
+    char *str = base64_encode((char *)&msg, sizeof(msg_t));
+    zmq_send(ev_push_sock, str, strlen(str), 0);
+    FREE(str);
+
+    return 0;
 }
 
 // Upstream events //////////////////////////////////////////////////
@@ -235,24 +214,27 @@ static void *reply_events(void *null)
     waitsec(1, 0);
 
     while (ev_worker_on) {
-        msg_t msg = {0};
+        char buff[__MAX_ZMQ_MSG_SIZE] = {0};
+	zmq_recv(ev_rep_sock, buff, __MAX_ZMQ_MSG_SIZE, 0);
 
-        zmq_recv(ev_rep_sock, &msg, sizeof(msg), 0);
+	if (!ev_worker_on) break;
 
-        if (!ev_worker_on) break;
-        else if (msg.id == 0) continue;
+	char *decoded = base64_decode(buff);
+	msg_t *msg = (msg_t *)decoded;
+
+        if (msg->id == 0) continue;
+	else if (msg->type > EV_NUM_EVENTS) continue;
 
         event_out_t out = {0};
 
-        out.id = msg.id;
-        out.type = msg.type;
-        out.data = (char *)msg.data;
+        out.id = msg->id;
+        out.type = msg->type;
+        out.data = (char *)msg->data;
 
         const event_t *in = (const event_t *)&out;
-
         int ret = 0;
 
-        switch (msg.type) {
+        switch (out.type) {
 
         // upstream events
 
@@ -410,9 +392,13 @@ static void *reply_events(void *null)
             break;
         }
 
-        msg.ret = ret;
+        FREE(decoded);
 
-        zmq_send(ev_rep_sock, &msg, sizeof(msg), 0);
+        msg->ret = ret;
+
+        char *str = base64_encode((char *)msg, sizeof(msg_t));
+        zmq_send(ev_rep_sock, str, strlen(str), 0);
+	FREE(str);
 
         if (!ev_worker_on) break;
     }
@@ -429,22 +415,26 @@ static void *deliver_events(void *null)
     waitsec(1, 0);
 
     while (ev_worker_on) {
-        msg_t msg = {0};
-
-        zmq_recv(ev_pull_sock, &msg, sizeof(msg), 0);
+        char buff[__MAX_ZMQ_MSG_SIZE] = {0};
+	zmq_recv(ev_pull_sock, buff, __MAX_ZMQ_MSG_SIZE, 0);
 
         if (!ev_worker_on) break;
-        else if (msg.id == 0) continue;
+
+        char *decoded = base64_decode(buff);
+	msg_t *msg = (msg_t *)decoded;
+
+        if (msg->id == 0) continue;
+	else if (msg->type > EV_NUM_EVENTS) continue;
 
         event_out_t out = {0};
 
-        out.id = msg.id;
-        out.type = msg.type;
-        out.data = (char *)msg.data;
+        out.id = msg->id;
+        out.type = msg->type;
+        out.data = (char *)msg->data;
 
         const event_t *in = (const event_t *)&out;
 
-        switch (msg.type) {
+        switch (out.type) {
 
         // upstream events
 
@@ -601,6 +591,8 @@ static void *deliver_events(void *null)
         default:
             break;
         }
+
+	FREE(decoded);
     }
 
     return NULL;
@@ -616,7 +608,7 @@ int destroy_ev_workers(ctx_t *ctx)
 {
     ev_worker_on = FALSE;
 
-    waitsec(2, 0);
+    waitsec(1, 0);
 
     zmq_close(ev_push_sock);
     zmq_ctx_destroy(ev_push_ctx);

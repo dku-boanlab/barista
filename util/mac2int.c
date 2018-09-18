@@ -64,8 +64,7 @@ uint8_t *str2mac(const char *macaddr, uint8_t *mac)
 {
     int tmp[ETH_ALEN] = {0};
 
-    sscanf(macaddr, "%x:%x:%x:%x:%x:%x",
-           &tmp[0], &tmp[1], &tmp[2], &tmp[3], &tmp[4], &tmp[5]);
+    sscanf(macaddr, "%x:%x:%x:%x:%x:%x", &tmp[0], &tmp[1], &tmp[2], &tmp[3], &tmp[4], &tmp[5]);
 
     int i;
     for (i=0; i<ETH_ALEN; i++)

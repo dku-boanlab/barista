@@ -14,13 +14,12 @@ sudo apt-get -y install doxygen global flex bison cmake libav-tools
 
 # dependency => libcli
 cd libraries/libcli
-./setup.sh
+make
+sudo make install
+make clean
 cd -
 
 # dependency => zeromq
 cd libraries/zeromq
-./setup.sh
+./compile.sh
 cd -
-
-# dependency => msgpack
-sudo apt-get -y install libmsgpack3 libmsgpack-dev

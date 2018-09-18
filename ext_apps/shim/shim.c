@@ -175,6 +175,8 @@ void (*sigint_func)(int);
 /** \brief Function to handle the SIGINT signal */
 void sigint_handler(int sig)
 {
+    PRINTF("Got a SIGINT signal\n");
+
     deactivate_app();
     destroy_av_workers(NULL);
 }
@@ -185,6 +187,8 @@ void (*sigkill_func)(int);
 /** \brief Function to handle the SIGKILL signal */
 void sigkill_handler(int sig)
 {
+    PRINTF("Got a SIGKILL signal\n");
+
     deactivate_app();
     destroy_av_workers(NULL);
 }
@@ -195,6 +199,8 @@ void (*sigterm_func)(int);
 /** \brief Function to handle the SIGTERM signal */
 void sigterm_handler(int sig)
 {
+    PRINTF("Got a SIGTERM signal\n");
+
     deactivate_app();
     destroy_av_workers(NULL);
 }

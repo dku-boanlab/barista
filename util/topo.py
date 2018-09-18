@@ -12,15 +12,10 @@ from subprocess import call
 
 def myNetwork():
 
-    net = Mininet( topo=None,
-                   build=False,
-                   ipBase='10.0.0.0/8')
+    net = Mininet( topo=None, build=False, ipBase='10.0.0.0/8')
 
     info( '*** Adding controller\n' )
-    c0=net.addController(name='c0',
-                      controller=RemoteController,
-                      ip='127.0.0.1',
-                      port=6633)
+    c0=net.addController(name='c0', controller=RemoteController, ip='127.0.0.1', port=6633)
 
     info( '*** Add switches\n')
     s1 = net.addSwitch('s1', cls=OVSKernelSwitch)
