@@ -51,7 +51,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
                 c->num_app_events[type]++;
 
-                int ret = AV_SEND_EXT_MSG(id, type, len, data, out);
+                int ret = av_send_ext_msg(c, id, type, len, data, out);
                 if (ret && c->perm & APP_EXECUTE) {
                     break;
                 }
@@ -70,12 +70,12 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
                 c->num_app_events[type]++;
 
                 if (c->perm & APP_EXECUTE) {
-                    int ret = AV_SEND_EXT_MSG(id, type, len, data, out);
+                    int ret = av_send_ext_msg(c, id, type, len, data, out);
                     if (ret) {
                         break;
                     }
                 } else {
-                    AV_PUSH_EXT_MSG(id, type, len, data);
+                    av_push_ext_msg(c, id, type, len, data);
                 }
             }
         }

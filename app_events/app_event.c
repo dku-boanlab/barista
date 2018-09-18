@@ -19,8 +19,6 @@
 #include "application.h"
 #include "cli.h"
 
-#include <zmq.h>
-
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The pointer of the context structure */
@@ -31,14 +29,11 @@ static int av_on;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The MQ context to pull events */
-void *av_pull_ctx;
+/** \brief The MQ context to pull events and to handle request-response events */
+void *av_pull_ctx, *av_rep_ctx;
 
 /** \brief The MQ socket to pull events */
 void *av_pull_sock;
-
-/** \brief The MQ context to handle request-response events */
-void *av_rep_ctx;
 
 /** \brief The MQ socket for applications and workers */
 void *av_rep_app, *av_rep_work;
@@ -73,31 +68,7 @@ static int log_av_raise(uint32_t id, uint16_t type, uint16_t len, const char *da
 
 /////////////////////////////////////////////////////////////////////
 
-#define AV_PUSH_EXT_MSG(_id, _type, _size, _data) { \
-    msg_t msg = {0}; \
-    msg.id = _id; \
-    msg.type = _type; \
-    memmove(msg.data, _data, _size); \
-    if (c->push_sock) { \
-        zmq_send(c->push_sock, &msg, sizeof(msg_t), 0); \
-    } \
-}
-
-#define AV_SEND_EXT_MSG(_id, _type, _size, _data, _output) ({ \
-    msg_t msg = {0}; \
-    msg.id = _id; \
-    msg.type = _type; \
-    memmove(msg.data, _data, _size); \
-    if (c->req_sock) { \
-        if (zmq_send(c->req_sock, &msg, sizeof(msg_t), 0) != -1) { \
-            zmq_recv(c->req_sock, &msg, sizeof(msg_t), 0); \
-            memmove(_output->data, msg.data, _size); \
-        } else { \
-            msg.ret = -1; \
-        } \
-    } \
-    msg.ret; \
-})
+#include "app_event_zmq_pack.h"
 
 // Upstream events //////////////////////////////////////////////////
 
@@ -267,152 +238,6 @@ static void *meta_app_events(void *null)
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to process requests from applications
- * \return NULL
- */
-static void *reply_app_events(void *null)
-{
-    void *recv = zmq_socket(av_rep_ctx, ZMQ_REP);
-    zmq_connect(recv, "inproc://av_reply_workers");
-
-    while (av_on) {
-        msg_t msg = {0};
-
-        zmq_recv(recv, &msg, sizeof(msg_t), 0);
-
-        if (!av_on) break;
-        else if (msg.id == 0) continue;
-
-        switch (msg.type) {
-
-        // request-response events
-
-        default:
-            break;
-        }
-
-        zmq_send(recv, &msg, sizeof(msg_t), 0);
-
-        if (!av_on) break;
-    }
-
-    zmq_close(recv);
-
-    return NULL;
-}
-
-/**
- * \brief Function to connect work threads to application threads via a queue proxy
- * \return NULL
- */
-static void *reply_proxy(void *null)
-{
-    zmq_proxy(av_rep_app, av_rep_work, NULL);
-
-    return NULL;
-}
-
-/**
- * \brief Function to receive app events from external applications
- * \return NULL
- */
-static void *receive_app_events(void *null)
-{
-    while (av_on) {
-        msg_t msg = {0};
-
-        zmq_recv(av_pull_sock, &msg, sizeof(msg_t), 0);
-
-        if (!av_on) break;
-        else if (msg.id == 0) continue;
-
-        switch (msg.type) {
-
-        // upstream events
-
-        case AV_DP_RECEIVE_PACKET:
-            pktin_av_raise(msg.id, AV_DP_RECEIVE_PACKET, sizeof(pktin_t), (const pktin_t *)msg.data);
-            break;
-        case AV_DP_FLOW_EXPIRED:
-            flow_av_raise(msg.id, AV_DP_FLOW_EXPIRED, sizeof(flow_t), (const flow_t *)msg.data);
-            break;
-        case AV_DP_FLOW_DELETED:
-            flow_av_raise(msg.id, AV_DP_FLOW_DELETED, sizeof(flow_t), (const flow_t *)msg.data);
-            break;
-        case AV_DP_PORT_ADDED:
-            port_av_raise(msg.id, AV_DP_PORT_ADDED, sizeof(port_t), (const port_t *)msg.data);
-            break;
-        case AV_DP_PORT_MODIFIED:
-            port_av_raise(msg.id, AV_DP_PORT_MODIFIED, sizeof(port_t), (const port_t *)msg.data);
-            break;
-        case AV_DP_PORT_DELETED:
-            port_av_raise(msg.id, AV_DP_PORT_DELETED, sizeof(port_t), (const port_t *)msg.data);
-            break;
-
-        // downstream events
-
-        case AV_DP_SEND_PACKET:
-            pktout_av_raise(msg.id, AV_DP_SEND_PACKET, sizeof(pktout_t), (const pktout_t *)msg.data);
-            break;
-        case AV_DP_INSERT_FLOW:
-            flow_av_raise(msg.id, AV_DP_INSERT_FLOW, sizeof(flow_t), (const flow_t *)msg.data);
-            break;
-        case AV_DP_MODIFY_FLOW:
-            flow_av_raise(msg.id, AV_DP_MODIFY_FLOW, sizeof(flow_t), (const flow_t *)msg.data);
-            break;
-        case AV_DP_DELETE_FLOW:
-            flow_av_raise(msg.id, AV_DP_DELETE_FLOW, sizeof(flow_t), (const flow_t *)msg.data);
-            break;
-
-        // log events
-
-        case AV_LOG_DEBUG:
-            log_av_raise(msg.id, AV_LOG_DEBUG, strlen((const char *)msg.data), (const char *)msg.data);
-            break;
-        case AV_LOG_INFO:
-            log_av_raise(msg.id, AV_LOG_INFO, strlen((const char *)msg.data), (const char *)msg.data);
-            break;
-        case AV_LOG_WARN:
-            log_av_raise(msg.id, AV_LOG_WARN, strlen((const char *)msg.data), (const char *)msg.data);
-            break;
-        case AV_LOG_ERROR:
-            log_av_raise(msg.id, AV_LOG_ERROR, strlen((const char *)msg.data), (const char *)msg.data);
-            break;
-        case AV_LOG_FATAL:
-            log_av_raise(msg.id, AV_LOG_FATAL, strlen((const char *)msg.data), (const char *)msg.data);
-            break;
-
-        default:
-            break;
-        }
-    }
-
-    return NULL;
-}
-
-/**
- * \brief Function to destroy an app event queue
- * \return None
- */
-int destroy_av_workers(ctx_t *ctx)
-{
-    av_on = FALSE;
-
-    waitsec(1, 0);
-
-    zmq_close(av_pull_sock);
-    zmq_ctx_destroy(av_pull_ctx);
-
-    zmq_close(av_rep_app);
-    zmq_close(av_rep_work);
-    zmq_ctx_destroy(av_rep_ctx);
-
-    return 0;
-}
-
-/////////////////////////////////////////////////////////////////////
-
-/**
  * \brief Function to initialize the app event handler
  * \param ctx The context of the Barista NOS
  */
@@ -434,9 +259,6 @@ int app_event_init(ctx_t *ctx)
         av_pull_ctx = zmq_ctx_new();
         av_pull_sock = zmq_socket(av_pull_ctx, ZMQ_PULL);
 
-        const int timeout = 1000;
-        zmq_setsockopt(av_pull_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
-
         if (zmq_bind(av_pull_sock, EXT_APP_PULL_ADDR)) {
             PERROR("zmq_bind");
             return -1;
@@ -455,18 +277,12 @@ int app_event_init(ctx_t *ctx)
         av_rep_ctx = zmq_ctx_new();
         av_rep_app = zmq_socket(av_rep_ctx, ZMQ_ROUTER);
 
-        zmq_setsockopt(av_rep_app, ZMQ_RCVTIMEO, &timeout, sizeof(int));
-        zmq_setsockopt(av_rep_app, ZMQ_SNDTIMEO, &timeout, sizeof(int));
-
         if (zmq_bind(av_rep_app, EXT_APP_REPLY_ADDR)) {
             PERROR("zmq_bind");
             return -1;
         }
 
         av_rep_work = zmq_socket(av_rep_ctx, ZMQ_DEALER);
-
-        zmq_setsockopt(av_rep_work, ZMQ_RCVTIMEO, &timeout, sizeof(int));
-        zmq_setsockopt(av_rep_work, ZMQ_SNDTIMEO, &timeout, sizeof(int));
 
         if (zmq_bind(av_rep_work, "inproc://av_reply_workers")) {
             PERROR("zmq_bind");

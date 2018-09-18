@@ -21,3 +21,6 @@ cd -
 cd libraries/zeromq
 ./setup.sh
 cd -
+
+# dependency => msgpack
+sudo apt-get -y install libmsgpack3 libmsgpack-dev

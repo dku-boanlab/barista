@@ -45,7 +45,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, FUNC_TYPE *data)
 
                 c->num_events[type]++;
 
-                int ret = EV_SEND_EXT_MSG(id, type, len, data, out);
+                int ret = ev_send_ext_msg(c, id, type, len, data, out);
                 if (ret && c->perm & COMPNT_EXECUTE) {
                     break;
                 }

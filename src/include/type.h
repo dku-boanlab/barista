@@ -69,6 +69,9 @@ typedef struct _msg_t {
     int ret; /**< Return value */
 } msg_t;
 
+/** \brief The maximum length of ZMQ message */
+#define __MAX_ZMQ_MSG_SIZE 4096
+
 /////////////////////////////////////////////////////////////////////
 
 enum sw_capabilities {

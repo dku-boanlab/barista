@@ -20,6 +20,7 @@
 #include "application_info.h"
 
 #include <zmq.h>
+#include "base64.h"
 
 /////////////////////////////////////////////////////////////////////
 
@@ -31,67 +32,49 @@ int av_worker_on;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The context to push events */
-void *av_push_ctx;
+/** \brief The context to push and request events */
+void *av_push_ctx, *av_req_ctx;
 
-/** \brief The socket to push events */
-void *av_push_sock;
-
- /** \brief The context to request events */
-void *av_req_ctx;
-
-/** \brief The socket to request events */
-void *av_req_sock;
+/** \brief The socket to push and request events */
+void *av_push_sock, *av_req_sock;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The context to pull events */
-void *av_pull_ctx;
+/** \brief The context to pull and reply events */
+void *av_pull_ctx, *av_rep_ctx;
 
-/** \brief The socket to pull events */
-void *av_pull_sock;
-
-/** \brief The context to reply events */
-void *av_rep_ctx;
-
-/** \brief The socket to reply events */
-void *av_rep_sock;
+/** \brief The socket to pull and reply events */
+void *av_pull_sock, *av_rep_sock;
 
 /////////////////////////////////////////////////////////////////////
 
-#define AV_PUSH_MSG(_id, _type, _size, _data) { \
-    msg_t msg = {0}; \
-    msg.id = _id; \
-    msg.type = _type; \
-    memmove(msg.data, _data, _size); \
-    if (av_push_sock) { \
-        zmq_send(av_push_sock, &msg, sizeof(msg_t), 0); \
-    } \
-}
+static int av_push_msg(uint32_t id, uint16_t type, uint16_t size, const void *data)
+{
+    msg_t msg = {0};
+    msg.id = id;
+    msg.type = type;
+    memmove(msg.data, data, size);
 
-#define AV_WRITE_MSG(_id, _type, _size, _data) { \
-    msg_t msg = {0}; \
-    msg.id = _id; \
-    msg.type = _type; \
-    memmove(msg.data, _data, _size); \
-    if (av_req_sock) { \
-        if (zmq_send(av_req_sock, &msg, sizeof(msg_t), 0) != -1) { \
-            zmq_recv(av_req_sock, &msg, sizeof(msg_t), 0); \
-            memmove(_data, msg.data, _size); \
-        } \
-    } \
+    char *str = base64_encode((char *)&msg, sizeof(msg_t));
+
+    printf("outbound - id: %u, type: %u, msg.size: %u, str.size: %lu\n", msg.id, msg.type, size, strlen(str));
+
+    zmq_send(av_push_sock, str, strlen(str), 0);
+    FREE(str);
+
+    return 0;
 }
 
 // Downstream events ////////////////////////////////////////////////
 
 /** \brief AV_DP_SEND_PACKET */
-void av_dp_send_packet(uint32_t id, const pktout_t *data) { AV_PUSH_MSG(id, AV_DP_SEND_PACKET, sizeof(pktout_t), data); }
+void av_dp_send_packet(uint32_t id, const pktout_t *data) { av_push_msg(id, AV_DP_SEND_PACKET, sizeof(pktout_t), data); }
 /** \brief AV_DP_INSERT_FLOW */
-void av_dp_insert_flow(uint32_t id, const flow_t *data) { AV_PUSH_MSG(id, AV_DP_INSERT_FLOW, sizeof(flow_t), data); }
+void av_dp_insert_flow(uint32_t id, const flow_t *data) { av_push_msg(id, AV_DP_INSERT_FLOW, sizeof(flow_t), data); }
 /** \brief AV_DP_MODIFY_FLOW */
-void av_dp_modify_flow(uint32_t id, const flow_t *data) { AV_PUSH_MSG(id, AV_DP_MODIFY_FLOW, sizeof(flow_t), data); }
+void av_dp_modify_flow(uint32_t id, const flow_t *data) { av_push_msg(id, AV_DP_MODIFY_FLOW, sizeof(flow_t), data); }
 /** \brief AV_DP_DELETE_FLOW */
-void av_dp_delete_flow(uint32_t id, const flow_t *data) { AV_PUSH_MSG(id, AV_DP_DELETE_FLOW, sizeof(flow_t), data); }
+void av_dp_delete_flow(uint32_t id, const flow_t *data) { av_push_msg(id, AV_DP_DELETE_FLOW, sizeof(flow_t), data); }
 
 // Internal events (request-response) ///////////////////////////////
 
@@ -106,7 +89,7 @@ void av_log_debug(uint32_t id, char *format, ...) {
     vsprintf(log, format, ap);
     va_end(ap);
 
-    AV_PUSH_MSG(id, AV_LOG_DEBUG, strlen(log), log);
+    av_push_msg(id, AV_LOG_DEBUG, strlen(log), log);
 }
 /** \brief AV_LOG_INFO */
 void av_log_info(uint32_t id, char *format, ...) {
@@ -117,7 +100,7 @@ void av_log_info(uint32_t id, char *format, ...) {
     vsprintf(log, format, ap);
     va_end(ap);
 
-    AV_PUSH_MSG(id, AV_LOG_INFO, strlen(log), log);
+    av_push_msg(id, AV_LOG_INFO, strlen(log), log);
 }
 /** \brief AV_LOG_WARN */
 void av_log_warn(uint32_t id, char *format, ...) {
@@ -128,7 +111,7 @@ void av_log_warn(uint32_t id, char *format, ...) {
     vsprintf(log, format, ap);
     va_end(ap);
 
-    AV_PUSH_MSG(id, AV_LOG_WARN, strlen(log), log);
+    av_push_msg(id, AV_LOG_WARN, strlen(log), log);
 }
 /** \brief AV_LOG_ERROR */
 void av_log_error(uint32_t id, char *format, ...) {
@@ -139,7 +122,7 @@ void av_log_error(uint32_t id, char *format, ...) {
     vsprintf(log, format, ap);
     va_end(ap);
 
-    AV_PUSH_MSG(id, AV_LOG_ERROR, strlen(log), log);
+    av_push_msg(id, AV_LOG_ERROR, strlen(log), log);
 }
 /** \brief AV_LOG_FATAL */
 void av_log_fatal(uint32_t id, char *format, ...) {
@@ -150,7 +133,7 @@ void av_log_fatal(uint32_t id, char *format, ...) {
     vsprintf(log, format, ap);
     va_end(ap);
 
-    AV_PUSH_MSG(id, AV_LOG_FATAL, strlen(log), log);
+    av_push_msg(id, AV_LOG_FATAL, strlen(log), log);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -164,24 +147,27 @@ static void *reply_app_events(void *null)
     waitsec(1, 0);
 
     while (av_worker_on) {
-        msg_t msg = {0};
-
-        zmq_recv(av_rep_sock, &msg, sizeof(msg), 0);
+        char buff[__MAX_ZMQ_MSG_SIZE] = {0};
+        zmq_recv(av_rep_sock, buff, __MAX_ZMQ_MSG_SIZE, 0);
 
         if (!av_worker_on) break;
-        else if (msg.id == 0) continue;
+
+        char *decoded = base64_decode(buff);
+        msg_t *msg = (msg_t *)decoded;
+
+        if (msg->id == 0) continue;
+        else if (msg->type > AV_NUM_EVENTS) continue;
 
         app_event_out_t out = {0};
 
-        out.id = msg.id;
-        out.type = msg.type;
-        out.data = (char *)msg.data;
+        out.id = msg->id;
+        out.type = msg->type;
+        out.data = (char *)msg->data;
 
         const app_event_t *in = (const app_event_t *)&out;
-
         int ret = 0;
 
-        switch (msg.type) {
+        switch (out.type) {
 
         // upstream events
 
@@ -249,9 +235,13 @@ static void *reply_app_events(void *null)
             break;
         }
 
-        msg.ret = ret;
+        FREE(decoded);
 
-        zmq_send(av_rep_sock, &msg, sizeof(msg), 0);
+        msg->ret = ret;
+
+        char *str = base64_encode((char *)&msg, sizeof(msg_t));
+        zmq_send(av_rep_sock, str, strlen(str), 0);
+        FREE(str);
 
         if (!av_worker_on) break;
     }
@@ -268,22 +258,28 @@ static void *deliver_app_events(void *null)
     waitsec(1, 0);
 
     while (av_worker_on) {
-        msg_t msg = {0};
-
-        zmq_recv(av_pull_sock, &msg, sizeof(msg), 0);
+        char buff[__MAX_ZMQ_MSG_SIZE] = {0};
+        zmq_recv(av_pull_sock, buff, __MAX_ZMQ_MSG_SIZE, 0);
 
         if (!av_worker_on) break;
-        else if (msg.id == 0) continue;
+
+        char *decoded = base64_decode(buff);
+        msg_t *msg = (msg_t *)decoded;
+
+        if (msg->id == 0) continue;
+        else if (msg->type > AV_NUM_EVENTS) continue;
+
+        printf("inbound - id: %u, type: %u\n", msg->id, msg->type);
 
         app_event_out_t out = {0};
 
-        out.id = msg.id;
-        out.type = msg.type;
-        out.data = (char *)msg.data;
+        out.id = msg->id;
+        out.type = msg->type;
+        out.data = (char *)msg->data;
 
         const app_event_t *in = (const app_event_t *)&out;
 
-        switch (msg.type) {
+        switch (out.type) {
 
         // upstream events
 
@@ -349,6 +345,8 @@ static void *deliver_app_events(void *null)
         default:
             break;
         }
+
+        FREE(decoded);
     }
 
     return NULL;
@@ -364,7 +362,7 @@ int destroy_av_workers(ctx_t *ctx)
 {
     av_worker_on = FALSE;
 
-    waitsec(2, 0);
+    waitsec(1, 0);
 
     zmq_close(av_push_sock);
     zmq_ctx_destroy(av_push_ctx);
@@ -373,7 +371,7 @@ int destroy_av_workers(ctx_t *ctx)
     zmq_ctx_destroy(av_pull_ctx);
 
     zmq_close(av_req_sock);
-    //zmq_ctx_destroy(av_req_ctx);
+    zmq_ctx_destroy(av_req_ctx);
 
     zmq_close(av_rep_sock);
     zmq_ctx_destroy(av_rep_ctx);
@@ -394,9 +392,6 @@ int app_event_init(ctx_t *ctx)
     av_push_ctx = zmq_ctx_new();
     av_push_sock = zmq_socket(av_push_ctx, ZMQ_PUSH);
 
-    const int timeout = 1000;
-    zmq_setsockopt(av_push_sock, ZMQ_SNDTIMEO, &timeout, sizeof(int));
-
     if (zmq_connect(av_push_sock, EXT_APP_PULL_ADDR)) {
         PERROR("zmq_connect");
         return -1;
@@ -406,8 +401,6 @@ int app_event_init(ctx_t *ctx)
 
     av_pull_ctx = zmq_ctx_new();
     av_pull_sock = zmq_socket(av_pull_ctx, ZMQ_PULL);
-
-    zmq_setsockopt(av_pull_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
 
     if (zmq_connect(av_pull_sock, TARGET_APP_PULL_ADDR)) {
         PERROR("zmq_connect");
@@ -428,9 +421,6 @@ int app_event_init(ctx_t *ctx)
     av_req_ctx = zmq_ctx_new();
     av_req_sock = zmq_socket(av_req_ctx, ZMQ_REQ);
 
-    zmq_setsockopt(av_req_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
-    zmq_setsockopt(av_req_sock, ZMQ_SNDTIMEO, &timeout, sizeof(int));
-
     if (zmq_connect(av_req_sock, EXT_APP_REPLY_ADDR)) {
         PERROR("zmq_connect");
         return -1;
@@ -440,9 +430,6 @@ int app_event_init(ctx_t *ctx)
 
     av_rep_ctx = zmq_ctx_new();
     av_rep_sock = zmq_socket(av_req_ctx, ZMQ_REP);
-
-    zmq_setsockopt(av_rep_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
-    zmq_setsockopt(av_rep_sock, ZMQ_SNDTIMEO, &timeout, sizeof(int));
 
     if (zmq_connect(av_rep_sock, TARGET_APP_REPLY_ADDR)) {
         PERROR("zmq_connect");

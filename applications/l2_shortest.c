@@ -139,7 +139,7 @@ static int add_switch(const switch_t *sw)
             src = i;
             node_list[i] = dpid;
 
-            DEBUG("add -> node_list[%d] = %lu\n", i, dpid);
+            PRINTF("add -> node_list[%d] = %lu\n", i, dpid);
 
             break;
         }
@@ -179,7 +179,7 @@ static int delete_switch(const switch_t *sw)
             src = i;
             node_list[i] = 0;
 
-            DEBUG("del -> node_list[%d]\n", i);
+            PRINTF("del -> node_list[%d]\n", i);
 
             break;
         }
@@ -230,7 +230,7 @@ static int add_link(const port_t *link)
     int src = get_index_from_dpid(link->dpid);
     int dst = get_index_from_dpid(link->target_dpid);
 
-    DEBUG("add -> edge(src: %d, dst: %d)\n", src, dst);
+    PRINTF("add -> edge(src: %d, dst: %d)\n", src, dst);
 
     path[src][dst] = src + dst;
     edge_list[src][dst] = link->port;
@@ -255,7 +255,7 @@ static int del_link(const port_t *link)
     int src = get_index_from_dpid(link->dpid);
     int dst = get_index_from_dpid(link->target_dpid);
 
-    DEBUG("del -> edge(src: %d, dst: %d)\n", src, dst);
+    PRINTF("del -> edge(src: %d, dst: %d)\n", src, dst);
 
     path[src][dst] = INF;
     edge_list[src][dst] = 0;
@@ -293,17 +293,17 @@ static int shortest_path(int *route, uint64_t src_dpid, uint64_t dst_dpid)
     int hop = 0;
     route[hop++] = u-1;
 
-    DEBUG("%d->%d %2d %d", u-1, v-1, dist[src][dst], u-1);
+    PRINTF("%d->%d %2d %d", u-1, v-1, dist[src][dst], u-1);
 
     do {
         u = next[u-1][v-1];
         route[hop++] = u-1;
-        DEBUG("->%d", u-1);
+        PRINTF("->%d", u-1);
 
         break;
     } while (u != v);
 
-    DEBUG("\n");
+    PRINTF("\n");
 
     pthread_rwlock_unlock(&path_lock);
 

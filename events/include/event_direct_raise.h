@@ -57,7 +57,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
                 c->num_events[type]++;
 
-                int ret = EV_SEND_EXT_MSG(id, type, len, data, out);
+                int ret = ev_send_ext_msg(c, id, type, len, data, out);
                 if (ret && c->perm & COMPNT_EXECUTE) {
                     break;
                 }
@@ -76,12 +76,12 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
                 c->num_events[type]++;
 
                 if (c->perm & COMPNT_EXECUTE) {
-                    int ret = EV_SEND_EXT_MSG(id, type, len, data, out);
+                    int ret = ev_send_ext_msg(c, id, type, len, data, out);
                     if (ret) {
                         break;
                     }
                 } else {
-                    EV_PUSH_EXT_MSG(id, type, len, data);
+                    ev_push_ext_msg(c, id, type, len, data);
                 }
             }
         }
@@ -103,7 +103,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
                         c->num_events[type]++;
 
-                        int ret = EV_SEND_EXT_MSG(id, type, len, data, out);
+                        int ret = ev_send_ext_msg(c, id, type, len, data, out);
                         if (ret && c->perm & COMPNT_EXECUTE) {
                             break;
                         }
@@ -122,12 +122,12 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
                         c->num_events[type]++;
 
                         if (c->perm & COMPNT_EXECUTE) {
-                            int ret = EV_SEND_EXT_MSG(id, type, len, data, out);
+                            int ret = ev_send_ext_msg(c, id, type, len, data, out);
                             if (ret) {
                                 break;
                             }
                         } else {
-                            EV_PUSH_EXT_MSG(id, type, len, data);
+                            ev_push_ext_msg(c, id, type, len, data);
                         }
                     }
                 }

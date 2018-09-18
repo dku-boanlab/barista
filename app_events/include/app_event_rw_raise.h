@@ -45,7 +45,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, FUNC_TYPE *data)
 
                 c->num_app_events[type]++;
 
-                int ret = AV_SEND_EXT_MSG(c, id, type, len, data, out);
+                int ret = av_send_ext_msg(c, c, id, type, len, data, out);
                 if (ret && c->perm & APP_EXECUTE) {
                     break;
                 }
