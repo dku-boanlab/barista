@@ -31,22 +31,29 @@ int ev_worker_on;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The context to push and request events */
+/** \brief The contexts to push and request events */
 void *ev_push_ctx, *ev_req_ctx;
 
-/** \brief The socket to push and request events */
+/** \brief The sockets to push and request events */
 void *ev_push_sock, *ev_req_sock;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The context to pull and reply events */
+/** \brief The contexts to pull and reply events */
 void *ev_pull_ctx, *ev_rep_ctx;
 
-/** \brief The socket to pull and reply events */
+/** \brief The sockets to pull and reply events */
 void *ev_pull_sock, *ev_rep_sock;
 
 /////////////////////////////////////////////////////////////////////
 
+/**
+ * \brief Function to send events to the Barista NOS
+ * \param id Component ID
+ * \param type Event type
+ * \param size The size of the given data
+ * \param data The pointer of the given data
+ */
 static int ev_push_msg(uint32_t id, uint16_t type, uint16_t size, const void *data)
 {
     msg_t msg = {0};
@@ -602,7 +609,7 @@ static void *deliver_events(void *null)
 
 /**
  * \brief Function to destroy an event queue
- * \param ctx Context (NULL)
+ * \param ctx Context (= NULL)
  */
 int destroy_ev_workers(ctx_t *ctx)
 {
@@ -627,7 +634,7 @@ int destroy_ev_workers(ctx_t *ctx)
 
 /**
  * \brief Function to initialize the event handler
- * \param ctx Context (NULL)
+ * \param ctx Context (= NULL)
  */
 int event_init(ctx_t *ctx)
 {

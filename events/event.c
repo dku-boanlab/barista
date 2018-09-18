@@ -29,7 +29,7 @@ static int ev_on;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The MQ context to pull events and to handle request-response events */
+/** \brief The MQ contexts to pull events and to handle request-response events */
 void *ev_pull_ctx, *ev_rep_ctx;
 
 /** \brief The MQ socket to pull events */

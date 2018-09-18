@@ -139,7 +139,12 @@ static void print_logo(void)
 static void print_usage(char *name)
 {
     PRINTF("Usage:\n");
-    PRINTF("\t%s -c [config file] -a [app config file] -b -r -d\n", name);
+    PRINTF("\t%s\n", name);
+    PRINTF("\t\t-c [config file]\n");
+    PRINTF("\t\t-a [app config file]\n");
+    PRINTF("\t\t-b (run with base components)\n");
+    PRINTF("\t\t-r (auto-start mode)\n");
+    PRINTF("\t\t-d (daemon mode)\n");
 }
 
 /////////////////////////////////////////////////////////////////////

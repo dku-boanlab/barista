@@ -14,6 +14,11 @@
 
 /**
  * \brief Function to send events to an application
+ * \param c Application context
+ * \param id Application ID
+ * \param type Application event type
+ * \param size The size of the given data
+ * \param data The pointer of the given data
  * \return None
  */
 static int av_push_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, const void *data)
@@ -32,22 +37,37 @@ static int av_push_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, 
 
 /**
  * \brief Function to send events to an application and receive responses from it
+ * \param c Application context
+ * \param id Application ID
+ * \param type Application event type
+ * \param size The size of the given data
+ * \param data The pointer of the given data
+ * \param out The pointer to store the updated data
  * \return The return value received from an application
  */
 static int av_send_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, const void *data, app_event_out_t *out)
 {
+    int ret = 0;
+
     msg_t msg = {0};
     msg.id = id;
     msg.type = type;
     memmove(msg.data, data, size);
 
     char *str = base64_encode((char *)&msg, sizeof(msg_t));
-    zmq_send(c->push_sock, str, strlen(str), 0);
+    zmq_send(c->req_sock, str, strlen(str), 0);
     FREE(str);
 
-    //
+    char buff[__MAX_ZMQ_MSG_SIZE] = {0};
+    zmq_recv(c->req_sock, buff, __MAX_ZMQ_MSG_SIZE, 0);
 
-    return msg.ret;
+    char *decoded = base64_decode(buff);
+    msg_t *received = (msg_t *)decoded;
+    memmove(out->data, received->data, size);
+    ret = received->ret;
+    FREE(decoded);
+
+    return ret;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -191,6 +211,8 @@ static void *receive_app_events(void *null)
 
     return NULL;
 }
+
+/////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Function to destroy an app event queue

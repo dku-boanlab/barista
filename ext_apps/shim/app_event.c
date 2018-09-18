@@ -32,22 +32,29 @@ int av_worker_on;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The context to push and request events */
+/** \brief The contexts to push and request events */
 void *av_push_ctx, *av_req_ctx;
 
-/** \brief The socket to push and request events */
+/** \brief The sockets to push and request events */
 void *av_push_sock, *av_req_sock;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The context to pull and reply events */
+/** \brief The contexts to pull and reply events */
 void *av_pull_ctx, *av_rep_ctx;
 
-/** \brief The socket to pull and reply events */
+/** \brief The sockets to pull and reply events */
 void *av_pull_sock, *av_rep_sock;
 
 /////////////////////////////////////////////////////////////////////
 
+/**
+ * \brief Function to send events to the Barista NOS
+ * \param id Application ID
+ * \param type Application event type
+ * \param size The size of the given data
+ * \param data The pointer of the given data
+ */
 static int av_push_msg(uint32_t id, uint16_t type, uint16_t size, const void *data)
 {
     msg_t msg = {0};
@@ -351,7 +358,7 @@ static void *deliver_app_events(void *null)
 
 /**
  * \brief Function to destroy an app event queue
- * \param ctx Context (NULL)
+ * \param ctx Context (= NULL)
  */
 int destroy_av_workers(ctx_t *ctx)
 {
@@ -376,7 +383,7 @@ int destroy_av_workers(ctx_t *ctx)
 
 /**
  * \brief Function to initialize the app event handler
- * \param ctx Context (NULL)
+ * \param ctx Context (= NULL)
  */
 int app_event_init(ctx_t *ctx)
 {

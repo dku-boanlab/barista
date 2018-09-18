@@ -58,7 +58,9 @@ mac_table_t *mac_table;
 
 /**
  * \brief Function to clean up mac entires
- * \return NULL
+ * \param i The index of a MAC table
+ * \param tmp_list The list of MAC entries to be removed
+ * \return None
  */
 static int clean_up_tmp_list(int i, mac_table_t *tmp_list)
 {

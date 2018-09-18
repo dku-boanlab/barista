@@ -29,13 +29,13 @@ static int av_on;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The MQ context to pull events and to handle request-response events */
+/** \brief The MQ contexts to pull events and to handle request-response events */
 void *av_pull_ctx, *av_rep_ctx;
 
 /** \brief The MQ socket to pull events */
 void *av_pull_sock;
 
-/** \brief The MQ socket for applications and workers */
+/** \brief The MQ sockets for applications and workers */
 void *av_rep_app, *av_rep_work;
 
 /////////////////////////////////////////////////////////////////////

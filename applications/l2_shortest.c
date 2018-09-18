@@ -118,6 +118,7 @@ static int floyd_warshall(void)
 /**
  * \brief Function to add a new switch
  * \param sw New switch
+ * \return 0: OK, -1: Existence
  */
 static int add_switch(const switch_t *sw)
 {
@@ -206,6 +207,7 @@ static int delete_switch(const switch_t *sw)
 /**
  * \brief Function to get an index where a datapath ID is located
  * \param dpid Datapath ID
+ * \return The index of the given Datapath ID
  */
 static int get_index_from_dpid(uint64_t dpid)
 {
@@ -293,17 +295,17 @@ static int shortest_path(int *route, uint64_t src_dpid, uint64_t dst_dpid)
     int hop = 0;
     route[hop++] = u-1;
 
-    PRINTF("%d->%d %2d %d", u-1, v-1, dist[src][dst], u-1);
+    //PRINTF("%d->%d %2d %d", u-1, v-1, dist[src][dst], u-1);
 
     do {
         u = next[u-1][v-1];
         route[hop++] = u-1;
-        PRINTF("->%d", u-1);
+        //PRINTF("->%d", u-1);
 
         break;
     } while (u != v);
 
-    PRINTF("\n");
+    //PRINTF("\n");
 
     pthread_rwlock_unlock(&path_lock);
 
@@ -1096,7 +1098,6 @@ int l2_shortest_handler(const app_event_t *av, app_event_out_t *av_out)
         PRINT_EV("AV_LINK_ADDED\n");
         {
             const port_t *link = av->port;
-
             add_link(link);
         }
         break;
@@ -1104,7 +1105,6 @@ int l2_shortest_handler(const app_event_t *av, app_event_out_t *av_out)
         PRINT_EV("AV_LINK_DELETED\n");
         {
             const port_t *link = av->port;
-
             del_link(link);
         }
         break;

@@ -14,7 +14,12 @@
 
 /**
  * \brief Function to send events to a component
- * \return NULL
+ * \param c Component context
+ * \param id Component ID
+ * \param type Event type
+ * \param The size of the given data
+ * \param The pointer of the given data
+ * \return None
  */
 static int ev_push_ext_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t size, const void *data)
 {
@@ -30,20 +35,39 @@ static int ev_push_ext_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t siz
     return 0;
 }
 
+/**
+ * \brief Function to send events to a component and receive responses from it
+ * \param c Component context
+ * \param id Component ID
+ * \param type Event type
+ * \param size The size of the given data
+ * \param data The pointer of the given data
+ * \param out The pointer to store the updated data
+ * \return The return value received from a component
+ */
 static int ev_send_ext_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t size, const void *data, event_out_t *out)
 {
+    int ret = 0;
+
     msg_t msg = {0};
     msg.id = id;
     msg.type = type;
     memmove(msg.data, data, size);
 
     char *str = base64_encode((char *)&msg, sizeof(msg_t));
-    zmq_send(c->push_sock, str, strlen(str), 0);
+    zmq_send(c->req_sock, str, strlen(str), 0);
     FREE(str);
 
-    //
+    char buff[__MAX_ZMQ_MSG_SIZE] = {0};
+    zmq_recv(c->req_sock, buff, __MAX_ZMQ_MSG_SIZE, 0);
 
-    return msg.ret;
+    char *decoded = base64_decode(buff);
+    msg_t *received = (msg_t *)decoded;
+    memmove(out->data, received->data, size);
+    ret = received->ret;
+    FREE(decoded);
+
+    return ret;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -269,6 +293,8 @@ static void *receive_events(void *null)
 
     return NULL;
 }
+
+/////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Function to destroy an event queue
