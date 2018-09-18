@@ -749,6 +749,10 @@ int flow_mgmt_cli(cli_t *cli, char **args)
  */
 int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 {
+#ifdef __ENABLE_CBENCH
+    return 0;
+#endif /* __ENABLE_CBENCH */
+
     switch(ev->type) {
     case EV_DP_INSERT_FLOW:
         PRINT_EV("EV_DP_INSERT_FLOW\n");

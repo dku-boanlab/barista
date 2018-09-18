@@ -157,10 +157,6 @@ static int check_host(host_table_t *list, uint32_t ip, uint64_t mac)
  */
 static int add_new_host(const pktin_t *pktin)
 {
-#ifdef __ENABLE_CBENCH
-    return 0;
-#endif /* __ENABLE_CBENCH */
-
     struct in_addr src_ip;
     src_ip.s_addr = pktin->src_ip;
 
@@ -469,6 +465,10 @@ int host_mgmt_cli(cli_t *cli, char **args)
  */
 int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 {
+#ifdef __ENABLE_CBENCH
+    return 0;
+#endif /* __ENABLE_CBENCH */
+
     switch (ev->type) {
     case EV_DP_RECEIVE_PACKET:
         PRINT_EV("EV_DP_RECEIVE_PACKET\n");
