@@ -61,7 +61,7 @@ static int init_compnt(void)
         }
 
         if (strcmp(name, TARGET_COMPNT) != 0)
-            continue;
+            return -1;
 
         char args[__CONF_WORD_LEN] = {0};
         json_t *j_args = json_object_get(data, "args");

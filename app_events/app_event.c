@@ -240,6 +240,7 @@ static void *meta_app_events(void *null)
 /**
  * \brief Function to initialize the app event handler
  * \param ctx The context of the Barista NOS
+ * \return 0: OK, -1: Error
  */
 int app_event_init(ctx_t *ctx)
 {

@@ -19,8 +19,6 @@
 #include "component.h"
 #include "cli.h"
 
-#include <zmq.h>
-
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The pointer of the context structure */
@@ -287,6 +285,7 @@ static void *meta_events(void *null)
 /**
  * \brief Function to initialize the event handler
  * \param ctx The context of the Barista NOS
+ * \return 0: OK, -1: Error
  */
 int event_init(ctx_t *ctx)
 {

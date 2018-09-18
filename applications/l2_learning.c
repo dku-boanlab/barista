@@ -56,6 +56,10 @@ mac_table_t *mac_table;
 
 /////////////////////////////////////////////////////////////////////
 
+/**
+ * \brief Function to clean up mac entires
+ * \return NULL
+ */
 static int clean_up_tmp_list(int i, mac_table_t *tmp_list)
 {
     mac_entry_t *curr = tmp_list->head;

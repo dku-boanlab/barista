@@ -40,13 +40,9 @@
  */
 int str2args(char *str, int *argc, char **argv, int max_argc)
 {
-    uint8_t single_quotes;
-    uint8_t double_quotes;
-    uint8_t delim;
-
-    single_quotes = 0;
-    double_quotes = 0;
-    delim = 1;
+    uint8_t single_quotes = 0;
+    uint8_t double_quotes = 0;
+    uint8_t delim = 1;
 
     *argc = 0;
 

@@ -14,7 +14,7 @@
 
 /**
  * \brief Function to send events to an application
- * \return NULL
+ * \return None
  */
 static int av_push_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, const void *data)
 {
@@ -32,7 +32,7 @@ static int av_push_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, 
 
 /**
  * \brief Function to send events to an application and receive responses from it
- * \return NULL
+ * \return The return value received from an application
  */
 static int av_send_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, const void *data, app_event_out_t *out)
 {
