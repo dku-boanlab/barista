@@ -24,7 +24,7 @@ typedef struct _event_t {
 
     // body
     union {
-        const raw_msg_t  *raw_msg; /**< The pointer of a message */
+        const raw_msg_t  *raw_msg; /**< The pointer of a raw message */
         const msg_t      *msg; /**< The pointer of a message */
 
         const switch_t   *sw; /**< The pointer of a switch */

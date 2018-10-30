@@ -26,7 +26,7 @@ void ev_dp_port_stats(uint32_t id, const port_t *data);
 
 // downstream ///////////////////////////////////////////////////////
 
-void ev_ofp_msg_out(uint32_t id, const msg_t *data);
+void ev_ofp_msg_out(uint32_t id, const raw_msg_t *data);
 void ev_dp_send_packet(uint32_t id, const pktout_t *data);
 void ev_dp_insert_flow(uint32_t id, const flow_t *data);
 void ev_dp_modify_flow(uint32_t id, const flow_t *data);

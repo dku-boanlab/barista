@@ -49,9 +49,7 @@ typedef struct cli_def cli_t;
 /** \brief The structure of a raw message */
 typedef struct _raw_msg_t {
     uint32_t fd; /**< Network socket */
-
     uint16_t length; /**< The length of a message */
-
     uint16_t pad; /**< Pad */
 
     uint8_t *data; /**< Pointer indicating the data */
@@ -62,21 +60,11 @@ typedef struct _raw_msg_t {
 
 /** \brief The structure of a message */
 typedef struct _msg_t {
-    union {
-        uint32_t id; /**< Trigger ID */
-        uint32_t fd; /**< Network socket */
-    };
-
-    union {
-        uint16_t type; /**< Event type */
-        uint16_t length; /**< The length of a message */
-    };
-
-    uint16_t pad; /**< Pad */
+    uint32_t id; /**< Trigger ID */
+    uint16_t type; /**< Event type */
+    int16_t ret; /**< Return value */
 
     uint8_t data[__MAX_STRUCT_SIZE]; /**< Data */
-
-    int ret; /**< Return value */
 } msg_t;
 
 /** \brief The maximum length of ZMQ message */

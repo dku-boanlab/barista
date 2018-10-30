@@ -212,7 +212,7 @@ int traffic_mgmt_handler(const event_t *ev, event_out_t *ev_out)
             pthread_spin_lock(&lock);
 
             traffic.in_pkt_cnt++;
-            traffic.in_byte_cnt += ev->msg->length;
+            traffic.in_byte_cnt += ev->raw_msg->length;
 
             pthread_spin_unlock(&lock);
         }
@@ -223,7 +223,7 @@ int traffic_mgmt_handler(const event_t *ev, event_out_t *ev_out)
             pthread_spin_lock(&lock);
 
             traffic.out_pkt_cnt++;
-            traffic.out_byte_cnt += ev->msg->length;
+            traffic.out_byte_cnt += ev->raw_msg->length;
 
             pthread_spin_unlock(&lock);
         }

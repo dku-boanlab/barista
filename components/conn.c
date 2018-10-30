@@ -203,7 +203,7 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 
                     bytes = 0;
                 } else {
-                    raw_msg_t msg = {0};
+                    raw_msg_t msg;
 
                     msg.fd = sock;
                     msg.length = ntohs(ofph->length);
@@ -233,7 +233,7 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 
                 bytes = 0;
             } else {
-                raw_msg_t msg = {0};
+                raw_msg_t msg;
 
                 msg.fd = sock;
                 msg.length = ntohs(ofph->length);
@@ -692,7 +692,7 @@ int conn_handler(const event_t *ev, event_out_t *ev_out)
     case EV_OFP_MSG_OUT:
         PRINT_EV("EV_OFP_MSG_OUT\n");
         {
-            const msg_t *msg = ev->msg;
+            const raw_msg_t *msg = ev->raw_msg;
             int fd = msg->fd;
 
             int remain = msg->length;
