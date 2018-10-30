@@ -13,6 +13,3 @@
 #include "common.h"
 #include "event.h"
 #include "lldp.h"
-
-#include <net/ethernet.h>
-#include <netinet/in.h>

@@ -22,13 +22,9 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The structure of a switch table */
-typedef struct _switch_table_t {
-    switch_t *head; /**< The head pointer */
-    switch_t *tail; /**< The tail pointer */
+#include "switch_queue.h"
 
-    pthread_rwlock_t lock; /**< The lock for management */
-} switch_table_t;
+/////////////////////////////////////////////////////////////////////
 
 /** \brief The number of switches */
 int num_switches;
@@ -38,10 +34,6 @@ switch_table_t switches;
 
 /** \brief Switch list */
 switch_t **switch_table;
-
-/////////////////////////////////////////////////////////////////////
-
-#include "switch_queue.h"
 
 /////////////////////////////////////////////////////////////////////
 

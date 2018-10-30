@@ -54,12 +54,12 @@ clean:
 install: $(TARGET_LIBS)
 	install -d $(DESTDIR)$(PREFIX)/include $(DESTDIR)$(PREFIX)/lib
 	install -m 0644 libcli.h $(DESTDIR)$(PREFIX)/include
-  ifeq (1,$(STATIC_LIB))
-	install -m 0644 $(LIB_STATIC) $(DESTDIR)$(PREFIX)/lib
-  endif
-  ifeq (1,$(DYNAMIC_LIB))
-	install -m 0755 $(LIB).$(MAJOR).$(MINOR).$(REVISION) $(DESTDIR)$(PREFIX)/lib
-	cd $(DESTDIR)$(PREFIX)/lib && \
-	    ln -fs $(LIB).$(MAJOR).$(MINOR).$(REVISION) $(LIB).$(MAJOR).$(MINOR) && \
-	    ln -fs $(LIB).$(MAJOR).$(MINOR) $(LIB)
-  endif
+	ifeq (1,$(STATIC_LIB))
+		install -m 0644 $(LIB_STATIC) $(DESTDIR)$(PREFIX)/lib
+	endif
+	ifeq (1,$(DYNAMIC_LIB))
+		install -m 0755 $(LIB).$(MAJOR).$(MINOR).$(REVISION) $(DESTDIR)$(PREFIX)/lib
+		cd $(DESTDIR)$(PREFIX)/lib && \
+		ln -fs $(LIB).$(MAJOR).$(MINOR).$(REVISION) $(LIB).$(MAJOR).$(MINOR) && \
+		ln -fs $(LIB).$(MAJOR).$(MINOR) $(LIB)
+	endif

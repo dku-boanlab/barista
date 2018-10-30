@@ -22,37 +22,49 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The structure of a MAC entry */
-typedef struct _mac_entry_t {
-    uint64_t dpid; /**< Datapath ID */
-    uint16_t port; /**< Port */
+#include "mac_queue.h"
 
-    uint64_t mac; /**< MAC address */
-    uint32_t ip; /**< IP address */
-
-    struct _mac_entry_t *prev; /**< Previous entry */
-    struct _mac_entry_t *next; /**< Next entry */
-
-    struct _mac_entry_t *r_next; /**< Next entry for removal */
-} mac_entry_t;
-
-/** \brief The structure of a MAC table */
-typedef struct _mac_table_t {
-    mac_entry_t *head; /**< The head pointer */
-    mac_entry_t *tail; /**< The tail pointer */
-
-    pthread_rwlock_t lock; /**< The lock for management */
-} mac_table_t;
-
-/** \brief The size of a MAC table */
-#define MAC_HASH_SIZE 8192
+/////////////////////////////////////////////////////////////////////
 
 /** \brief MAC table */
 mac_table_t *mac_table;
 
 /////////////////////////////////////////////////////////////////////
 
-#include "mac_queue.h"
+/**
+ * \brief Function to clean up mac entires
+ * \param idx The index of a MAC table
+ * \param tmp_list The list of MAC entries to be removed
+ * \return None
+ */
+static int clean_up_tmp_list(int idx, mac_table_t *tmp_list)
+{
+    mac_entry_t *curr = tmp_list->head;
+
+    while (curr != NULL) {
+        mac_entry_t *tmp = curr;
+
+        curr = curr->next;
+
+        if (tmp->prev != NULL && tmp->next != NULL) {
+            tmp->prev->next = tmp->next;
+            tmp->next->prev = tmp->prev;
+        } else if (tmp->prev == NULL && tmp->next != NULL) {
+            mac_table[idx].head = tmp->next;
+            tmp->next->prev = NULL;
+        } else if (tmp->prev != NULL && tmp->next == NULL) {
+            mac_table[idx].tail = tmp->prev;
+            tmp->prev->next = NULL;
+        } else if (tmp->prev == NULL && tmp->next == NULL) {
+            mac_table[idx].head = NULL;
+            mac_table[idx].tail = NULL;
+        }
+
+        mac_enqueue(tmp);
+    }
+
+    return 0;
+}
 
 /////////////////////////////////////////////////////////////////////
 
@@ -947,28 +959,7 @@ int l2_shortest_handler(const app_event_t *av, app_event_out_t *av_out)
                     curr = curr->next;
                 }
 
-                curr = tmp_list.head;
-                while (curr != NULL) {
-                    mac_entry_t *tmp = curr;
-
-                    curr = curr->r_next;
-
-                    if (tmp->prev != NULL && tmp->next != NULL) {
-                        tmp->prev->next = tmp->next;
-                        tmp->next->prev = tmp->prev;
-                    } else if (tmp->prev == NULL && tmp->next != NULL) {
-                        mac_table[i].head = tmp->next;
-                        tmp->next->prev = NULL;
-                    } else if (tmp->prev != NULL && tmp->next == NULL) {
-                        mac_table[i].tail = tmp->prev;
-                        tmp->prev->next = NULL;
-                    } else if (tmp->prev == NULL && tmp->next == NULL) {
-                        mac_table[i].head = NULL;
-                        mac_table[i].tail = NULL;
-                    }
-
-                    mac_enqueue(tmp);
-                }
+                clean_up_tmp_list(i, &tmp_list);
 
                 pthread_rwlock_unlock(&mac_table[i].lock);
             }
@@ -1002,28 +993,7 @@ int l2_shortest_handler(const app_event_t *av, app_event_out_t *av_out)
                     curr = curr->next;
                 }
 
-                curr = tmp_list.head;
-                while (curr != NULL) {
-                    mac_entry_t *tmp = curr;
-
-                    curr = curr->r_next;
-
-                    if (tmp->prev != NULL && tmp->next != NULL) {
-                        tmp->prev->next = tmp->next;
-                        tmp->next->prev = tmp->prev;
-                    } else if (tmp->prev == NULL && tmp->next != NULL) {
-                        mac_table[i].head = tmp->next;
-                        tmp->next->prev = NULL;
-                    } else if (tmp->prev != NULL && tmp->next == NULL) {
-                        mac_table[i].tail = tmp->prev;
-                        tmp->prev->next = NULL;
-                    } else if (tmp->prev == NULL && tmp->next == NULL) {
-                        mac_table[i].head = NULL;
-                        mac_table[i].tail = NULL;
-                    }
-
-                    mac_enqueue(tmp);
-                }
+                clean_up_tmp_list(i, &tmp_list);
 
                 pthread_rwlock_unlock(&mac_table[i].lock);
             }
@@ -1065,28 +1035,7 @@ int l2_shortest_handler(const app_event_t *av, app_event_out_t *av_out)
                     curr = curr->next;
                 }
 
-                curr = tmp_list.head;
-                while (curr != NULL) {
-                    mac_entry_t *tmp = curr;
-
-                    curr = curr->next;
-
-                    if (tmp->prev != NULL && tmp->next != NULL) {
-                        tmp->prev->next = tmp->next;
-                        tmp->next->prev = tmp->prev;
-                    } else if (tmp->prev == NULL && tmp->next != NULL) {
-                        mac_table[i].head = tmp->next;
-                        tmp->next->prev = NULL;
-                    } else if (tmp->prev != NULL && tmp->next == NULL) {
-                        mac_table[i].tail = tmp->prev;
-                        tmp->prev->next = NULL;
-                    } else if (tmp->prev == NULL && tmp->next == NULL) {
-                        mac_table[i].head = NULL;
-                        mac_table[i].tail = NULL;
-                    }
-
-                    mac_enqueue(tmp);
-                }
+                clean_up_tmp_list(i, &tmp_list);
 
                 pthread_rwlock_unlock(&mac_table[i].lock);
             }

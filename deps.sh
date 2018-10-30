@@ -14,9 +14,7 @@ sudo apt-get -y install doxygen global flex bison cmake libav-tools
 
 # dependency => libcli
 cd libraries/libcli
-make
-sudo make install
-make clean
+make && sudo make install && make clean
 cd -
 
 # dependency => zeromq

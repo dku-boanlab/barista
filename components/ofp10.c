@@ -28,7 +28,7 @@
  */
 static int ofp10_hello(const raw_msg_t *msg)
 {
-    raw_msg_t out = {0};
+    msg_t out = {0};
 
     out.fd = msg->fd;
     out.length = sizeof(struct ofp_header);
@@ -183,7 +183,7 @@ static int ofp10_error(const raw_msg_t *msg)
  */
 static int ofp10_echo_reply(const raw_msg_t *msg)
 {
-    raw_msg_t out = {0};
+    msg_t out = {0};
 
     out.fd = msg->fd;
     out.length = sizeof(struct ofp_header);
@@ -207,7 +207,7 @@ static int ofp10_echo_reply(const raw_msg_t *msg)
  */
 static int ofp10_features_request(const raw_msg_t *msg)
 {
-    raw_msg_t out = {0};
+    msg_t out = {0};
 
     out.fd = msg->fd;
     out.length = sizeof(struct ofp_header);
@@ -284,7 +284,7 @@ static int ofp10_features_reply(const raw_msg_t *msg)
  */
 static int ofp10_get_config_request(uint32_t fd)
 {
-    raw_msg_t out = {0};
+    msg_t out = {0};
 
     out.fd = fd;
     out.length = sizeof(struct ofp_header);
@@ -331,7 +331,7 @@ static int ofp10_get_config_reply(const raw_msg_t *msg)
  */
 static int ofp10_set_config(uint32_t fd)
 {
-    raw_msg_t out = {0};
+    msg_t out = {0};
 
     out.fd = fd;
     out.length = sizeof(struct ofp_switch_config);
@@ -363,7 +363,7 @@ static int ofp10_set_config(uint32_t fd)
  */
 static int ofp10_barrier_request(uint32_t fd)
 {
-    raw_msg_t out = {0};
+    msg_t out = {0};
 
     out.fd = fd;
     out.length = sizeof(struct ofp_header);
@@ -1136,7 +1136,7 @@ static int ofp10_packet_out(const pktout_t *pktout)
 
     out->header.length = htons(size);
 
-    raw_msg_t msg = {0};
+    msg_t msg = {0};
 
     switch_t sw = {0};
     sw.dpid = pktout->dpid;
@@ -1484,7 +1484,7 @@ static int ofp10_flow_mod(const flow_t *flow, int command)
 
     mod->header.length = htons(size);
 
-    raw_msg_t msg;
+    msg_t msg;
 
     switch_t sw = {0};
     sw.dpid = flow->dpid;
@@ -1508,7 +1508,7 @@ static int ofp10_flow_mod(const flow_t *flow, int command)
  */
 static int ofp10_stats_desc_request(uint32_t fd)
 {
-    raw_msg_t out = {0};
+    msg_t out = {0};
 
     struct ofp_stats_request *request = (struct ofp_stats_request *)out.data;
     int size = sizeof(struct ofp_stats_request);
@@ -1539,7 +1539,7 @@ static int ofp10_stats_desc_request(uint32_t fd)
  */
 static int ofp10_flow_stats(const flow_t *flow)
 {
-    raw_msg_t out = {0};
+    msg_t out = {0};
 
     struct ofp_stats_request *request = (struct ofp_stats_request *)out.data;
     int size = sizeof(struct ofp_stats_request) + sizeof(struct ofp_flow_stats_request);
@@ -1711,7 +1711,7 @@ static int ofp10_flow_stats(const flow_t *flow)
  */
 static int ofp10_aggregate_stats(const flow_t *flow)
 {
-    raw_msg_t out = {0};
+    msg_t out = {0};
 
     struct ofp_stats_request *request = (struct ofp_stats_request *)out.data;
     int size = sizeof(struct ofp_stats_request) + sizeof(struct ofp_flow_stats_request);
@@ -1753,7 +1753,7 @@ static int ofp10_aggregate_stats(const flow_t *flow)
  */
 static int ofp10_port_stats(const port_t *port)
 {
-    raw_msg_t out = {0};
+    msg_t out = {0};
 
     struct ofp_stats_request *request = (struct ofp_stats_request *)out.data;
     int size = sizeof(struct ofp_stats_request) + sizeof(struct ofp_port_stats_request);
@@ -1951,7 +1951,7 @@ int ofp10_handler(const event_t *ev, event_out_t *ev_out)
     case EV_OFP_MSG_IN:
         PRINT_EV("EV_OFP_MSG_IN\n");
         {
-            const raw_msg_t *msg = ev->msg;
+            const raw_msg_t *msg = ev->raw_msg;
             return ofp10_engine(msg);
         }
         break;

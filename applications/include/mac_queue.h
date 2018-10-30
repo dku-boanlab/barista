@@ -11,6 +11,31 @@
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief The structure of a MAC entry */
+typedef struct _mac_entry_t {
+    uint64_t dpid; /**< Datapath ID */
+    uint16_t port; /**< Port */
+
+    uint32_t ip; /**< IP address */
+    uint64_t mac; /**< MAC address */
+
+    struct _mac_entry_t *prev; /**< Previous entry */
+    struct _mac_entry_t *next; /**< Next entry */
+
+    struct _mac_entry_t *r_next; /**< Next entry for removal */
+} mac_entry_t;
+
+/** \brief The structure of a MAC table */
+typedef struct _mac_table_t {
+    mac_entry_t *head; /**< The head pointer */
+    mac_entry_t *tail; /**< The tail pointer */
+
+    pthread_rwlock_t lock; /**< The lock for management */
+} mac_table_t;
+
+/** \brief The size of a MAC table */
+#define MAC_HASH_SIZE 4096
+
 /** \brief The structure of a MAC pool */
 typedef struct _mac_queue_t {
     int size; /**< The number of entries */
@@ -22,7 +47,7 @@ typedef struct _mac_queue_t {
 } mac_queue_t;
 
 /** \brief The number of pre-allocated MAC entries */
-#define MAC_PRE_ALLOC 1024
+#define MAC_PRE_ALLOC 4096
 
 /** \brief MAC pool */
 mac_queue_t mac_q;

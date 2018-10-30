@@ -11,6 +11,14 @@
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief The structure of a rule table */
+typedef struct _rule_table_t {
+    flow_t *head; /**< The head pointer */
+    flow_t *tail; /**< The tail pointer */
+
+    pthread_rwlock_t lock; /**< The lock for management */
+} rule_table_t;
+
 /** \brief The structure of a flow pool */
 typedef struct _arr_queue_t {
     int size; /**< The size of entries */

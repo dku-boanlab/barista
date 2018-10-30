@@ -1,6 +1,0 @@
-var searchData=
-[
-  ['cli_5fbufcls',['cli_bufcls',['../ext__apps_2shim_2include_2common_8h.html#ad146aa2e0bd428fa2855945b72f30436',1,'cli_bufcls():&#160;common.h'],['../ext__comps_2shim_2include_2common_8h.html#ad146aa2e0bd428fa2855945b72f30436',1,'cli_bufcls():&#160;common.h'],['../src_2include_2common_8h.html#ad146aa2e0bd428fa2855945b72f30436',1,'cli_bufcls():&#160;common.h']]],
-  ['compnt_5fbase_5fconfig_5ffile',['COMPNT_BASE_CONFIG_FILE',['../ext__apps_2shim_2include_2common_8h.html#aca34631bb6a65b727e3a31a309651073',1,'COMPNT_BASE_CONFIG_FILE():&#160;common.h'],['../ext__comps_2shim_2include_2common_8h.html#aca34631bb6a65b727e3a31a309651073',1,'COMPNT_BASE_CONFIG_FILE():&#160;common.h'],['../src_2include_2common_8h.html#aca34631bb6a65b727e3a31a309651073',1,'COMPNT_BASE_CONFIG_FILE():&#160;common.h']]],
-  ['compnt_5fdefault_5fconfig_5ffile',['COMPNT_DEFAULT_CONFIG_FILE',['../ext__apps_2shim_2include_2common_8h.html#adf01d9cc38a4ddb5e32631fb5a8d6fb3',1,'COMPNT_DEFAULT_CONFIG_FILE():&#160;common.h'],['../ext__comps_2shim_2include_2common_8h.html#adf01d9cc38a4ddb5e32631fb5a8d6fb3',1,'COMPNT_DEFAULT_CONFIG_FILE():&#160;common.h'],['../src_2include_2common_8h.html#adf01d9cc38a4ddb5e32631fb5a8d6fb3',1,'COMPNT_DEFAULT_CONFIG_FILE():&#160;common.h']]]
-];

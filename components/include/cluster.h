@@ -14,8 +14,6 @@
 #include "base64.h"
 #include "mac2int.h"
 
-#include <arpa/inet.h>
-
 #ifdef __ENABLE_CLUSTER
 
 #include <mysql.h>

@@ -22,47 +22,22 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The structure of a MAC entry */
-typedef struct _mac_entry_t {
-    uint64_t dpid; /**< Datapath ID */
-    uint16_t port; /**< Port */
+#include "mac_queue.h"
 
-    uint32_t ip; /**< IP address */
-    uint64_t mac; /**< MAC address */
-
-    struct _mac_entry_t *prev; /**< Previous entry */
-    struct _mac_entry_t *next; /**< Next entry */
-
-    struct _mac_entry_t *r_next; /**< Next entry for removal */
-} mac_entry_t;
-
-/** \brief The structure of a MAC table */
-typedef struct _mac_table_t {
-    mac_entry_t *head; /**< The head pointer */
-    mac_entry_t *tail; /**< The tail pointer */
-
-    pthread_rwlock_t lock; /**< The lock for management */
-} mac_table_t;
-
-/** \brief The size of a MAC table */
-#define MAC_HASH_SIZE 8192
+/////////////////////////////////////////////////////////////////////
 
 /** \brief MAC table */
 mac_table_t *mac_table;
 
 /////////////////////////////////////////////////////////////////////
 
-#include "mac_queue.h"
-
-/////////////////////////////////////////////////////////////////////
-
 /**
  * \brief Function to clean up mac entires
- * \param i The index of a MAC table
+ * \param idx The index of a MAC table
  * \param tmp_list The list of MAC entries to be removed
  * \return None
  */
-static int clean_up_tmp_list(int i, mac_table_t *tmp_list)
+static int clean_up_tmp_list(int idx, mac_table_t *tmp_list)
 {
     mac_entry_t *curr = tmp_list->head;
 
@@ -75,14 +50,14 @@ static int clean_up_tmp_list(int i, mac_table_t *tmp_list)
             tmp->prev->next = tmp->next;
             tmp->next->prev = tmp->prev;
         } else if (tmp->prev == NULL && tmp->next != NULL) {
-            mac_table[i].head = tmp->next;
+            mac_table[idx].head = tmp->next;
             tmp->next->prev = NULL;
         } else if (tmp->prev != NULL && tmp->next == NULL) {
-            mac_table[i].tail = tmp->prev;
+            mac_table[idx].tail = tmp->prev;
             tmp->prev->next = NULL;
         } else if (tmp->prev == NULL && tmp->next == NULL) {
-            mac_table[i].head = NULL;
-            mac_table[i].tail = NULL;
+            mac_table[idx].head = NULL;
+            mac_table[idx].tail = NULL;
         }
 
         mac_enqueue(tmp);
@@ -90,6 +65,8 @@ static int clean_up_tmp_list(int i, mac_table_t *tmp_list)
 
     return 0;
 }
+
+/////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Function to conduct an output action into the data plane

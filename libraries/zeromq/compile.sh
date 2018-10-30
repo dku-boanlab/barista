@@ -6,11 +6,8 @@ tar xvfz zeromq-4.2.2.tar.gz
 cd zeromq-4.2.2
 
 # compile ZeroMQ
-./autogen.sh
-./configure
-make
-sudo make install
-sudo ldconfig
+./autogen.sh && ./configure
+make && sudo make install && sudo ldconfig
 
 cd ..
 

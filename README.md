@@ -10,7 +10,7 @@
 - The internal configurations for developers: src/include/common.h
 
 # Test environment
-- The current Barista is fully tested on Ubuntu 14.04, Ubuntu 16.04.
+- The current Barista is tested on Ubuntu 14.04 and Ubuntu 16.04.
 - It may work on other Linux platforms if its dependency issues are solved.
 
 # Compilation
@@ -37,9 +37,9 @@
 - Run the Barista NOS with base components
 > $ ./barista -b
 
-- Connect the Barista NOS
-> $ telnet localhost 8000 (default CLI port)
-> (ID: admin, PW: password, Privileged PW: admin\_password)  
+- Connect the CLI of the Barista NOS
+> $ telnet localhost 8000 (default port)
+> (ID: admin, PW: password, privileged PW: admin\_password)  
 
 # CLI commands
 - Change a configuration mode

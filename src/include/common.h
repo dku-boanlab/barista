@@ -19,6 +19,13 @@
 #include <ctype.h>
 #include <errno.h>
 
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <net/ethernet.h>
+#include <netinet/ip.h>
+#include <netinet/tcp.h>
+#include <netinet/ip_icmp.h>
+
 #include "libcli.h"
 
 #define __CONF_ARGC 16

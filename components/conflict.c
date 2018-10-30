@@ -23,23 +23,15 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The structure of a rule table */
-typedef struct _rule_table_t {
-    flow_t *head; /**< The head pointer */
-    flow_t *tail; /**< The tail pointer */
+#include "arr_queue.h"
 
-    pthread_rwlock_t lock; /**< The lock for management */
-} rule_table_t;
+/////////////////////////////////////////////////////////////////////
 
 /** \brief The number of rules */
 int num_rules;
 
 /** \brief Rule tables */
 rule_table_t *rule_table;
-
-/////////////////////////////////////////////////////////////////////
-
-#include "arr_queue.h"
 
 /////////////////////////////////////////////////////////////////////
 

@@ -27,23 +27,15 @@ int flow_mgmt_on;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The structure of a flow table */
-typedef struct _flow_table_t {
-    flow_t *head; /**< The head pointer */
-    flow_t *tail; /**< The tail pointer */
+#include "flow_queue.h"
 
-    pthread_spinlock_t lock; /**< The lock for management */
-} flow_table_t;
+/////////////////////////////////////////////////////////////////////
 
 /** \brief The number of flows */
 int num_flows;
 
 /** \brief Flow tables */
 flow_table_t *flow_table;
-
-/////////////////////////////////////////////////////////////////////
-
-#include "flow_queue.h"
 
 /////////////////////////////////////////////////////////////////////
 

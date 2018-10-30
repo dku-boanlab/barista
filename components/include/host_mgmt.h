@@ -13,5 +13,3 @@
 #include "event.h"
 #include "hash.h"
 #include "mac2int.h"
-
-#include <arpa/inet.h>

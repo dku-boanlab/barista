@@ -15,7 +15,6 @@
 #include "str.h"
 
 #include <jansson.h>
-#include <arpa/inet.h>
 #include <zmq.h>
 
 /** \brief The main function pointer of a component */

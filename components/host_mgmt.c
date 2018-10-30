@@ -22,23 +22,15 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The structure of a host table */
-typedef struct _host_table_t {
-    host_t *head; /**< The head pointer */
-    host_t *tail; /**< The tail pointer */
+#include "host_queue.h"
 
-    pthread_rwlock_t lock; /**< The lock for management */
-} host_table_t;
+/////////////////////////////////////////////////////////////////////
 
 /** \brief The number of hosts */
 int num_hosts;
 
 /** \brief Host tables */
 host_table_t *host_table;
-
-/////////////////////////////////////////////////////////////////////
-
-#include "host_queue.h"
 
 /////////////////////////////////////////////////////////////////////
 

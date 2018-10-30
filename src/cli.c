@@ -27,8 +27,6 @@
 #include <strings.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
 #ifdef __GNUC__
 # define UNUSED(d) d __attribute__ ((unused))

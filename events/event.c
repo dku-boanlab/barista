@@ -51,8 +51,10 @@ static int sw_rw_raise(uint32_t id, uint16_t type, uint16_t len, switch_t *data)
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief Message related trigger function (const) */
+/** \brief Raw message related trigger function (const) */
 static int raw_ev_raise(uint32_t id, uint16_t type, uint16_t len, const raw_msg_t *data);
+/** \brief Message related trigger function (const) */
+static int msg_ev_raise(uint32_t id, uint16_t type, uint16_t len, const msg_t *data);
 /** \brief Switch related trigger function (const) */
 static int sw_ev_raise(uint32_t id, uint16_t type, uint16_t len, const switch_t *data);
 /** \brief Port related trigger function (const) */
@@ -102,7 +104,7 @@ void ev_dp_port_stats(uint32_t id, const port_t *data) { port_ev_raise(id, EV_DP
 // Downstream events ////////////////////////////////////////////////
 
 /** \brief EV_OFP_MSG_OUT */
-void ev_ofp_msg_out(uint32_t id, const raw_msg_t *data) { raw_ev_raise(id, EV_OFP_MSG_OUT, sizeof(raw_msg_t), (const raw_msg_t *)data); }
+void ev_ofp_msg_out(uint32_t id, const msg_t *data) { msg_ev_raise(id, EV_OFP_MSG_OUT, sizeof(msg_t), (const msg_t *)data); }
 /** \brief EV_DP_SEND_PACKET */
 void ev_dp_send_packet(uint32_t id, const pktout_t *data) { pktout_ev_raise(id, EV_DP_SEND_PACKET, sizeof(pktout_t), data); }
 /** \brief EV_DP_INSERT_FLOW */
@@ -461,6 +463,21 @@ int event_init(ctx_t *ctx)
  */
 #define FUNC_NAME raw_ev_raise
 #define FUNC_TYPE raw_msg_t
+#define FUNC_DATA raw_msg
+#include "event_direct_raise.h"
+#undef FUNC_NAME
+#undef FUNC_TYPE
+#undef FUNC_DATA
+
+/**
+ * \brief The code of msg_ev_raise()
+ * \param id Component ID
+ * \param type Event type
+ * \param len The length of data
+ * \param data Data
+ */
+#define FUNC_NAME msg_ev_raise
+#define FUNC_TYPE msg_t
 #define FUNC_DATA msg
 #include "event_direct_raise.h"
 #undef FUNC_NAME

@@ -12,5 +12,3 @@
 
 #include "common.h"
 #include "event.h"
-
-#include <netinet/in.h>

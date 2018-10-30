@@ -347,7 +347,7 @@ int ofp10_veri_handler(const event_t *ev, event_out_t *ev_out)
     case EV_OFP_MSG_IN:
         PRINT_EV("EV_OFP_MSG_IN\n");
         {
-            const raw_msg_t *msg = ev->msg;
+            const raw_msg_t *msg = ev->raw_msg;
             if (ofp_msg_verification(ev->id, msg)) {
                 //return -1;
                 return 0;
@@ -357,7 +357,7 @@ int ofp10_veri_handler(const event_t *ev, event_out_t *ev_out)
     case EV_OFP_MSG_OUT:
         PRINT_EV("EV_OFP_MSG_OUT\n");
         {
-            const raw_msg_t *msg = ev->msg;
+            const raw_msg_t *msg = ev->raw_msg;
             if (ofp_msg_verification(ev->id, msg)) {
                 //return -1;
                 return 0;

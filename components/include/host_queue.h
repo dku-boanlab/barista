@@ -11,6 +11,14 @@
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief The structure of a host table */
+typedef struct _host_table_t {
+    host_t *head; /**< The head pointer */
+    host_t *tail; /**< The tail pointer */
+
+    pthread_rwlock_t lock; /**< The lock for management */
+} host_table_t;
+
 /** \brief The structure of a host pool */
 typedef struct _host_queue_t {
     int size; /**< the number of entries */
@@ -22,7 +30,7 @@ typedef struct _host_queue_t {
 } host_queue_t;
 
 /** \brief The number of pre-allocated hosts */
-#define HOST_PRE_ALLOC 1024
+#define HOST_PRE_ALLOC 4096
 
 /** \brief Host pool */
 host_queue_t host_q;

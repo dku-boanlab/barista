@@ -211,7 +211,8 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
                     if (msg.length == 0)
                         return -1;
 
-                    memmove(msg.data, rx_buf + buf_ptr, msg.length);
+                    msg.data = (uint8_t *)(rx_buf + buf_ptr);
+                    //memmove(msg.data, rx_buf + buf_ptr, msg.length);
 
                     ev_ofp_msg_in(CONN_ID, &msg);
 
@@ -242,7 +243,9 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
                     return -1;
 
                 memmove(temp + done, rx_buf + buf_ptr, need);
-                memmove(msg.data, temp, msg.length);
+
+                msg.data = (uint8_t *)temp;
+                //memmove(msg.data, temp, msg.length);
 
                 ev_ofp_msg_in(CONN_ID, &msg);
 
@@ -691,7 +694,7 @@ int conn_handler(const event_t *ev, event_out_t *ev_out)
     case EV_OFP_MSG_OUT:
         PRINT_EV("EV_OFP_MSG_OUT\n");
         {
-            const raw_msg_t *msg = ev->msg;
+            const msg_t *msg = ev->msg;
             int fd = msg->fd;
 
             int remain = msg->length;
