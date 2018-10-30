@@ -14,7 +14,7 @@ var dir_74b77db838fca204c81ae8864cd83d58 =
     [ "host_mgmt.h", "components_2include_2host__mgmt_8h.html", null ],
     [ "host_queue.h", "components_2include_2host__queue_8h.html", "components_2include_2host__queue_8h" ],
     [ "log.h", "log_8h.html", null ],
-    [ "ofp10.h", "ofp10_8h.html", null ],
+    [ "ofp10.h", "ofp10_8h.html", "ofp10_8h" ],
     [ "ofp10_veri.h", "components_2include_2ofp10__veri_8h.html", null ],
     [ "resource_mgmt.h", "components_2include_2resource__mgmt_8h.html", null ],
     [ "stat_mgmt.h", "components_2include_2stat__mgmt_8h.html", null ],

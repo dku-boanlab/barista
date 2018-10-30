@@ -1,11 +1,5 @@
 var NAVTREEINDEX17 =
 {
-"structofp__table__stats.html#a3e353f39561263f6828ff8d3e0de0073":[9,0,87,5],
-"structofp__table__stats.html#a49698513868bd28072944e79aab64c2d":[9,0,87,6],
-"structofp__table__stats.html#a69235dce43840696db65e13458159a59":[9,0,87,2],
-"structofp__table__stats.html#a86f0adf00b8da81ceb2b7698e659f689":[9,0,87,7],
-"structofp__table__stats.html#aa30325b9887579f6ba9e3a7e5b2989c3":[9,0,87,1],
-"structofp__table__stats.html#ad41eb397aa0b420c380acda2d5d56e23":[9,0,87,4],
 "structofp__table__stats.html#ad5fdad8a8d93912913394a7d22057a8f":[9,0,87,0],
 "structofp__table__stats.html#ad796abd180bcaea81aee6abaee35450f":[9,0,87,3],
 "structofp__vendor__header.html":[9,0,88],

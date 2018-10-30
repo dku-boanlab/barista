@@ -30,7 +30,7 @@ var events_2include_2event__list_8h =
     [ "ev_log_update_msgs", "group__events.html#gaf4d4450082ae8541daba172ef0cda567", null ],
     [ "ev_log_warn", "group__events.html#ga9ac5b08dedaf24777e3c94c4b536c5e1", null ],
     [ "ev_ofp_msg_in", "group__events.html#ga69cf0a377a1c7809def81c2ef3956dd3", null ],
-    [ "ev_ofp_msg_out", "group__events.html#gabb8c8f4e8c49a2e3711b0d75e4f60aa3", null ],
+    [ "ev_ofp_msg_out", "group__events.html#gab26765481b36370eeeb2b49bda0437d4", null ],
     [ "ev_rs_update_usage", "group__events.html#ga07151f76a0479506895727bbe7cd30c7", null ],
     [ "ev_sw_connected", "group__events.html#ga078379f2d33e59f345963cb5feac9a61", null ],
     [ "ev_sw_disconnected", "group__events.html#gaef66fd9c1c9f2388e0d8da6248f09d08", null ],

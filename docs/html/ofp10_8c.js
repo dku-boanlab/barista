@@ -1,9 +1,9 @@
 var ofp10_8c =
 [
-    [ "DHCP_CLIENT_PORT", "group__ofp10.html#ga23dd788b1cd28a0d834c3afefceaa1c1", null ],
-    [ "DHCP_SERVER_PORT", "group__ofp10.html#ga478f5be6fb4bfb09b235bb50cf806cc9", null ],
     [ "OFP_ID", "group__ofp10.html#ga2824edb1a4db54fd30a02ec6646b70bd", null ],
-    [ "__attribute__", "group__ofp10.html#gaae2502af7b65f4cc44a14f6ca489b45c", null ],
+    [ "get_dpid", "group__ofp10.html#ga1efbadab1ab12acd5b080a0ebcd286a8", null ],
+    [ "get_fd", "group__ofp10.html#ga3751b5fd5079430aed40de19160f0e75", null ],
+    [ "get_xid", "group__ofp10.html#gad3b421b1bc6c87ddafb9c8579dd4f641", null ],
     [ "ofp10_aggregate_stats", "group__ofp10.html#ga52b661e813968222130ed1f8557c3730", null ],
     [ "ofp10_cleanup", "group__ofp10.html#gaa73381411a69ede091eaf8f13e24bcdf", null ],
     [ "ofp10_cli", "group__ofp10.html#ga7183ce978999f2ad53b702fbf0d753a1", null ],
@@ -23,11 +23,5 @@ var ofp10_8c =
     [ "ofp10_port_stats", "group__ofp10.html#ga743397c06d77c0c82547b8f34adb3a70", null ],
     [ "ofp10_port_status", "group__ofp10.html#ga788511387de9491ffe00439e2f1a2b7e", null ],
     [ "ofp10_stats_desc_request", "group__ofp10.html#ga9b09d44a8bf5ac515559a75a820e6de1", null ],
-    [ "ofp10_stats_reply", "group__ofp10.html#ga05a1c232bf1ac600bfc19723726f948d", null ],
-    [ "__attribute__", "group__ofp10.html#ga96e9835342b52e4524305071c150d714", null ],
-    [ "ether_dhost", "ofp10_8c.html#a68b2f174b91a634c7c643c3dfe77bb55", null ],
-    [ "ether_short", "ofp10_8c.html#a8dff73b6394e30ccb9d6fbb915234798", null ],
-    [ "ether_type", "ofp10_8c.html#ad6312397ccc57d322b1a037c7080d340", null ],
-    [ "tci", "ofp10_8c.html#af3dd20a1b60d672efc673e26e30aa9d3", null ],
-    [ "tpid", "ofp10_8c.html#a6732d2a618d68a2a54a3be2712852ee9", null ]
+    [ "ofp10_stats_reply", "group__ofp10.html#ga05a1c232bf1ac600bfc19723726f948d", null ]
 ];
