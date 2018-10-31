@@ -24,7 +24,9 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, FUNC_TYPE *data)
         av_out.length = len;
         av_out.FUNC_DATA = data;
 
-        //av_ctx->num_app_events[type]++;
+#ifdef __ENABLE_META_EVENTS
+        av_ctx->num_app_events[type]++;
+#endif /* __ENABLE_META_EVENTS */
 
         int i;
         for (i=0; i<av_num; i++) {
@@ -34,7 +36,9 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, FUNC_TYPE *data)
             else if (!c->activated) continue; // not activated yet
 
             if (c->site == APP_INTERNAL) { // internal site
-                //c->num_app_events[type]++;
+#ifdef __ENABLE_META_EVENTS
+                c->num_app_events[type]++;
+#endif /* __ENABLE_META_EVENTS */
 
                 int ret = c->handler(av, &av_out);
                 if (ret && c->perm & APP_EXECUTE) {
@@ -43,7 +47,9 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, FUNC_TYPE *data)
             } else { // external site
                 app_event_out_t *out = &av_out;
 
-                //c->num_app_events[type]++;
+#ifdef __ENABLE_META_EVENTS
+                c->num_app_events[type]++;
+#endif /* __ENABLE_META_EVENTS */
 
                 int ret = av_send_ext_msg(c, c, id, type, len, data, out);
                 if (ret && c->perm & APP_EXECUTE) {

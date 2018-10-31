@@ -37,6 +37,8 @@
 #define __DEFAULT_TABLE_SIZE 65536
 #define __HASHING_NAME_LENGTH 8
 
+//#define __ENABLE_META_EVENTS
+
 #define EXT_COMP_PULL_ADDR "tcp://0.0.0.0:5001"
 #define EXT_COMP_REPLY_ADDR "tcp://0.0.0.0:5002"
 

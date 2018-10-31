@@ -23,7 +23,9 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
     ev->FUNC_DATA = data;
 
-    //ev_ctx->num_events[type]++;
+#ifdef __ENABLE_META_EVENTS
+    ev_ctx->num_events[type]++;
+#endif /* __ENABLE_META_EVENTS */
 
     compnt_t *one_by_one = NULL;
 
@@ -44,7 +46,9 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
         if (c->perm & COMPNT_WRITE) {
             if (c->site == COMPNT_INTERNAL) { // internal site
-                //c->num_events[type]++;
+#ifdef __ENABLE_META_EVENTS
+                c->num_events[type]++;
+#endif /* __ENABLE_META_EVENTS */
 
                 int ret = c->handler(ev, &ev_out);
                 if (ret && c->perm & COMPNT_EXECUTE) {
@@ -55,7 +59,9 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
             } else { // external site
                 event_out_t *out = &ev_out;
 
-                //c->num_events[type]++;
+#ifdef __ENABLE_META_EVENTS
+                c->num_events[type]++;
+#endif /* __ENABLE_META_EVENTS */
 
                 int ret = ev_send_ext_msg(c, id, type, len, data, out);
                 if (ret && c->perm & COMPNT_EXECUTE) {
@@ -64,7 +70,9 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
             }
         } else {
             if (c->site == COMPNT_INTERNAL) { // internal site
-                //c->num_events[type]++;
+#ifdef __ENABLE_META_EVENTS
+                c->num_events[type]++;
+#endif /* __ENABLE_META_EVENTS */
 
                 int ret = c->handler(ev, NULL);
                 if (ret && c->perm & COMPNT_EXECUTE) {
@@ -73,7 +81,9 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
             } else { // external site
                 event_out_t *out = &ev_out;
 
-                //c->num_events[type]++;
+#ifdef __ENABLE_META_EVENTS
+                c->num_events[type]++;
+#endif /* __ENABLE_META_EVENTS */
 
                 if (c->perm & COMPNT_EXECUTE) {
                     int ret = ev_send_ext_msg(c, id, type, len, data, out);
@@ -92,7 +102,9 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
             if (c->activated) {
                 if (c->perm & COMPNT_WRITE) {
                     if (c->site == COMPNT_INTERNAL) { // internal site
-                        //c->num_events[type]++;
+#ifdef __ENABLE_META_EVENTS
+                        c->num_events[type]++;
+#endif /* __ENABLE_META_EVENTS */
 
                         int ret = c->handler(ev, &ev_out);
                         if (ret && c->perm & COMPNT_EXECUTE) {
@@ -101,7 +113,9 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
                     } else { // external site
                         event_out_t *out = &ev_out;
 
-                        //c->num_events[type]++;
+#ifdef __ENABLE_META_EVENTS
+                        c->num_events[type]++;
+#endif /* __ENABLE_META_EVENTS */
 
                         int ret = ev_send_ext_msg(c, id, type, len, data, out);
                         if (ret && c->perm & COMPNT_EXECUTE) {
@@ -110,7 +124,9 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
                     }
                 } else {
                     if (c->site == COMPNT_INTERNAL) { // internal site
-                        //c->num_events[type]++;
+#ifdef __ENABLE_META_EVENTS
+                        c->num_events[type]++;
+#endif /* __ENABLE_META_EVENTS */
 
                         int ret = c->handler(ev, NULL);
                         if (ret && c->perm & COMPNT_EXECUTE) {
@@ -119,7 +135,9 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
                     } else { // external site
                         event_out_t *out = &ev_out;
 
-                        //c->num_events[type]++;
+#ifdef __ENABLE_META_EVENTS
+                        c->num_events[type]++;
+#endif /* __ENABLE_META_EVENTS */
 
                         if (c->perm & COMPNT_EXECUTE) {
                             int ret = ev_send_ext_msg(c, id, type, len, data, out);
