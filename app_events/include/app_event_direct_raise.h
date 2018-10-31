@@ -23,7 +23,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
     av->FUNC_DATA = data;
 
-    av_ctx->num_app_events[type]++;
+    //av_ctx->num_app_events[type]++;
 
     int i;
     for (i=0; i<av_num; i++) {
@@ -38,7 +38,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
         if (c->perm & APP_WRITE) {
             if (c->site == APP_INTERNAL) { // internal site
-                c->num_app_events[type]++;
+                //c->num_app_events[type]++;
 
                 int ret = c->handler(av, &av_out);
                 if (ret && c->perm & APP_EXECUTE) {
@@ -49,7 +49,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
             } else { // external site
                 app_event_out_t *out = &av_out;
 
-                c->num_app_events[type]++;
+                //c->num_app_events[type]++;
 
                 int ret = av_send_ext_msg(c, id, type, len, data, out);
                 if (ret && c->perm & APP_EXECUTE) {
@@ -58,7 +58,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
             }
         } else {
             if (c->site == APP_INTERNAL) { // internal site
-                c->num_app_events[type]++;
+                //c->num_app_events[type]++;
 
                 int ret = c->handler(av, NULL);
                 if (ret && c->perm & APP_EXECUTE) {
@@ -67,7 +67,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
             } else { // external site
                 app_event_out_t *out = &av_out;
 
-                c->num_app_events[type]++;
+                //c->num_app_events[type]++;
 
                 if (c->perm & APP_EXECUTE) {
                     int ret = av_send_ext_msg(c, id, type, len, data, out);

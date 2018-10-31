@@ -152,7 +152,7 @@ static int add_switch(const switch_t *sw)
             src = i;
             node_list[i] = dpid;
 
-            PRINTF("add -> node_list[%d] = %lu\n", i, dpid);
+            //PRINTF("add -> node_list[%d] = %lu\n", i, dpid);
 
             break;
         }
@@ -192,7 +192,7 @@ static int delete_switch(const switch_t *sw)
             src = i;
             node_list[i] = 0;
 
-            PRINTF("del -> node_list[%d]\n", i);
+            //PRINTF("del -> node_list[%d]\n", i);
 
             break;
         }
@@ -244,7 +244,7 @@ static int add_link(const port_t *link)
     int src = get_index_from_dpid(link->dpid);
     int dst = get_index_from_dpid(link->target_dpid);
 
-    PRINTF("add -> edge(src: %d, dst: %d)\n", src, dst);
+    //PRINTF("add -> edge(src: %d, dst: %d)\n", src, dst);
 
     path[src][dst] = src + dst;
     edge_list[src][dst] = link->port;
@@ -269,7 +269,7 @@ static int del_link(const port_t *link)
     int src = get_index_from_dpid(link->dpid);
     int dst = get_index_from_dpid(link->target_dpid);
 
-    PRINTF("del -> edge(src: %d, dst: %d)\n", src, dst);
+    //PRINTF("del -> edge(src: %d, dst: %d)\n", src, dst);
 
     path[src][dst] = INF;
     edge_list[src][dst] = 0;
