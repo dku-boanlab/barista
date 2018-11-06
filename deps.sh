@@ -13,11 +13,10 @@ sudo apt-get -y install libjansson4 libjansson-dev
 sudo apt-get -y install doxygen global flex bison cmake libav-tools
 
 # dependency => libcli
-cd libraries/libcli
+cd libs/libcli
 make && sudo make install && make clean
 cd -
 
 # dependency => zeromq
-cd libraries/zeromq
+cd libs/zeromq
 ./compile.sh
-cd -
