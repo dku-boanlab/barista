@@ -29,9 +29,6 @@ typedef struct _flow_queue_t {
     pthread_spinlock_t lock; /**< The lock for management */
 } flow_queue_t;
 
-/** \brief The number of pre-allocated flows */
-#define FLOW_PRE_ALLOC 65536
-
 /** \brief Flow pool */
 flow_queue_t flow_q;
 

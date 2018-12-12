@@ -19,7 +19,7 @@ typedef struct _event_t {
     // header
     const uint32_t id; /**< Component ID */
     const uint16_t type; /**< Event type */
-    const uint16_t length; /**< The length of data */
+    const uint16_t length; /**< Data length */
     const uint32_t checksum; /**< Checksum */
 
     // body
@@ -47,7 +47,7 @@ typedef struct _event_out_t {
     // header
     uint32_t id; /**< Component ID */
     uint16_t type; /**< Event type */
-    uint16_t length; /**< The length of data */
+    uint16_t length; /**< Data length */
     uint32_t checksum; /**< Checksum */
 
     // body
@@ -57,7 +57,7 @@ typedef struct _event_out_t {
         host_t           *host_data; /**< The pointer of a host */
         flow_t           *flow_data; /**< The pointer of a flow */
 
-        char             *data; /**< The pointer of data */
+        uint8_t          *data; /**< The pointer of data */
     };
 } event_out_t;
 

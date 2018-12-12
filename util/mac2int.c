@@ -7,7 +7,7 @@
  * @{
  *
  * \defgroup mac2int MAC-to-Int Functions
- * \brief Functions to convert a MAC address to an integer and vice versa
+ * \brief Functions to convert the forms of a MAC address
  * @{
  */
 
@@ -19,9 +19,9 @@
 #include "mac2int.h"
 
 /**
- * \brief Function to convert the byte array of a MAC address to an integer
- * \param mac The pointer of a byte array
- * \return The integer converted from the byte array
+ * \brief Function to convert a byte array to an integer value
+ * \param mac Byte array
+ * \return Integer value
  */
 uint64_t mac2int(const uint8_t *mac)
 {
@@ -37,10 +37,10 @@ uint64_t mac2int(const uint8_t *mac)
 }
 
 /**
- * \brief Function to convert the integer value of a MAC address to a byte array
- * \param mac The integer value of a MAC address
- * \param macaddr The pointer of a byte array to store the converted result
- * \return The byte array converted from the integer
+ * \brief Function to convert an integer value to a byte array
+ * \param mac Integer value
+ * \param macaddr Byte array to store the converted result
+ * \return Byte array
  * */
 uint8_t *int2mac(const uint64_t mac, uint8_t *macaddr)
 {
@@ -55,14 +55,14 @@ uint8_t *int2mac(const uint64_t mac, uint8_t *macaddr)
 }
 
 /**
- * \brief Function to convert the string of a MAC address to a byte array
- * \param macaddr The string of a MAC address
- * \param mac The pointer of a byte array to store the converted result
- * \return The byte array converted from the string
+ * \brief Function to convert a string to a byte array
+ * \param macaddr String (xx:xx:xx:xx:xx:xx)
+ * \param mac Byte array to store the converted result
+ * \return Byte array
  */
 uint8_t *str2mac(const char *macaddr, uint8_t *mac)
 {
-    int tmp[ETH_ALEN] = {0};
+    int tmp[ETH_ALEN];
 
     sscanf(macaddr, "%x:%x:%x:%x:%x:%x", &tmp[0], &tmp[1], &tmp[2], &tmp[3], &tmp[4], &tmp[5]);
 
@@ -74,10 +74,10 @@ uint8_t *str2mac(const char *macaddr, uint8_t *mac)
 }
 
 /**
- * \brief Function to convert the byte array of a MAC address to a string
- * \param mac The pointer of a byte array
- * \param macaddr The pointer of a string to store the converted result
- * \return The string converted from the byte array
+ * \brief Function to convert a byte array to a string
+ * \param mac Byte array
+ * \param macaddr String to store the converted result
+ * \return String
  */
 char *mac2str(const uint8_t *mac, char *macaddr)
 {

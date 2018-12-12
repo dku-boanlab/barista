@@ -1,1 +1,0 @@
-../../../components/stat_mgmt.c

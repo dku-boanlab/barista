@@ -19,7 +19,7 @@ typedef struct _app_event_t {
     // header
     const uint32_t id; /**< Application ID */
     const uint16_t type; /**< App event type */
-    const uint16_t length; /**< The length of data */
+    const uint16_t length; /**< Data length */
     const uint32_t checksum; /**< Checksum */
 
     // body
@@ -41,7 +41,7 @@ typedef struct _app_event_out_t {
     // header
     uint32_t id; /**< Application ID */
     uint16_t type; /**< App event type */
-    uint16_t length; /**< The length of data */
+    uint16_t length; /**< Data length */
     uint32_t checksum; /**< Checksum */
 
     // body
@@ -51,7 +51,7 @@ typedef struct _app_event_out_t {
         host_t           *host_data; /**< The pointer of a host */
         flow_t           *flow_data; /**< The pointer of a flow */
 
-        char             *data; /**< The pointer of data */
+        uint8_t          *data; /**< The pointer of data */
     };
 } app_event_out_t;
 

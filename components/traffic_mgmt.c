@@ -27,17 +27,14 @@ traffic_t traffic;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The pointer to record traffic statistics in a history array */
+/** \brief The pointer to record the current traffic statistics */
 uint32_t tr_history_ptr;
 
-/** \brief The history array of traffic statistics */
+/** \brief Traffic statistics history */
 traffic_t *tr_history;
 
-/** \brief The lock for statistics management */
-pthread_spinlock_t lock;
-
-/** \brief The default traffic log file */
-char traffic_file[__CONF_WORD_LEN] = DEFAULT_TRAFFIC_FILE;
+/** \brief Lock for statistics updates */
+pthread_spinlock_t tr_lock;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -52,49 +49,44 @@ int traffic_mgmt_main(int *activated, int argc, char **argv)
     LOG_INFO(TRAFFIC_MGMT_ID, "Init - Control channel management");
 
     tr_history_ptr = 0;
-
     memset(&traffic, 0, sizeof(traffic_t));
 
-    tr_history = (traffic_t *)MALLOC(sizeof(traffic_t) * TRAFFIC_MGMT_HISTORY);
+    tr_history = (traffic_t *)CALLOC(TRAFFIC_MGMT_HISTORY, sizeof(traffic_t));
     if (tr_history == NULL) {
-        PERROR("malloc");
+        PERROR("calloc");
         return -1;
     }
 
-    memset(tr_history, 0, sizeof(traffic_t) * TRAFFIC_MGMT_HISTORY);
+    pthread_spin_init(&tr_lock, PTHREAD_PROCESS_PRIVATE);
 
-    pthread_spin_init(&lock, PTHREAD_PROCESS_PRIVATE);
-
-    LOG_INFO(TRAFFIC_MGMT_ID, "Traffic usage output: %s", traffic_file);
+    LOG_INFO(TRAFFIC_MGMT_ID, "Traffic usage output: %s", DEFAULT_TRAFFIC_FILE);
     LOG_INFO(TRAFFIC_MGMT_ID, "Traffic monitoring period: %d sec", TRAFFIC_MGMT_MONITOR_TIME);
 
     activate();
 
     while (*activated) {
+        traffic_t tr;
+
         time_t timer;
         struct tm *tm_info;
-        char now[__CONF_WORD_LEN] = {0}, buf[__CONF_STR_LEN] = {0};
+        char now[__CONF_WORD_LEN], buf[__CONF_STR_LEN];
 
         time(&timer);
         tm_info = localtime(&timer);
         strftime(now, __CONF_WORD_LEN-1, "%Y:%m:%d %H:%M:%S", tm_info);
 
-        traffic_t tr;
-
-        pthread_spin_lock(&lock);
+        pthread_spin_lock(&tr_lock);
 
         memmove(&tr_history[tr_history_ptr++ % TRAFFIC_MGMT_HISTORY], &traffic, sizeof(traffic_t));
         memmove(&tr, &traffic, sizeof(traffic_t));
-
         memset(&traffic, 0, sizeof(traffic_t));
 
-        pthread_spin_unlock(&lock);
+        pthread_spin_unlock(&tr_lock);
 
-        snprintf(buf, __CONF_STR_LEN-1, 
-                "%s - In %lu msgs %lu bytes / Out %lu msgs %lu bytes",
+        snprintf(buf, __CONF_STR_LEN-1, "%s - In %lu msgs %lu bytes / Out %lu msgs %lu bytes",
                 now, tr.in_pkt_cnt, tr.in_byte_cnt, tr.out_pkt_cnt, tr.out_byte_cnt);
 
-        FILE *fp = fopen(traffic_file, "a");
+        FILE *fp = fopen(DEFAULT_TRAFFIC_FILE, "a");
         if (fp != NULL) {
             fprintf(fp, "%s\n", buf);
             fclose(fp);
@@ -125,7 +117,7 @@ int traffic_mgmt_cleanup(int *activated)
 
     waitsec(1, 0);
 
-    pthread_spin_destroy(&lock);
+    pthread_spin_destroy(&tr_lock);
 
     FREE(tr_history);
 
@@ -134,8 +126,8 @@ int traffic_mgmt_cleanup(int *activated)
 
 /**
  * \brief Function to summarize the traffic history for the last n seconds
- * \param cli The CLI pointer
- * \param seconds Time period to query
+ * \param cli The pointer of the Barista CLI
+ * \param seconds The time range to query
  */
 static int traffic_stat_summary(cli_t *cli, char *seconds)
 {
@@ -182,7 +174,7 @@ static int traffic_stat_summary(cli_t *cli, char *seconds)
 
 /**
  * \brief The CLI function
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param args Arguments
  */
 int traffic_mgmt_cli(cli_t *cli, char **args)
@@ -209,23 +201,23 @@ int traffic_mgmt_handler(const event_t *ev, event_out_t *ev_out)
     case EV_OFP_MSG_IN:
         PRINT_EV("EV_OFP_MSG_IN\n");
         {
-            pthread_spin_lock(&lock);
+            pthread_spin_lock(&tr_lock);
 
             traffic.in_pkt_cnt++;
             traffic.in_byte_cnt += ev->raw_msg->length;
 
-            pthread_spin_unlock(&lock);
+            pthread_spin_unlock(&tr_lock);
         }
         break;
     case EV_OFP_MSG_OUT:
         PRINT_EV("EV_OFP_MSG_OUT\n");
         {
-            pthread_spin_lock(&lock);
+            pthread_spin_lock(&tr_lock);
 
             traffic.out_pkt_cnt++;
             traffic.out_byte_cnt += ev->raw_msg->length;
 
-            pthread_spin_unlock(&lock);
+            pthread_spin_unlock(&tr_lock);
         }
         break;
     default:

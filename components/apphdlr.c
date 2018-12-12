@@ -58,7 +58,7 @@ int apphdlr_cleanup(int *activated)
 
 /**
  * \brief The CLI function
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param args Arguments
  */
 int apphdlr_cli(cli_t *cli, char **args)
@@ -156,6 +156,12 @@ int apphdlr_handler(const event_t *ev, event_out_t *ev_out)
         PRINT_EV("EV_FLOW_ADDED\n");
         {
             av_flow_added(APPINT_ID, ev->flow);
+        }
+        break;
+    case EV_FLOW_MODIFIED:
+        PRINT_EV("EV_FLOW_MODIFIED\n");
+        {
+            av_flow_modified(APPINT_ID, ev->flow);
         }
         break;
     case EV_FLOW_DELETED:

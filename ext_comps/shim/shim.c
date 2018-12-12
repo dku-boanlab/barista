@@ -17,8 +17,12 @@
 
 #include "shim.h"
 
+/////////////////////////////////////////////////////////////////////
+
 /** \brief The configuration of a component */
 compnt_t compnt;
+
+/////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Function to initialize a component
@@ -29,14 +33,14 @@ static int init_compnt(void)
     json_t *json;
     json_error_t error;
 
-    PRINTF("Component configuration file: %s\n", COMPNT_DEFAULT_CONFIG_FILE);
+    PRINTF("Component configuration file: %s\n", DEFAULT_COMPNT_CONFIG_FILE);
 
-    if (access(COMPNT_DEFAULT_CONFIG_FILE, F_OK)) {
-        PRINTF("No file whose name is '%s'\n", COMPNT_DEFAULT_CONFIG_FILE);
+    if (access(DEFAULT_COMPNT_CONFIG_FILE, F_OK)) {
+        PRINTF("No file whose name is '%s'\n", DEFAULT_COMPNT_CONFIG_FILE);
         return -1;
     }
 
-    char *raw = str_read(COMPNT_DEFAULT_CONFIG_FILE);
+    char *raw = str_read(DEFAULT_COMPNT_CONFIG_FILE);
     char *conf = str_preproc(raw);
 
     json = json_loads(conf, 0, &error);
@@ -61,7 +65,7 @@ static int init_compnt(void)
         }
 
         if (strcmp(name, TARGET_COMPNT) != 0)
-            return -1;
+            continue;
 
         char args[__CONF_WORD_LEN] = {0};
         json_t *j_args = json_object_get(data, "args");
@@ -78,9 +82,11 @@ static int init_compnt(void)
         // set the component name
         if (strlen(name) == 0) {
             PRINTF("No component name\n");
+            json_decref(json);
             return -1;
         } else {
             strcpy(compnt.name, name);
+            compnt.component_id = hash_func((uint32_t *)&compnt.name, __HASHING_NAME_LENGTH);
         }
 
         // set arguments
@@ -107,10 +113,12 @@ static int init_compnt(void)
         break;
     }
 
+    json_decref(json);
+
     if (pass) {
         compnt.activated = FALSE;
     } else {
-        PRINTF("No %s in the configuration\n", TARGET_COMPNT);
+        PRINTF("No %s in the given configuration file\n", TARGET_COMPNT);
         return -1;
     }
 
@@ -214,20 +222,20 @@ void sigterm_handler(int sig)
  */
 int main(int argc, char *argv[])
 {
-    // init event handler
-    if (event_init(NULL)) {
-        PRINTF("Failed to initialize the external event handler\n");
-        return -1;
-    } else {
-        PRINTF("Initialized the external event handler\n");
-    }
-
     // init component
     if (init_compnt()) {
         PRINTF("Failed to initialize %s\n", TARGET_COMPNT);
         return -1;
     } else {
         PRINTF("Initialized %s\n", TARGET_COMPNT);
+    }
+
+    // init event handler
+    if (event_init(NULL)) {
+        PRINTF("Failed to initialize the external event handler\n");
+        return -1;
+    } else {
+        PRINTF("Initialized the external event handler\n");
     }
 
     // activate component

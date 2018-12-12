@@ -14,12 +14,13 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
     if (ev_list == NULL) return -1;
 
-    event_out_t ev_out = {0};
+    event_out_t ev_out;
     event_t *ev = (event_t *)&ev_out;
 
     ev_out.id = id;
     ev_out.type = type;
     ev_out.length = len;
+    ev_out.checksum = 0;
 
     ev->FUNC_DATA = data;
 
@@ -34,11 +35,15 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
         compnt_t *c = ev_list[i];
 
         if (!c) continue;
-        else if (!c->activated) continue; // not activated yet
 
         if (c->role == COMPNT_SECURITY_V2) {
-            one_by_one = c;
+            if (c->activated)
+                one_by_one = c;
+            else
+                one_by_one = NULL;
         }
+
+        if (!c->activated) continue; // not activated yet
 
 #ifdef ODP_FUNC
         if (ODP_FUNC(c->odp, data)) continue;
@@ -55,7 +60,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
                     break;
                 }
 
-                ev_out.checksum = 0;
+                ev_out.checksum = 0; // reset checksum
             } else { // external site
                 event_out_t *out = &ev_out;
 
@@ -63,7 +68,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
                 c->num_events[type]++;
 #endif /* __ENABLE_META_EVENTS */
 
-                int ret = ev_send_ext_msg(c, id, type, len, data, out);
+                int ret = ev_send_ext_msg(c, id, type, len, data, out->data);
                 if (ret && c->perm & COMPNT_EXECUTE) {
                     break;
                 }
@@ -86,7 +91,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 #endif /* __ENABLE_META_EVENTS */
 
                 if (c->perm & COMPNT_EXECUTE) {
-                    int ret = ev_send_ext_msg(c, id, type, len, data, out);
+                    int ret = ev_send_ext_msg(c, id, type, len, data, out->data);
                     if (ret) {
                         break;
                     }
@@ -99,58 +104,54 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
         if (one_by_one) {
             c = one_by_one;
 
-            if (c->activated) {
-                if (c->perm & COMPNT_WRITE) {
-                    if (c->site == COMPNT_INTERNAL) { // internal site
+            if (c->perm & COMPNT_WRITE) {
+                if (c->site == COMPNT_INTERNAL) { // internal site
 #ifdef __ENABLE_META_EVENTS
-                        c->num_events[type]++;
+                    c->num_events[type]++;
 #endif /* __ENABLE_META_EVENTS */
 
-                        int ret = c->handler(ev, &ev_out);
-                        if (ret && c->perm & COMPNT_EXECUTE) {
-                            break;
-                        }
-                    } else { // external site
-                        event_out_t *out = &ev_out;
-
-#ifdef __ENABLE_META_EVENTS
-                        c->num_events[type]++;
-#endif /* __ENABLE_META_EVENTS */
-
-                        int ret = ev_send_ext_msg(c, id, type, len, data, out);
-                        if (ret && c->perm & COMPNT_EXECUTE) {
-                            break;
-                        }
+                    int ret = c->handler(ev, &ev_out);
+                    if (ret && c->perm & COMPNT_EXECUTE) {
+                        break;
                     }
-                } else {
-                    if (c->site == COMPNT_INTERNAL) { // internal site
-#ifdef __ENABLE_META_EVENTS
-                        c->num_events[type]++;
-#endif /* __ENABLE_META_EVENTS */
-
-                        int ret = c->handler(ev, NULL);
-                        if (ret && c->perm & COMPNT_EXECUTE) {
-                            break;
-                        }
-                    } else { // external site
-                        event_out_t *out = &ev_out;
+                } else { // external site
+                    event_out_t *out = &ev_out;
 
 #ifdef __ENABLE_META_EVENTS
-                        c->num_events[type]++;
+                    c->num_events[type]++;
 #endif /* __ENABLE_META_EVENTS */
 
-                        if (c->perm & COMPNT_EXECUTE) {
-                            int ret = ev_send_ext_msg(c, id, type, len, data, out);
-                            if (ret) {
-                                break;
-                            }
-                        } else {
-                            ev_push_ext_msg(c, id, type, len, data);
-                        }
+                    int ret = ev_send_ext_msg(c, id, type, len, data, out->data);
+                    if (ret && c->perm & COMPNT_EXECUTE) {
+                        break;
                     }
                 }
             } else {
-                one_by_one = NULL;
+                if (c->site == COMPNT_INTERNAL) { // internal site
+#ifdef __ENABLE_META_EVENTS
+                    c->num_events[type]++;
+#endif /* __ENABLE_META_EVENTS */
+
+                    int ret = c->handler(ev, NULL);
+                    if (ret && c->perm & COMPNT_EXECUTE) {
+                        break;
+                    }
+                } else { // external site
+                    event_out_t *out = &ev_out;
+
+#ifdef __ENABLE_META_EVENTS
+                    c->num_events[type]++;
+#endif /* __ENABLE_META_EVENTS */
+
+                    if (c->perm & COMPNT_EXECUTE) {
+                        int ret = ev_send_ext_msg(c, id, type, len, data, out->data);
+                        if (ret) {
+                            break;
+                        }
+                    } else {
+                        ev_push_ext_msg(c, id, type, len, data);
+                    }
+                }
             }
         }
     }

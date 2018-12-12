@@ -235,7 +235,7 @@ int conflict_cleanup(int *activated)
 
 /**
  * \brief The CLI function
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param args Arguments
  */
 int conflict_cli(cli_t *cli, char **args)
@@ -250,6 +250,10 @@ int conflict_cli(cli_t *cli, char **args)
  */
 int conflict_handler(const event_t *ev, event_out_t *ev_out)
 {
+#ifdef __ENABLE_CBENCH
+    return 0;
+#endif /* __ENABLE_CBENCH */
+
     switch (ev->type) {
     case EV_DP_INSERT_FLOW:
         PRINT_EV("EV_DP_INSERT_FLOW\n");
@@ -265,13 +269,13 @@ int conflict_handler(const event_t *ev, event_out_t *ev_out)
     case EV_DP_MODIFY_FLOW:
         PRINT_EV("EV_DP_MODIFY_FLOW\n");
         {
-            //
+            //TODO
         }
         break;
     case EV_DP_DELETE_FLOW:
         PRINT_EV("EV_DP_DELETE_FLOW\n");
         {
-            //
+            //TODO
         }
         break;
     case EV_FLOW_ADDED:
@@ -281,9 +285,7 @@ int conflict_handler(const event_t *ev, event_out_t *ev_out)
             rule_table_t *rule_tbl = &rule_table[flow->dpid % __DEFAULT_TABLE_SIZE];
 
             flow_t *new = arr_dequeue();
-            if (new == NULL) {
-                break;
-            }
+            if (new == NULL) break;
 
             memmove(new, flow, sizeof(flow_t));
 

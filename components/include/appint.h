@@ -56,7 +56,7 @@ int appint_cleanup(int *activated)
 
 /**
  * \brief The CLI function
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param args Arguments
  */
 int appint_cli(cli_t *cli, char **args)

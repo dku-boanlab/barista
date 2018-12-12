@@ -17,8 +17,12 @@
 
 #include "shim.h"
 
-/** \brief The configuration of an application */
+/////////////////////////////////////////////////////////////////////
+
+/** \brief Application context */
 app_t app;
+
+/////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Function to initialize an application
@@ -29,14 +33,14 @@ static int init_app(void)
     json_t *json;
     json_error_t error;
 
-    PRINTF("Application configuration file: %s\n", APP_DEFAULT_CONFIG_FILE);
+    PRINTF("Application configuration file: %s\n", DEFAULT_APP_CONFIG_FILE);
 
-    if (access(APP_DEFAULT_CONFIG_FILE, F_OK)) {
-        PRINTF("No file whose name is '%s'\n", APP_DEFAULT_CONFIG_FILE);
+    if (access(DEFAULT_APP_CONFIG_FILE, F_OK)) {
+        PRINTF("No file whose name is '%s'\n", DEFAULT_APP_CONFIG_FILE);
         return -1;
     }
 
-    char *raw = str_read(APP_DEFAULT_CONFIG_FILE);
+    char *raw = str_read(DEFAULT_APP_CONFIG_FILE);
     char *conf = str_preproc(raw);
 
     json = json_loads(conf, 0, &error);
@@ -78,9 +82,11 @@ static int init_app(void)
         // set the application name
         if (strlen(name) == 0) {
             PRINTF("No application name\n");
+            json_decref(json);
             return -1;
         } else {
             strcpy(app.name, name);
+            app.app_id = hash_func((uint32_t *)&app.name, __HASHING_NAME_LENGTH);
         }
 
         // set arguments
@@ -107,15 +113,19 @@ static int init_app(void)
         break;
     }
 
+    json_decref(json);
+
     if (pass) {
         app.activated = FALSE;
     } else {
-        PRINTF("No %s in the configuration\n", TARGET_APP);
+        PRINTF("No %s in the given configuration file\n", TARGET_APP);
         return -1;
     }
 
     return 0;
 }
+
+/////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Function to execute the main function of an application
@@ -214,20 +224,20 @@ void sigterm_handler(int sig)
  */
 int main(int argc, char *argv[])
 {
-    // init app event handler
-    if (app_event_init(NULL)) {
-        PRINTF("Failed to initialize the external app event handler\n");
-        return -1;
-    } else {
-        PRINTF("Initialized the external app event handler\n");
-    }
-
     // init app
     if (init_app()) {
         PRINTF("Failed to initialize %s\n", TARGET_APP);
         return -1;
     } else {
         PRINTF("Initialized %s\n", TARGET_APP);
+    }
+
+    // init app event handler
+    if (app_event_init(NULL)) {
+        PRINTF("Failed to initialize the external app event handler\n");
+        return -1;
+    } else {
+        PRINTF("Initialized the external app event handler\n");
     }
 
     // activate app

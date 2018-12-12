@@ -33,11 +33,6 @@ struct of_header {
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The running flag for packet I/O engine */
-int conn_on;
-
-// socket queue handling part ///////////////////////////////////////
-
 /** \brief The size of a network socket queue */
 #define MAXQLEN 1024
 
@@ -110,12 +105,12 @@ static int get_qsize(void)
     return size;
 }
 
-// segmented context handling part //////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 
 /** \brief The structure to keep the remaining part of a raw message */
 typedef struct _context_t {
-    int need; /**< The bytes it needs to read */
-    int done; /**< The bytes it has */
+    int need; /**< The bytes that it needs to read */
+    int done; /**< The bytes that it has */
     uint8_t temp[__MAX_RAW_DATA_LEN]; /**< Temporary data */
 } context_t;
 
@@ -145,7 +140,7 @@ static void clean_context(int sock)
         memset(&context[sock], 0, sizeof(context_t));
 }
 
-// message handling part ////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Function to handle incoming messages from network sockets
@@ -155,6 +150,8 @@ static void clean_context(int sock)
  */
 static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 {
+    // 4 = version + type + length
+
     context_t *c = &context[sock];
 
     uint8_t *temp = c->temp;
@@ -208,8 +205,7 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
                     msg.fd = sock;
                     msg.length = ntohs(ofph->length);
 
-                    if (msg.length == 0)
-                        return -1;
+                    if (msg.length == 0) return -1;
 
                     msg.data = (uint8_t *)(rx_buf + buf_ptr);
 
@@ -238,8 +234,7 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
                 msg.fd = sock;
                 msg.length = ntohs(ofph->length);
 
-                if (msg.length == 0)
-                    return -1;
+                if (msg.length == 0) return -1;
 
                 memmove(temp + done, rx_buf + buf_ptr, need);
 
@@ -262,7 +257,7 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
     return bytes;
 }
 
-// epoll handling part //////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 
 /** \brief The maximum number of events */
 #define MAXEVENTS 1024
@@ -328,7 +323,12 @@ static int relink_epoll(int epol, int fd, int flags)
     return 0;
 }
 
-// worker thread handling part //////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+
+/** \brief The running flag for packet I/O engine */
+int conn_on;
+
+/////////////////////////////////////////////////////////////////////
 
 /** \brief The size of a recv buffer */
 #define BUFFER_SIZE 8192
@@ -361,16 +361,18 @@ static void recv_cb_register(recv_cb_t cb)
 static void *do_tasks(void *null)
 {
     int wsock, bytes, done = 0;
-    uint8_t rx_buf[BUFFER_SIZE] = {0};
+    uint8_t rx_buf[BUFFER_SIZE];
 
     pthread_mutex_lock(&queue_mutex);
 
     while (conn_on) {
-        struct timespec time_wait;
-        time_wait.tv_sec = 1;
-        time_wait.tv_nsec = 0;
+        struct timeval now;
+        gettimeofday(&now, NULL);
 
-        //pthread_cond_wait(&queue_cond, &queue_mutex);
+        struct timespec time_wait;
+        time_wait.tv_sec = now.tv_sec+1;
+        time_wait.tv_nsec = now.tv_usec;
+
         pthread_cond_timedwait(&queue_cond, &queue_mutex, &time_wait);
 
 FETCH_ONE_FD:
@@ -447,14 +449,14 @@ static void init_workers(void)
 
     int i;
     pthread_t thread;
-    for (i=0; i<__NUM_THREADS; i++) {
+    for (i=0; i<__NUM_PKT_THREADS; i++) {
         if (pthread_create(&thread, NULL, &do_tasks, NULL) < 0) {
             PERROR("pthread_create");
         }
     }
 }
 
-// network socket handling part /////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 
 /** \brief Network socket */
 int sc;
@@ -589,8 +591,8 @@ static void *socket_listen(void *arg)
             } else {
                 pthread_mutex_lock(&queue_mutex);
                 push_back(events[i].data.fd);
-                pthread_mutex_unlock(&queue_mutex);
                 pthread_cond_signal(&queue_cond);
+                pthread_mutex_unlock(&queue_mutex);
             }
         }
 
@@ -654,7 +656,7 @@ int conn_cleanup(int *activated)
     waitsec(1, 0);
 
     int i;
-    for (i=0; i<__NUM_THREADS; i++) {
+    for (i=0; i<__NUM_PKT_THREADS; i++) {
         pthread_mutex_lock(&queue_mutex);
         push_back(0);
         pthread_mutex_unlock(&queue_mutex);
@@ -673,7 +675,7 @@ int conn_cleanup(int *activated)
 
 /**
  * \brief The CLI function
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param args Arguments
  */
 int conn_cli(cli_t *cli, char **args)
@@ -694,6 +696,8 @@ int conn_handler(const event_t *ev, event_out_t *ev_out)
         {
             const raw_msg_t *msg = ev->raw_msg;
             int fd = msg->fd;
+
+            if (fd == 0) break;
 
             int remain = msg->length;
             int bytes = 0;

@@ -21,22 +21,16 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The pointer of the context structure */
+/** \brief Global context structure */
 static ctx_t *ev_ctx;
-
-/** \brief The running flag of the event handler */
-static int ev_on;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The MQ contexts to pull events and to handle request-response events */
-void *ev_pull_ctx, *ev_rep_ctx;
+/** \brief MQ contexts to pull and reply events */
+void *ev_pull_in_ctx, *ev_pull_out_ctx, *ev_rep_ctx;
 
-/** \brief The MQ socket to pull events */
-void *ev_pull_sock;
-
-/** \brief The MQ sockets for components and workers */
-void *ev_rep_comp, *ev_rep_work;
+/** \brief MQ sockets to pull and reply events */
+void *ev_pull_in_sock, *ev_pull_out_sock, *ev_rep_comp, *ev_rep_work;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -74,7 +68,7 @@ static int log_ev_raise(uint32_t id, uint16_t type, uint16_t len, const char *da
 
 /////////////////////////////////////////////////////////////////////
 
-#include "event_zmq_pack.h"
+#include "event_msg_pack.h"
 
 // Upstream events //////////////////////////////////////////////////
 
@@ -222,6 +216,7 @@ void ev_log_fatal(uint32_t id, char *format, ...) {
 
 /////////////////////////////////////////////////////////////////////
 
+#ifdef __ENABLE_META_EVENTS
 /**
  * \brief Function to process meta events
  * \return NULL
@@ -279,43 +274,56 @@ static void *meta_events(void *null)
 
     return NULL;
 }
+#endif /* __ENABLE_META_EVENTS */
 
 /////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Function to initialize the event handler
  * \param ctx The context of the Barista NOS
- * \return 0: OK, -1: Error
  */
 int event_init(ctx_t *ctx)
 {
     ev_ctx = ctx;
 
-    if (ev_on == FALSE) {
+    if (ev_ctx->ev_on == FALSE) {
         pthread_t thread;
+
+#ifdef __EANBLE_META_EVENTS
         if (pthread_create(&thread, NULL, &meta_events, NULL) < 0) {
             PERROR("pthread_create");
             return -1;
         }
+#endif /* __ENABLE_META_EVENTS */
 
-        ev_on = TRUE;
+        ev_ctx->ev_on = TRUE;
 
         // pull (outside)
 
-        ev_pull_ctx = zmq_ctx_new();
-        ev_pull_sock = zmq_socket(ev_pull_ctx, ZMQ_PULL);
+        ev_pull_in_ctx = zmq_ctx_new();
+        ev_pull_in_sock = zmq_socket(ev_pull_in_ctx, ZMQ_PULL);
 
-        const int timeout = 1000;
-        zmq_setsockopt(ev_pull_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
-
-        if (zmq_bind(ev_pull_sock, EXT_COMP_PULL_ADDR)) {
+        if (zmq_bind(ev_pull_in_sock, EXT_COMP_PULL_ADDR)) {
             PERROR("zmq_bind");
             return -1;
         }
 
+        ev_pull_out_ctx = zmq_ctx_new();
+        ev_pull_out_sock = zmq_socket(ev_pull_out_ctx, ZMQ_PUSH);
+
+        if (zmq_bind(ev_pull_out_sock, "inproc://ev_pull_workers")) {
+            PERROR("zmq_bind");
+            return -1;
+        }
+
+        if (pthread_create(&thread, NULL, &receive_events, NULL) < 0) {
+            PERROR("pthread_create");
+            return -1;
+        }
+
         int i;
-        for (i=0; i<__NUM_THREADS; i++) {
-            if (pthread_create(&thread, NULL, &receive_events, NULL) < 0) {
+        for (i=0; i<__NUM_PULL_THREADS; i++) {
+            if (pthread_create(&thread, NULL, &deliver_events, NULL) < 0) {
                 PERROR("pthread_create");
                 return -1;
             }
@@ -325,18 +333,20 @@ int event_init(ctx_t *ctx)
 
         ev_rep_ctx = zmq_ctx_new();
         ev_rep_comp = zmq_socket(ev_rep_ctx, ZMQ_ROUTER);
+
         if (zmq_bind(ev_rep_comp, EXT_COMP_REPLY_ADDR)) {
             PERROR("zmq_bind");
             return -1;
         }
 
         ev_rep_work = zmq_socket(ev_rep_ctx, ZMQ_DEALER);
+
         if (zmq_bind(ev_rep_work, "inproc://ev_reply_workers")) {
             PERROR("zmq_bind");
             return -1;
         }
 
-        for (i=0; i<__NUM_THREADS; i++) {
+        for (i=0; i<__NUM_REP_THREADS; i++) {
             if (pthread_create(&thread, NULL, &reply_events, NULL) < 0) {
                 PERROR("pthread_create");
                 return -1;

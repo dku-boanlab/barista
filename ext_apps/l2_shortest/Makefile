@@ -11,8 +11,8 @@ BIN_DIR = ../../bin
 
 CPPFLAGS = $(addprefix -I,$(shell find $(SRC_DIR) -type d))
 
-CFLAGS   = -g -ggdb -Wall -std=gnu99 -D__DISABLE_CLI
 #CFLAGS   = -O2 -Wall -std=gnu99 -D__DISABLE_CLI
+CFLAGS   = -g -ggdb -Wall -std=gnu99 -D__DISABLE_CLI
 LDFLAGS  = -lpthread -ljansson -lzmq
 
 include $(CONFIG_MK)

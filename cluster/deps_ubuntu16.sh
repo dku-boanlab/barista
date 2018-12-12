@@ -7,3 +7,4 @@ sudo add-apt-repository 'deb http://ftp.osuosl.org/pub/mariadb/repo/10.0/ubuntu 
 sudo apt-get update
 sudo apt-get -y install mariadb-galera-server
 sudo apt-get -y install mariadb-client libmariadbclient-dev
+sudo systemctl enable mysql

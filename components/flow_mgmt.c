@@ -22,11 +22,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The running flag for flow management */
-int flow_mgmt_on;
-
-/////////////////////////////////////////////////////////////////////
-
 #include "flow_queue.h"
 
 /////////////////////////////////////////////////////////////////////
@@ -65,13 +60,12 @@ static int add_flow(flow_table_t *list, const flow_t *flow)
 
     if (ret) {
         flow_t *new = flow_dequeue();
-        if (new == NULL) {
-            return FALSE;
-        }
+        if (new == NULL) return FALSE;
 
         new->dpid = flow->dpid;
         new->port = flow->port;
 
+        new->remote = flow->remote;
         new->insert_time = time(NULL);
 
         new->idle_timeout = flow->idle_timeout;
@@ -83,8 +77,7 @@ static int add_flow(flow_table_t *list, const flow_t *flow)
         new->vlan_pcp = flow->vlan_pcp;
 
         new->proto = flow->proto;
-
-        new->remote = flow->remote;
+        new->ip_tos = flow->ip_tos;
 
         memmove(new->src_mac, flow->src_mac, ETH_ALEN);
         memmove(new->dst_mac, flow->dst_mac, ETH_ALEN);
@@ -98,9 +91,7 @@ static int add_flow(flow_table_t *list, const flow_t *flow)
         new->num_actions = flow->num_actions;
         memmove(new->action, flow->action, sizeof(action_t) * new->num_actions);
 
-        new->prev = new->next = new->r_next = NULL;
-
-        flow_t out = {0};
+        flow_t out;
         memmove(&out, new, sizeof(flow_t));
 
         pthread_spin_lock(&list->lock);
@@ -150,6 +141,7 @@ static int modify_flow(flow_table_t *list, const flow_t *flow)
         curr->dpid = flow->dpid;
         curr->port = flow->port;
 
+        curr->remote = flow->remote;
         curr->insert_time = time(NULL);
 
         curr->idle_timeout = flow->idle_timeout;
@@ -161,8 +153,7 @@ static int modify_flow(flow_table_t *list, const flow_t *flow)
         curr->vlan_pcp = flow->vlan_pcp;
 
         curr->proto = flow->proto;
-
-        curr->remote = flow->remote;
+        curr->ip_tos = flow->ip_tos;
 
         memmove(curr->src_mac, flow->src_mac, ETH_ALEN);
         memmove(curr->dst_mac, flow->dst_mac, ETH_ALEN);
@@ -178,7 +169,7 @@ static int modify_flow(flow_table_t *list, const flow_t *flow)
 
         curr->prev = curr->next = curr->r_next = NULL;
 
-        flow_t out = {0};
+        flow_t out;
         memmove(&out, curr, sizeof(flow_t));
 
         pthread_spin_unlock(&list->lock);
@@ -346,6 +337,11 @@ static int update_flow(flow_table_t *list, const flow_t *flow)
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief The running flag for flow management */
+int flow_mgmt_on;
+
+/////////////////////////////////////////////////////////////////////
+
 /**
  * \brief Function to find and delete expired flows
  * \return NULL
@@ -433,13 +429,11 @@ int flow_mgmt_main(int *activated, int argc, char **argv)
 
     num_flows = 0;
 
-    flow_table = (flow_table_t *)MALLOC(sizeof(flow_table_t) * __DEFAULT_TABLE_SIZE);
+    flow_table = (flow_table_t *)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(flow_table_t));
     if (flow_table == NULL) {
-        PERROR("malloc");
+        PERROR("calloc");
         return -1;
     }
-
-    memset(flow_table, 0, sizeof(flow_table_t) * __DEFAULT_TABLE_SIZE);
 
     int i;
     for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
@@ -496,14 +490,13 @@ int flow_mgmt_cleanup(int *activated)
 
 /**
  * \brief Function to print all flows
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  */
 static int flow_listup(cli_t *cli)
 {
     int i, cnt = 0;
 
     cli_print(cli, "<Flow Tables>");
-
     cli_print(cli, "  The total number of flows: %d", num_flows);
 
     for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
@@ -511,7 +504,7 @@ static int flow_listup(cli_t *cli)
 
         flow_t *curr = flow_table[i].head;
         while (curr != NULL) {
-            char proto[__CONF_SHORT_LEN] = {0};
+            char proto[__CONF_SHORT_LEN];
 
             if (curr->proto & PROTO_TCP)
                 strcpy(proto, "TCP");
@@ -533,13 +526,13 @@ static int flow_listup(cli_t *cli)
             struct in_addr src_ip;
             src_ip.s_addr = curr->src_ip;
 
-            char srcip[__CONF_WORD_LEN] = {0};
+            char srcip[__CONF_WORD_LEN];
             sprintf(srcip, "%s", inet_ntoa(src_ip));
 
             struct in_addr dst_ip;
             dst_ip.s_addr = curr->dst_ip;
 
-            char dstip[__CONF_WORD_LEN] = {0};
+            char dstip[__CONF_WORD_LEN];
             sprintf(dstip, "%s", inet_ntoa(dst_ip));
 
             if (curr->proto & PROTO_ICMP) {
@@ -599,7 +592,7 @@ static int flow_listup(cli_t *cli)
 
 /**
  * \brief Function to show the flows in a specific switch
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param dpid_str Datapath ID
  */
 static int flow_showup(cli_t *cli, char *dpid_str)
@@ -620,7 +613,7 @@ static int flow_showup(cli_t *cli, char *dpid_str)
                 continue;
             }
 
-            char proto[__CONF_SHORT_LEN] = {0};
+            char proto[__CONF_SHORT_LEN];
             if (curr->proto & PROTO_TCP)
                 strcpy(proto, "TCP");
             else if (curr->proto & PROTO_DHCP)
@@ -641,13 +634,13 @@ static int flow_showup(cli_t *cli, char *dpid_str)
             struct in_addr src_ip;
             src_ip.s_addr = curr->src_ip;
 
-            char srcip[__CONF_WORD_LEN] = {0};
+            char srcip[__CONF_WORD_LEN];
             sprintf(srcip, "%s", inet_ntoa(src_ip));
 
             struct in_addr dst_ip;
             dst_ip.s_addr = curr->dst_ip;
 
-            char dstip[__CONF_WORD_LEN] = {0};
+            char dstip[__CONF_WORD_LEN];
             sprintf(dstip, "%s", inet_ntoa(dst_ip));
 
             if (curr->proto & PROTO_ICMP) {
@@ -710,7 +703,7 @@ static int flow_showup(cli_t *cli, char *dpid_str)
 
 /**
  * \brief The CLI function
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param args Arguments
  */
 int flow_mgmt_cli(cli_t *cli, char **args)
@@ -750,6 +743,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         PRINT_EV("EV_DP_INSERT_FLOW\n");
         {
             const flow_t *flow = ev->flow;
+
             flow_table_t *flow_tbl = &flow_table[flow->dpid % __DEFAULT_TABLE_SIZE];
             add_flow(flow_tbl, ev->flow);
         }
@@ -758,6 +752,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         PRINT_EV("EV_DP_MODIFY_FLOW\n");
         {
             const flow_t *flow = ev->flow;
+
             flow_table_t *flow_tbl = &flow_table[flow->dpid % __DEFAULT_TABLE_SIZE];
             modify_flow(flow_tbl, ev->flow);
         }
@@ -766,6 +761,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         PRINT_EV("EV_DP_DELETE_FLOW\n");
         {
             const flow_t *flow = ev->flow;
+
             flow_table_t *flow_tbl = &flow_table[flow->dpid % __DEFAULT_TABLE_SIZE];
             delete_flow(flow_tbl, ev->flow);
         }
@@ -774,6 +770,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         PRINT_EV("EV_DP_FLOW_EXPIRED\n");
         {
             const flow_t *flow = ev->flow;
+
             flow_table_t *flow_tbl = &flow_table[flow->dpid % __DEFAULT_TABLE_SIZE];
             delete_flow(flow_tbl, ev->flow);
         }
@@ -782,6 +779,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         PRINT_EV("EV_DP_FLOW_DELETED\n");
         {
             const flow_t *flow = ev->flow;
+
             flow_table_t *flow_tbl = &flow_table[flow->dpid % __DEFAULT_TABLE_SIZE];
             delete_flow(flow_tbl, ev->flow);
         }
@@ -790,6 +788,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         PRINT_EV("EV_DP_FLOW_STATS\n");
         {
             const flow_t *flow = ev->flow;
+
             flow_table_t *flow_tbl = &flow_table[flow->dpid % __DEFAULT_TABLE_SIZE];
             update_flow(flow_tbl, ev->flow);
         }
@@ -798,6 +797,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         PRINT_EV("EV_SW_CONNECTED\n");
         {
             const switch_t *sw = ev->sw;
+
             flow_table_t *flow_tbl = &flow_table[sw->dpid % __DEFAULT_TABLE_SIZE];
             delete_all_flows(flow_tbl, ev->sw->dpid);
         }
@@ -806,6 +806,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         PRINT_EV("EV_SW_DISCONNECTED\n");
         {
             const switch_t *sw = ev->sw;
+
             flow_table_t *flow_tbl = &flow_table[sw->dpid % __DEFAULT_TABLE_SIZE];
             delete_all_flows(flow_tbl, ev->sw->dpid);
         }

@@ -35,10 +35,11 @@ mac_table_t *mac_table;
  * \brief Function to clean up mac entires
  * \param idx The index of a MAC table
  * \param tmp_list The list of MAC entries to be removed
- * \return None
  */
 static int clean_up_tmp_list(int idx, mac_table_t *tmp_list)
 {
+    // locked
+
     mac_entry_t *curr = tmp_list->head;
 
     while (curr != NULL) {
@@ -130,31 +131,26 @@ static int l2_learning(const pktin_t *pktin)
 
     pthread_rwlock_rdlock(&mac_table[mkey].lock);
 
-    // check source MAC
+    // 1. check source MAC
     mac_entry_t *curr = mac_table[mkey].head;
     while (curr != NULL) {
-        if (curr->dpid == pktin->dpid && curr->mac == mac) {
+        if (curr->dpid == pktin->dpid && curr->mac == mac)
             break;
-        }
         curr = curr->next;
     }
 
     pthread_rwlock_unlock(&mac_table[mkey].lock);
 
-    // new MAC?
+    // 2. if new MAC, add it in the mac table
     if (curr == NULL) {
         curr = mac_dequeue();
-        if (curr == NULL) {
-            return -1;
-        }
+        if (curr == NULL) return -1;
 
         curr->dpid = pktin->dpid;
         curr->port = pktin->port;
 
         curr->ip = pktin->src_ip;
         curr->mac = mac;
-
-        curr->prev = curr->next = NULL;
 
         pthread_rwlock_wrlock(&mac_table[mkey].lock);
 
@@ -170,22 +166,21 @@ static int l2_learning(const pktin_t *pktin)
         pthread_rwlock_unlock(&mac_table[mkey].lock);
     }
 
-    // get destination MAC
+    // 3. get destination MAC
     mac = mac2int(pktin->dst_mac);
 
-    // broadcast?
-    if (mac == __BROADCAST_MAC) {
+    // 4. if dst mac == broadcast, flood it
+    if (mac == BROADCAST_MAC) {
         send_packet(pktin, PORT_FLOOD);
         return 0;
     }
 
     uint16_t port = 0;
-
     mkey = hash_func((uint32_t *)&mac, 2) % MAC_HASH_SIZE;
 
     pthread_rwlock_rdlock(&mac_table[mkey].lock);
 
-    // where to forward?
+    // 5. look up where to forward
     curr = mac_table[mkey].head;
     while (curr != NULL) {
         if (curr->dpid == pktin->dpid && curr->mac == mac) {
@@ -197,12 +192,13 @@ static int l2_learning(const pktin_t *pktin)
 
     pthread_rwlock_unlock(&mac_table[mkey].lock);
 
-    // unknown port?
+    // 6. if unknown destination, flood it
     if (port == 0) {
         send_packet(pktin, PORT_FLOOD);
         return 0;
     }
 
+    // 7. send it to where it should go
     if (pktin->proto & PROTO_IPV4) // IPv4
         insert_flow(pktin, port);
     else if (pktin->proto & PROTO_ARP) // ARP
@@ -275,7 +271,7 @@ int l2_learning_cleanup(int *activated)
 
 /**
  * \brief Function to list up all MAC tables
- * \param cli CLI pointer
+ * \param cli The pointer of the Barista CLI
  */
 static int list_all_entries(cli_t *cli)
 {
@@ -290,7 +286,7 @@ static int list_all_entries(cli_t *cli)
             uint8_t mac[ETH_ALEN];
             int2mac(curr->mac, mac);
 
-            char macaddr[__CONF_WORD_LEN] = {0};
+            char macaddr[__CONF_WORD_LEN];
             mac2str(mac, macaddr);
 
             struct in_addr ip_addr;
@@ -310,7 +306,7 @@ static int list_all_entries(cli_t *cli)
 
 /**
  * \brief Function to show the MAC table for a specific switch
- * \param cli CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param dpid_str Datapath ID
  */
 static int show_entry_switch(cli_t *cli, char *dpid_str)
@@ -351,17 +347,16 @@ static int show_entry_switch(cli_t *cli, char *dpid_str)
 }
 
 /**
- * \brief Function to find a MAC entry with a MAC address
- * \param cli CLI pointer
+ * \brief Function to find a MAC entry that contains a specific MAC address
+ * \param cli The pointer of the Barista CLI
  * \param macaddr MAC address
  */
 static int show_entry_mac(cli_t *cli, const char *macaddr)
 {
-    uint8_t mac[ETH_ALEN] = {0};
-
+    uint8_t mac[ETH_ALEN];
     str2mac(macaddr, mac);
  
-    uint64_t imac = mac2int(mac);
+    uint64_t macval = mac2int(mac);
 
     cli_print(cli, "<MAC Entry [%s]>", macaddr);
 
@@ -371,7 +366,7 @@ static int show_entry_mac(cli_t *cli, const char *macaddr)
 
         mac_entry_t *curr = NULL;
         for (curr = mac_table[i].head; curr != NULL; curr = curr->next) {
-            if (curr->mac == imac) {
+            if (curr->mac == macval) {
                 struct in_addr ip_addr;
                 ip_addr.s_addr = curr->ip;
 
@@ -391,8 +386,8 @@ static int show_entry_mac(cli_t *cli, const char *macaddr)
 }
 
 /**
- * \brief Function to find a MAC entry with an IP address
- * \param cli CLI pointer
+ * \brief Function to find a MAC entry that contains a specific IP address
+ * \param cli The pointer of the Barista CLI
  * \param ipaddr IP address
  */
 static int show_entry_ip(cli_t *cli, const char *ipaddr)
@@ -434,7 +429,7 @@ static int show_entry_ip(cli_t *cli, const char *ipaddr)
 
 /**
  * \brief The CLI function
- * \param cli CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param args Arguments
  */
 int l2_learning_cli(cli_t *cli, char **args)
@@ -478,6 +473,7 @@ int l2_learning_handler(const app_event_t *av, app_event_out_t *av_out)
         PRINT_EV("AV_DP_RECEIVE_PACKET\n");
         {
             const pktin_t *pktin = av->pktin;
+
             l2_learning(pktin);
         }
         break;

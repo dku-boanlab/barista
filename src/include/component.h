@@ -14,9 +14,6 @@
 #include "hash.h"
 #include "str.h"
 
-#include <jansson.h>
-#include <zmq.h>
-
 /** \brief The main function pointer of a component */
 typedef int (* compnt_main_f)(int *activated, int argc, char **argv);
 /** \brief The handler function pointer of a component */
@@ -80,11 +77,8 @@ struct _compnt_t {
     int status; /**< Status */
     int activated; /**< Activation */
 
-    void *push_ctx; /**< Context to push events */
-    void *push_sock; /**< Socket to push events */
-
-    void *req_ctx; /**< Context to request events */
-    void *req_sock; /**< Socket to request events */
+    void *push_ctx; /**< Context to push app events */
+    void *req_ctx; /**< Context to request app events */
 
     char pull_addr[__CONF_WORD_LEN]; /**< Component-side pulling address */
     char reply_addr[__CONF_WORD_LEN]; /**< Component-side replying address */
@@ -103,8 +97,10 @@ struct _compnt_t {
     int num_policies; /**< The number of policies */
     odp_t odp[__MAX_POLICIES]; /**< The list of operator-defined policies */
 
+#ifdef __ENABLE_META_EVENTS
     uint64_t num_events[__MAX_EVENTS]; /**< The number of triggered times */
     double time_events[__MAX_EVENTS]; /** The cumulative latencies for each event */
+#endif /* __ENABLE_META_EVENTS */
 };
 
 // function for the base framework

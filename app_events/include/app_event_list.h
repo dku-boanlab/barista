@@ -38,6 +38,7 @@ void av_host_deleted(uint32_t id, const host_t *data);
 void av_link_added(uint32_t id, const port_t *data);
 void av_link_deleted(uint32_t id, const port_t *data);
 void av_flow_added(uint32_t id, const flow_t *data);
+void av_flow_modified(uint32_t id, const flow_t *data);
 void av_flow_deleted(uint32_t id, const flow_t *data);
 
 // log //////////////////////////////////////////////////////////////

@@ -1,1 +1,0 @@
-../../../components/resource_mgmt.c

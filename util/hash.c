@@ -47,9 +47,9 @@
 
 /** 
  * \brief Function to generate a hash value
- * \param data The pointer of data
- * \param length The length of the data
- * \return The hash value of the data
+ * \param data Data to make a hash value
+ * \param length Data length
+ * \return Generated hash value
  */
 uint32_t hash_func(const uint32_t *data, size_t length)
 {

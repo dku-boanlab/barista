@@ -22,6 +22,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, FUNC_TYPE *data)
         ev_out.id = id;
         ev_out.type = type;
         ev_out.length = len;
+
         ev_out.FUNC_DATA = data;
 
 #ifdef __ENABLE_META_EVENTS
@@ -51,7 +52,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, FUNC_TYPE *data)
                 c->num_events[type]++;
 #endif /* __ENABLE_META_EVENTS */
 
-                int ret = ev_send_ext_msg(c, id, type, len, data, out);
+                int ret = ev_send_ext_msg(c, id, type, len, data, out->data);
                 if (ret && c->perm & COMPNT_EXECUTE) {
                     break;
                 }

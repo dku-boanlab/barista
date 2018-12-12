@@ -31,6 +31,7 @@ enum {
     AV_LINK_ADDED,
     AV_LINK_DELETED,
     AV_FLOW_ADDED,
+    AV_FLOW_MODIFIED,
     AV_FLOW_DELETED,
     AV_ALL_INTSTREAM,
     // log

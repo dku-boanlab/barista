@@ -29,9 +29,6 @@ typedef struct _sw_queue_t {
     pthread_spinlock_t lock; /**< The lock for management */
 } sw_queue_t;
 
-/** \brief The number of pre-allocated switches */
-#define SW_PRE_ALLOC 1024
-
 /** \brief Switch pool */
 sw_queue_t sw_q;
 

@@ -35,10 +35,11 @@ mac_table_t *mac_table;
  * \brief Function to clean up mac entires
  * \param idx The index of a MAC table
  * \param tmp_list The list of MAC entries to be removed
- * \return None
  */
 static int clean_up_tmp_list(int idx, mac_table_t *tmp_list)
 {
+    // locked
+
     mac_entry_t *curr = tmp_list->head;
 
     while (curr != NULL) {
@@ -68,22 +69,22 @@ static int clean_up_tmp_list(int idx, mac_table_t *tmp_list)
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The maximum hop counts */
+/** \brief Maximum hop counts */
 #define MAX_HOP_COUNT 30
 
-/** \brief The infinite number for Floyd-Warshall algorithm */
+/** \brief Infinite number for Floyd-Warshall algorithm */
 #define INF 99999
 
-/** \brief The list to convert datapath IDs to small numbers */
+/** \brief Switch list to convert datapath IDs to small numbers */
 uint64_t *node_list;
 
-/** \brief The port list to jump to next switches */
+/** \brief Port list to jump to next switches */
 int **edge_list;
 
-/** \brief The tables used for Floyd-Warshall algorithm */
+/** \brief Tables used for Floyd-Warshall algorithm */
 int **path, **dist, **next;
 
-/** \brief The spinlock for path updates */
+/** \brief Lock for path updates */
 pthread_rwlock_t path_lock;
 
 /////////////////////////////////////////////////////////////////////
@@ -130,7 +131,6 @@ static int floyd_warshall(void)
 /**
  * \brief Function to add a new switch
  * \param sw New switch
- * \return 0: OK, -1: Existence
  */
 static int add_switch(const switch_t *sw)
 {
@@ -138,7 +138,7 @@ static int add_switch(const switch_t *sw)
 
     pthread_rwlock_wrlock(&path_lock);
 
-    int i;
+    int i, src = 0;
     for (i=0; i<__MAX_NUM_SWITCHES; i++) {
         if (node_list[i] == dpid) {
             pthread_rwlock_unlock(&path_lock);
@@ -146,14 +146,10 @@ static int add_switch(const switch_t *sw)
         }
     }
 
-    int src = 0;
     for (i=0; i<__MAX_NUM_SWITCHES; i++) {
         if (node_list[i] == 0) {
             src = i;
             node_list[i] = dpid;
-
-            //PRINTF("add -> node_list[%d] = %lu\n", i, dpid);
-
             break;
         }
     }
@@ -191,9 +187,6 @@ static int delete_switch(const switch_t *sw)
         if (node_list[i] == dpid) {
             src = i;
             node_list[i] = 0;
-
-            //PRINTF("del -> node_list[%d]\n", i);
-
             break;
         }
     }
@@ -217,17 +210,16 @@ static int delete_switch(const switch_t *sw)
 }
 
 /**
- * \brief Function to get an index where a datapath ID is located
+ * \brief Function to get an index that points a specific datapath ID
  * \param dpid Datapath ID
- * \return The index of the given Datapath ID
+ * \return The index of the given datapath ID
  */
 static int get_index_from_dpid(uint64_t dpid)
 {
     int i;
     for (i=0; i<__MAX_NUM_SWITCHES; i++) {
-        if (node_list[i] == dpid) {
+        if (node_list[i] == dpid)
             return i;
-        }
     }
 
     return 0;
@@ -242,9 +234,7 @@ static int add_link(const port_t *link)
     pthread_rwlock_wrlock(&path_lock);
 
     int src = get_index_from_dpid(link->dpid);
-    int dst = get_index_from_dpid(link->target_dpid);
-
-    //PRINTF("add -> edge(src: %d, dst: %d)\n", src, dst);
+    int dst = get_index_from_dpid(link->next_dpid);
 
     path[src][dst] = src + dst;
     edge_list[src][dst] = link->port;
@@ -267,9 +257,7 @@ static int del_link(const port_t *link)
     pthread_rwlock_wrlock(&path_lock);
 
     int src = get_index_from_dpid(link->dpid);
-    int dst = get_index_from_dpid(link->target_dpid);
-
-    //PRINTF("del -> edge(src: %d, dst: %d)\n", src, dst);
+    int dst = get_index_from_dpid(link->next_dpid);
 
     path[src][dst] = INF;
     edge_list[src][dst] = 0;
@@ -285,7 +273,7 @@ static int del_link(const port_t *link)
 
 /**
  * \brief Function to get the shortest path from source to destination
- * \param route The list to store the shortest path from source to destination
+ * \param route Path list to store the shortest path from source to destination
  * \param src_dpid Source DPID
  * \param dst_dpid Destination DPID
  */
@@ -307,17 +295,11 @@ static int shortest_path(int *route, uint64_t src_dpid, uint64_t dst_dpid)
     int hop = 0;
     route[hop++] = u-1;
 
-    //PRINTF("%d->%d %2d %d", u-1, v-1, dist[src][dst], u-1);
-
     do {
         u = next[u-1][v-1];
         route[hop++] = u-1;
-        //PRINTF("->%d", u-1);
-
         break;
     } while (u != v);
-
-    //PRINTF("\n");
 
     pthread_rwlock_unlock(&path_lock);
 
@@ -330,12 +312,10 @@ static int shortest_path(int *route, uint64_t src_dpid, uint64_t dst_dpid)
  */
 static int path_init(void)
 {
-    node_list = (uint64_t *)MALLOC(sizeof(uint64_t) * __MAX_NUM_SWITCHES);
+    node_list = (uint64_t *)CALLOC(__MAX_NUM_SWITCHES, sizeof(uint64_t));
     if (node_list == NULL) {
-        PERROR("malloc");
+        PERROR("calloc");
         return -1;
-    } else {
-        memset(node_list, 0, sizeof(uint64_t) * __MAX_NUM_SWITCHES);
     }
 
     edge_list = (int **)MALLOC(sizeof(int *) * __MAX_NUM_SWITCHES);
@@ -345,12 +325,10 @@ static int path_init(void)
     } else {
         int i;
         for (i=0; i<__MAX_NUM_SWITCHES; i++) {
-            edge_list[i] = (int *)MALLOC(sizeof(int) * __MAX_NUM_SWITCHES);
+            edge_list[i] = (int *)CALLOC(__MAX_NUM_SWITCHES, sizeof(int));
             if (edge_list[i] == NULL) {
-                PERROR("malloc");
+                PERROR("calloc");
                 return -1;
-            } else {
-                memset(edge_list[i], 0, sizeof(int) * __MAX_NUM_SWITCHES);
             }
         }
     }
@@ -474,7 +452,7 @@ static int send_packet(const pktin_t *pktin, uint16_t port)
  * \param pktin Pktin message
  * \param port Port
  */
-static int insert_flow(const pktin_t *pktin, uint16_t port)
+static int insert_flow_local(const pktin_t *pktin, uint16_t port)
 {
     flow_t out = {0};
 
@@ -537,31 +515,26 @@ static int l2_shortest(const pktin_t *pktin)
 
     pthread_rwlock_rdlock(&mac_table[mkey].lock);
 
-    // check source MAC
+    // 1. check source MAC
     mac_entry_t *curr = mac_table[mkey].head;
     while (curr != NULL) {
-        if (curr->dpid == pktin->dpid && curr->mac == mac) {
+        if (curr->dpid == pktin->dpid && curr->mac == mac)
             break;
-        }
         curr = curr->next;
     }
 
     pthread_rwlock_unlock(&mac_table[mkey].lock);
 
-    // new MAC?
+    // 2. if new MAC, add it in the mac table
     if (curr == NULL) {
         curr = mac_dequeue();
-        if (curr == NULL) {
-            return -1;
-        }
+        if (curr == NULL) return -1;
 
         curr->dpid = pktin->dpid;
         curr->port = pktin->port;
 
         curr->ip = pktin->src_ip;
         curr->mac = mac;
-
-        curr->prev = curr->next = NULL;
 
         pthread_rwlock_wrlock(&mac_table[mkey].lock);
 
@@ -577,14 +550,14 @@ static int l2_shortest(const pktin_t *pktin)
         pthread_rwlock_unlock(&mac_table[mkey].lock);
     }
 
-    // get destination MAC
+    // 3. get destination MAC
     mac = mac2int(pktin->dst_mac);
 
-    // broadcast?
-    if (mac == __BROADCAST_MAC) {
+    // 4. if dst mac == broadcast and ...
+    if (mac == BROADCAST_MAC) {
         int i, pass = FALSE;
 
-        // do we know the destination?
+        // 4-1. if we know the destination, keep the dst mac for future process
         for (i=0; i<MAC_HASH_SIZE; i++) {
             pthread_rwlock_rdlock(&mac_table[i].lock);
 
@@ -605,7 +578,7 @@ static int l2_shortest(const pktin_t *pktin)
                 break;
         }
 
-        // don't know where to forward
+        // 4-2. if we don't know where to forward, flood it
         if (!pass) {
             send_packet(pktin, PORT_FLOOD);
             return 0;
@@ -619,7 +592,7 @@ static int l2_shortest(const pktin_t *pktin)
 
     pthread_rwlock_rdlock(&mac_table[mkey].lock);
 
-    // where to forward?
+    // 5. look up where to forward
     curr = mac_table[mkey].head;
     while (curr != NULL) {
         if (curr->mac == mac) {
@@ -632,22 +605,20 @@ static int l2_shortest(const pktin_t *pktin)
 
     pthread_rwlock_unlock(&mac_table[mkey].lock);
 
-    // unknown destination?
+    // 6. if unknown destination, flood it
     if (port == 0) {
         send_packet(pktin, PORT_FLOOD);
         return 0;
     }
 
-    // source dpid is equal to destination dpid?
+    // 7. if source and destination are in the same dpid, send it to where it should go
     if (pktin->dpid == dpid) {
         if (pktin->proto & PROTO_IPV4) // IPv4
-            insert_flow(pktin, port);
+            insert_flow_local(pktin, port);
         else if (pktin->proto & PROTO_ARP) // ARP
             send_packet(pktin, port);
-
-        return 0;
     } else {
-        // get the shortest path from src to dst
+        // 8. get the shortest path from src to dst, and send it to the next hop
         int route[MAX_HOP_COUNT] = {0};
         int hop = shortest_path(route, pktin->dpid, dpid);
 
@@ -725,7 +696,7 @@ int l2_shortest_cleanup(int *activated)
 
 /**
  * \brief Function to list up all MAC tables
- * \param cli CLI pointer
+ * \param cli The pointer of the Barista CLI
  */
 static int list_all_entries(cli_t *cli)
 {
@@ -740,7 +711,7 @@ static int list_all_entries(cli_t *cli)
             uint8_t mac[ETH_ALEN];
             int2mac(curr->mac, mac);
 
-            char macaddr[__CONF_WORD_LEN] = {0};
+            char macaddr[__CONF_WORD_LEN];
             mac2str(mac, macaddr);
 
             struct in_addr ip_addr;
@@ -760,7 +731,7 @@ static int list_all_entries(cli_t *cli)
 
 /**
  * \brief Function to show the MAC table for a specific switch
- * \param cli CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param dpid_str Datapath ID
  */
 static int show_entry_switch(cli_t *cli, char *dpid_str)
@@ -779,7 +750,7 @@ static int show_entry_switch(cli_t *cli, char *dpid_str)
                 uint8_t mac[ETH_ALEN];
                 int2mac(curr->mac, mac);
 
-                char macaddr[__CONF_WORD_LEN] = {0};
+                char macaddr[__CONF_WORD_LEN];
                 mac2str(mac, macaddr);
 
                 struct in_addr ip_addr;
@@ -801,17 +772,16 @@ static int show_entry_switch(cli_t *cli, char *dpid_str)
 }
 
 /**
- * \brief Function to find a MAC entry with a MAC address
- * \param cli CLI pointer
+ * \brief Function to find a MAC entry that contains a specific MAC address
+ * \param cli The pointer of the Barista CLI
  * \param macaddr MAC address
  */
 static int show_entry_mac(cli_t *cli, const char *macaddr)
 {
-    uint8_t mac[ETH_ALEN] = {0};
-
+    uint8_t mac[ETH_ALEN];
     str2mac(macaddr, mac);
 
-    uint64_t imac = mac2int(mac);
+    uint64_t macval = mac2int(mac);
 
     cli_print(cli, "<MAC Entry [%s]>", macaddr);
 
@@ -821,7 +791,7 @@ static int show_entry_mac(cli_t *cli, const char *macaddr)
 
         mac_entry_t *curr = NULL;
         for (curr = mac_table[i].head; curr != NULL; curr = curr->next) {
-            if (curr->mac == imac) {
+            if (curr->mac == macval) {
                 struct in_addr ip_addr;
                 ip_addr.s_addr = curr->ip;
 
@@ -841,8 +811,8 @@ static int show_entry_mac(cli_t *cli, const char *macaddr)
 }
 
 /**
- * \brief Function to find a MAC entry with an IP address
- * \param cli CLI pointer
+ * \brief Function to find a MAC entry that contains a specific IP address
+ * \param cli The pointer of the Barista CLI
  * \param ipaddr IP address
  */
 static int show_entry_ip(cli_t *cli, const char *ipaddr)
@@ -884,7 +854,7 @@ static int show_entry_ip(cli_t *cli, const char *ipaddr)
 
 /**
  * \brief The CLI function
- * \param cli CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param args Arguments
  */
 int l2_shortest_cli(cli_t *cli, char **args)
@@ -928,6 +898,7 @@ int l2_shortest_handler(const app_event_t *av, app_event_out_t *av_out)
         PRINT_EV("AV_DP_RECEIVE_PACKET\n");
         {
             const pktin_t *pktin = av->pktin;
+
             l2_shortest(pktin);
         }
         break;
@@ -1047,6 +1018,7 @@ int l2_shortest_handler(const app_event_t *av, app_event_out_t *av_out)
         PRINT_EV("AV_LINK_ADDED\n");
         {
             const port_t *link = av->port;
+
             add_link(link);
         }
         break;
@@ -1054,6 +1026,7 @@ int l2_shortest_handler(const app_event_t *av, app_event_out_t *av_out)
         PRINT_EV("AV_LINK_DELETED\n");
         {
             const port_t *link = av->port;
+
             del_link(link);
         }
         break;

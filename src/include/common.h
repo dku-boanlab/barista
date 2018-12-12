@@ -26,7 +26,9 @@
 #include <netinet/tcp.h>
 #include <netinet/ip_icmp.h>
 
+#include <jansson.h>
 #include "libcli.h"
+#include <zmq.h>
 
 #define __CONF_ARGC 16
 #define __CONF_SHORT_LEN 16
@@ -39,12 +41,13 @@
 
 //#define __ENABLE_META_EVENTS
 
-#define EXT_COMP_PULL_ADDR "tcp://0.0.0.0:5001"
-#define EXT_COMP_REPLY_ADDR "tcp://0.0.0.0:5002"
+#define EXT_COMP_PULL_ADDR "tcp://127.0.0.1:5001"
+#define EXT_COMP_REPLY_ADDR "tcp://127.0.0.1:5002"
 
-#define EXT_APP_PULL_ADDR "tcp://0.0.0.0:6001"
-#define EXT_APP_REPLY_ADDR "tcp://0.0.0.0:6002"
+#define EXT_APP_PULL_ADDR "tcp://127.0.0.1:6001"
+#define EXT_APP_REPLY_ADDR "tcp://127.0.0.1:6002"
 
+#define BATCH_LOGS 1024
 #define LOG_UPDATE_TIME 1
 
 #define FLOW_MGMT_REQUEST_TIME 5
@@ -52,29 +55,44 @@
 #define STAT_MGMT_REQUEST_TIME 5
 
 #define RESOURCE_MGMT_MONITOR_TIME 1
-#define RESOURCE_MGMT_HISTORY 3600
+#define RESOURCE_MGMT_HISTORY 86400
 
 #define TRAFFIC_MGMT_MONITOR_TIME 1
-#define TRAFFIC_MGMT_HISTORY 3600
+#define TRAFFIC_MGMT_HISTORY 86400
 
 #define CLUSTER_UPDATE_TIME_NS (1000*1000)
 #define CLUSTER_DELIMITER 2000
+
+/** \brief The number of pre-allocated mac entries used in l2_learning and l2_shortest */
+#define MAC_PRE_ALLOC 4096
+
+/** \brief The number of pre-allocated host entries used in host_mgmt */
+#define HOST_PRE_ALLOC 4096
+
+/** \biref The number of pre-allocated flow entries used in conflict */
+#define ARR_PRE_ALLOC 65536
+
+/** \brief The number of pre-allocated flow entries used in flow_mgmt */
+#define FLOW_PRE_ALLOC 65536
+
+/** \brief The number of pre-allocated switch entries used in switch_mgmt */
+#define SW_PRE_ALLOC 1024
 
 #define __SHOW_COMPONENT_ID
 
 #include "type.h"
 
 /** \brief The default component configuration file */
-#define COMPNT_DEFAULT_CONFIG_FILE "config/components.conf"
+#define DEFAULT_COMPNT_CONFIG_FILE "config/components.conf"
 
 /** \brief The default component configuration file */
-#define COMPNT_BASE_CONFIG_FILE "config/components.base"
+#define BASE_COMPNT_CONFIG_FILE "config/components.base"
 
 /** \brief The default application configuration file */
-#define APP_DEFAULT_CONFIG_FILE "config/applications.conf"
+#define DEFAULT_APP_CONFIG_FILE "config/applications.conf"
 
 /** \brief The default application configuration file */
-#define APP_BASE_CONFIG_FILE "config/applications.base"
+#define BASE_APP_CONFIG_FILE "config/applications.base"
 
 /** \brief The default operator-defined policy file */
 #define DEFAULT_ODP_FILE "config/operator-defined.policy"
@@ -135,7 +153,7 @@
 #define deactivate() \
 { \
     *activated = FALSE; \
-    waitsec(0, 1000 * 1000); \
+    waitsec(0, 1000); \
 }
 
 /** \brief Allocate a space */

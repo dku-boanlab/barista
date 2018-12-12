@@ -28,6 +28,8 @@ enum {
 
 /** \brief The structure of an application */
 struct _app_t {
+    uint32_t app_id; /**< Application ID */
+
     char name[__CONF_WORD_LEN]; /**< Application name */
     char args[__CONF_WORD_LEN]; /**< Original argument string */
 

@@ -34,8 +34,8 @@
 /** 
  * \brief Function to parse a string and then make arguments 
  * \param str Raw string
- * \param argc The number of arguments
- * \param argv The pointer array for parsed arguments
+ * \param argc Integer value to store the number of arguments
+ * \param argv Array to store parsed arguments
  * \param max_argc The maximum number of arguments
  */
 int str2args(char *str, int *argc, char **argv, int max_argc)

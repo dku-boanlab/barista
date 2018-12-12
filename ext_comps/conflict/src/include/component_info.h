@@ -11,5 +11,5 @@
 
 #define TARGET_COMPNT "conflict"
 
-#define TARGET_COMP_PULL_ADDR "tcp://0.0.0.0:5141"
-#define TARGET_COMP_REPLY_ADDR "tcp://0.0.0.0:5142"
+#define TARGET_COMP_PULL_ADDR "tcp://127.0.0.1:5121"
+#define TARGET_COMP_REPLY_ADDR "tcp://127.0.0.1:5122"

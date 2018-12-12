@@ -25,8 +25,13 @@ struct _ctx_t {
     int *ev_num; /**< The number of events */
     compnt_t ***ev_list; /**< Component chains for each event */
 
+#ifdef __ENABLE_META_EVENTS
     int num_events[__MAX_EVENTS]; /**< Counters for each event */
     meta_event_t meta_event[__MAX_META_EVENTS]; /**< Meta events */
+#endif /* __ENABLE_META_EVENTS */
+
+    // event handler
+    int ev_on; /**< The running flag of the event handler */
 
     // application
     int app_on; /**< Application flag */
@@ -38,8 +43,13 @@ struct _ctx_t {
     int *av_num; /**< The number of app events */
     app_t ***av_list; /**< Application chains for each app event */
 
+#ifdef __ENABLE_META_EVENTS
     int num_app_events[__MAX_APP_EVENTS]; /**< Counters for each app event */
     meta_event_t meta_app_event[__MAX_META_EVENTS]; /**< Meta app events */
+#endif /* __ENABLE_META_EVENTS */
+
+    // app event handler
+    int av_on; /**< The running flag of the application event handler */
 };
 
 int ctx_init(ctx_t *ctx);

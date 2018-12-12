@@ -46,9 +46,6 @@ typedef struct _mac_queue_t {
     pthread_spinlock_t lock; /**< The lock for management */
 } mac_queue_t;
 
-/** \brief The number of pre-allocated MAC entries */
-#define MAC_PRE_ALLOC 4096
-
 /** \brief MAC pool */
 mac_queue_t mac_q;
 

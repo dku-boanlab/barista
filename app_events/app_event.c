@@ -21,22 +21,16 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The pointer of the context structure */
+/** \brief Global context structure */
 static ctx_t *av_ctx;
-
-/** \brief The running flag of the application event handler */
-static int av_on;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The MQ contexts to pull events and to handle request-response events */
-void *av_pull_ctx, *av_rep_ctx;
+/** \brief MQ contexts to pull and reply app events */
+void *av_pull_in_ctx, *av_pull_out_ctx, *av_rep_ctx;
 
-/** \brief The MQ socket to pull events */
-void *av_pull_sock;
-
-/** \brief The MQ sockets for applications and workers */
-void *av_rep_app, *av_rep_work;
+/** \brief MQ sockets to pull and reply app events */
+void *av_pull_in_sock, *av_pull_out_sock, *av_rep_app, *av_rep_work;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -68,7 +62,7 @@ static int log_av_raise(uint32_t id, uint16_t type, uint16_t len, const char *da
 
 /////////////////////////////////////////////////////////////////////
 
-#include "app_event_zmq_pack.h"
+#include "app_event_msg_pack.h"
 
 // Upstream events //////////////////////////////////////////////////
 
@@ -114,6 +108,8 @@ void av_link_added(uint32_t id, const port_t *data) { port_av_raise(id, AV_LINK_
 void av_link_deleted(uint32_t id, const port_t *data) { port_av_raise(id, AV_LINK_DELETED, sizeof(port_t), data); }
 /** \brief AV_FLOW_ADDED */
 void av_flow_added(uint32_t id, const flow_t *data) { flow_av_raise(id, AV_FLOW_ADDED, sizeof(flow_t), data); }
+/** \brief AV_FLOW_MODIFIED */
+void av_flow_modified(uint32_t id, const flow_t *data) { flow_av_raise(id, AV_FLOW_ADDED, sizeof(flow_t), data); }
 /** \brief AV_FLOW_DELETED */
 void av_flow_deleted(uint32_t id, const flow_t *data) { flow_av_raise(id, AV_FLOW_DELETED, sizeof(flow_t), data); }
 
@@ -177,6 +173,7 @@ void av_log_fatal(uint32_t id, char *format, ...) {
 
 /////////////////////////////////////////////////////////////////////
 
+#ifdef __ENABLE_META_EVENTS
 /**
  * \brief Function to process meta app events
  * \return NULL
@@ -234,40 +231,56 @@ static void *meta_app_events(void *null)
 
     return NULL;
 }
+#endif /* __ENABLE_META_EVENTS */
 
 /////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Function to initialize the app event handler
  * \param ctx The context of the Barista NOS
- * \return 0: OK, -1: Error
  */
 int app_event_init(ctx_t *ctx)
 {
     av_ctx = ctx;
 
-    if (av_on == FALSE) {
+    if (av_ctx->av_on == FALSE) {
         pthread_t thread;
+
+#ifdef __ENABLE_META_EVENTS
         if (pthread_create(&thread, NULL, &meta_app_events, NULL) < 0) {
             PERROR("pthread_create");
             return -1;
         }
+#endif /* __ENABLE_META_EVENTS */
 
-        av_on = TRUE;
+        av_ctx->av_on = TRUE;
 
         // pull (outside)
 
-        av_pull_ctx = zmq_ctx_new();
-        av_pull_sock = zmq_socket(av_pull_ctx, ZMQ_PULL);
+        av_pull_in_ctx = zmq_ctx_new();
+        av_pull_in_sock = zmq_socket(av_pull_in_ctx, ZMQ_PULL);
 
-        if (zmq_bind(av_pull_sock, EXT_APP_PULL_ADDR)) {
+        if (zmq_bind(av_pull_in_sock, EXT_APP_PULL_ADDR)) {
             PERROR("zmq_bind");
             return -1;
         }
 
+        av_pull_out_ctx = zmq_ctx_new();
+        av_pull_out_sock = zmq_socket(av_pull_out_ctx, ZMQ_PUSH);
+
+        if (zmq_bind(av_pull_out_sock, "inproc://av_pull_workers")) {
+            PERROR("zmq_bind");
+            return -1;
+        }
+
+        if (pthread_create(&thread, NULL, &receive_app_events, NULL) < 0) {
+            PERROR("pthread_create");
+            return -1;
+        }
+
         int i;
-        for (i=0; i<__NUM_THREADS; i++) {
-            if (pthread_create(&thread, NULL, &receive_app_events, NULL) < 0) {
+        for (i=0; i<__NUM_PULL_THREADS; i++) {
+            if (pthread_create(&thread, NULL, &deliver_app_events, NULL) < 0) {
                 PERROR("pthread_create");
                 return -1;
             }
@@ -290,7 +303,7 @@ int app_event_init(ctx_t *ctx)
             return -1;
         }
 
-        for (i=0; i<__NUM_THREADS; i++) {
+        for (i=0; i<__NUM_REP_THREADS; i++) {
             if (pthread_create(&thread, NULL, &reply_app_events, NULL) < 0) {
                 PERROR("pthread_create");
                 return -1;

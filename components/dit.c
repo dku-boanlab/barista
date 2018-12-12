@@ -52,7 +52,7 @@ int dit_cleanup(int *activated)
 
 /**
  * \brief The CLI function
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param args Arguments
  */
 int dit_cli(cli_t *cli, char **args)

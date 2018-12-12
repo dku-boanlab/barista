@@ -60,7 +60,7 @@ const int dec_table[] = {
 /**
  * \brief Function to encode binary data
  * \param bin Binary data
- * \param len The length of the data
+ * \param len Data length
  * \return Encoded string (newly allocated)
  */
 char *base64_encode(const char *bin, int len)
@@ -95,17 +95,55 @@ char *base64_encode(const char *bin, int len)
 
     int size = sizeof(char) * j;
 
-    char *result = (char *)MALLOC(size);
-    memset(result, 0, size);
+    char *result = (char *)CALLOC(1, size);
     memmove(result, buffer, size);
 
     return result;
 }
 
 /**
+ * \brief Function to encode binary data with an already-allocated buffer
+ * \param bin Binary data
+ * \param len Data length
+ * \param buffer Buffer to store an encoded string
+ * \return Encoded string
+ */
+char *base64_encode_w_buffer(const char *bin, int len, char *buffer)
+{
+    int i = 0, j = 0;
+    int bs = len - (len % 3);
+    int remain_size = len - bs;
+
+    for (; i < bs; i += 3) {
+        buffer[j++] = enc_table[(bin[i] >> 2) & 0x3f];
+        buffer[j++] = enc_table[((bin[i] & 0x03) << 4) + ((bin[i+1] >> 4) & 0x0f)];
+        buffer[j++] = enc_table[((bin[i+1] & 0x0f) << 2) + ((bin[i+2] >> 6) & 0x03)];
+        buffer[j++] = enc_table[bin[i+2] & 0x3f];
+    }
+
+    if (remain_size != 0) {
+        buffer[j++] = enc_table[bin[i] >> 2 & 0x3f];
+
+        if (len - i == 2) {
+            buffer[j++] = enc_table[((bin[i] & 0x03) << 4) + ((bin[i + 1] >> 4) & 0x0f)];
+            buffer[j++] = enc_table[(bin[i + 1] & 0x0f) << 2];
+        }else {
+            buffer[j++] = enc_table[(bin[i] & 0x03) << 4];
+            buffer[j++] = enc_table[PADDING];
+        }
+
+        buffer[j++] = enc_table[PADDING];
+    }
+
+    buffer[j++] = '\0';
+
+    return buffer;
+}
+
+/**
  * \brief Function to decode an encoded string
  * \param encoded Encoded string
- * \return Binary data (newly allocated)
+ * \return Decoded data (newly allocated)
  */
 char *base64_decode(const char *encoded)
 {
@@ -128,11 +166,38 @@ char *base64_decode(const char *encoded)
     buffer[j++] = '\0';
 
     int size = sizeof(char) * j;
-    char *result = (char *)MALLOC(size);
-    memset(result, 0, size);
+
+    char *result = (char *)CALLOC(1, size);
     memmove(result, buffer, size);
 
     return result;
+}
+
+/**
+ * \brief Function to decode an encoded string with an already-allocated buffer
+ * \param encoded Encoded string
+ * \param buffer Buffer to store decoded data
+ * \return Decoded data
+ */
+char *base64_decode_w_buffer(const char *encoded, char *buffer)
+{
+    int i = 0, j = 0;
+    int len = strlen(encoded);
+
+    for (; i < len; i+=4) {
+        int c0 = dec_table[(int)encoded[i]];
+        int c1 = dec_table[(int)encoded[i+1]];
+        int c2 = dec_table[(int)encoded[i+2]];
+        int c3 = dec_table[(int)encoded[i+3]];
+
+        buffer[j++] = (c0 << 2) | (c1 >> 4);
+        buffer[j++] = (c1 << 4) | (c2 >> 2);
+        buffer[j++] = (c2 << 6) | c3;
+    }
+
+    buffer[j++] = '\0';
+
+    return buffer;
 }
 
 /**

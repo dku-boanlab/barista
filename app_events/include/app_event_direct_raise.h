@@ -14,7 +14,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
     if (av_list == NULL) return -1;
 
-    app_event_out_t av_out = {0};
+    app_event_out_t av_out;
     app_event_t *av = (app_event_t *)&av_out;
 
     av_out.id = id;
@@ -48,8 +48,6 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
                 if (ret && c->perm & APP_EXECUTE) {
                     break;
                 }
-
-                av_out.checksum = 0;
             } else { // external site
                 app_event_out_t *out = &av_out;
 
@@ -57,7 +55,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
                 c->num_app_events[type]++;
 #endif /* __ENABLE_META_EVENTS */
 
-                int ret = av_send_ext_msg(c, id, type, len, data, out);
+                int ret = av_send_ext_msg(c, id, type, len, data, out->data);
                 if (ret && c->perm & APP_EXECUTE) {
                     break;
                 }
@@ -80,7 +78,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 #endif /* __ENABLE_META_EVENTS */
 
                 if (c->perm & APP_EXECUTE) {
-                    int ret = av_send_ext_msg(c, id, type, len, data, out);
+                    int ret = av_send_ext_msg(c, id, type, len, data, out->data);
                     if (ret) {
                         break;
                     }

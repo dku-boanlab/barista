@@ -37,5 +37,5 @@ struct arphdr {
     uint8_t arp_tpa[4];
 };
 
-#define DHCP_SERVER_PORT 67
-#define DHCP_CLIENT_PORT 68
+#define DHCP_SVR_PORT 67
+#define DHCP_CLI_PORT 68

@@ -23,14 +23,14 @@
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The default application configuration file */
-char app_file[__CONF_WORD_LEN] = APP_DEFAULT_CONFIG_FILE;
+char app_file[__CONF_WORD_LEN] = DEFAULT_APP_CONFIG_FILE;
 
 /** \brief The default role file */
 char role_file[__CONF_WORD_LEN] = DEFAULT_APP_ROLE_FILE;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The role of an application */
+/** \brief The available roles for an application */
 enum {
     APP_BASE,
     APP_NETWORK,
@@ -42,7 +42,7 @@ enum {
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The structure for mapping app IDs and app roles */
+/** \brief The structure to map application IDs and roles */
 typedef struct _app2role_t {
     int id; /**< Application ID */
     int role; /**< Application role */
@@ -57,7 +57,7 @@ app2role_t *app_to_role;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The structure for mapping app roles and app events */
+/** \brief The structure to map app roles and events */
 typedef struct _role2ev_t {
     char name[__CONF_WORD_LEN]; /**< Role */
     uint8_t event[__MAX_APP_EVENTS]; /**< Events grouped by the role */
@@ -91,7 +91,7 @@ static int app_event_type(const char *event)
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to load the roles of applications
+ * \brief Function to load application roles
  * \param conf_file Application configuration file
  */
 static int load_app_roles(char *conf_file)
@@ -123,13 +123,13 @@ static int load_app_roles(char *conf_file)
     for (i=0; i<json_array_size(json); i++) {
         json_t *data = json_array_get(json, i);
 
-        char name[__CONF_WORD_LEN] = {0};
+        char name[__CONF_WORD_LEN];
         json_t *j_name = json_object_get(data, "name");
         if (json_is_string(j_name)) {
             strcpy(name, json_string_value(j_name));
         }
 
-        char role[__CONF_WORD_LEN] = {0};
+        char role[__CONF_WORD_LEN];
         json_t *j_role = json_object_get(data, "role");
         if (json_is_string(j_role)) {
             strcpy(role, json_string_value(j_role));
@@ -137,6 +137,7 @@ static int load_app_roles(char *conf_file)
 
         if (strlen(name) == 0) {
             ALOG_ERROR(RBAC_ID, "No application name");
+            json_decref(json);
             return -1;
         } else {
             app_to_role[app_to_role_cnt].id = hash_func((uint32_t *)&name, __HASHING_NAME_LENGTH);
@@ -158,6 +159,7 @@ static int load_app_roles(char *conf_file)
                 app_to_role[app_to_role_cnt].role = APP_ADMIN;
             else {
                 ALOG_ERROR(RBAC_ID, "Non-existent role type");
+                json_decref(json);
                 return -1;
             }
         }
@@ -203,7 +205,7 @@ static int load_events_for_roles(char *role_file)
     for (i=0; i<json_array_size(json); i++) {
         json_t *data = json_array_get(json, i);
 
-        char name[__CONF_WORD_LEN] = {0};
+        char name[__CONF_WORD_LEN];
         json_t *j_name = json_object_get(data, "name");
         if (json_is_string(j_name)) {
             strcpy(name, json_string_value(j_name));
@@ -212,6 +214,7 @@ static int load_events_for_roles(char *role_file)
         int role = 0;
         if (strlen(name) == 0) {
             ALOG_ERROR(RBAC_ID, "No role type");
+            json_decref(json);
             return -1;
         } else {
             if (strcmp(name, "network") == 0)
@@ -224,6 +227,7 @@ static int load_events_for_roles(char *role_file)
                 role = APP_ADMIN;
             else {
                 ALOG_ERROR(RBAC_ID, "Non-existent role type");
+                json_decref(json);
                 return -1;
             }
         }
@@ -239,6 +243,7 @@ static int load_events_for_roles(char *role_file)
 
                 if (app_event_type(json_string_value(event)) == AV_NUM_EVENTS) {
                     ALOG_ERROR(RBAC_ID, "Wrong app event name");
+                    json_decref(json);
                     return -1;
                 }
             }
@@ -251,17 +256,19 @@ static int load_events_for_roles(char *role_file)
         }
     }
 
+    json_decref(json);
+
     return 0;
 }
 
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to check the incoming event of the corresponding application
+ * \brief Function to verify an incoming event with a triggering application
  * \param id Application ID
  * \param type App event
  */
-static int check_app_role(uint32_t id, uint16_t type)
+static int verify_app_role(uint32_t id, uint16_t type)
 {
     int i;
     for (i=0; i<app_to_role_cnt; i++) {
@@ -290,23 +297,20 @@ int rbac_main(int *activated, int argc, char **argv)
 {
     ALOG_INFO(RBAC_ID, "Init - Role-based access control");
 
-    app_to_role = (app2role_t *)MALLOC(sizeof(app2role_t) * __MAX_APPLICATIONS);
-    if (app_to_role == NULL) {
-        PERROR("malloc");
-        return -1;
-    }
-
-    role_to_event = (role2ev_t *)MALLOC(sizeof(role2ev_t) * NUM_APP_ROLES);
-    if (role_to_event == NULL) {
-        PERROR("malloc");
-        return -1;
-    }
-
     app_to_role_cnt = 0;
 
-    memset(app_to_role, 0, sizeof(app2role_t) * __MAX_APPLICATIONS);
-    memset(role_to_event, 0, sizeof(role2ev_t) * NUM_APP_ROLES);
-    
+    app_to_role = (app2role_t *)CALLOC(__MAX_APPLICATIONS, sizeof(app2role_t));
+    if (app_to_role == NULL) {
+        PERROR("calloc");
+        return -1;
+    }
+
+    role_to_event = (role2ev_t *)CALLOC(NUM_APP_ROLES, sizeof(role2ev_t));
+    if (role_to_event == NULL) {
+        PERROR("calloc");
+        return -1;
+    }
+
     // load app roles
     if (load_app_roles(app_file) < 0) {
         FREE(role_to_event);
@@ -344,7 +348,7 @@ int rbac_cleanup(int *activated)
 
 /**
  * \brief The CLI function
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param args Arguments
  */
 int rbac_cli(cli_t *cli, char **args)
@@ -359,14 +363,15 @@ int rbac_cli(cli_t *cli, char **args)
  */
 int rbac_handler(const app_event_t *av, app_event_out_t *av_out)
 {
-    if (check_app_role(av->id, av->type)) {
+    if (verify_app_role(av->id, av->type)) {
         return 0;
     }
 
     int i;
     for (i=0; i<app_to_role_cnt; i++) {
         if (app_to_role[i].id == av->id) {
-            ALOG_WARN(RBAC_ID, "Unauthorized access (app: %s (%u), type: %s)", app_to_role[i].name, av->id, app_ev_list[av->type]);
+            ALOG_WARN(RBAC_ID, "Unauthorized access (app: %s (%u), type: %s)", 
+                      app_to_role[i].name, av->id, app_ev_list[av->type]);
             break;
         }
     }

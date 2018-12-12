@@ -27,9 +27,10 @@
 typedef struct _topo_t {
     uint64_t dpid; /**< Datapath ID */
     uint32_t remote; /**< Remote switch */
-
     port_t port[__MAX_NUM_PORTS]; /**< Ports */
 } topo_t;
+
+/////////////////////////////////////////////////////////////////////
 
 /** \brief The number of links */
 int num_links;
@@ -37,7 +38,7 @@ int num_links;
 /** \brief Network topology */
 topo_t *topo;
 
-/** \brief The lock for topology management */
+/** \brief Lock for topology updates */
 pthread_rwlock_t topo_lock;
 
 /////////////////////////////////////////////////////////////////////
@@ -72,11 +73,11 @@ static int send_lldp(uint64_t dpid, port_t *port)
 
     uint8_t multi[] = {0x01, 0x80, 0xc2, 0x00, 0x00, 0x0e};
     uint8_t mac[ETH_ALEN] = { *((uint8_t *)&dpid + 5),
-        *((uint8_t *)&dpid + 4),
-        *((uint8_t *)&dpid + 3),
-        *((uint8_t *)&dpid + 2),
-        *((uint8_t *)&dpid + 1),
-        *((uint8_t *)&dpid + 0) };
+                              *((uint8_t *)&dpid + 4),
+                              *((uint8_t *)&dpid + 3),
+                              *((uint8_t *)&dpid + 2),
+                              *((uint8_t *)&dpid + 1),
+                              *((uint8_t *)&dpid + 0) };
 
     struct ether_header *eth_header = (struct ether_header *)pktout.data; // 14
 
@@ -149,9 +150,7 @@ static int send_lldp(uint64_t dpid, port_t *port)
  */
 static int insert_link(uint64_t src_dpid, uint16_t src_port, uint64_t dst_dpid, uint16_t dst_port)
 {
-    if (src_dpid == 0 || src_port == 0)
-        return 0;
-    else if (dst_dpid == 0 || dst_port == 0)
+    if (src_dpid == 0 || src_port == 0 || dst_dpid == 0 || dst_port == 0)
         return 0;
 
     pthread_rwlock_rdlock(&topo_lock);
@@ -160,13 +159,13 @@ static int insert_link(uint64_t src_dpid, uint16_t src_port, uint64_t dst_dpid, 
     for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
         if (topo[i].dpid == src_dpid) { // check source dpid
             if (topo[i].port[src_port].port == src_port) { // check source port
-                if (topo[i].port[src_port].target_dpid == 0 && topo[i].port[src_port].target_port == 0) {
+                if (topo[i].port[src_port].next_dpid == 0 && topo[i].port[src_port].next_port == 0) {
                     pthread_rwlock_unlock(&topo_lock);
 
                     pthread_rwlock_wrlock(&topo_lock);
 
-                    topo[i].port[src_port].target_dpid = dst_dpid;
-                    topo[i].port[src_port].target_port = dst_port;
+                    topo[i].port[src_port].next_dpid = dst_dpid;
+                    topo[i].port[src_port].next_port = dst_port;
 
                     num_links++;
 
@@ -176,17 +175,17 @@ static int insert_link(uint64_t src_dpid, uint16_t src_port, uint64_t dst_dpid, 
 
                     link.dpid = src_dpid;
                     link.port = src_port;
-                    link.target_dpid = dst_dpid;
-                    link.target_port = dst_port;
+                    link.next_dpid = dst_dpid;
+                    link.next_port = dst_port;
 
                     ev_link_added(TOPO_MGMT_ID, &link);
 
                     return 1;
-                } else if (topo[i].port[src_port].target_dpid == dst_dpid && topo[i].port[src_port].target_port == dst_port) {
+                } else if (topo[i].port[src_port].next_dpid == dst_dpid && topo[i].port[src_port].next_port == dst_port) {
                     break;
                 } else {
                     DEBUG("Inconsistent link {(%lu, %u) -> (%lu, %u)} -> {(%lu, %u) -> (%lu, %u)}\n",
-                          src_dpid, src_port, topo[i].port[src_port].target_dpid, topo[i].port[src_port].target_port,
+                          src_dpid, src_port, topo[i].port[src_port].next_dpid, topo[i].port[src_port].next_port,
                           src_dpid, src_port, dst_dpid, dst_port);
                     break;
                 }
@@ -213,13 +212,11 @@ int topo_mgmt_main(int *activated, int argc, char **argv)
 
     num_links = 0;
 
-    topo = (topo_t *)MALLOC(sizeof(topo_t) * __DEFAULT_TABLE_SIZE);
+    topo = (topo_t *)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(topo_t));
     if (topo == NULL) {
-        PERROR("malloc");
+        PERROR("calloc");
         return -1;
     }
-
-    memset(topo, 0, sizeof(topo_t) * __DEFAULT_TABLE_SIZE);
 
     pthread_rwlock_init(&topo_lock, NULL);
 
@@ -275,14 +272,13 @@ int topo_mgmt_cleanup(int *activated)
 
 /**
  * \brief Function to list up all detected links
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  */
 static int topo_listup(cli_t *cli)
 {
-    cli_print(cli, "<Link List>");
-
     pthread_rwlock_rdlock(&topo_lock);
 
+    cli_print(cli, "<Link List>");
     cli_print(cli, "  The total number of links: %d", num_links);
 
     int i, cnt = 0;
@@ -291,10 +287,10 @@ static int topo_listup(cli_t *cli)
             int j;
             for (j=0; j<__MAX_NUM_PORTS; j++) {
                 if (topo[i].port[j].port > 0) { // check source port
-                    if (topo[i].port[j].target_port > 0) { // check destination port
+                    if (topo[i].port[j].next_port > 0) { // check destination port
                         cli_print(cli, "  Link #%d (%s): {(%lu, %u) -> (%lu, %u)}, rx_pkts: %lu, rx_bytes: %lu, "
                                        "tx_pkts: %lu, tx_bytes: %lu", ++cnt, (topo[i].remote == TRUE) ? "Remote" : "Local",
-                                  topo[i].dpid, topo[i].port[j].port, topo[i].port[j].target_dpid, topo[i].port[j].target_port,
+                                  topo[i].dpid, topo[i].port[j].port, topo[i].port[j].next_dpid, topo[i].port[j].next_port,
                                   topo[i].port[j].rx_packets, topo[i].port[j].rx_bytes, topo[i].port[j].tx_packets, 
                                   topo[i].port[j].tx_bytes);
                     }
@@ -309,8 +305,8 @@ static int topo_listup(cli_t *cli)
 }
 
 /**
- * \brief Function to print all links of a switch
- * \param cli The CLI pointer
+ * \brief Function to print all links connected to a switch
+ * \param cli The pointer of the Barista CLI
  * \param dpid_str Datapath ID
  */
 static int topo_showup(cli_t *cli, char *dpid_str)
@@ -326,10 +322,10 @@ static int topo_showup(cli_t *cli, char *dpid_str)
         if (topo[i].dpid == dpid) { // check source dpid
             for (j=0; j<__MAX_NUM_PORTS; j++) {
                 if (topo[i].port[j].port > 0) { // check source port
-                    if (topo[i].port[j].target_port > 0) { // check destination port
+                    if (topo[i].port[j].next_port > 0) { // check destination port
                         cli_print(cli, "  Link #%d (%s): {(%lu, %u) -> (%lu, %u)}, rx_pkts: %lu, rx_bytes: %lu, "
                                        "tx_pkts: %lu, tx_bytes: %lu", ++cnt, (topo[i].remote == TRUE) ? "Remote" : "Local",
-                                  topo[i].dpid, topo[i].port[j].port, topo[i].port[j].target_dpid, topo[i].port[j].target_port,
+                                  topo[i].dpid, topo[i].port[j].port, topo[i].port[j].next_dpid, topo[i].port[j].next_port,
                                   topo[i].port[j].rx_packets, topo[i].port[j].rx_bytes, topo[i].port[j].tx_packets, 
                                   topo[i].port[j].tx_bytes);
                     }
@@ -346,7 +342,7 @@ static int topo_showup(cli_t *cli, char *dpid_str)
 
 /**
  * \brief The CLI function
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param args Arguments
  */
 int topo_mgmt_cli(cli_t *cli, char **args)
@@ -430,11 +426,6 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                 }
 
                 return -1;
-            } else if (pktin->proto & PROTO_ARP) {
-                // check broadcast
-                // check stp
-                // if incoming port != one of ports for stp
-                // drop it
             }
         }
         break;
@@ -469,17 +460,17 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                 if (topo[i].dpid == sw->dpid) { // check source dpid
                     for (j=0; j<__MAX_NUM_PORTS; j++) {
                         if (topo[i].port[j].port > 0) { // check source port
-                            if (topo[i].port[j].target_port > 0) { // check destination port
+                            if (topo[i].port[j].next_port > 0) { // check destination port
                                 LOG_INFO(TOPO_MGMT_ID, "Deleted a link {(%lu, %u) -> (%lu, %u)}", topo[i].dpid, 
-                                         topo[i].port[j].port, topo[i].port[j].target_dpid, topo[i].port[j].target_port);
+                                         topo[i].port[j].port, topo[i].port[j].next_dpid, topo[i].port[j].next_port);
 
                                 if (topo[i].remote == FALSE) {
                                     port_t link = {0};
 
                                     link.dpid = topo[i].dpid;
                                     link.port = topo[i].port[j].port;
-                                    link.target_dpid = topo[i].port[j].target_dpid;
-                                    link.target_port = topo[i].port[j].target_port;
+                                    link.next_dpid = topo[i].port[j].next_dpid;
+                                    link.next_port = topo[i].port[j].next_port;
 
                                     ev_link_deleted(TOPO_MGMT_ID, &link);
                                 }
@@ -536,18 +527,18 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
             for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
                 if (topo[i].dpid == port->dpid) { // check source dpid
                     if (topo[i].port[port->port].port == port->port) { // check source port
-                        if (topo[i].port[port->port].target_port > 0) { // check destination port
+                        if (topo[i].port[port->port].next_port > 0) { // check destination port
                             LOG_INFO(TOPO_MGMT_ID, "Deleted a link {(%lu, %u) -> (%lu, %u)}",
                                      topo[i].dpid, topo[i].port[port->port].port, 
-                                     topo[i].port[port->port].target_dpid, topo[i].port[port->port].target_port);
+                                     topo[i].port[port->port].next_dpid, topo[i].port[port->port].next_port);
 
                             if (topo[i].remote == FALSE) {
                                 port_t link = {0};
 
                                 link.dpid = port->dpid;
                                 link.port = port->port;
-                                link.target_dpid = topo[i].port[port->port].target_dpid;
-                                link.target_port = topo[i].port[port->port].target_port;
+                                link.next_dpid = topo[i].port[port->port].next_dpid;
+                                link.next_port = topo[i].port[port->port].next_port;
 
                                 ev_link_deleted(TOPO_MGMT_ID, &link);
                             }
@@ -620,13 +611,13 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                     if (topo[i].port[link->port].port == 0) { // check source port
                         topo[i].port[link->port].port = link->port;
 
-                        topo[i].port[link->port].target_dpid = link->target_dpid;
-                        topo[i].port[link->port].target_port = link->target_port;
+                        topo[i].port[link->port].next_dpid = link->next_dpid;
+                        topo[i].port[link->port].next_port = link->next_port;
 
                         num_links++;
 
                         LOG_INFO(TOPO_MGMT_ID, "Detected a new link {(%lu, %u) -> (%lu, %u)}", 
-                                 link->dpid, link->port, link->target_dpid, link->target_port);
+                                 link->dpid, link->port, link->next_dpid, link->next_port);
                     }
 
                     break;
@@ -653,7 +644,7 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                         num_links--;
 
                         LOG_INFO(TOPO_MGMT_ID, "Deleted a link {(%lu, %u) -> (%lu, %u)}",
-                                 link->dpid, link->port, link->target_dpid, link->target_port);
+                                 link->dpid, link->port, link->next_dpid, link->next_port);
                     }
 
                     break;

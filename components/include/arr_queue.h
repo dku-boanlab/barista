@@ -29,9 +29,6 @@ typedef struct _arr_queue_t {
     pthread_spinlock_t lock; /**< The lock for management */
 } arr_queue_t;
 
-/** \brief The number of pre-allocated flows */
-#define ARR_PRE_ALLOC 65536
-
 /** \brief Flow pool */
 arr_queue_t arr_q;
 

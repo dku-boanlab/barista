@@ -22,27 +22,23 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of CPU cores */
-int num_proc;
-
-/////////////////////////////////////////////////////////////////////
-
-/** \brief The pointer to record resource usages in a history array */
+/** \brief The pointer to record the current resource usages */
 uint32_t rs_history_ptr;
 
-/** \brief The history array of resource usages */
+/** \brief Resource usage history */
 resource_t *rs_history;
 
-/** \brief The default resource log file */
-char resource_file[__CONF_WORD_LEN] = DEFAULT_RESOURCE_FILE;
+/** \brief Command to get CPU and memory usages */
+char cmd[] = "ps -p $(pgrep -x barista) -o %cpu,%mem 2> /dev/null | tail -n 1";
 
 /////////////////////////////////////////////////////////////////////
 
+/**
+ * \brief Function to get CPU and memory usages
+ * \param rs Structure to store CPU and memory usages
+ */
 static int monitor_resources(resource_t *rs)
 {
-    char cmd[__CONF_WORD_LEN] = {0};
-    sprintf(cmd, "ps -p $(pgrep -x barista) -o %%cpu,%%mem 2> /dev/null | tail -n 1");
-
     FILE *pp = popen(cmd, "r");
     if (pp != NULL) {
         char temp[__CONF_WORD_LEN] = {0};
@@ -53,8 +49,6 @@ static int monitor_resources(resource_t *rs)
 
         pclose(pp);
     }
-
-    rs->cpu /= num_proc; // normalization (under 100%)
 
     return 0;
 }
@@ -73,40 +67,38 @@ int resource_mgmt_main(int *activated, int argc, char **argv)
 
     rs_history_ptr = 0;
 
-    rs_history = (resource_t *)MALLOC(sizeof(resource_t) * RESOURCE_MGMT_HISTORY);
+    rs_history = (resource_t *)CALLOC(RESOURCE_MGMT_HISTORY, sizeof(resource_t));
     if (rs_history == NULL) {
-        PERROR("malloc");
+        PERROR("calloc");
         return -1;
     }
 
-    memset(rs_history, 0, sizeof(resource_t) * RESOURCE_MGMT_HISTORY);
+    int num_procs = get_nprocs();
 
-    num_proc = get_nprocs();
-
-    LOG_INFO(RSM_ID, "Resource usage output: %s", resource_file);
+    LOG_INFO(RSM_ID, "Resource usage output: %s", DEFAULT_RESOURCE_FILE);
     LOG_INFO(RSM_ID, "Resource monitoring period: %d sec", RESOURCE_MGMT_MONITOR_TIME);
 
     activate();
 
     while (*activated) {
-        resource_t rs = {0};
+        resource_t rs;
 
         time_t timer;
         struct tm *tm_info;
-        char now[__CONF_WORD_LEN] = {0};
-        char buf[__CONF_WORD_LEN] = {0};
+        char now[__CONF_WORD_LEN], buf[__CONF_WORD_LEN];
 
         time(&timer);
         tm_info = localtime(&timer);
         strftime(now, __CONF_WORD_LEN-1, "%Y:%m:%d %H:%M:%S", tm_info);
 
         monitor_resources(&rs);
+        rs.cpu /= num_procs;
 
         sprintf(buf, "%s - CPU %6.2lf MEM %6.2lf", now, rs.cpu, rs.mem);
 
         memmove(&rs_history[rs_history_ptr++ % RESOURCE_MGMT_HISTORY], &rs, sizeof(resource_t));
 
-        FILE *fp = fopen(resource_file, "a");
+        FILE *fp = fopen(DEFAULT_RESOURCE_FILE, "a");
         if (fp != NULL) {
             fprintf(fp, "%s\n", buf);
             fclose(fp);
@@ -143,8 +135,8 @@ int resource_mgmt_cleanup(int *activated)
 
 /**
  * \brief Function to summarize the resource history for the last n seconds
- * \param cli The CLI pointer
- * \param seconds Time period to query
+ * \param cli The pointer of the Barista CLI
+ * \param seconds Time range to query
  */
 static int resource_stat_summary(cli_t *cli, char *seconds)
 {
@@ -176,7 +168,7 @@ static int resource_stat_summary(cli_t *cli, char *seconds)
 
 /**
  * \brief The CLI function
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param args Arguments
  */
 int resource_mgmt_cli(cli_t *cli, char **args)

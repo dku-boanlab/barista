@@ -28,6 +28,8 @@ enum {
 
 /** \brief The structure of a component */
 struct _compnt_t {
+    uint32_t component_id; /**< Component ID */
+
     char name[__CONF_WORD_LEN]; /**< Component name */
     char args[__CONF_WORD_LEN]; /**< Original argument string */
 

@@ -22,22 +22,14 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The batch size of logs */
-#define BATCH_LOGS 1024
-
-/////////////////////////////////////////////////////////////////////
-
 /** \brief The number of log messages */
 int write_msg;
 
 /** \brief Log queue */
 char **msgs;
 
-/** \brief The lock for queue management */
+/** \brief The lock for log updates */
 pthread_spinlock_t log_lock;
-
-/** \brief The default log file */
-char log_file[__CONF_WORD_LEN] = DEFAULT_LOG_FILE;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -50,7 +42,7 @@ static int push_msg_into_queue(char *msg)
     pthread_spin_lock(&log_lock);
 
     if (write_msg >= BATCH_LOGS-1) {
-        FILE *fp = fopen(log_file, "a");
+        FILE *fp = fopen(DEFAULT_LOG_FILE, "a");
         if (fp != NULL) {
             int i;
             for (i=0; i<write_msg; i++) {
@@ -83,7 +75,7 @@ static int push_msgs_into_file(char *msg)
 {
     pthread_spin_lock(&log_lock);
 
-    FILE *fp = fopen(log_file, "a");
+    FILE *fp = fopen(DEFAULT_LOG_FILE, "a");
     if (fp != NULL) {
         int i;
         for (i=0; i<write_msg; i++) {
@@ -138,7 +130,14 @@ int log_main(int *activated, int argc, char **argv)
 
     activate();
 
-    push_msg_into_queue("===========================================================\n");
+    time_t start_time;
+    start_time = time(NULL);
+    struct tm *t = localtime(&start_time);
+
+    char start_time_string[32];
+    sprintf(start_time_string, "== %04d-%02d-%02d %02d:%02d:%02d ==\n",
+                               t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+    push_msg_into_queue(start_time_string);
 
     LOG_INFO(LOG_ID, "Init - Logging mechanism");
 
@@ -146,7 +145,7 @@ int log_main(int *activated, int argc, char **argv)
         pthread_spin_lock(&log_lock);
 
         if (write_msg) {
-            FILE *fp = fopen(log_file, "a");
+            FILE *fp = fopen(DEFAULT_LOG_FILE, "a");
             if (fp != NULL) {
                 int i;
                 for (i=0; i<write_msg; i++) {
@@ -185,7 +184,7 @@ int log_cleanup(int *activated)
     pthread_spin_lock(&log_lock);
 
     if (write_msg) {
-        FILE *fp = fopen(log_file, "a");
+        FILE *fp = fopen(DEFAULT_LOG_FILE, "a");
         if (fp != NULL) {
             int i;
             for (i=0; i<write_msg; i++) {
@@ -211,7 +210,7 @@ int log_cleanup(int *activated)
 
 /**
  * \brief The CLI function
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param args Arguments
  */
 int log_cli(cli_t *cli, char **args)
@@ -228,7 +227,7 @@ int log_handler(const event_t *ev, event_out_t *ev_out)
 {
     time_t timer;
     struct tm *tm_info;
-    char now[__CONF_WORD_LEN] = {0}, out[__CONF_STR_LEN] = {0};
+    char now[__CONF_WORD_LEN], out[__CONF_STR_LEN];
 
     time(&timer);
     tm_info = localtime(&timer);

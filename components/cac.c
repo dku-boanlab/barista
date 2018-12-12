@@ -23,7 +23,7 @@
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The default component configuration file */
-char compnt_file[__CONF_WORD_LEN] = COMPNT_DEFAULT_CONFIG_FILE;
+char compnt_file[__CONF_WORD_LEN] = DEFAULT_COMPNT_CONFIG_FILE;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -102,7 +102,7 @@ static int config_load(char *conf_file)
     for (i=0; i<json_array_size(json); i++) {
         json_t *data = json_array_get(json, i);
 
-        char name[__CONF_WORD_LEN] = {0};
+        char name[__CONF_WORD_LEN];
         json_t *j_name = json_object_get(data, "name");
         if (json_is_string(j_name)) {
             strcpy(name, json_string_value(j_name));
@@ -111,6 +111,7 @@ static int config_load(char *conf_file)
         // set a component name
         if (strlen(name) == 0) {
             LOG_ERROR(CAC_ID, "No component name");
+            json_decref(json);
             return -1;
         } else {
             strcpy(component[num_components].name, name);
@@ -126,6 +127,7 @@ static int config_load(char *conf_file)
 
                 if (ev_type(json_string_value(event)) == EV_NUM_EVENTS) {
                     LOG_ERROR(CAC_ID, "Wrong event name");
+                    json_decref(json);
                     return -1;
                 }
             }
@@ -175,6 +177,7 @@ static int config_load(char *conf_file)
 
                 if (ev_type(json_string_value(out_event)) == EV_NUM_EVENTS) {
                     LOG_ERROR(CAC_ID, "Wrong event name");
+                    json_decref(json);
                     return -1;
                 }
             }
@@ -202,7 +205,7 @@ static int config_load(char *conf_file)
  * \param id Component ID
  * \param type Event type
  */
-static int verify_component(uint32_t id, int type)
+static int verify_component_event(uint32_t id, int type)
 {
     int i, j;
     for (i=0; i<num_components; i++) {
@@ -263,7 +266,7 @@ int cac_cleanup(int *activated)
 
 /**
  * \brief The CLI function
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param args Arguments
  */
 int cac_cli(cli_t *cli, char **args)
@@ -278,7 +281,7 @@ int cac_cli(cli_t *cli, char **args)
  */
 int cac_handler(const event_t *ev, event_out_t *ev_out)
 {
-    int res = verify_component(ev->id, ev->type);
+    int res = verify_component_event(ev->id, ev->type);
 
     if (res < 0) {
         LOG_WARN(CAC_ID, "Wrong component ID (caller: %u, event: %s)", ev->id, ev_str[ev->type]);

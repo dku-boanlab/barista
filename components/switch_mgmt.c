@@ -48,16 +48,13 @@ int switch_mgmt_main(int *activated, int argc, char **argv)
     LOG_INFO(SWITCH_MGMT_ID, "Init - Switch management");
 
     num_switches = 0;
-
     memset(&switches, 0, sizeof(switch_table_t));
 
-    switch_table = (switch_t **)MALLOC(sizeof(switch_t *) * __DEFAULT_TABLE_SIZE);
+    switch_table = (switch_t **)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(switch_t *));
     if (switch_table == NULL) {
-        PERROR("malloc");
+        PERROR("calloc");
         return -1;
     }
-
-    memset(switch_table, 0, sizeof(switch_t *) * __DEFAULT_TABLE_SIZE);
 
     pthread_rwlock_init(&switches.lock, NULL);
 
@@ -100,14 +97,13 @@ int switch_mgmt_cleanup(int *activated)
 
 /**
  * \brief Function to print all switches
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  */
 static int switch_listup(cli_t *cli)
 {
     int cnt = 0;
 
     cli_print(cli, "<Switch List>");
-
     cli_print(cli, "  The total number of switches: %d", num_switches);
 
     pthread_rwlock_rdlock(&switches.lock);
@@ -116,7 +112,7 @@ static int switch_listup(cli_t *cli)
 
     while (curr != NULL) {
         cli_print(cli, "  Switch #%d", ++cnt);
-        cli_print(cli, "    Datapath ID: %lu", curr->dpid);
+        cli_print(cli, "    Datapath ID: %lu (0x%lx)", curr->dpid, curr->dpid);
         cli_print(cli, "    Location: %s", (curr->remote) ? "remote" : "local");
         cli_print(cli, "    Number of tables: %u", curr->n_tables);
         cli_print(cli, "    Number of buffers: %u", curr->n_buffers);
@@ -147,13 +143,12 @@ static int switch_listup(cli_t *cli)
 
 /**
  * \brief Function to print a switch
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param dpid_str Datapath ID
  */
 static int switch_showup(cli_t *cli, char *dpid_str)
 {
     int cnt = 0;
-
     uint64_t dpid = strtoull(dpid_str, NULL, 0);
 
     cli_print(cli, "<Switch Information>");
@@ -164,7 +159,7 @@ static int switch_showup(cli_t *cli, char *dpid_str)
 
     while (curr != NULL) {
         if (curr->dpid == dpid) {
-            cli_print(cli, "    Datapath ID: %lu", curr->dpid);
+            cli_print(cli, "    Datapath ID: %lu (0x%lx)", curr->dpid, curr->dpid);
             cli_print(cli, "    Location: %s", (curr->remote) ? "remote" : "local");
             cli_print(cli, "    Number of tables: %u", curr->n_tables);
             cli_print(cli, "    Number of buffers: %u", curr->n_buffers);
@@ -203,7 +198,7 @@ static int switch_showup(cli_t *cli, char *dpid_str)
 
 /**
  * \brief The CLI function
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param args Arguments
  */
 int switch_mgmt_cli(cli_t *cli, char **args)
@@ -314,21 +309,18 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             if (pass == FALSE) {
                 switch_t *new = sw_dequeue();
-                if (new == NULL) {
-                    return -1;
-                }
+                if (new == NULL) return -1;
 
                 new->dpid = sw->dpid;
                 new->fd = sw->fd;
+
                 new->xid = 0;
+                new->remote = sw->remote;
+
                 new->n_tables = sw->n_tables;
                 new->n_buffers = sw->n_buffers;
                 new->capabilities = sw->capabilities;
                 new->actions = sw->actions;
-
-                new->remote = sw->remote;
-
-                new->prev = new->next = NULL;
 
                 pthread_rwlock_wrlock(&switches.lock);
 
@@ -342,7 +334,6 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                 }
 
                 switch_table[sw->fd] = new;
-
                 num_switches++;
 
                 pthread_rwlock_unlock(&switches.lock);
@@ -410,7 +401,6 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
             }
 
             switch_table[sw->fd] = NULL;
-
             num_switches--;
 
             pthread_rwlock_unlock(&switches.lock);
@@ -430,9 +420,14 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
             switch_t *curr = switches.head;
             while (curr != NULL) {
                 if (curr->dpid == flow->dpid) {
-                    curr->pkt_count += flow->pkt_count;
-                    curr->byte_count += flow->byte_count;
-                    curr->flow_count += flow->flow_count;
+                    curr->pkt_count = flow->pkt_count - curr->old_pkt_count;
+                    curr->byte_count = flow->byte_count - curr->old_byte_count;
+                    curr->flow_count = flow->flow_count - curr->old_flow_count;
+
+                    curr->old_pkt_count = flow->pkt_count;
+                    curr->old_byte_count = flow->byte_count;
+                    curr->old_flow_count = flow->flow_count;
+
                     break;
                 }
                 curr = curr->next;

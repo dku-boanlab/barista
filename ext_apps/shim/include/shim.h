@@ -17,6 +17,6 @@
 #include "application_info.h"
 
 #include "str.h"
+#include "hash.h"
 
 #include <signal.h>
-#include <jansson.h>

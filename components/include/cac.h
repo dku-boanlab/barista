@@ -13,5 +13,3 @@
 #include "event.h"
 #include "hash.h"
 #include "str.h"
-
-#include <jansson.h>

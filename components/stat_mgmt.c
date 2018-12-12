@@ -25,7 +25,7 @@
 /** \brief Switch list */
 uint64_t *switch_list;
 
-/** \brief The lock for list management */
+/** \brief Lock for list updates */
 pthread_rwlock_t stat_lock;
 
 /////////////////////////////////////////////////////////////////////
@@ -73,13 +73,11 @@ int stat_mgmt_main(int *activated, int argc, char **argv)
 {
     LOG_INFO(STAT_MGMT_ID, "Init - Statistics management");
 
-    switch_list = (uint64_t *)MALLOC(sizeof(uint64_t) * __DEFAULT_TABLE_SIZE);
+    switch_list = (uint64_t *)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(uint64_t));
     if (switch_list == NULL) {
-        PERROR("malloc");
+        PERROR("calloc");
         return -1;
     }
-
-    memset(switch_list, 0, sizeof(uint64_t) * __DEFAULT_TABLE_SIZE);
 
     pthread_rwlock_init(&stat_lock, NULL);
 
@@ -133,7 +131,7 @@ int stat_mgmt_cleanup(int *activated)
 
 /**
  * \brief The CLI function
- * \param cli The CLI pointer
+ * \param cli The pointer of the Barista CLI
  * \param args Arguments
  */
 int stat_mgmt_cli(cli_t *cli, char **args)

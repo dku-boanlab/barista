@@ -67,16 +67,18 @@ typedef struct _msg_t {
     uint8_t data[__MAX_STRUCT_SIZE]; /**< Data */
 } msg_t;
 
-/** \brief The maximum length of ZMQ message */
-#define __MAX_ZMQ_MSG_SIZE 4096
+/** \brief The maximum length of external messages */
+#define __MAX_EXT_MSG_SIZE 4096
+
+/** \brief The maximum length of external data (base64) */
+#define __MAX_EXT_DATA_SIZE 3072
 
 /////////////////////////////////////////////////////////////////////
 
 enum sw_capabilities {
-    SC_FLOW_STATS  = 1 << 0,
-    SC_TABLE_STATS = 1 << 1,
-    SC_PORT_STATS  = 1 << 2,
-    SC_QUEUE_STATS = 1 << 3,
+    SWCP_FLOW_STATS  = 1 << 0,
+    SWCP_TABLE_STATS = 1 << 1,
+    SWCP_PORT_STATS  = 1 << 2,
 };
 
 /** \brief The structure of a switch */
@@ -84,25 +86,33 @@ typedef struct _switch_t {
     uint64_t dpid; /**< Datapath ID */
     uint32_t port; /**< Empty, only for ODP */
 
+    // connection info
     uint32_t fd; /**< Socket */
     uint32_t xid; /**< Transaction ID */
 
     uint32_t remote; /**< Remote events, set by cluster */
 
-    uint8_t n_tables; /**< The number of tables */
+    // switch info
+    uint32_t n_tables; /**< The number of tables */
     uint32_t n_buffers; /**< The number of buffers */
     uint32_t capabilities; /**< The flags of capabilities */
     uint32_t actions; /**< The bitmap of actions */
 
+    // switch descriptions
     char mfr_desc[256]; /**< Manufacturer description */
     char hw_desc[256]; /**< Hardware description */
     char sw_desc[256]; /**< Software description */
     char serial_num[32]; /**< Serial number */
     char dp_desc[256]; /**< Datapath description */
 
+    // switch stats
     uint64_t pkt_count; /**< Packet count */
     uint64_t byte_count; /**< Byte count */
     uint32_t flow_count; /**< Flow count */
+
+    uint64_t old_pkt_count; /**< Previous packet count */
+    uint64_t old_byte_count; /**< Previous byte count */
+    uint32_t old_flow_count; /**< Previous flow count */
 
     struct _switch_t *prev; /**< The previous entry in the switch list */
     struct _switch_t *next; /**< The next entry in the switch list */
@@ -114,23 +124,24 @@ typedef struct _switch_t {
 #define ETH_ALEN 6
 
 enum port_config {
-    PC_PORT_DOWN    = 1 << 0,
-    PC_NO_FLOOD     = 1 << 1,
-    PC_NO_FWD       = 1 << 2,
-    PC_NO_PACKET_IN = 1 << 3,
+    PTCF_PORT_DOWN = 1 << 0,
 };
 
 enum port_state {
-    PS_LINK_DOWN = 1 << 0,
+    PTST_LINK_DOWN = 1 << 0,
 };
 
 enum port_features {
-    PF_10MB_HD  = 1 << 0,
-    PF_10MB_FD  = 1 << 1,
-    PF_100MB_HD = 1 << 2,
-    PF_100MB_FD = 1 << 3,
-    PF_1GB_HD   = 1 << 4,
-    PF_1GB_FD   = 1 << 5,
+    PTFT_10MB_HD  = 1 << 0,
+    PTFT_10MB_FD  = 1 << 1,
+    PTFT_100MB_HD = 1 << 2,
+    PTFT_100MB_FD = 1 << 3,
+    PTFT_1GB_HD   = 1 << 4,
+    PTFT_1GB_FD   = 1 << 5,
+    PTFT_10GB_FD  = 1 << 6,
+    PTFT_COPPER   = 1 << 7,
+    PTFT_FIBER    = 1 << 8,
+    PTFT_AUTONEG  = 1 << 9,
 };
 
 /** \brief The structure of a port */
@@ -138,11 +149,12 @@ typedef struct _port_t {
     uint64_t dpid; /**< Datapath ID */
     uint32_t port; /**< Port number */
 
-    // link info
-    uint64_t target_dpid; /**< The target datapath ID */
-    uint32_t target_port; /**< The target port */
-
+    // local vs. remote
     uint32_t remote; /**< Remote events */
+
+    // link info
+    uint64_t next_dpid; /**< The neighbor datapath ID */
+    uint32_t next_port; /**< The neighbor port */
 
     // base info
     uint8_t hw_addr[ETH_ALEN]; /**< MAC address */
@@ -155,16 +167,16 @@ typedef struct _port_t {
     uint32_t supported; /**< Features supported by the port (port_features) */
     uint32_t peer; /**< Features advertised by the peer (port_features) */
 
-    // stat info
+    // link stats
     uint64_t rx_packets; /**< rx packet count */
     uint64_t rx_bytes; /**< rx byte count */
     uint64_t tx_packets; /**< tx packet count */
     uint64_t tx_bytes; /**< tx byte count */
 
-    uint64_t old_rx_packets; /**< raw rx packet count */
-    uint64_t old_rx_bytes; /**< raw rx byte count */
-    uint64_t old_tx_packets; /**< raw tx packet count */
-    uint64_t old_tx_bytes; /**< raw tx byte count */
+    uint64_t old_rx_packets; /**< Previous rx packet count */
+    uint64_t old_rx_bytes; /**< Previous rx byte count */
+    uint64_t old_tx_packets; /**< Previous tx packet count */
+    uint64_t old_tx_bytes; /**< Previous tx byte count */
 
     struct _port_t *prev; /**< The previous entry in the port list */
     struct _port_t *next; /**< The next entry in the port list */
@@ -177,10 +189,12 @@ typedef struct _host_t {
     uint64_t dpid; /**< Datapath ID */
     uint32_t port; /**< Port number */
 
-    uint32_t ip; /**< IP address */
-    uint64_t mac; /**< MAC address */
-
+    // local vs. remote
     uint32_t remote; /**< Remote events, set by cluster */
+
+    // host info
+    uint64_t mac; /**< MAC address */
+    uint32_t ip; /**< IP address */
 
     struct _host_t *prev; /**< The previous entry in the host table */
     struct _host_t *next; /**< The next entry in the host table */
@@ -194,20 +208,26 @@ typedef struct _host_t {
 enum proto_mask {
     PROTO_VLAN    = 1 << 0,
     PROTO_ARP     = 1 << 1,
-    PROTO_DHCP    = 1 << 2,
-    PROTO_LLDP    = 1 << 3,
-    PROTO_IPV4    = 1 << 4,
-    PROTO_TCP     = 1 << 5,
-    PROTO_UDP     = 1 << 6,
-    PROTO_ICMP    = 1 << 7,
+    PROTO_LLDP    = 1 << 2,
+    PROTO_IPV4    = 1 << 3,
+    PROTO_TCP     = 1 << 4,
+    PROTO_UDP     = 1 << 5,
+    PROTO_ICMP    = 1 << 6,
+    PROTO_DHCP    = 1 << 7,
     PROTO_UNKNOWN = 1 << 8,
 };
 
+/** \brief Packet-In Reason */
+enum pktin_reason {
+    PKIN_NO_MATCH,
+    PKIN_ACTION,
+};
+
 /** \brief The max size of the raw packet kept in the pktin structure */
-#define __MAX_PKT_SIZE 1514
+#define __MAX_PKT_SIZE 1500
 
 /** \brief Broadcast MAC address */
-#define __BROADCAST_MAC 0xffffffffffff
+#define BROADCAST_MAC 0xffffffffffff
 
 /** \brief The structure of an incoming packet */
 typedef struct _pktin_t {
@@ -217,9 +237,10 @@ typedef struct _pktin_t {
     uint32_t xid; /**< Transaction ID */
     uint32_t buffer_id; /**< Buffer ID */
 
-    uint8_t reason; /**< Packet-In reason */
-
     uint16_t proto; /**< Protocol */
+    uint8_t ip_tos; /**< IP type of service */
+
+    uint8_t reason; /**< Packet-In reason */
 
     uint16_t vlan_id; /**< VLAN ID */
     uint8_t vlan_pcp; /**< VLAN priority */
@@ -248,19 +269,19 @@ typedef struct _pktin_t {
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The action list supported by Barista */
-enum {
-    ACTION_DISCARD      = 0,
-    ACTION_OUTPUT       = 1 << 0,
-    ACTION_SET_VLAN_VID = 1 << 1,
-    ACTION_SET_VLAN_PCP = 1 << 2,
-    ACTION_STRIP_VLAN   = 1 << 3,
-    ACTION_SET_SRC_MAC  = 1 << 4,
-    ACTION_SET_DST_MAC  = 1 << 5,
-    ACTION_SET_SRC_IP   = 1 << 6,
-    ACTION_SET_DST_IP   = 1 << 7,
-    ACTION_SET_IP_TOS   = 1 << 8,
-    ACTION_SET_SRC_PORT = 1 << 9,
-    ACTION_SET_DST_PORT = 1 << 10,
+enum action_type {
+    ACTION_DISCARD = 0,
+    ACTION_OUTPUT,
+    ACTION_SET_VLAN_VID,
+    ACTION_SET_VLAN_PCP,
+    ACTION_STRIP_VLAN,
+    ACTION_SET_SRC_MAC,
+    ACTION_SET_DST_MAC,
+    ACTION_SET_SRC_IP,
+    ACTION_SET_DST_IP,
+    ACTION_SET_IP_TOS,
+    ACTION_SET_SRC_PORT,
+    ACTION_SET_DST_PORT,
 };
 
 /** \brief The maximum number of actions */
@@ -270,11 +291,16 @@ enum {
 #define VLAN_NONE 0xffff
 
 /** \brief The special port list supported by Barista */
-enum {
-    PORT_NONE       = 1 << 12,
-    PORT_ALL        = 1 << 13,
-    PORT_CONTROLLER = 1 << 14,
-    PORT_FLOOD      = 1 << 15,
+enum special_port {
+    PORT_MAX        = 0xff00,
+    PORT_IN_PORT    = 0xfff8,
+    PORT_TABLE      = 0xfff9,
+    PORT_NORMAL     = 0xfffa,
+    PORT_FLOOD      = 0xfffb,
+    PORT_ALL        = 0xfffc,
+    PORT_CONTROLLER = 0xfffd,
+    PORT_LOCAL      = 0xfffe,
+    PORT_NONE       = 0xffff,
 };
 
 /** \brief The structure of an action */
@@ -327,29 +353,36 @@ typedef struct _pktout_t {
 #define DEFAULT_PRIORITY 0x8000
 
 /** \brief Flow entry flags */
-enum {
-    FLAG_SEND_REMOVED  = 1 << 0,
-    FLAG_CHECK_OVERLAP = 1 << 1,
-    FLAG_EMERGENCY     = 1 << 2, // OpenFlow 1.0
+enum flow_flags {
+    FLFG_SEND_REMOVED  = 1 << 0,
+    FLFG_CHECK_OVERLAP = 1 << 1,
+    FLFG_EMERG         = 1 << 2,
 };
 
 /** \brief Flow wildcard masks */
 enum flow_wildcards {
-    WCARD_PORT     = 1 << 0,
-    WCARD_VLAN     = 1 << 1,
-    WCARD_VLAN_PCP = 1 << 2,
-    WCARD_SRC_MAC  = 1 << 3,
-    WCARD_DST_MAC  = 1 << 4,
-    WCARD_ETH_TYPE = 1 << 5,
-    WCARD_SRC_IP   = 1 << 6,
-    WCARD_DST_IP   = 1 << 7,
-    WCARD_IP_TOS   = 1 << 8,
-    WCARD_PROTO    = 1 << 9,
-    WCARD_SRC_PORT = 1 << 10,
-    WCARD_DST_PORT = 1 << 11,
+    FLWD_IN_PORT      = 1 << 0,
+    FLWD_VLAN         = 1 << 1,
+    FLWD_SRC_MAC      = 1 << 2,
+    FLWD_DST_MAC      = 1 << 3,
+    FLWD_ETH_TYPE     = 1 << 4,
+    FLWD_IP_PROTO     = 1 << 5,
+    FLWD_SRC_PORT     = 1 << 6,
+    FLWD_DST_PORT     = 1 << 7,
+    FLWD_SRC_IP_SHIFT = 8,
+    FLWD_SRC_IP_BITS  = 6,
+    FLWD_SRC_IP_MASK  = ((1 << FLWD_SRC_IP_BITS) - 1) << FLWD_SRC_IP_SHIFT,
+    FLWD_SRC_IP_ALL   = 32 << FLWD_SRC_IP_SHIFT,
+    FLWD_DST_IP_SHIFT = 14,
+    FLWD_DST_IP_BITS  = 6,
+    FLWD_DST_IP_MASK  = ((1 << FLWD_DST_IP_BITS) - 1) << FLWD_DST_IP_SHIFT,
+    FLWD_DST_IP_ALL   = 32 << FLWD_DST_IP_SHIFT,
+    FLWD_VLAN_PCP     = 1 << 20,
+    FLWD_IP_TOS       = 1 << 21,
+    FLWD_ALL          = ((1 << 22) - 1)
 };
 
-#define WCARD_OPCODE WCARD_SRC_PORT
+#define FLWD_OPCODE FLWD_SRC_PORT
 
 /** \brief Flow commands */
 enum flow_commands {
@@ -358,18 +391,26 @@ enum flow_commands {
     FLOW_DELETE,
 };
 
+/** \brief Reason that a flow is removed */
+enum flow_removed_reason {
+    FLRM_IDLE_TIMEOUT,
+    FLRM_HARD_TIMEOUT,
+    FLRM_DELETE,
+};
+
 /** \brief Function to initialize a flow using pktin */
 #define FLOW_INIT(x, y) { \
     x.dpid = y->dpid; \
     x.port = y->port; \
     x.xid = y->xid; \
     x.buffer_id = y->buffer_id; \
+    x.priority = DEFAULT_PRIORITY; \
     x.idle_timeout = DEFAULT_IDLE_TIMEOUT; \
     x.hard_timeout = DEFAULT_HARD_TIMEOUT; \
-    x.priority = DEFAULT_PRIORITY; \
     x.vlan_id = y->vlan_id; \
     x.vlan_pcp = y->vlan_pcp; \
     x.proto = y->proto; \
+    x.ip_tos = y->ip_tos; \
     memmove(x.src_mac, y->src_mac, ETH_ALEN); \
     memmove(x.dst_mac, y->dst_mac, ETH_ALEN); \
     x.src_ip = y->src_ip; \
@@ -386,6 +427,7 @@ enum flow_commands {
     (x->vlan_id == y->vlan_id) && \
     (x->vlan_pcp == y->vlan_pcp) && \
     (x->proto == y->proto) && \
+    (x->ip_tos == y->ip_tos) && \
     (memcmp(x->src_mac, y->src_mac, ETH_ALEN) == 0) && \
     (memcmp(x->dst_mac, y->dst_mac, ETH_ALEN) == 0) && \
     (x->src_ip == y->src_ip) && \
@@ -399,20 +441,22 @@ typedef struct _flow_t {
     uint64_t dpid; /**< Datapath ID */
     uint32_t port; /**< Port number */
 
+    // local vs. remote
+    uint32_t remote; /**< Remote events */
+
+    // timeout
+    time_t insert_time; /**< Time when a flow rule is inserted */
+
     // base info
     uint32_t xid; /**< Transaction ID */
-    uint64_t cookie; /**< Cookie */
     uint32_t buffer_id; /**< Buffer ID */
 
-    time_t insert_time; /**< Insert time (size: 8) */
-
-    uint16_t idle_timeout; /**< Idle timeout */
-    uint16_t hard_timeout; /**< Hard timeout */
-
+    uint64_t cookie; /**< Cookie */
     uint16_t flags; /**< Flow flags */
     uint16_t priority; /**< Flow priority */
 
-    uint32_t remote; /**< Remote events */
+    uint16_t idle_timeout; /**< Idle timeout */
+    uint16_t hard_timeout; /**< Hard timeout */
 
     // match fields
     uint32_t wildcards; /**< Wildcard bitmasks */
@@ -422,6 +466,8 @@ typedef struct _flow_t {
 
     uint16_t proto; /**< Protocol */
     uint8_t ip_tos; /**< IP type of service */
+
+    uint8_t reason; /**< Flow-Removed reason */
 
     uint8_t src_mac[ETH_ALEN]; /**< Source MAC address */
     uint8_t dst_mac[ETH_ALEN]; /**< Destination MAC address */
@@ -439,13 +485,13 @@ typedef struct _flow_t {
         uint16_t code; /**< ICMP code */
     };
 
-    // stats
+    // flow stats
     uint32_t duration_sec; /**< Duration */
     uint32_t duration_nsec; /**< Duration */
 
     uint64_t pkt_count; /**< Packet count */
     uint64_t byte_count; /**< Byte count */
-    uint32_t flow_count; /**< Flow count for aggregate stat */
+    uint32_t flow_count; /**< Flow count for aggregate stats */
 
     // actions
     uint16_t num_actions; /**< The number of actions */
@@ -512,6 +558,7 @@ typedef struct _odp_t {
 
 /////////////////////////////////////////////////////////////////////
 
+#ifdef __ENABLE_META_EVENTS
 /** \brief The kinds of meta event conditions */
 enum {
     META_GT,
@@ -528,5 +575,6 @@ typedef struct meta_event_t {
     int threshold;
     char cmd[__CONF_STR_LEN];
 } meta_event_t;
+#endif /* __ENABLE_META_EVENTS */
 
 /////////////////////////////////////////////////////////////////////

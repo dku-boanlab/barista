@@ -29,9 +29,6 @@ typedef struct _host_queue_t {
     pthread_spinlock_t lock; /**< The lock for management */
 } host_queue_t;
 
-/** \brief The number of pre-allocated hosts */
-#define HOST_PRE_ALLOC 4096
-
 /** \brief Host pool */
 host_queue_t host_q;
 

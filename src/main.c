@@ -36,10 +36,10 @@ ctx_t ctx;
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The default component configuration file */
-char conf_file[__CONF_WORD_LEN] = COMPNT_DEFAULT_CONFIG_FILE;
+char conf_file[__CONF_WORD_LEN] = DEFAULT_COMPNT_CONFIG_FILE;
 
 /** \brief The default application configuration file */
-char app_conf_file[__CONF_WORD_LEN] = APP_DEFAULT_CONFIG_FILE;
+char app_conf_file[__CONF_WORD_LEN] = DEFAULT_APP_CONFIG_FILE;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -142,9 +142,9 @@ static void print_usage(char *name)
     PRINTF("\t%s\n", name);
     PRINTF("\t\t-c [config file]\n");
     PRINTF("\t\t-a [app config file]\n");
-    PRINTF("\t\t-b (run with base components)\n");
-    PRINTF("\t\t-r (auto-start mode)\n");
-    PRINTF("\t\t-d (daemon mode)\n");
+    PRINTF("\t\t-b (no value, run with base components)\n");
+    PRINTF("\t\t-r (no value, run in auto-start mode)\n");
+    PRINTF("\t\t-d (no value, run in daemon mode)\n");
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -175,10 +175,10 @@ int main(int argc, char **argv)
                 break;
             case 'b':
                 memset(conf_file, 0, __CONF_WORD_LEN);
-                strcpy(conf_file, COMPNT_BASE_CONFIG_FILE);
+                strcpy(conf_file, BASE_COMPNT_CONFIG_FILE);
 
                 memset(app_conf_file, 0, __CONF_WORD_LEN);
-                strcpy(app_conf_file, APP_BASE_CONFIG_FILE);
+                strcpy(app_conf_file, BASE_APP_CONFIG_FILE);
                 break;
             case 'r':
                 autostart = TRUE;
