@@ -43,7 +43,7 @@
 
 # CLI commands
 - Change a configuration mode
-> Barista> enable
+> Barista> turn on
 - Load configurations
 > Barista# load
 - Start the Barista NOS

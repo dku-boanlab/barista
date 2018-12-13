@@ -1,0 +1,25 @@
+var struct__switch__t =
+[
+    [ "actions", "struct__switch__t.html#a4e4a4f3acdcea0bc3e359191c9526468", null ],
+    [ "byte_count", "struct__switch__t.html#ac5474e74d631a8bb5e9b2fb40eccdcd4", null ],
+    [ "capabilities", "struct__switch__t.html#a0c15738f168e6e35335e691994c5b4a8", null ],
+    [ "dp_desc", "struct__switch__t.html#aef34cafe9f64ba24ea8229ccdf7fca2f", null ],
+    [ "dpid", "struct__switch__t.html#adbdc6e7ce42e17a188c242923d7697ce", null ],
+    [ "fd", "struct__switch__t.html#ae65165cef0f4fb1484bcb65c2918d7c8", null ],
+    [ "flow_count", "struct__switch__t.html#a876876a2e6674019db8d9b4b86897e0f", null ],
+    [ "hw_desc", "struct__switch__t.html#a32c6bc9edcb57001c8447a798e083d0d", null ],
+    [ "mfr_desc", "struct__switch__t.html#a55397ff4cc0396ff6a6c4c28ce865c23", null ],
+    [ "n_buffers", "struct__switch__t.html#a620026253ed1c5cae1693e34cd6e43ca", null ],
+    [ "n_tables", "struct__switch__t.html#aa960251f58debdcb0ffc9eeee4637bb7", null ],
+    [ "next", "struct__switch__t.html#a19c5ff64a0fb6ad3206fe122b3388e5c", null ],
+    [ "old_byte_count", "struct__switch__t.html#a33c20e38e213e9307b5e9380f8e7b4b9", null ],
+    [ "old_flow_count", "struct__switch__t.html#aa192e6828ae3cc9cc648176b762d170f", null ],
+    [ "old_pkt_count", "struct__switch__t.html#a2a4e4f3016ba3443cc981b3a34906cca", null ],
+    [ "pkt_count", "struct__switch__t.html#ae9ec9e9c45b438c9597601faaf959b6a", null ],
+    [ "port", "struct__switch__t.html#a734e435947d5b75cc8a06bba0c77d11a", null ],
+    [ "prev", "struct__switch__t.html#a126d9f61da000dffad6b867b9dab9592", null ],
+    [ "remote", "struct__switch__t.html#a9069fa5f1a9603af5a886ca6c97172aa", null ],
+    [ "serial_num", "struct__switch__t.html#a3713df41838f1b5789d5348b5cfcf25b", null ],
+    [ "sw_desc", "struct__switch__t.html#a6c395de98ff2162e6fe760aa7201b1f0", null ],
+    [ "xid", "struct__switch__t.html#a825bf429bc0835c8f45fe75dc6c3db63", null ]
+];
