@@ -22,7 +22,3 @@ make && sudo make install && make clean
 # dependency => zeromq
 cd ../libs/zeromq
 ./compile.sh
-
-# dependency => nanomsg
-cd ../libs/nanomsg
-./compile.sh

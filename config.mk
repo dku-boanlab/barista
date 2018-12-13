@@ -13,14 +13,14 @@ CONFIG= \
     __MAX_POLICIES=10 \
     __MAX_POLICY_ENTRIES=10 \
     \
-    __NUM_PKT_THREADS=1 \
+    __NUM_PKT_THREADS=2 \
     __NUM_PULL_THREADS=2 \
     __NUM_REP_THREADS=2 \
     \
     __MAX_NUM_SWITCHES=128 \
     __MAX_NUM_PORTS=64 \
     \
-    #__ENABLE_CBENCH \
+    __ENABLE_CBENCH \
     #\
     #__ENABLE_META_EVENTS \
     #__MAX_META_EVENTS=10 \

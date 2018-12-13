@@ -78,7 +78,7 @@
 /** \brief The number of pre-allocated switch entries used in switch_mgmt */
 #define SW_PRE_ALLOC 1024
 
-#define __SHOW_COMPONENT_ID
+//#define __SHOW_COMPONENT_ID
 
 #include "type.h"
 

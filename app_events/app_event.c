@@ -255,7 +255,7 @@ int app_event_init(ctx_t *ctx)
 
         av_ctx->av_on = TRUE;
 
-        // pull (outside)
+        // pull
 
         av_pull_in_ctx = zmq_ctx_new();
         av_pull_in_sock = zmq_socket(av_pull_in_ctx, ZMQ_PULL);

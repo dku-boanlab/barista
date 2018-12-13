@@ -45,7 +45,6 @@ $(PROG): $(addprefix $(OBJ_DIR)/,$(OBJ))
 	$(CC) -o $@ $^ $(LDFLAGS)
 	mv $(PROG) $(BIN_DIR)
 	@cd ext_apps/l2_shortest; make; cd ../..
-	@cd ext_comps/conflict; make; cd ../..
 
 $(OBJ_DIR)/%.o: %.c
 	mkdir -p $(@D)
@@ -60,4 +59,3 @@ $(OBJ_DIR)/.%.dep: %.c $(CONFIG_MK)
 clean:
 	rm -rf $(BIN_DIR)/$(PROG) $(BIN_DIR)/core $(LOG_DIR)/* $(TMP_DIR)/* $(OBJ_DIR) $(INC_DIR) G*
 	@cd ext_apps/l2_shortest; make clean; cd ../..
-	@cd ext_comps/conflict; make clean; cd ../..

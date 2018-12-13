@@ -16,8 +16,8 @@
  * \brief Function to export binary data to a JSON string
  * \param id Application ID
  * \param type App event type
- * \param input The pointer of the given data
- * \param output The array to store a JSON string
+ * \param input Binary data
+ * \param output JSON string
  */
 static int export_to_json(uint32_t id, uint16_t type, const void *input, char *output)
 {
@@ -211,8 +211,8 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
  * \brief Function to import binary data from a JSON string
  * \param id Application ID
  * \param type App event type
- * \param input The given JSON string
- * \param output The space to store binary data
+ * \param input JSON string
+ * \param output Binary data
  */
 static int import_from_json(uint32_t *id, uint16_t *type, char *input, void *output)
 {

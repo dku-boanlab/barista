@@ -298,7 +298,7 @@ int event_init(ctx_t *ctx)
 
         ev_ctx->ev_on = TRUE;
 
-        // pull (outside)
+        // pull
 
         ev_pull_in_ctx = zmq_ctx_new();
         ev_pull_in_sock = zmq_socket(ev_pull_in_ctx, ZMQ_PULL);

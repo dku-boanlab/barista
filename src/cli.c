@@ -820,21 +820,19 @@ int start_cli(ctx_t *ctx)
     cli_register_command(cli, NULL, "start", cli_start, PRIVILEGE_PRIVILEGED, MODE_EXEC, "Start the Barista NOS");
     cli_register_command(cli, NULL, "stop", cli_stop, PRIVILEGE_PRIVILEGED, MODE_EXEC, "Stop the Barista NOS");
 
-    c = cli_register_command(cli, NULL, "set", NULL, PRIVILEGE_PRIVILEGED, MODE_EXEC, NULL);
-
-    cc = cli_register_command(cli, c, "enable", NULL, PRIVILEGE_PRIVILEGED, MODE_EXEC, NULL);
+    cc = cli_register_command(cli, NULL, "enable", NULL, PRIVILEGE_PRIVILEGED, MODE_EXEC, NULL);
     cli_register_command(cli, cc, "component", cli_set_enable_component, PRIVILEGE_PRIVILEGED, MODE_EXEC, "[Component Name], Enable components");
     cli_register_command(cli, cc, "application", cli_set_enable_application, PRIVILEGE_PRIVILEGED, MODE_EXEC, "[Application Name], Enable applications");
 
-    cc = cli_register_command(cli, c, "disable", NULL, PRIVILEGE_PRIVILEGED, MODE_EXEC, NULL);
+    cc = cli_register_command(cli, NULL, "disable", NULL, PRIVILEGE_PRIVILEGED, MODE_EXEC, NULL);
     cli_register_command(cli, cc, "component", cli_set_disable_component, PRIVILEGE_PRIVILEGED, MODE_EXEC, "[Component Name], Disable components");
     cli_register_command(cli, cc, "application", cli_set_disable_application, PRIVILEGE_PRIVILEGED, MODE_EXEC, "[Application Name], Disable applications");
 
-    cc = cli_register_command(cli, c, "activate", NULL, PRIVILEGE_PRIVILEGED, MODE_EXEC, NULL);
+    cc = cli_register_command(cli, NULL, "activate", NULL, PRIVILEGE_PRIVILEGED, MODE_EXEC, NULL);
     cli_register_command(cli, cc, "component", cli_set_activate_component, PRIVILEGE_PRIVILEGED, MODE_EXEC, "[Component Name], Activate components");
     cli_register_command(cli, cc, "application", cli_set_activate_application, PRIVILEGE_PRIVILEGED, MODE_EXEC, "[Application Name], Activate applications");
 
-    cc = cli_register_command(cli, c, "deactivate", NULL, PRIVILEGE_PRIVILEGED, MODE_EXEC, NULL);
+    cc = cli_register_command(cli, NULL, "deactivate", NULL, PRIVILEGE_PRIVILEGED, MODE_EXEC, NULL);
     cli_register_command(cli, cc, "component", cli_set_deactivate_component, PRIVILEGE_PRIVILEGED, MODE_EXEC, "[Component Name], Deactivate components");
     cli_register_command(cli, cc, "application", cli_set_deactivate_application, PRIVILEGE_PRIVILEGED, MODE_EXEC, "[Application Name], Deactivate applications");
 

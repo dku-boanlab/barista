@@ -87,23 +87,27 @@ static int av_push_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, 
 {
     if (!c->activated) return -1;
 
-    char output[__MAX_EXT_MSG_SIZE];
-    export_to_json(id, type, input, output);
+    char out_str[__MAX_EXT_MSG_SIZE];
+    export_to_json(id, type, input, out_str);
 
     zmq_msg_t msg;
-    zmq_msg_init_size(&msg, strlen(output));
-    memcpy(zmq_msg_data(&msg), output, strlen(output));
+    zmq_msg_init_size(&msg, strlen(out_str));
+    memcpy(zmq_msg_data(&msg), out_str, strlen(out_str));
 
     void *sock = zmq_socket(c->push_ctx, ZMQ_PUSH);
     if (zmq_connect(sock, c->pull_addr)) {
         zmq_msg_close(&msg);
+
         deactivate_external_application(c);
+
         return -1;
     } else {
         if (zmq_msg_send(&msg, sock, 0) < 0) {
             zmq_msg_close(&msg);
             zmq_close(sock);
+
             deactivate_external_application(c);
+
             return -1;
         }
 
@@ -138,13 +142,17 @@ static int av_send_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, 
     void *sock = zmq_socket(c->req_ctx, ZMQ_REQ);
     if (zmq_connect(sock, c->reply_addr)) {
         zmq_msg_close(&out_msg);
+
         deactivate_external_application(c);
+
         return -1;
     } else {
         if (zmq_msg_send(&out_msg, sock, 0) < 0) {
             zmq_msg_close(&out_msg);
             zmq_close(sock);
+
             deactivate_external_application(c);
+
             return -1;
         } else {
             zmq_msg_close(&out_msg);
@@ -214,7 +222,6 @@ static void *reply_app_events(void *null)
                 zmq_msg_close(&out_msg);
             } else {
                 char out_str[] = "#{\"return\": -1}";
-                zmq_send(recv, out_str, strlen(out_str), 0);
 
                 zmq_msg_t out_msg;
                 zmq_msg_init_size(&out_msg, strlen(out_str));
@@ -248,12 +255,12 @@ static void *reply_app_events(void *null)
 
         msg.ret = ret;
 
-        char output[__MAX_EXT_MSG_SIZE];
-        export_to_json(msg.id, msg.type, msg.data, output);
+        char out_str[__MAX_EXT_MSG_SIZE];
+        export_to_json(msg.id, msg.type, msg.data, out_str);
 
         zmq_msg_t out_msg;
-        zmq_msg_init_size(&out_msg, strlen(output));
-        memcpy(zmq_msg_data(&out_msg), output, strlen(output));
+        zmq_msg_init_size(&out_msg, strlen(out_str));
+        memcpy(zmq_msg_data(&out_msg), out_str, strlen(out_str));
         zmq_msg_send(&out_msg, recv, 0);
         zmq_msg_close(&out_msg);
 
