@@ -5,7 +5,7 @@ var searchData=
   ['activated',['activated',['../struct__app__t.html#ace5f872b8e9542b7390c550007b8af3f',1,'_app_t::activated()'],['../struct__compnt__t.html#a22d572c69be98fc840d3635232cd6f77',1,'_compnt_t::activated()']]],
   ['advertised',['advertised',['../struct__port__t.html#a0239e7e9665b5484378c7988ff280577',1,'_port_t']]],
   ['app',['app',['../group__app__event.html#ga161d4cd0bee9534ec4e7e5166f44ad26',1,'app():&#160;shim.c'],['../group__app__load.html#ga161d4cd0bee9534ec4e7e5166f44ad26',1,'app():&#160;shim.c']]],
-  ['app_5fconf_5ffile',['app_conf_file',['../struct__ctx__t.html#a68c798a21ab99d3561fd5d83a0c299c9',1,'_ctx_t::app_conf_file()'],['../group__base.html#gae40a744bdfacb4d0afb1d305d6ef5c8c',1,'app_conf_file():&#160;main.c']]],
+  ['app_5fconf_5ffile',['app_conf_file',['../struct__ctx__t.html#a68c798a21ab99d3561fd5d83a0c299c9',1,'_ctx_t']]],
   ['app_5fctx',['app_ctx',['../group__app__mgmt.html#ga915f9395d4490b915968c4333ee75713',1,'application.c']]],
   ['app_5fev_5flist',['app_ev_list',['../group__rbac.html#ga44b19fe8d4eb6fd35ce1492820d3a39f',1,'rbac.c']]],
   ['app_5fevent_5fstring',['app_event_string',['../group__app__mgmt.html#gab2d47d2a6495b25708c588235f014705',1,'application.c']]],

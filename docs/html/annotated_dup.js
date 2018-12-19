@@ -40,13 +40,6 @@ var annotated_dup =
     [ "_traffic_t", "struct__traffic__t.html", "struct__traffic__t" ],
     [ "arg_struct", "structarg__struct.html", "structarg__struct" ],
     [ "arphdr", "structarphdr.html", "structarphdr" ],
-    [ "cli_command", "structcli__command.html", "structcli__command" ],
-    [ "cli_def", "structcli__def.html", "structcli__def" ],
-    [ "cli_filter", "structcli__filter.html", "structcli__filter" ],
-    [ "cli_filter_cmds", "structcli__filter__cmds.html", "structcli__filter__cmds" ],
-    [ "cli_match_filter_state", "structcli__match__filter__state.html", "structcli__match__filter__state" ],
-    [ "cli_range_filter_state", "structcli__range__filter__state.html", "structcli__range__filter__state" ],
     [ "ether_vlan_header", "structether__vlan__header.html", "structether__vlan__header" ],
-    [ "of_header", "structof__header.html", "structof__header" ],
-    [ "unp", "structunp.html", "structunp" ]
+    [ "of_header", "structof__header.html", "structof__header" ]
 ];

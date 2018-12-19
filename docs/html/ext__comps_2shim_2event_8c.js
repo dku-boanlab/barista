@@ -1,7 +1,7 @@
 var ext__comps_2shim_2event_8c =
 [
     [ "deliver_events", "group__compnt__event.html#gaa427d71f97839d1e116fdb02c288a05b", null ],
-    [ "destroy_ev_workers", "group__compnt__event.html#ga12697d941df7ea6a970f96e057e5e3f8", null ],
+    [ "destroy_ev_workers", "group__compnt__event.html#ga01959984e3efad01393413e713714d14", null ],
     [ "ev_dp_aggregate_stats", "group__compnt__event.html#ga389bfd60a98c39c688bde0f8fbfadc7b", null ],
     [ "ev_dp_delete_flow", "group__compnt__event.html#gac31582e1c1e2728f9ea883ba38562595", null ],
     [ "ev_dp_flow_deleted", "group__compnt__event.html#ga5c630aa5fa0c63f1c732f375d8dc2233", null ],
@@ -45,7 +45,7 @@ var ext__comps_2shim_2event_8c =
     [ "ev_sw_update_config", "group__compnt__event.html#gac9051472ec562acdb02243c709a102f7", null ],
     [ "ev_sw_update_desc", "group__compnt__event.html#ga5ee59c7439807d599a1c02c4a692fdd8", null ],
     [ "ev_tr_update_stats", "group__compnt__event.html#gabe9ee881db49d948954fb29b0143f6ce", null ],
-    [ "event_init", "group__compnt__event.html#ga7b733b7313a7aae3359e71892f49ed53", null ],
+    [ "event_init", "group__compnt__event.html#ga4b76fd08f94596d2e9b5f86a2d654c8f", null ],
     [ "handshake", "group__compnt__event.html#ga34611c7f6baad96385b1acc543967d69", null ],
     [ "receive_events", "group__compnt__event.html#ga5266b76f1f78c9ee4f85dc1a0023d3a2", null ],
     [ "reply_events", "group__compnt__event.html#gabf6fb99c307e00919cf7247c91e04966", null ],

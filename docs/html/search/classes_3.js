@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['ether_5fvlan_5fheader',['ether_vlan_header',['../structether__vlan__header.html',1,'']]]
+  ['of_5fheader',['of_header',['../structof__header.html',1,'']]]
 ];

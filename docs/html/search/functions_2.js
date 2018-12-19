@@ -4,6 +4,8 @@ var searchData=
   ['cac_5fcli',['cac_cli',['../group__cac.html#ga26ff332c5b1123bcbc1483f15ef77d74',1,'cac_cli(cli_t *cli, char **args):&#160;cac.c'],['../group__cac.html#ga26ff332c5b1123bcbc1483f15ef77d74',1,'cac_cli(cli_t *cli, char **args):&#160;cac.c']]],
   ['cac_5fhandler',['cac_handler',['../group__cac.html#gaa1ef259cf915811f55641287f1b0bea5',1,'cac_handler(const event_t *ev, event_out_t *ev_out):&#160;cac.c'],['../group__cac.html#gaa1ef259cf915811f55641287f1b0bea5',1,'cac_handler(const event_t *ev, event_out_t *ev_out):&#160;cac.c']]],
   ['cac_5fmain',['cac_main',['../group__cac.html#ga20ddacefd1faebdebb90953b84d9f6cc',1,'cac_main(int *activated, int argc, char **argv):&#160;cac.c'],['../group__cac.html#ga20ddacefd1faebdebb90953b84d9f6cc',1,'cac_main(int *activated, int argc, char **argv):&#160;cac.c']]],
+  ['check_5fauth',['check_auth',['../group__cli.html#ga64e66dd4f301c349d63cf70d7170bdc2',1,'cli.c']]],
+  ['check_5fenable',['check_enable',['../group__cli.html#gad0eb32be2b2b447e3570c160e303003c',1,'cli.c']]],
   ['check_5fhost',['check_host',['../group__host__mgmt.html#ga5fc6007558fbfb5d076660f74e9f0c8e',1,'host_mgmt.c']]],
   ['clean_5fcontext',['clean_context',['../epoll__env_8h.html#a47126163478066f780a9ad775528b5d8',1,'epoll_env.h']]],
   ['clean_5fstructs',['clean_structs',['../group__app__mgmt.html#gabc6963b92373ce431d4567a0145844a8',1,'clean_structs(int num_apps, app_t **app_list, int *av_num, app_t ***av_list):&#160;application.c'],['../group__compnt__mgmt.html#ga30ad8c8ab63845df77cfd3540f0d0689',1,'clean_structs(int num_compnts, compnt_t **compnt_list, int *ev_num, compnt_t ***ev_list):&#160;component.c']]],
@@ -36,6 +38,7 @@ var searchData=
   ['conn_5fcli',['conn_cli',['../group__conn.html#gaa1c6e4ba896602d6f0f6fce8171158d6',1,'conn_cli(cli_t *cli, char **args):&#160;conn.c'],['../group__conn.html#gaa1c6e4ba896602d6f0f6fce8171158d6',1,'conn_cli(cli_t *cli, char **args):&#160;conn.c']]],
   ['conn_5fhandler',['conn_handler',['../group__conn.html#ga5ff1cdeabb07cb3bebda92b693394620',1,'conn_handler(const event_t *ev, event_out_t *ev_out):&#160;conn.c'],['../group__conn.html#ga5ff1cdeabb07cb3bebda92b693394620',1,'conn_handler(const event_t *ev, event_out_t *ev_out):&#160;conn.c']]],
   ['conn_5fmain',['conn_main',['../group__conn.html#ga36c6689ea7e99df3e7043da5fa0c3cb2',1,'conn_main(int *activated, int argc, char **argv):&#160;conn.c'],['../group__conn.html#ga36c6689ea7e99df3e7043da5fa0c3cb2',1,'conn_main(int *activated, int argc, char **argv):&#160;conn.c']]],
+  ['connection_5fhandler',['connection_handler',['../group__cli.html#gada337e7a3762f8d583ce285c28af0f03',1,'cli.c']]],
   ['create_5fepoll_5fenv',['create_epoll_env',['../epoll__env_8h.html#ae793ef1c8eda8a0428c7289477fd7472',1,'epoll_env.h']]],
   ['ctx_5finit',['ctx_init',['../group__context.html#ga0ad4cac239bfac8d632518c3c86e7ec5',1,'ctx_init(ctx_t *ctx):&#160;context.c'],['../group__context.html#ga0ad4cac239bfac8d632518c3c86e7ec5',1,'ctx_init(ctx_t *ctx):&#160;context.c'],['../group__context.html#ga0ad4cac239bfac8d632518c3c86e7ec5',1,'ctx_init(ctx_t *ctx):&#160;context.c'],['../group__context.html#ga0ad4cac239bfac8d632518c3c86e7ec5',1,'ctx_init(ctx_t *ctx):&#160;context.c']]]
 ];

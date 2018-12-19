@@ -1,7 +1,7 @@
 var group__app__event =
 [
     [ "app_event.c", "ext__apps_2shim_2app__event_8c.html", null ],
-    [ "app_event_init", "group__app__event.html#gaad9b119ec18a1f23a6101bf74bcf4a9e", null ],
+    [ "app_event_init", "group__app__event.html#gaf4a1bbafd0fd9f4982748be45708c0a1", null ],
     [ "av_dp_delete_flow", "group__app__event.html#ga736b1d4ecb4069b5cc9870ff151197d6", null ],
     [ "av_dp_insert_flow", "group__app__event.html#ga752a1bc0f44e1bcf1892dde17dee6354", null ],
     [ "av_dp_modify_flow", "group__app__event.html#ga1ab9fac633b6d978b39eebbd2aa45671", null ],
@@ -13,7 +13,7 @@ var group__app__event =
     [ "av_log_warn", "group__app__event.html#gaf04ac413bc7fd67255a4550657686035", null ],
     [ "av_push_msg", "group__app__event.html#ga6eb08496f816d4a0926e4f719fdf5e14", null ],
     [ "deliver_app_events", "group__app__event.html#ga0fd335b5e96f177ba2009017d694dbf7", null ],
-    [ "destroy_av_workers", "group__app__event.html#ga904aaa708d9083bb6399bf94aaf850c5", null ],
+    [ "destroy_av_workers", "group__app__event.html#ga9706e7beb1859a69f1a37cb837154afa", null ],
     [ "handshake", "group__app__event.html#ga34611c7f6baad96385b1acc543967d69", null ],
     [ "receive_app_events", "group__app__event.html#ga3828dfd44ccbb3454d7dc642cf3a67a1", null ],
     [ "reply_app_events", "group__app__event.html#gaf556cf32ba7c3353d9b353b2954c07bd", null ],

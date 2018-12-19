@@ -5,6 +5,10 @@ var group__cli =
       [ "acc_sock", "structarg__struct.html#a35539de81461270978625b1f5127f81b", null ],
       [ "cli", "structarg__struct.html#a9fe7b926b08bd9cd2bffd4eec51b8b54", null ]
     ] ],
+    [ "check_auth", "group__cli.html#ga64e66dd4f301c349d63cf70d7170bdc2", null ],
+    [ "check_enable", "group__cli.html#gad0eb32be2b2b447e3570c160e303003c", null ],
+    [ "connection_handler", "group__cli.html#gada337e7a3762f8d583ce285c28af0f03", null ],
+    [ "idle_timeout", "group__cli.html#gadd4978a3ec55c8bf457de69cdfb3d43d", null ],
     [ "sigint_handler", "group__cli.html#ga258e3b580e688a0cf46e4258525aeaf1", null ],
     [ "sigkill_handler", "group__cli.html#ga5c8ebcf074034d0d2f072c74bb6700cc", null ],
     [ "sigterm_handler", "group__cli.html#ga785106d5f7144641d79c5f5e9ddc2135", null ],
