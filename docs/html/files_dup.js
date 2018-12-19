@@ -1,4 +1,4 @@
-var files =
+var files_dup =
 [
     [ "app_events", "dir_25b35af5d6fe939e26498b93aa0ed469.html", "dir_25b35af5d6fe939e26498b93aa0ed469" ],
     [ "applications", "dir_a6e4fee11f07c3b70486e88fe92cbbdc.html", "dir_a6e4fee11f07c3b70486e88fe92cbbdc" ],

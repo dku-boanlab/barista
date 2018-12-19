@@ -6,6 +6,7 @@ var app__event__msg__pack_8h =
     [ "deactivate_external_application", "app__event__msg__pack_8h.html#ac901d4372750c7adc80ef69c3fa02257", null ],
     [ "deliver_app_events", "app__event__msg__pack_8h.html#a0fd335b5e96f177ba2009017d694dbf7", null ],
     [ "destroy_av_workers", "app__event__msg__pack_8h.html#a904aaa708d9083bb6399bf94aaf850c5", null ],
+    [ "process_app_events", "app__event__msg__pack_8h.html#a0e0884cd94efc34e63763011e9635ab5", null ],
     [ "receive_app_events", "app__event__msg__pack_8h.html#a3828dfd44ccbb3454d7dc642cf3a67a1", null ],
     [ "reply_app_events", "app__event__msg__pack_8h.html#af556cf32ba7c3353d9b353b2954c07bd", null ],
     [ "reply_proxy", "app__event__msg__pack_8h.html#aa20d68b61733cb1aad1ada7082514a5b", null ]
