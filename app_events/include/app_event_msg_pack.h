@@ -103,16 +103,16 @@ static int av_push_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, 
         return -1;
     } else {
         if (zmq_msg_send(&msg, sock, 0) < 0) {
-            zmq_msg_close(&msg);
             zmq_close(sock);
+            zmq_msg_close(&msg);
 
             deactivate_external_application(c);
 
             return -1;
         }
 
-        zmq_msg_close(&msg);
         zmq_close(sock);
+        zmq_msg_close(&msg);
     }
 
     return 0;
@@ -148,8 +148,8 @@ static int av_send_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, 
         return -1;
     } else {
         if (zmq_msg_send(&out_msg, sock, 0) < 0) {
-            zmq_msg_close(&out_msg);
             zmq_close(sock);
+            zmq_msg_close(&out_msg);
 
             deactivate_external_application(c);
 
@@ -162,8 +162,8 @@ static int av_send_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, 
             int zmq_ret = zmq_msg_recv(&in_msg, sock, 0);
 
             if (zmq_ret < 0) {
-                zmq_msg_close(&in_msg);
                 zmq_close(sock);
+                zmq_msg_close(&in_msg);
 
                 deactivate_external_application(c);
 
@@ -174,8 +174,8 @@ static int av_send_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, 
 
                 int ret = import_from_json(&id, &type, in_str, output);
 
-                zmq_msg_close(&in_msg);
                 zmq_close(sock);
+                zmq_msg_close(&in_msg);
 
                 return ret;
             }
@@ -186,7 +186,7 @@ static int av_send_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, 
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to process requests from applications
+ * \brief Function to process requests from external applications
  * \return NULL
  */
 static void *reply_app_events(void *null)
@@ -286,6 +286,75 @@ static void *reply_proxy(void *null)
 /////////////////////////////////////////////////////////////////////
 
 /**
+ * \brief Function to process app events
+ * \param msg Incoming message
+ */
+static int process_app_events(msg_t *msg)
+{
+    switch (msg->type) {
+
+    // upstream events
+
+    case AV_DP_RECEIVE_PACKET:
+        pktin_av_raise(msg->id, AV_DP_RECEIVE_PACKET, sizeof(pktin_t), (const pktin_t *)msg->data);
+        break;
+    case AV_DP_FLOW_EXPIRED:
+        flow_av_raise(msg->id, AV_DP_FLOW_EXPIRED, sizeof(flow_t), (const flow_t *)msg->data);
+        break;
+    case AV_DP_FLOW_DELETED:
+        flow_av_raise(msg->id, AV_DP_FLOW_DELETED, sizeof(flow_t), (const flow_t *)msg->data);
+        break;
+    case AV_DP_PORT_ADDED:
+        port_av_raise(msg->id, AV_DP_PORT_ADDED, sizeof(port_t), (const port_t *)msg->data);
+        break;
+    case AV_DP_PORT_MODIFIED:
+        port_av_raise(msg->id, AV_DP_PORT_MODIFIED, sizeof(port_t), (const port_t *)msg->data);
+        break;
+    case AV_DP_PORT_DELETED:
+        port_av_raise(msg->id, AV_DP_PORT_DELETED, sizeof(port_t), (const port_t *)msg->data);
+        break;
+
+    // downstream events
+
+    case AV_DP_SEND_PACKET:
+        pktout_av_raise(msg->id, AV_DP_SEND_PACKET, sizeof(pktout_t), (const pktout_t *)msg->data);
+        break;
+    case AV_DP_INSERT_FLOW:
+        flow_av_raise(msg->id, AV_DP_INSERT_FLOW, sizeof(flow_t), (const flow_t *)msg->data);
+        break;
+    case AV_DP_MODIFY_FLOW:
+        flow_av_raise(msg->id, AV_DP_MODIFY_FLOW, sizeof(flow_t), (const flow_t *)msg->data);
+        break;
+    case AV_DP_DELETE_FLOW:
+        flow_av_raise(msg->id, AV_DP_DELETE_FLOW, sizeof(flow_t), (const flow_t *)msg->data);
+        break;
+
+    // log events
+
+    case AV_LOG_DEBUG:
+        log_av_raise(msg->id, AV_LOG_DEBUG, strlen((const char *)msg->data), (const char *)msg->data);
+        break;
+    case AV_LOG_INFO:
+        log_av_raise(msg->id, AV_LOG_INFO, strlen((const char *)msg->data), (const char *)msg->data);
+        break;
+    case AV_LOG_WARN:
+        log_av_raise(msg->id, AV_LOG_WARN, strlen((const char *)msg->data), (const char *)msg->data);
+        break;
+    case AV_LOG_ERROR:
+        log_av_raise(msg->id, AV_LOG_ERROR, strlen((const char *)msg->data), (const char *)msg->data);
+        break;
+    case AV_LOG_FATAL:
+        log_av_raise(msg->id, AV_LOG_FATAL, strlen((const char *)msg->data), (const char *)msg->data);
+        break;
+
+    default:
+        break;
+    }
+
+    return 0;
+}
+
+/**
  * \brief Function to receive app events from external applications
  * \return NULL
  */
@@ -304,6 +373,9 @@ static void *receive_app_events(void *null)
             continue;
         }
 
+        char *in_str = zmq_msg_data(&in_msg);
+        in_str[zmq_ret] = '\0';
+
         zmq_msg_send(&in_msg, av_pull_out_sock, 0);
 
         zmq_msg_close(&in_msg);
@@ -313,7 +385,7 @@ static void *receive_app_events(void *null)
 }
 
 /**
- * \brief Function to process app events in an app event queue
+ * \brief Function to get app events from an app event queue
  * \return NULL
  */
 static void *deliver_app_events(void *null)
@@ -345,65 +417,7 @@ static void *deliver_app_events(void *null)
         if (msg.id == 0) continue;
         else if (msg.type > AV_NUM_EVENTS) continue;
 
-        switch (msg.type) {
-
-        // upstream events
-
-        case AV_DP_RECEIVE_PACKET:
-            pktin_av_raise(msg.id, AV_DP_RECEIVE_PACKET, sizeof(pktin_t), (const pktin_t *)msg.data);
-            break;
-        case AV_DP_FLOW_EXPIRED:
-            flow_av_raise(msg.id, AV_DP_FLOW_EXPIRED, sizeof(flow_t), (const flow_t *)msg.data);
-            break;
-        case AV_DP_FLOW_DELETED:
-            flow_av_raise(msg.id, AV_DP_FLOW_DELETED, sizeof(flow_t), (const flow_t *)msg.data);
-            break;
-        case AV_DP_PORT_ADDED:
-            port_av_raise(msg.id, AV_DP_PORT_ADDED, sizeof(port_t), (const port_t *)msg.data);
-            break;
-        case AV_DP_PORT_MODIFIED:
-            port_av_raise(msg.id, AV_DP_PORT_MODIFIED, sizeof(port_t), (const port_t *)msg.data);
-            break;
-        case AV_DP_PORT_DELETED:
-            port_av_raise(msg.id, AV_DP_PORT_DELETED, sizeof(port_t), (const port_t *)msg.data);
-            break;
-
-        // downstream events
-
-        case AV_DP_SEND_PACKET:
-            pktout_av_raise(msg.id, AV_DP_SEND_PACKET, sizeof(pktout_t), (const pktout_t *)msg.data);
-            break;
-        case AV_DP_INSERT_FLOW:
-            flow_av_raise(msg.id, AV_DP_INSERT_FLOW, sizeof(flow_t), (const flow_t *)msg.data);
-            break;
-        case AV_DP_MODIFY_FLOW:
-            flow_av_raise(msg.id, AV_DP_MODIFY_FLOW, sizeof(flow_t), (const flow_t *)msg.data);
-            break;
-        case AV_DP_DELETE_FLOW:
-            flow_av_raise(msg.id, AV_DP_DELETE_FLOW, sizeof(flow_t), (const flow_t *)msg.data);
-            break;
-
-        // log events
-
-        case AV_LOG_DEBUG:
-            log_av_raise(msg.id, AV_LOG_DEBUG, strlen((const char *)msg.data), (const char *)msg.data);
-            break;
-        case AV_LOG_INFO:
-            log_av_raise(msg.id, AV_LOG_INFO, strlen((const char *)msg.data), (const char *)msg.data);
-            break;
-        case AV_LOG_WARN:
-            log_av_raise(msg.id, AV_LOG_WARN, strlen((const char *)msg.data), (const char *)msg.data);
-            break;
-        case AV_LOG_ERROR:
-            log_av_raise(msg.id, AV_LOG_ERROR, strlen((const char *)msg.data), (const char *)msg.data);
-            break;
-        case AV_LOG_FATAL:
-            log_av_raise(msg.id, AV_LOG_FATAL, strlen((const char *)msg.data), (const char *)msg.data);
-            break;
-
-        default:
-            break;
-        }
+        process_app_events(&msg);
     }
 
     zmq_close(recv);

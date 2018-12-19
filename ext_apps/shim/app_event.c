@@ -62,8 +62,8 @@ static int handshake(uint32_t id, char *name)
 
         if (zmq_msg_send(&out_msg, sock, 0) < 0) {
             PERROR("zmq_send");
-            zmq_msg_close(&out_msg);
             zmq_close(sock);
+            zmq_msg_close(&out_msg);
             return -1;
         }
 
@@ -74,23 +74,22 @@ static int handshake(uint32_t id, char *name)
         int zmq_ret = zmq_msg_recv(&in_msg, sock, 0);
         if (zmq_ret < 0) {
             PERROR("zmq_recv");
-            zmq_msg_close(&in_msg);
             zmq_close(sock);
+            zmq_msg_close(&in_msg);
             return -1;
         } else {
             char *in_str = zmq_msg_data(&in_msg);
             in_str[zmq_ret] = '\0';
 
             if (strcmp(in_str, "#{\"return\": 0}") != 0) {
-                zmq_msg_close(&in_msg);
                 zmq_close(sock);
+                zmq_msg_close(&in_msg);
                 return -1;
             }
         }
 
-        zmq_msg_close(&in_msg);
-
         zmq_close(sock);
+        zmq_msg_close(&in_msg);
     }
 
     return 0;
@@ -122,13 +121,13 @@ static int av_push_msg(uint32_t id, uint16_t type, uint16_t size, const void *da
         return -1;
     } else {
         if (zmq_msg_send(&msg, sock, 0) < 0) {
-            zmq_msg_close(&msg);
             zmq_close(sock);
+            zmq_msg_close(&msg);
             return -1;
         }
 
-        zmq_msg_close(&msg);
         zmq_close(sock);
+        zmq_msg_close(&msg);
     }
 
     return 0;
@@ -349,6 +348,9 @@ static void *receive_app_events(void *null)
             zmq_msg_close(&in_msg);
             continue;
         }
+
+        char *in_str = zmq_msg_data(&in_msg);
+        in_str[zmq_ret] = '\0';
 
         zmq_msg_send(&in_msg, av_pull_out_sock, 0);
 

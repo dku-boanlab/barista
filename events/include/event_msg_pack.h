@@ -103,16 +103,16 @@ static int ev_push_ext_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t siz
         return -1;
     } else {
         if (zmq_msg_send(&msg, sock, 0) < 0) {
-            zmq_msg_close(&msg);
             zmq_close(sock);
+            zmq_msg_close(&msg);
 
             deactivate_external_component(c);
 
             return -1;
         }
 
-        zmq_msg_close(&msg);
         zmq_close(sock);
+        zmq_msg_close(&msg);
     }
 
     return 0;
@@ -148,8 +148,8 @@ static int ev_send_ext_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t siz
         return -1;
     } else {
         if (zmq_msg_send(&out_msg, sock, 0) < 0) {
-            zmq_msg_close(&out_msg);
             zmq_close(sock);
+            zmq_msg_close(&out_msg);
 
             deactivate_external_component(c);
 
@@ -174,8 +174,8 @@ static int ev_send_ext_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t siz
 
                 int ret = import_from_json(&id, &type, in_str, output);
 
-                zmq_msg_close(&in_msg);
                 zmq_close(sock);
+                zmq_msg_close(&in_msg);
 
                 return ret;
             }

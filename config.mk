@@ -13,7 +13,6 @@ CONFIG= \
     __MAX_POLICIES=10 \
     __MAX_POLICY_ENTRIES=10 \
     \
-    __NUM_PKT_THREADS=2 \
     __NUM_PULL_THREADS=2 \
     __NUM_REP_THREADS=2 \
     \

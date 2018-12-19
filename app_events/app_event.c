@@ -6,7 +6,7 @@
  * \ingroup framework
  * @{
  * \defgroup app_events Application Event Handler
- * \brief Functions to manage events for applications
+ * \brief Functions to manage app events for applications
  * @{
  */
 
@@ -194,27 +194,27 @@ static void *meta_app_events(void *null)
                     switch (meta[j].condition) {
                     case META_GT: // >
                         if (num_event > meta[j].threshold) {
-                            //char **args = split_line(meta[j].cmd);
+                            //meta[j].cmd
                         }
                         break;
                     case META_GTE: // >=
                         if (num_event >= meta[j].threshold) {
-                            //char **args = split_line(meta[j].cmd);
+                            //meta[j].cmd
                         }
                         break;
                     case META_LT: // <
                         if (num_event < meta[j].threshold) {
-                            //char **args = split_line(meta[j].cmd);
+                            //meta[j].cmd
                         }
                         break;
                     case META_LTE: // <=
                         if (num_event <= meta[j].threshold) {
-                            //char **args = split_line(meta[j].cmd);
+                            //meta[j].cmd
                         }
                         break;
                     case META_EQ: // ==
                         if (num_event == meta[j].threshold) {
-                            //char **args = split_line(meta[j].cmd);
+                            //meta[j].cmd
                         }
                         break;
                     default:

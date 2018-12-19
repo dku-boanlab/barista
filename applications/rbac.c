@@ -22,14 +22,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The default application configuration file */
-char app_file[__CONF_WORD_LEN] = DEFAULT_APP_CONFIG_FILE;
-
-/** \brief The default role file */
-char role_file[__CONF_WORD_LEN] = DEFAULT_APP_ROLE_FILE;
-
-/////////////////////////////////////////////////////////////////////
-
 /** \brief The available roles for an application */
 enum {
     APP_BASE,
@@ -312,14 +304,14 @@ int rbac_main(int *activated, int argc, char **argv)
     }
 
     // load app roles
-    if (load_app_roles(app_file) < 0) {
+    if (load_app_roles(DEFAULT_APP_CONFIG_FILE) < 0) {
         FREE(role_to_event);
         FREE(app_to_role);
         return -1;
     }
 
     // load app events for each role
-    if (load_events_for_roles(role_file) < 0) {
+    if (load_events_for_roles(DEFAULT_APP_ROLE_FILE) < 0) {
         FREE(role_to_event);
         FREE(app_to_role);
         return -1;

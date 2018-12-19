@@ -33,6 +33,9 @@ typedef struct _mac_table_t {
     pthread_rwlock_t lock; /**< The lock for management */
 } mac_table_t;
 
+/** \brief MAC table */
+mac_table_t *mac_table;
+
 /** \brief The size of a MAC table */
 #define MAC_HASH_SIZE 4096
 
@@ -130,16 +133,64 @@ static int mac_enqueue(mac_entry_t *old)
     return 0;
 }
 
+/////////////////////////////////////////////////////////////////////
+
 /**
- * \brief Function to initialize a MAC pool
+ * \brief Function to clean up mac entires
+ * \param idx The index of a MAC table
+ * \param tmp_list The list of MAC entries to be removed
+ */
+static int clean_up_tmp_list(int idx, mac_table_t *tmp_list)
+{
+    // locked
+
+    mac_entry_t *curr = tmp_list->head;
+
+    while (curr != NULL) {
+        mac_entry_t *tmp = curr;
+
+        curr = curr->next;
+
+        if (tmp->prev != NULL && tmp->next != NULL) {
+            tmp->prev->next = tmp->next;
+            tmp->next->prev = tmp->prev;
+        } else if (tmp->prev == NULL && tmp->next != NULL) {
+            mac_table[idx].head = tmp->next;
+            tmp->next->prev = NULL;
+        } else if (tmp->prev != NULL && tmp->next == NULL) {
+            mac_table[idx].tail = tmp->prev;
+            tmp->prev->next = NULL;
+        } else if (tmp->prev == NULL && tmp->next == NULL) {
+            mac_table[idx].head = NULL;
+            mac_table[idx].tail = NULL;
+        }
+
+        mac_enqueue(tmp);
+    }
+
+    return 0;
+}
+
+/**
+ * \brief Function to initialize a MAC table and a MAC pool
  * \return None
  */
-static int mac_q_init(void)
+static int mac_init(void)
 {
+    mac_table = (mac_table_t *)CALLOC(MAC_HASH_SIZE, sizeof(mac_table_t));
+    if (mac_table == NULL) {
+        PERROR("calloc");
+        return -1;
+    }
+
+    int i;
+    for (i=0; i<MAC_HASH_SIZE; i++) {
+        pthread_rwlock_init(&mac_table[i].lock, NULL);
+    }
+
     memset(&mac_q, 0, sizeof(mac_queue_t));
     pthread_spin_init(&mac_q.lock, PTHREAD_PROCESS_PRIVATE);
 
-    int i;
     for (i=0; i<MAC_PRE_ALLOC; i++) {
         mac_entry_t *mac = (mac_entry_t *)MALLOC(sizeof(mac_entry_t));
         if (mac == NULL) {
@@ -154,11 +205,26 @@ static int mac_q_init(void)
 }
 
 /**
- * \brief Function to destroy a MAC pool
+ * \brief Function to destroy a MAC table and a MAC pool
  * \return None
  */
-static int mac_q_destroy(void)
+static int mac_destroy(void)
 {
+    int i;
+    for (i=0; i<MAC_HASH_SIZE; i++) {
+        pthread_rwlock_wrlock(&mac_table[i].lock);
+
+        mac_entry_t *curr = mac_table[i].head;
+        while (curr != NULL) {
+            mac_entry_t *tmp = curr;
+            curr = curr->next;
+            FREE(tmp);
+        }
+
+        pthread_rwlock_unlock(&mac_table[i].lock);
+        pthread_rwlock_destroy(&mac_table[i].lock);
+    }
+
     pthread_spin_lock(&mac_q.lock);
 
     mac_entry_t *curr = mac_q.head;
@@ -172,6 +238,8 @@ static int mac_q_destroy(void)
     pthread_spin_destroy(&mac_q.lock);
 
     memset(&mac_q, 0, sizeof(mac_queue_t));
+
+    FREE(mac_table);
 
     return 0;
 }

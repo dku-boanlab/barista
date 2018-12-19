@@ -26,49 +26,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief MAC table */
-mac_table_t *mac_table;
-
-/////////////////////////////////////////////////////////////////////
-
-/**
- * \brief Function to clean up mac entires
- * \param idx The index of a MAC table
- * \param tmp_list The list of MAC entries to be removed
- */
-static int clean_up_tmp_list(int idx, mac_table_t *tmp_list)
-{
-    // locked
-
-    mac_entry_t *curr = tmp_list->head;
-
-    while (curr != NULL) {
-        mac_entry_t *tmp = curr;
-
-        curr = curr->next;
-
-        if (tmp->prev != NULL && tmp->next != NULL) {
-            tmp->prev->next = tmp->next;
-            tmp->next->prev = tmp->prev;
-        } else if (tmp->prev == NULL && tmp->next != NULL) {
-            mac_table[idx].head = tmp->next;
-            tmp->next->prev = NULL;
-        } else if (tmp->prev != NULL && tmp->next == NULL) {
-            mac_table[idx].tail = tmp->prev;
-            tmp->prev->next = NULL;
-        } else if (tmp->prev == NULL && tmp->next == NULL) {
-            mac_table[idx].head = NULL;
-            mac_table[idx].tail = NULL;
-        }
-
-        mac_enqueue(tmp);
-    }
-
-    return 0;
-}
-
-/////////////////////////////////////////////////////////////////////
-
 /**
  * \brief Function to conduct an output action into the data plane
  * \param pktin Pktin message
@@ -170,7 +127,7 @@ static int l2_learning(const pktin_t *pktin)
     mac = mac2int(pktin->dst_mac);
 
     // 4. if dst mac == broadcast, flood it
-    if (mac == BROADCAST_MAC) {
+    if (mac == __BROADCAST_MAC) {
         send_packet(pktin, PORT_FLOOD);
         return 0;
     }
@@ -219,18 +176,7 @@ int l2_learning_main(int *activated, int argc, char **argv)
 {
     ALOG_INFO(L2_LEARNING_ID, "Init - L2 learning");
 
-    mac_table = (mac_table_t *)CALLOC(MAC_HASH_SIZE, sizeof(mac_table_t));
-    if (mac_table == NULL) {
-        PERROR("calloc");
-        return -1;
-    }
-
-    int i;
-    for (i=0; i<MAC_HASH_SIZE; i++) {
-        pthread_rwlock_init(&mac_table[i].lock, NULL);
-    }
-
-    mac_q_init();
+    mac_init();
 
     activate();
 
@@ -247,24 +193,7 @@ int l2_learning_cleanup(int *activated)
 
     deactivate();
 
-    int i;
-    for (i=0; i<MAC_HASH_SIZE; i++) {
-        pthread_rwlock_wrlock(&mac_table[i].lock);
-
-        mac_entry_t *curr = mac_table[i].head;
-        while (curr != NULL) {
-            mac_entry_t *tmp = curr;
-            curr = curr->next;
-            FREE(tmp);
-        }
-
-        pthread_rwlock_unlock(&mac_table[i].lock);
-        pthread_rwlock_destroy(&mac_table[i].lock);
-    }
-
-    mac_q_destroy();
-
-    FREE(mac_table);
+    mac_destroy();
 
     return 0;
 }

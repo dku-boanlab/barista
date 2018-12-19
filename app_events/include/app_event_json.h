@@ -26,8 +26,9 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
     // upstream
     case AV_DP_RECEIVE_PACKET:
         {
-            char buffer[__MAX_EXT_DATA_SIZE] = {0};
             const pktin_t *in = (const pktin_t *)input;
+
+            char buffer[__MAX_EXT_DATA_SIZE] = {0};
 
             sprintf(output, "{\"id\":%u, \"type\": %u, \"dpid\": %lu, \"port\": %u, \"xid\": %u, \"buffer_id\": %u, \"reason\": %u, \"proto\": %u, "
                             "\"vlan_id\": %u, \"vlan_pcp\": %u, \"ip_tos\": %u, \"src_mac\": %lu, \"dst_mac\": %lu, \"src_ip\": %u, \"dst_ip\": %u, "
@@ -41,6 +42,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
     case AV_DP_FLOW_DELETED:
         {
             const flow_t *fl = (const flow_t *)input;
+
             sprintf(output, "{\"id\":%u, \"type\": %u, \"dpid\": %lu, \"port\": %u, \"xid\": %u, \"cookie\": %lu, \"priority\": %u, \"idle_timeout\": %u, \"reason\": %u, "
                             "\"wildcards\": %u, \"proto\": %u, \"vlan_id\": %u, \"vlan_pcp\": %u, \"ip_tos\": %u, \"src_mac\": %lu, \"dst_mac\": %lu, "
                             "\"src_ip\": %u, \"dst_ip\": %u, \"src_port\": %u, \"dst_port\": %u, \"duration_sec\": %u, \"duration_nsec\": %u, "
@@ -55,6 +57,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
     case AV_DP_PORT_DELETED:
         {
             const port_t *pt = (const port_t *)input;
+
             sprintf(output, "{\"id\":%u, \"type\": %u, \"dpid\": %lu, \"port\": %u, \"hw_addr\": %lu, \"config\": %u, \"state\": %u, "
                             "\"curr\": %u, \"advertised\": %u, \"supported\": %u, \"peer\": %u}",
                     id, type, pt->dpid, pt->port, mac2int(pt->hw_addr), pt->config, pt->state,
@@ -65,9 +68,9 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
     // downstream
     case AV_DP_SEND_PACKET:
         {
-            char buffer[__MAX_EXT_DATA_SIZE] = {0};
             const pktout_t *out = (const pktout_t *)input;
 
+            char buffer[__MAX_EXT_DATA_SIZE] = {0};
             char actions[__CONF_STR_LEN] = {0};
 
             int i;
@@ -129,6 +132,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
     case AV_SW_DISCONNECTED:
         {
             const switch_t *sw = (const switch_t *)input;
+
             sprintf(output, "{\"id\":%u, \"type\": %u, \"dpid\": %lu, \"fd\": %u, \"remote\": %u}", id, type, sw->dpid, sw->fd, sw->remote);
         }
         break;
@@ -136,6 +140,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
     case AV_HOST_DELETED:
         {
             const host_t *ht = (const host_t *)input;
+
             sprintf(output, "{\"id\":%u, \"type\": %u, \"dpid\": %lu, \"port\": %u, \"mac\": %lu, \"ip\": %u, \"remote\": %u}",
                     id, type, ht->dpid, ht->port, ht->mac, ht->ip, ht->remote);
         }
@@ -144,6 +149,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
     case AV_LINK_DELETED:
         {
             const port_t *pt = (const port_t *)input;
+
             sprintf(output, "{\"id\":%u, \"type\": %u, \"dpid\": %lu, \"port\": %u, \"next_dpid\": %lu, \"next_port\": %u, \"remote\": %u}",
                     id, type, pt->dpid, pt->port, pt->next_dpid, pt->next_port, pt->remote);
         }
@@ -189,6 +195,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
     case AV_LOG_FATAL:
         {
             const char *log = (const char *)input;
+
             sprintf(output, "{\"id\":%u, \"type\": %u, \"msg\": \"%s\"}", id, type, log);
         }
         break;

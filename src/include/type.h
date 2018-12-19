@@ -227,7 +227,7 @@ enum pktin_reason {
 #define __MAX_PKT_SIZE 1500
 
 /** \brief Broadcast MAC address */
-#define BROADCAST_MAC 0xffffffffffff
+#define __BROADCAST_MAC 0xffffffffffff
 
 /** \brief The structure of an incoming packet */
 typedef struct _pktin_t {
