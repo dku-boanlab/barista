@@ -9,7 +9,6 @@ var searchData=
   ['app_5fctx',['app_ctx',['../group__app__mgmt.html#ga915f9395d4490b915968c4333ee75713',1,'application.c']]],
   ['app_5fev_5flist',['app_ev_list',['../group__rbac.html#ga44b19fe8d4eb6fd35ce1492820d3a39f',1,'rbac.c']]],
   ['app_5fevent_5fstring',['app_event_string',['../group__app__mgmt.html#gab2d47d2a6495b25708c588235f014705',1,'application.c']]],
-  ['app_5ffile',['app_file',['../group__rbac.html#ga308ecc19f4f0761e82d7fa6a20cd94cd',1,'rbac.c']]],
   ['app_5fid',['app_id',['../struct__app__t.html#a57710c88e04e36fb372100213c2f21e8',1,'_app_t']]],
   ['app_5flist',['app_list',['../struct__ctx__t.html#a4dd144ec953131d2117c92f28d298783',1,'_ctx_t']]],
   ['app_5fon',['app_on',['../struct__ctx__t.html#a4278518290e1dfa4daeb205173d55cc0',1,'_ctx_t']]],

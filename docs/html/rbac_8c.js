@@ -18,9 +18,7 @@ var rbac_8c =
     [ "rbac_main", "group__rbac.html#ga6359f01be9c0a23cf5fb2716282d631e", null ],
     [ "verify_app_role", "group__rbac.html#ga14da92bf216bfc9f28e4c988888c903e", null ],
     [ "app_ev_list", "group__rbac.html#ga44b19fe8d4eb6fd35ce1492820d3a39f", null ],
-    [ "app_file", "group__rbac.html#ga308ecc19f4f0761e82d7fa6a20cd94cd", null ],
     [ "app_to_role", "group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8", null ],
     [ "app_to_role_cnt", "group__rbac.html#ga19c24f7fed9eeebb002fbd8bfc8222d9", null ],
-    [ "role_file", "group__rbac.html#ga89894d666bcd5b3b7106cb5f7316e6ed", null ],
     [ "role_to_event", "group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c", null ]
 ];
