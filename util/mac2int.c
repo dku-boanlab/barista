@@ -7,7 +7,7 @@
  * @{
  *
  * \defgroup mac2int MAC-to-Int Functions
- * \brief Functions to convert the forms of a MAC address
+ * \brief Functions to convert the forms of MAC addresses
  * @{
  */
 

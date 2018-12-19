@@ -186,8 +186,8 @@ static int av_send_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, 
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to process requests from external applications
- * \return NULL
+ * \brief Function to process requests from external applications and reply outputs
+ * \param null NULL
  */
 static void *reply_app_events(void *null)
 {
@@ -273,8 +273,8 @@ static void *reply_app_events(void *null)
 }
 
 /**
- * \brief Function to connect work threads to application threads via a queue proxy
- * \return NULL
+ * \brief Function to connect worker threads to application threads via a queue proxy
+ * \param null NULL
  */
 static void *reply_proxy(void *null)
 {
@@ -287,7 +287,7 @@ static void *reply_proxy(void *null)
 
 /**
  * \brief Function to process app events
- * \param msg Incoming message
+ * \param msg Application events
  */
 static int process_app_events(msg_t *msg)
 {
@@ -356,7 +356,7 @@ static int process_app_events(msg_t *msg)
 
 /**
  * \brief Function to receive app events from external applications
- * \return NULL
+ * \param null NULL
  */
 static void *receive_app_events(void *null)
 {
@@ -386,7 +386,7 @@ static void *receive_app_events(void *null)
 
 /**
  * \brief Function to get app events from an app event queue
- * \return NULL
+ * \param null NULL
  */
 static void *deliver_app_events(void *null)
 {

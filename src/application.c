@@ -21,7 +21,7 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The pointer of the context structure */
+/** \brief Global context structure */
 ctx_t *app_ctx;
 
 /////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ static int app_event_type(const char *app_event)
 }
 
 /**
- * \brief Function to print all applications that listen to an app event
+ * \brief Function to print applications that listen to an app event
  * \param cli CLI pointer
  * \param id App event ID
  */
@@ -82,7 +82,7 @@ static int app_event_print(cli_t *cli, int id)
 }
 
 /**
- * \brief Function to print an app event and its applications
+ * \brief Function to print an app event and all applications that listen to the app event
  * \param cli CLI pointer
  * \param name App event string
  */
@@ -976,7 +976,7 @@ int application_del_policy(cli_t *cli, char *name, int idx)
 }
 
 /**
- * \brief Function to show all policies of an application
+ * \brief Function to show all policies applied to an application
  * \param cli CLI pointer
  * \param name Application name
  */

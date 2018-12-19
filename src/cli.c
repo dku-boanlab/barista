@@ -40,7 +40,7 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The pointer of the context structure */
+/** \brief Global context structure */
 ctx_t *cli_ctx;
 
 /** \brief The pointer of the CLI context */
@@ -755,6 +755,11 @@ static int cli_exit(struct cli_def *cli, UNUSED(const char *command), char *argv
     return CLI_OK;
 }
 
+/**
+ * \brief Function to check the login information
+ * \param username User ID
+ * \param password Password
+ */
 static int check_auth(const char *username, const char *password)
 {
     if (strcasecmp(username, USERID) != 0)
@@ -769,21 +774,34 @@ static int regular_callback(struct cli_def *cli)
     return CLI_OK;
 }
 
+/**
+ * \brief Function to check the privileged password
+ * \param password Privileged password
+ */
 static int check_enable(const char *password)
 {
     return !strcasecmp(password, ADMINPW);
 }
 
+/**
+ * \brief Function to handle CLI timeout
+ * \param cli CLI context
+ */
 static int idle_timeout(struct cli_def *cli)
 {
     return CLI_QUIT;
 }
 
+/** \brief The structure to manage CLI connections */
 struct arg_struct {
     struct cli_def *cli;
     int acc_sock;
 };
 
+/**
+ * \brief Function to accept CLI connections
+ * \param arguments Arguments
+ */
 static void *connection_handler(void *arguments)
 {
     struct arg_struct *args = (struct arg_struct *)arguments;
@@ -795,7 +813,10 @@ static void *connection_handler(void *arguments)
     return NULL;
 }
 
-/** \brief Function to provide the Barista CLI */
+/**
+ * \brief Function to provide the Barista CLI
+ * \param ctx The context of the Barista NOS
+ */
 int start_cli(ctx_t *ctx)
 {
     cli_ctx = ctx;

@@ -35,14 +35,6 @@ ctx_t ctx;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The default component configuration file */
-char conf_file[__CONF_WORD_LEN] = DEFAULT_COMPNT_CONFIG_FILE;
-
-/** \brief The default application configuration file */
-char app_conf_file[__CONF_WORD_LEN] = DEFAULT_APP_CONFIG_FILE;
-
-/////////////////////////////////////////////////////////////////////
-
 /**
  * \brief Function to daemonize the Barista NOS
  * \return None
@@ -92,7 +84,10 @@ static void daemonize(void)
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief Function to print out the Barista logo */
+/**
+ * \brief Function to print out the Barista logo
+ * \return None
+ */
 static void print_logo(void)
 {
     char tiny_log[] = {
@@ -135,7 +130,10 @@ static void print_logo(void)
         PRINTF("\n%s\n", tiny_log);
 }
 
-/** \brief Function to print out the Barista usage */
+/**
+ * \brief Function to print out the Barista usage
+ * \param name Program name
+ */
 static void print_usage(char *name)
 {
     PRINTF("Usage:\n");
@@ -159,6 +157,9 @@ int main(int argc, char **argv)
     int opt;
     int autostart = FALSE;
     int daemon = FALSE;
+
+    char conf_file[__CONF_WORD_LEN] = {0};
+    char app_conf_file[__CONF_WORD_LEN] = {0};
 
     print_logo();
 

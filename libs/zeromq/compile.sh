@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# extract the source files of ZeroMQ
+# extract the source code of ZeroMQ
 tar xvfz zeromq-4.2.2.tar.gz -C /tmp
 
 # move to ZeroMQ

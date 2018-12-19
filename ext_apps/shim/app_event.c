@@ -21,10 +21,10 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The configuration of a target application */
+/** \brief The configuration of an external application */
 extern app_t app;
 
-/** \brief The running flag for app event workers */
+/** \brief The running flag for external app event workers */
 int av_worker_on;
 
 /////////////////////////////////////////////////////////////////////
@@ -208,7 +208,7 @@ void av_log_fatal(uint32_t id, char *format, ...) {
 
 /**
  * \brief Function to process app events in an app event queue and reply outputs
- * \return NULL
+ * \param null NULL
  */
 static void *reply_app_events(void *null)
 {
@@ -318,8 +318,8 @@ static void *reply_app_events(void *null)
 }
 
 /**
- * \brief Function to connect work threads to application threads via a queue proxy
- * \return NULL
+ * \brief Function to connect worker threads to application threads via a queue proxy
+ * \param null NULL
  */
 static void *reply_proxy(void *null)
 {
@@ -330,7 +330,7 @@ static void *reply_proxy(void *null)
 
 /**
  * \brief Function to receive app events from the Barista NOS
- * \return NULL
+ * \param null NULL
  */
 static void *receive_app_events(void *null)
 {
@@ -361,8 +361,8 @@ static void *receive_app_events(void *null)
 }
 
 /**
- * \brief Function to process app events in an app event queue
- * \return NULL
+ * \brief Function to get app events from an app event queue
+ * \param null NULL
  */
 static void *deliver_app_events(void *null)
 {
@@ -460,9 +460,9 @@ static void *deliver_app_events(void *null)
 
 /**
  * \brief Function to destroy an app event queue
- * \param ctx Context (= NULL)
+ * \param null NULL
  */
-int destroy_av_workers(ctx_t *ctx)
+int destroy_av_workers(ctx_t *null)
 {
     av_worker_on = FALSE;
 
@@ -487,9 +487,9 @@ int destroy_av_workers(ctx_t *ctx)
 
 /**
  * \brief Function to initialize the app event handler
- * \param ctx Context (= NULL)
+ * \param null NULL
  */
-int app_event_init(ctx_t *ctx)
+int app_event_init(ctx_t *null)
 {
     av_worker_on = TRUE;
 

@@ -19,13 +19,13 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The configuration of a component */
+/** \brief External component context */
 compnt_t compnt;
 
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to initialize a component
+ * \brief Function to initialize an external component
  * \return None
  */
 static int init_compnt(void)
@@ -126,7 +126,7 @@ static int init_compnt(void)
 }
 
 /**
- * \brief Function to execute the main function of a component
+ * \brief Function to execute the main function of an external component
  * \param null NULL
  */
 static void *thread_main(void *null)
@@ -140,7 +140,7 @@ static void *thread_main(void *null)
 }
 
 /**
- * \brief Function to activate a component
+ * \brief Function to activate an external component
  * \return None
  */
 static int activate_compnt(void)
@@ -163,7 +163,7 @@ static int activate_compnt(void)
 }
 
 /**
- * \brief Function to deactivate a component
+ * \brief Function to deactivate an external component
  * \return None
  */
 static int deactivate_compnt(void)

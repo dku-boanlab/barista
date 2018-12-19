@@ -47,7 +47,7 @@
 
 /** 
  * \brief Function to generate a hash value
- * \param data Data to make a hash value
+ * \param data Data to generate a hash value
  * \param length Data length
  * \return Generated hash value
  */

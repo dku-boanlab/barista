@@ -21,7 +21,7 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The pointer of the Barista context */
+/** \brief Global context structure */
 ctx_t *compnt_ctx;
 
 /////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ static int event_type(const char *event)
 }
 
 /**
- * \brief Function to print all components that listen to an event
+ * \brief Function to print components that listen to an event
  * \param cli CLI pointer
  * \param id Event ID
  */
@@ -74,7 +74,7 @@ static int event_print(cli_t *cli, int id)
 }
 
 /**
- * \brief Function to print an event and its components
+ * \brief Function to print an event and all components that listen to the event
  * \param cli CLI pointer
  * \param name Event string
  */
@@ -1056,7 +1056,7 @@ int component_del_policy(cli_t *cli, char *name, int idx)
 }
 
 /**
- * \brief Function to show all policies of a component
+ * \brief Function to show all policies applied to a component
  * \param cli CLI pointer
  * \param name Component name
  */
@@ -1219,7 +1219,7 @@ int component_show_policy(cli_t *cli, char *name)
 }
 
 /**
- * \brief Function to deliver a command to the corresponding component
+ * \brief Function to deliver a command to a component
  * \param cli CLI pointer
  * \param args Arguments
  */

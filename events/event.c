@@ -219,7 +219,7 @@ void ev_log_fatal(uint32_t id, char *format, ...) {
 #ifdef __ENABLE_META_EVENTS
 /**
  * \brief Function to process meta events
- * \return NULL
+ * \param null NULL
  */
 static void *meta_events(void *null)
 {
@@ -402,13 +402,7 @@ int event_init(ctx_t *ctx)
 
 /////////////////////////////////////////////////////////////////////
 
-/**
- * \brief The code of sw_rw_raise()
- * \param id Component ID
- * \param type Event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of sw_rw_raise() */
 #define FUNC_NAME sw_rw_raise
 #define FUNC_TYPE switch_t
 #define FUNC_DATA sw_data
@@ -417,13 +411,7 @@ int event_init(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/**
- * \brief The code of port_rw_raise()
- * \param id Component ID
- * \param type Event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of port_rw_raise() */
 //#define FUNC_NAME port_rw_raise
 //#define FUNC_TYPE port_t
 //#define FUNC_DATA port_data
@@ -432,13 +420,7 @@ int event_init(ctx_t *ctx)
 //#undef FUNC_TYPE
 //#undef FUNC_DATA
 
-/**
- * \brief The code of host_rw_raise()
- * \param id Component ID
- * \param type Event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of host_rw_raise() */
 //#define FUNC_NAME host_rw_raise
 //#define FUNC_TYPE host_t
 //#define FUNC_DATA host_data
@@ -447,13 +429,7 @@ int event_init(ctx_t *ctx)
 //#undef FUNC_TYPE
 //#undef FUNC_DATA
 
-/**
- * \brief The code of flow_rw_raise()
- * \param id Component ID
- * \param type Event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of flow_rw_raise() */
 //#define FUNC_NAME flow_rw_raise
 //#define FUNC_TYPE flow_t
 //#define FUNC_DATA flow_data
@@ -462,13 +438,7 @@ int event_init(ctx_t *ctx)
 //#undef FUNC_TYPE
 //#undef FUNC_DATA
 
-/**
- * \brief The code of raw_ev_raise()
- * \param id Component ID
- * \param type Event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of raw_ev_raise() */
 #define FUNC_NAME raw_ev_raise
 #define FUNC_TYPE raw_msg_t
 #define FUNC_DATA raw_msg
@@ -477,13 +447,7 @@ int event_init(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/**
- * \brief The code of sw_ev_raise()
- * \param id Component ID
- * \param type Event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of sw_ev_raise() */
 #define FUNC_NAME sw_ev_raise
 #define FUNC_TYPE switch_t
 #define FUNC_DATA sw
@@ -494,13 +458,7 @@ int event_init(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/**
- * \brief The code of port_ev_raise()
- * \param id Component ID
- * \param type Event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of port_ev_raise() */
 #define FUNC_NAME port_ev_raise
 #define FUNC_TYPE port_t
 #define FUNC_DATA port
@@ -511,13 +469,7 @@ int event_init(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/**
- * \brief The code of host_ev_raise()
- * \param id Component ID
- * \param type Event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of host_ev_raise() */
 #define FUNC_NAME host_ev_raise
 #define FUNC_TYPE host_t
 #define FUNC_DATA host
@@ -528,13 +480,7 @@ int event_init(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/**
- * \brief The code of pktin_ev_raise()
- * \param id Component ID
- * \param type Event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of pktin_ev_raise() */
 #define FUNC_NAME pktin_ev_raise
 #define FUNC_TYPE pktin_t
 #define FUNC_DATA pktin
@@ -545,13 +491,7 @@ int event_init(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/**
- * \brief The code of pktout_ev_raise()
- * \param id Component ID
- * \param type Event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of pktout_ev_raise() */
 #define FUNC_NAME pktout_ev_raise
 #define FUNC_TYPE pktout_t
 #define FUNC_DATA pktout
@@ -562,13 +502,7 @@ int event_init(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/**
- * \brief The code of flow_ev_raise()
- * \param id Component ID
- * \param type Event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of flow_ev_raise() */
 #define FUNC_NAME flow_ev_raise
 #define FUNC_TYPE flow_t
 #define FUNC_DATA flow
@@ -579,13 +513,7 @@ int event_init(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/** 
- * \brief The code of rs_ev_raise()
- * \param id Component ID
- * \param type Event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of rs_ev_raise() */
 #define FUNC_NAME rs_ev_raise
 #define FUNC_TYPE resource_t
 #define FUNC_DATA resource
@@ -594,13 +522,7 @@ int event_init(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/**
- * \brief The code of tr_ev_raise()
- * \param id Component ID
- * \param type Event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of tr_ev_raise() */
 #define FUNC_NAME tr_ev_raise
 #define FUNC_TYPE traffic_t
 #define FUNC_DATA traffic
@@ -609,13 +531,7 @@ int event_init(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/**
- * \brief The code of log_ev_raise()
- * \param id Component ID
- * \param type Event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of log_ev_raise() */
 #define FUNC_NAME log_ev_raise
 #define FUNC_TYPE char
 #define FUNC_DATA log

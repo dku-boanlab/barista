@@ -19,13 +19,13 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief Application context */
+/** \brief External application context */
 app_t app;
 
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to initialize an application
+ * \brief Function to initialize an external application
  * \return None
  */
 static int init_app(void)
@@ -128,7 +128,7 @@ static int init_app(void)
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to execute the main function of an application
+ * \brief Function to execute the main function of an external application
  * \param null NULL
  */
 static void *app_thread_main(void *null)
@@ -142,7 +142,7 @@ static void *app_thread_main(void *null)
 }
 
 /**
- * \brief Function to activate an application
+ * \brief Function to activate an external application
  * \return None
  */
 static int activate_app(void)
@@ -165,7 +165,7 @@ static int activate_app(void)
 }
 
 /**
- * \brief Function to deactivate an application
+ * \brief Function to deactivate an external application
  * \return None
  */
 static int deactivate_app(void)

@@ -176,7 +176,7 @@ void av_log_fatal(uint32_t id, char *format, ...) {
 #ifdef __ENABLE_META_EVENTS
 /**
  * \brief Function to process meta app events
- * \return NULL
+ * \param null NULL
  */
 static void *meta_app_events(void *null)
 {
@@ -359,13 +359,7 @@ int app_event_init(ctx_t *ctx)
 
 /////////////////////////////////////////////////////////////////////
 
-/**
- * \brief The code of sw_rw_raise()
- * \param id Application ID
- * \param type App event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of sw_rw_raise() */
 //#define FUNC_NAME sw_rw_raise
 //#define FUNC_TYPE switch_t
 //#define FUNC_DATA sw_data
@@ -374,13 +368,7 @@ int app_event_init(ctx_t *ctx)
 //#undef FUNC_TYPE
 //#undef FUNC_DATA
 
-/**
- * \brief The code of port_rw_raise()
- * \param id Application ID
- * \param type App event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of port_rw_raise() */
 //#define FUNC_NAME port_rw_raise
 //#define FUNC_TYPE port_t
 //#define FUNC_DATA port_data
@@ -389,13 +377,7 @@ int app_event_init(ctx_t *ctx)
 //#undef FUNC_TYPE
 //#undef FUNC_DATA
 
-/**
- * \brief The code of host_rw_raise()
- * \param id Application ID
- * \param type App event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of host_rw_raise() */
 //#define FUNC_NAME host_rw_raise
 //#define FUNC_TYPE host_t
 //#define FUNC_DATA host_data
@@ -404,13 +386,7 @@ int app_event_init(ctx_t *ctx)
 //#undef FUNC_TYPE
 //#undef FUNC_DATA
 
-/**
- * \brief The code of flow_rw_raise()
- * \param id Application ID
- * \param type App event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of flow_rw_raise() */
 //#define FUNC_NAME flow_rw_raise
 //#define FUNC_TYPE flow_t
 //#define FUNC_DATA flow_data
@@ -419,13 +395,7 @@ int app_event_init(ctx_t *ctx)
 //#undef FUNC_TYPE
 //#undef FUNC_DATA
 
-/**
- * \brief The code of sw_av_raise()
- * \param id Application ID
- * \param type App event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of sw_av_raise() */
 #define FUNC_NAME sw_av_raise
 #define FUNC_TYPE switch_t
 #define FUNC_DATA sw
@@ -436,13 +406,7 @@ int app_event_init(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/**
- * \brief The code of port_av_raise()
- * \param id Application ID
- * \param type App event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of port_av_raise() */
 #define FUNC_NAME port_av_raise
 #define FUNC_TYPE port_t
 #define FUNC_DATA port
@@ -453,13 +417,7 @@ int app_event_init(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/**
- * \brief The code of host_av_raise()
- * \param id Application ID
- * \param type App event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of host_av_raise() */
 #define FUNC_NAME host_av_raise
 #define FUNC_TYPE host_t
 #define FUNC_DATA host
@@ -470,13 +428,7 @@ int app_event_init(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/**
- * \brief The code of pktin_av_raise()
- * \param id Application ID
- * \param type App event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of pktin_av_raise() */
 #define FUNC_NAME pktin_av_raise
 #define FUNC_TYPE pktin_t
 #define FUNC_DATA pktin
@@ -487,13 +439,7 @@ int app_event_init(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/**
- * \brief The code of pktout_av_raise()
- * \param id Application ID
- * \param type App event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of pktout_av_raise() */
 #define FUNC_NAME pktout_av_raise
 #define FUNC_TYPE pktout_t
 #define FUNC_DATA pktout
@@ -504,13 +450,7 @@ int app_event_init(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/**
- * \brief The code of flow_av_raise()
- * \param id Application ID
- * \param type App event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of flow_av_raise() */
 #define FUNC_NAME flow_av_raise
 #define FUNC_TYPE flow_t
 #define FUNC_DATA flow
@@ -521,13 +461,7 @@ int app_event_init(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/**
- * \brief The code of log_av_raise()
- * \param id Application ID
- * \param type App event type
- * \param len The length of data
- * \param data Data
- */
+/** \brief The code of log_av_raise() */
 #define FUNC_NAME log_av_raise
 #define FUNC_TYPE char
 #define FUNC_DATA log

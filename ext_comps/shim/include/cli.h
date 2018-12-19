@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 
+/** \brief The structure of the CLI context */
 typedef struct _cli_t {
 } cli_t;
 

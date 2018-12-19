@@ -162,8 +162,8 @@ static int ev_send_ext_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t siz
             int zmq_ret = zmq_msg_recv(&in_msg, sock, 0);
 
             if (zmq_ret < 0) {
-                zmq_msg_close(&in_msg);
                 zmq_close(sock);
+                zmq_msg_close(&in_msg);
 
                 deactivate_external_component(c);
 
@@ -187,7 +187,7 @@ static int ev_send_ext_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t siz
 
 /**
  * \brief Function to process requests from components
- * \return NULL
+ * \param null NULL
  */
 static void *reply_events(void *null)
 {
@@ -283,8 +283,8 @@ static void *reply_events(void *null)
 }
 
 /**
- * \brief Function to connect work threads to component threads via a queue proxy
- * \return NULL
+ * \brief Function to connect worker threads to component threads via a queue proxy
+ * \param null NULL
  */
 static void *reply_proxy(void *null)
 {
@@ -297,7 +297,7 @@ static void *reply_proxy(void *null)
 
 /**
  * \brief Function to receive events from external components
- * \return NULL
+ * \param null NULL
  */
 static void *receive_events(void *null)
 {
@@ -314,6 +314,9 @@ static void *receive_events(void *null)
             continue;
         }
 
+        char *in_str = zmq_msg_data(&in_msg);
+        in_str[zmq_ret] = '\0';
+
         zmq_msg_send(&in_msg, ev_pull_out_sock, 0);
 
         zmq_msg_close(&in_msg);
@@ -323,8 +326,8 @@ static void *receive_events(void *null)
 }
 
 /**
- * \brief Function to process events in an event queue
- * \return NULL
+ * \brief Function to get events from an event queue
+ * \param null NULL
  */
 static void *deliver_events(void *null)
 {

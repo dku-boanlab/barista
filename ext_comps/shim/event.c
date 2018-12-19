@@ -21,10 +21,10 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The configuration of a target component */
+/** \brief The configuration of an external component */
 extern compnt_t compnt;
 
-/** \brief The running flag for event workers */
+/** \brief The running flag for external event workers */
 int ev_worker_on;
 
 /////////////////////////////////////////////////////////////////////
@@ -62,8 +62,8 @@ static int handshake(uint32_t id, char *name)
 
         if (zmq_send(sock, out_str, strlen(out_str)+1, 0) < 0) {
             PERROR("zmq_send");
-            zmq_msg_close(&out_msg);
             zmq_close(sock);
+            zmq_msg_close(&out_msg);
             return -1;
         }
 
@@ -74,8 +74,8 @@ static int handshake(uint32_t id, char *name)
         int zmq_ret = zmq_msg_recv(&in_msg, sock, 0);
         if (zmq_ret < 0) {
             PERROR("zmq_recv");
-            zmq_msg_close(&in_msg);
             zmq_close(sock);
+            zmq_msg_close(&in_msg);
             return -1;
         } else {
             char *in_str = zmq_msg_data(&in_msg);
@@ -88,9 +88,8 @@ static int handshake(uint32_t id, char *name)
             }
         }
 
-        zmq_msg_close(&in_msg);
-
         zmq_close(sock);
+        zmq_msg_close(&in_msg);
     }
 
     return 0;
@@ -122,13 +121,13 @@ static int ev_push_msg(uint32_t id, uint16_t type, uint16_t size, const void *da
         return -1;
     } else {
         if (zmq_msg_send(&msg, sock, 0) < 0) {
-            zmq_msg_close(&msg);
             zmq_close(sock);
+            zmq_msg_close(&msg);
             return -1;
         }
 
-        zmq_msg_close(&msg);
         zmq_close(sock);
+        zmq_msg_close(&msg);
     }
 
     return 0;
@@ -160,8 +159,8 @@ static int ev_send_msg(uint32_t id, uint16_t type, uint16_t size, const void *in
         return -1;
     } else {
         if (zmq_msg_send(&msg, sock, 0) < 0) {
-            zmq_msg_close(&msg);
             zmq_close(sock);
+            zmq_msg_close(&msg);
             return -1;
         } else {
             zmq_msg_close(&msg);
@@ -180,8 +179,8 @@ static int ev_send_msg(uint32_t id, uint16_t type, uint16_t size, const void *in
 
                 int ret = import_from_json(&id, &type, in_str, output);
 
-                zmq_msg_close(&in_msg);
                 zmq_close(sock);
+                zmq_msg_close(&in_msg);
 
                 return ret;
             }
@@ -335,7 +334,7 @@ void ev_log_fatal(uint32_t id, char *format, ...) {
 
 /**
  * \brief Function to process events in an event queue and reply outputs
- * \return NULL
+ * \param null NULL
  */
 static void *reply_events(void *null)
 {
@@ -496,8 +495,8 @@ static void *reply_events(void *null)
 }
 
 /**
- * \brief Function to connect work threads to component threads via a queue proxy
- * \return NULL
+ * \brief Function to connect worker threads to component threads via a queue proxy
+ * \param null NULL
  */
 static void *reply_proxy(void *null)
 {
@@ -508,7 +507,7 @@ static void *reply_proxy(void *null)
 
 /**
  * \brief Function to receive events from the Barista NOS
- * \return NULL
+ * \param null NULL
  */
 static void *receive_events(void *null)
 {
@@ -536,8 +535,8 @@ static void *receive_events(void *null)
 }
 
 /**
- * \brief Function to process events in an app event queue
- * \return NULL
+ * \brief Function to get events from an app event queue
+ * \param null NULL
  */
 static void *deliver_events(void *null)
 {
@@ -687,9 +686,9 @@ static void *deliver_events(void *null)
 
 /**
  * \brief Function to destroy an event queue
- * \param ctx Context (= NULL)
+ * \param null NULL
  */
-int destroy_ev_workers(ctx_t *ctx)
+int destroy_ev_workers(ctx_t *null)
 {
     ev_worker_on = FALSE;
 
@@ -714,9 +713,9 @@ int destroy_ev_workers(ctx_t *ctx)
 
 /**
  * \brief Function to initialize the event handler
- * \param ctx Context (= NULL)
+ * \param null NULL
  */
-int event_init(ctx_t *ctx)
+int event_init(ctx_t *null)
 {
     ev_worker_on = TRUE;
 
