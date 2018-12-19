@@ -1,5 +1,0 @@
-var dir_9ad01441f832f8947465c5ef2b2eb5f9 =
-[
-    [ "l2_learning", "dir_266f58f1833743b78138f54a92a79dca.html", "dir_266f58f1833743b78138f54a92a79dca" ],
-    [ "shim", "dir_c8a368710c0482a2a8e153a20e357832.html", "dir_c8a368710c0482a2a8e153a20e357832" ]
-];

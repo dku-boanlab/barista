@@ -769,6 +769,10 @@ static int check_auth(const char *username, const char *password)
     return CLI_OK;
 }
 
+/**
+ * \brief Function to handle an empty input
+ * \param cli CLI context
+ */
 static int regular_callback(struct cli_def *cli)
 {
     return CLI_OK;
