@@ -18,7 +18,7 @@
 #include "cli.h"
 
 /**
- * \brief Function to print out messages
+ * \brief Function to print messages
  * \param cli CLI context
  * \param buf Message
  */

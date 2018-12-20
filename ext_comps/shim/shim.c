@@ -3,6 +3,8 @@
  */
 
 /**
+ * \ingroup framework
+ * @{
  * \defgroup compnt_shim External Component Handler
  * @{
  * \defgroup compnt_load External Component Loader
@@ -263,6 +265,8 @@ int main(int argc, char *argv[])
 }
 
 /**
+ * @}
+ *
  * @}
  *
  * @}

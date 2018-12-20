@@ -3,11 +3,10 @@
  */
 
 /**
- * \ingroup framework
- * @{
- * \ingroup app_events Application Event Handler
+ * \ingroup app_events
  * @{
  * \defgroup av_json AppEvent-to-JSON convertor
+ * \brief Functions to convert the forms of app events
  * @{
  */
 
@@ -586,8 +585,6 @@ static int import_from_json(uint32_t *id, uint16_t *type, char *input, void *out
 }
 
 /**
- * @}
- *
  * @}
  *
  * @}

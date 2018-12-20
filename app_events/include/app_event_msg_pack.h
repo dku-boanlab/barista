@@ -3,11 +3,10 @@
  */
 
 /**
- * \ingroup framework
- * @{
- * \ingroup app_events Application Event Handler
+ * \ingroup app_events
  * @{
  * \defgroup av_msg External AppEvent Handler
+ * \brief Functions to handle app events between the Barista NOS and external applications
  * @{
  */
 
@@ -435,8 +434,6 @@ static void *deliver_app_events(void *null)
 }
 
 /**
- * @}
- *
  * @}
  *
  * @}

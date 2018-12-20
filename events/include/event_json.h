@@ -3,11 +3,10 @@
  */
 
 /**
- * \ingroup framework
- * @{
- * \ingroup events Event Handler
+ * \ingroup events
  * @{
  * \defgroup ev_json Event-to-JSON convertor
+ * \brief Functions to convert the forms of events
  * @{
  */
 
@@ -935,8 +934,6 @@ static int import_from_json(uint32_t *id, uint16_t *type, char *input, void *out
 }
 
 /**
- * @}
- *
  * @}
  *
  * @}

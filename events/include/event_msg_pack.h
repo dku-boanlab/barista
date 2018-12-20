@@ -3,11 +3,10 @@
  */
 
 /**
- * \ingroup framework
- * @{
- * \ingroup events Event Handler
+ * \ingroup events
  * @{
  * \defgroup ev_msg External Event Handler
+ * \brief Functions to handle events between the Barista NOS and external components
  * @{
  */
 
@@ -506,8 +505,6 @@ static void *deliver_events(void *null)
 }
 
 /**
- * @}
- *
  * @}
  *
  * @}
