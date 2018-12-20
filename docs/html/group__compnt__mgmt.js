@@ -1,9 +1,10 @@
 var group__compnt__mgmt =
 [
     [ "component.c", "component_8c.html", null ],
+    [ "component.h", "src_2include_2component_8h.html", null ],
     [ "clean_structs", "group__compnt__mgmt.html#ga30ad8c8ab63845df77cfd3540f0d0689", null ],
     [ "component_activate", "group__compnt__mgmt.html#gab85eb33c04a0086519656b356091c3d7", null ],
-    [ "component_add_policy", "group__compnt__mgmt.html#ga7aa91d6cf4a84d7d7d8dd13b132c253b", null ],
+    [ "component_add_policy", "group__compnt__mgmt.html#ga4aa5c69bd3a3cbd7b152c666debbe29b", null ],
     [ "component_cli", "group__compnt__mgmt.html#gacad520b1a5f1d1b279a041a84cbe9ec0", null ],
     [ "component_deactivate", "group__compnt__mgmt.html#gad370810cc61dc12e2380ff05483817c4", null ],
     [ "component_del_policy", "group__compnt__mgmt.html#gaea78a9ac07796ba41e69ee006f0ad3a9", null ],

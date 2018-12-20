@@ -1,5 +1,7 @@
 var group__compnt__load =
 [
+    [ "component.h", "ext__comps_2shim_2include_2component_8h.html", null ],
+    [ "shim.h", "ext__comps_2shim_2include_2shim_8h.html", null ],
     [ "shim.c", "ext__comps_2shim_2shim_8c.html", null ],
     [ "activate_compnt", "group__compnt__load.html#gac1a44c6906e97d6c8056d0ef62bfabe0", null ],
     [ "deactivate_compnt", "group__compnt__load.html#ga3eb7b1c89c6b01969c78352976025310", null ],

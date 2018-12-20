@@ -1,6 +1,11 @@
 var group__events =
 [
     [ "event.c", "events_2event_8c.html", null ],
+    [ "event.h", "events_2include_2event_8h.html", null ],
+    [ "event_json.h", "events_2include_2event__json_8h.html", null ],
+    [ "event_msg_pack.h", "event__msg__pack_8h.html", null ],
+    [ "event.h", "ext__comps_2shim_2include_2event_8h.html", null ],
+    [ "event_json.h", "ext__comps_2shim_2include_2event__json_8h.html", null ],
     [ "FUNC_DATA", "group__events.html#ga9d1a1797e2441c144ad1fa62ec24db00", null ],
     [ "FUNC_DATA", "group__events.html#ga9d1a1797e2441c144ad1fa62ec24db00", null ],
     [ "FUNC_DATA", "group__events.html#ga9d1a1797e2441c144ad1fa62ec24db00", null ],

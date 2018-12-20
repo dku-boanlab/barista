@@ -1,6 +1,11 @@
 var group__app__events =
 [
     [ "app_event.c", "app__events_2app__event_8c.html", null ],
+    [ "app_event.h", "app__events_2include_2app__event_8h.html", null ],
+    [ "app_event_json.h", "app__events_2include_2app__event__json_8h.html", null ],
+    [ "app_event_msg_pack.h", "app__event__msg__pack_8h.html", null ],
+    [ "app_event.h", "ext__apps_2shim_2include_2app__event_8h.html", null ],
+    [ "app_event_json.h", "ext__apps_2shim_2include_2app__event__json_8h.html", null ],
     [ "FUNC_DATA", "group__app__events.html#ga9d1a1797e2441c144ad1fa62ec24db00", null ],
     [ "FUNC_DATA", "group__app__events.html#ga9d1a1797e2441c144ad1fa62ec24db00", null ],
     [ "FUNC_DATA", "group__app__events.html#ga9d1a1797e2441c144ad1fa62ec24db00", null ],

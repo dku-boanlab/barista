@@ -1,6 +1,7 @@
 var group__app__mgmt =
 [
     [ "application.c", "application_8c.html", null ],
+    [ "application.h", "src_2include_2application_8h.html", null ],
     [ "BASE_APPS", "group__app__mgmt.html#ga5fd2b0ccbc86029ce3ce30316bfa3b7b", null ],
     [ "app_event_list", "group__app__mgmt.html#gaef2ada1ec62fe4daeab92fd5488910db", null ],
     [ "app_event_print", "group__app__mgmt.html#gaf1887102d566d84505fb9462dfbe3a44", null ],
@@ -8,7 +9,7 @@ var group__app__mgmt =
     [ "app_event_type", "group__app__mgmt.html#gaa4dab8488115910643c62b6a1f082e96", null ],
     [ "app_thread_main", "group__app__mgmt.html#ga90bb17f2c3bc2f6b2704756bb18e6ce7", null ],
     [ "application_activate", "group__app__mgmt.html#gaca43c041680131d633c231037d600419", null ],
-    [ "application_add_policy", "group__app__mgmt.html#ga031aa9f410e2dfb878a4626866afa684", null ],
+    [ "application_add_policy", "group__app__mgmt.html#ga23a9d6937f6bed4fb415746f1df9cba1", null ],
     [ "application_cli", "group__app__mgmt.html#gad4fa9b64e6ebd92b39dcbab1b5d8b6f8", null ],
     [ "application_deactivate", "group__app__mgmt.html#ga6b5281b32b332c5170606c4cf8e42033", null ],
     [ "application_del_policy", "group__app__mgmt.html#gaf9d674ad6fd1a890eed6aa0c9cf6e61f", null ],

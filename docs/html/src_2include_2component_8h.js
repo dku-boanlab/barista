@@ -22,7 +22,7 @@ var src_2include_2component_8h =
     [ "COMPNT_EXECUTE", "src_2include_2component_8h.html#ac9420823bfeba78fce625fc105e3b01dab9c086b91499c2a8a42deb772e7bd617", null ],
     [ "COMPNT_MAX_PERM", "src_2include_2component_8h.html#ac9420823bfeba78fce625fc105e3b01da944aa1713df32afc6edd53c54be81a31", null ],
     [ "component_activate", "group__compnt__mgmt.html#gab85eb33c04a0086519656b356091c3d7", null ],
-    [ "component_add_policy", "group__compnt__mgmt.html#ga7aa91d6cf4a84d7d7d8dd13b132c253b", null ],
+    [ "component_add_policy", "group__compnt__mgmt.html#ga4aa5c69bd3a3cbd7b152c666debbe29b", null ],
     [ "component_cli", "group__compnt__mgmt.html#gacad520b1a5f1d1b279a041a84cbe9ec0", null ],
     [ "component_deactivate", "group__compnt__mgmt.html#gad370810cc61dc12e2380ff05483817c4", null ],
     [ "component_del_policy", "group__compnt__mgmt.html#gaea78a9ac07796ba41e69ee006f0ad3a9", null ],

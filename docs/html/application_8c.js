@@ -7,7 +7,7 @@ var application_8c =
     [ "app_event_type", "group__app__mgmt.html#gaa4dab8488115910643c62b6a1f082e96", null ],
     [ "app_thread_main", "group__app__mgmt.html#ga90bb17f2c3bc2f6b2704756bb18e6ce7", null ],
     [ "application_activate", "group__app__mgmt.html#gaca43c041680131d633c231037d600419", null ],
-    [ "application_add_policy", "group__app__mgmt.html#ga031aa9f410e2dfb878a4626866afa684", null ],
+    [ "application_add_policy", "group__app__mgmt.html#ga23a9d6937f6bed4fb415746f1df9cba1", null ],
     [ "application_cli", "group__app__mgmt.html#gad4fa9b64e6ebd92b39dcbab1b5d8b6f8", null ],
     [ "application_deactivate", "group__app__mgmt.html#ga6b5281b32b332c5170606c4cf8e42033", null ],
     [ "application_del_policy", "group__app__mgmt.html#gaf9d674ad6fd1a890eed6aa0c9cf6e61f", null ],
