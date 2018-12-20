@@ -51,6 +51,7 @@ var events_2event_8c =
     [ "ODP_TYPE", "group__events.html#ga211258d0dd99d7aab206cc5391d61448", null ],
     [ "ODP_TYPE", "group__events.html#ga211258d0dd99d7aab206cc5391d61448", null ],
     [ "ODP_TYPE", "group__events.html#ga211258d0dd99d7aab206cc5391d61448", null ],
+    [ "destroy_ev_workers", "group__events.html#ga12697d941df7ea6a970f96e057e5e3f8", null ],
     [ "ev_dp_aggregate_stats", "group__events.html#ga389bfd60a98c39c688bde0f8fbfadc7b", null ],
     [ "ev_dp_delete_flow", "group__events.html#gac31582e1c1e2728f9ea883ba38562595", null ],
     [ "ev_dp_flow_deleted", "group__events.html#ga5c630aa5fa0c63f1c732f375d8dc2233", null ],

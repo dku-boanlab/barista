@@ -12,7 +12,7 @@ var searchData=
   ['port_5fstats_5frequest',['port_stats_request',['../group__stat__mgmt.html#ga16bed22bb05133b4b7ef041b857d4332',1,'stat_mgmt.c']]],
   ['print_5flogo',['print_logo',['../group__base.html#ga2646aa8df14779815e2049bc30509f77',1,'main.c']]],
   ['print_5fusage',['print_usage',['../group__base.html#ga5bea056a7d160fcf78023ff624e9c690',1,'main.c']]],
-  ['process_5fapp_5fevents',['process_app_events',['../app__event__msg__pack_8h.html#a0e0884cd94efc34e63763011e9635ab5',1,'app_event_msg_pack.h']]],
+  ['process_5fapp_5fevents',['process_app_events',['../group__av__msg.html#ga0e0884cd94efc34e63763011e9635ab5',1,'app_event_msg_pack.h']]],
   ['push_5fback',['push_back',['../epoll__env_8h.html#af86d38ad4e4b4a93fd92586fc6415c8b',1,'epoll_env.h']]],
   ['push_5fmsg_5finto_5fqueue',['push_msg_into_queue',['../group__log.html#ga8f9e2a6d4d345ccb31de6fb019e3c2d9',1,'log.c']]],
   ['push_5fmsgs_5finto_5ffile',['push_msgs_into_file',['../group__log.html#gae1621946b1351d8e0315011dddaadacd',1,'log.c']]]

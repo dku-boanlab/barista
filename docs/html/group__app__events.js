@@ -1,11 +1,8 @@
 var group__app__events =
 [
+    [ "AppEvent-to-JSON convertor", "group__av__json.html", "group__av__json" ],
+    [ "External AppEvent Handler", "group__av__msg.html", "group__av__msg" ],
     [ "app_event.c", "app__events_2app__event_8c.html", null ],
-    [ "app_event.h", "app__events_2include_2app__event_8h.html", null ],
-    [ "app_event_json.h", "app__events_2include_2app__event__json_8h.html", null ],
-    [ "app_event_msg_pack.h", "app__event__msg__pack_8h.html", null ],
-    [ "app_event.h", "ext__apps_2shim_2include_2app__event_8h.html", null ],
-    [ "app_event_json.h", "ext__apps_2shim_2include_2app__event__json_8h.html", null ],
     [ "FUNC_DATA", "group__app__events.html#ga9d1a1797e2441c144ad1fa62ec24db00", null ],
     [ "FUNC_DATA", "group__app__events.html#ga9d1a1797e2441c144ad1fa62ec24db00", null ],
     [ "FUNC_DATA", "group__app__events.html#ga9d1a1797e2441c144ad1fa62ec24db00", null ],
@@ -70,6 +67,7 @@ var group__app__events =
     [ "av_log_warn", "group__app__events.html#gaf04ac413bc7fd67255a4550657686035", null ],
     [ "av_sw_connected", "group__app__events.html#gac40b8ee2349a993f63bd0b87368c8024", null ],
     [ "av_sw_disconnected", "group__app__events.html#ga535ff16bed17a55cd00b8761e41b116a", null ],
+    [ "destroy_av_workers", "group__app__events.html#ga904aaa708d9083bb6399bf94aaf850c5", null ],
     [ "flow_av_raise", "group__app__events.html#gaba3205e91001cc90cb67374d8adbdf40", null ],
     [ "host_av_raise", "group__app__events.html#ga1f8c1c72f6ebe77d4254421823b26840", null ],
     [ "log_av_raise", "group__app__events.html#ga5cf946cae6a8056076cfd7929568dae8", null ],

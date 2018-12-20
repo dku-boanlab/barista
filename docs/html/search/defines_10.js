@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['userid',['USERID',['../cli__password_8h.html#aae0e2fb090cadcd2b2f94e9d59754de9',1,'cli_password.h']]],
-  ['userpw',['USERPW',['../cli__password_8h.html#a9b5f1d04de35fb84af4ead9ab726f155',1,'cli_password.h']]]
+  ['vlan_5fnone',['VLAN_NONE',['../ext__apps_2shim_2include_2type_8h.html#a2d3d00299a067f67c863080811fe1833',1,'VLAN_NONE():&#160;type.h'],['../ext__comps_2shim_2include_2type_8h.html#a2d3d00299a067f67c863080811fe1833',1,'VLAN_NONE():&#160;type.h'],['../src_2include_2type_8h.html#a2d3d00299a067f67c863080811fe1833',1,'VLAN_NONE():&#160;type.h']]]
 ];

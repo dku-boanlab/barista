@@ -1,7 +1,6 @@
 var group__app__mgmt =
 [
     [ "application.c", "application_8c.html", null ],
-    [ "application.h", "src_2include_2application_8h.html", null ],
     [ "BASE_APPS", "group__app__mgmt.html#ga5fd2b0ccbc86029ce3ce30316bfa3b7b", null ],
     [ "app_event_list", "group__app__mgmt.html#gaef2ada1ec62fe4daeab92fd5488910db", null ],
     [ "app_event_print", "group__app__mgmt.html#gaf1887102d566d84505fb9462dfbe3a44", null ],

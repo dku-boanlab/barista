@@ -1,7 +1,5 @@
 var group__app__load =
 [
-    [ "application.h", "ext__apps_2shim_2include_2application_8h.html", null ],
-    [ "shim.h", "ext__apps_2shim_2include_2shim_8h.html", null ],
     [ "shim.c", "ext__apps_2shim_2shim_8c.html", null ],
     [ "activate_app", "group__app__load.html#ga24157981fed079355cf814bb6dffa628", null ],
     [ "app_thread_main", "group__app__load.html#ga80d4e1d995021f53bfbe30fc1d8a5545", null ],
