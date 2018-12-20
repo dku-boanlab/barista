@@ -127,7 +127,7 @@ static int init_compnt(void)
 
 /**
  * \brief Function to execute the main function of an external component
- * \param null NULL
+ * \return Component context
  */
 static void *thread_main(void *null)
 {

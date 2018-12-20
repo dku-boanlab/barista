@@ -33,7 +33,7 @@ const char event_string[__MAX_EVENTS][__CONF_WORD_LEN] = {
 
 /**
  * \brief Function to convert an event string to an event ID
- * \param event Event string
+ * \param event Event name
  * \return Event ID
  */
 static int event_type(const char *event)
@@ -49,7 +49,7 @@ static int event_type(const char *event)
 
 /**
  * \brief Function to print components that listen to an event
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param id Event ID
  */
 static int event_print(cli_t *cli, int id)
@@ -75,8 +75,8 @@ static int event_print(cli_t *cli, int id)
 
 /**
  * \brief Function to print an event and all components that listen to the event
- * \param cli CLI pointer
- * \param name Event string
+ * \param cli CLI context
+ * \param name Event name
  */
 int event_show(cli_t *cli, char *name)
 {
@@ -129,7 +129,7 @@ int event_show(cli_t *cli, char *name)
 
 /**
  * \brief Function to print all events
- * \param cli CLI pointer
+ * \param cli CLI context
  */
 int event_list(cli_t *cli)
 {
@@ -177,9 +177,9 @@ int event_list(cli_t *cli)
 
 /**
  * \brief Function to print the configuration of a component
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param c Component configuration
- * \param details The flag to enable the detailed description
+ * \param details The flag to print the detailed description
  */
 static int component_print(cli_t *cli, compnt_t *c, int details)
 {
@@ -280,7 +280,7 @@ static int component_print(cli_t *cli, compnt_t *c, int details)
 
 /**
  * \brief Function to print a component configuration
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param name Component name
  */
 int component_show(cli_t *cli, char *name)
@@ -306,7 +306,7 @@ int component_show(cli_t *cli, char *name)
 
 /**
  * \brief Function to print all component configurations
- * \param cli CLI pointer
+ * \param cli CLI context
  */
 int component_list(cli_t *cli)
 {
@@ -327,7 +327,7 @@ int component_list(cli_t *cli)
 
 /**
  * \brief Function to enable a component
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param name Component name
  */
 int component_enable(cli_t *cli, char *name)
@@ -356,7 +356,7 @@ int component_enable(cli_t *cli, char *name)
 
 /**
  * \brief Function to disable a component
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param name Component name
  */
 int component_disable(cli_t *cli, char *name)
@@ -405,7 +405,7 @@ static void *thread_main(void *c_id)
 
 /**
  * \brief Function to activate a component
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param name Component name
  */
 int component_activate(cli_t *cli, char *name)
@@ -473,7 +473,7 @@ int component_activate(cli_t *cli, char *name)
 
 /**
  * \brief Function to deactivate a component
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param name Component name
  */
 int component_deactivate(cli_t *cli, char *name)
@@ -529,7 +529,7 @@ int component_deactivate(cli_t *cli, char *name)
 
 /**
  * \brief Function to activate all enabled components
- * \param cli CLI pointer
+ * \param cli CLI context
  */
 int component_start(cli_t *cli)
 {
@@ -685,7 +685,7 @@ int component_start(cli_t *cli)
 
 /**
  * \brief Function to deactivate all activated components
- * \param cli CLI pointer
+ * \param cli CLI context
  */
 int component_stop(cli_t *cli)
 {
@@ -806,11 +806,11 @@ int component_stop(cli_t *cli)
 
 /**
  * \brief Function to add a policy to a component
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param name Component name
- * \param p Operator-defined policy
+ * \param odp Operator-defined policy
  */
-int component_add_policy(cli_t *cli, char *name, char *p)
+int component_add_policy(cli_t *cli, char *name, char *odp)
 {
     if (compnt_ctx == NULL) {
         cli_print(cli, "Need to load configurations");
@@ -836,9 +836,9 @@ int component_add_policy(cli_t *cli, char *name, char *p)
     char parm[__NUM_OF_ODP_FIELDS][__CONF_WORD_LEN] = {{0}};
     char val[__NUM_OF_ODP_FIELDS][__CONF_WORD_LEN] = {{0}};
 
-    cli_print(cli, "Policy: %s, %s", c->name, p);
+    cli_print(cli, "Policy: %s, %s", c->name, odp);
 
-    char *token = strtok(p, ";");
+    char *token = strtok(odp, ";");
 
     while (token != NULL) {
         if (sscanf(token, "%[^':']:%[^':']", parm[cnt], val[cnt]) != 2) {
@@ -1004,7 +1004,7 @@ int component_add_policy(cli_t *cli, char *name, char *p)
 
 /**
  * \brief Function to delete a policy from a component
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param name Component name
  * \param idx The index of the target operator-defined policy
  */
@@ -1057,7 +1057,7 @@ int component_del_policy(cli_t *cli, char *name, int idx)
 
 /**
  * \brief Function to show all policies applied to a component
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param name Component name
  */
 int component_show_policy(cli_t *cli, char *name)
@@ -1220,7 +1220,7 @@ int component_show_policy(cli_t *cli, char *name)
 
 /**
  * \brief Function to deliver a command to a component
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param args Arguments
  */
 int component_cli(cli_t *cli, char **args)
@@ -1247,7 +1247,7 @@ int component_cli(cli_t *cli, char **args)
 }
 
 /**
- * \brief Function to free all configuration structures
+ * \brief Function to deallocate all configuration structures
  * \param num_compnts The number of registered components
  * \param compnt_list The list of the components
  * \param ev_num The number of components for each event
@@ -1282,7 +1282,7 @@ static int clean_structs(int num_compnts, compnt_t **compnt_list, int *ev_num, c
 
 /**
  * \brief Function to load component configurations from a file
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param ctx The context of the Barista NOS
  */
 int component_load(cli_t *cli, ctx_t *ctx)

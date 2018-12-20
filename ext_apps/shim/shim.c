@@ -129,7 +129,7 @@ static int init_app(void)
 
 /**
  * \brief Function to execute the main function of an external application
- * \param null NULL
+ * \return Application context
  */
 static void *app_thread_main(void *null)
 {

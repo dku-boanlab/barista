@@ -3,6 +3,13 @@
  */
 
 /**
+ * \ingroup compnt_shim External Component Handler
+ * @{
+ * \ingroup compnt_load External Component Loader
+ * @{
+ */
+
+/**
  * \file
  * \author Jaehyun Nam <namjh@kaist.ac.kr>
  */
@@ -31,7 +38,7 @@ struct _compnt_t {
     uint32_t component_id; /**< Component ID */
 
     char name[__CONF_WORD_LEN]; /**< Component name */
-    char args[__CONF_WORD_LEN]; /**< Original argument string */
+    char args[__CONF_WORD_LEN]; /**< Unparsed arguments */
 
     int argc; /**< The number of arguments */
     char *argv[__CONF_ARGC + 1]; /**< Arguments */

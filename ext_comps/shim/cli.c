@@ -17,6 +17,11 @@
 
 #include "cli.h"
 
+/**
+ * \brief Function to print out messages
+ * \param cli CLI context
+ * \param buf Message
+ */
 int cli_print(cli_t *cli, char *buf)
 {
     printf("%s\n", buf);

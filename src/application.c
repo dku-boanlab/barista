@@ -41,7 +41,7 @@ const char app_event_string[AV_NUM_EVENTS+1][__CONF_WORD_LEN] = {
 
 /**
  * \brief Function to convert an event string to an event ID
- * \param app_event App event string
+ * \param app_event App event name
  * \return App event ID
  */
 static int app_event_type(const char *app_event)
@@ -57,7 +57,7 @@ static int app_event_type(const char *app_event)
 
 /**
  * \brief Function to print applications that listen to an app event
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param id App event ID
  */
 static int app_event_print(cli_t *cli, int id)
@@ -83,8 +83,8 @@ static int app_event_print(cli_t *cli, int id)
 
 /**
  * \brief Function to print an app event and all applications that listen to the app event
- * \param cli CLI pointer
- * \param name App event string
+ * \param cli CLI context
+ * \param name App event name
  */
 int app_event_show(cli_t *cli, char *name)
 {
@@ -137,7 +137,7 @@ int app_event_show(cli_t *cli, char *name)
 
 /**
  * \brief Function to print all app events
- * \param cli CLI pointer
+ * \param cli CLI context
  */
 int app_event_list(cli_t *cli)
 {
@@ -185,7 +185,7 @@ int app_event_list(cli_t *cli)
 
 /**
  * \brief Function to print the configuration of an application
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param c Application configuration
  * \param details The flag to enable the detailed description
  */
@@ -284,7 +284,7 @@ static int application_print(cli_t *cli, app_t *c, int details)
 
 /**
  * \brief Function to print an application configuration
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param name Application name
  */
 int application_show(cli_t *cli, char *name)
@@ -310,7 +310,7 @@ int application_show(cli_t *cli, char *name)
 
 /**
  * \brief Function to print all application configurations
- * \param cli CLI pointer
+ * \param cli CLI context
  */
 int application_list(cli_t *cli)
 {
@@ -331,7 +331,7 @@ int application_list(cli_t *cli)
 
 /**
  * \brief Function to enable an application
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param name Application name
  */
 int application_enable(cli_t *cli, char *name)
@@ -360,7 +360,7 @@ int application_enable(cli_t *cli, char *name)
 
 /**
  * \brief Function to disable an application
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param name Application name
  */
 int application_disable(cli_t *cli, char *name)
@@ -409,7 +409,7 @@ static void *app_thread_main(void *a_id)
 
 /**
  * \brief Function to activate an application
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param name Application name
  */
 int application_activate(cli_t *cli, char *name)
@@ -477,7 +477,7 @@ int application_activate(cli_t *cli, char *name)
 
 /**
  * \brief Function to deactivate an application
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param name Application name
  */
 int application_deactivate(cli_t *cli, char *name)
@@ -533,7 +533,7 @@ int application_deactivate(cli_t *cli, char *name)
 
 /**
  * \brief Function to activate all enabled applications
- * \param cli CLI pointer
+ * \param cli CLI context
  */
 int application_start(cli_t *cli)
 {
@@ -645,7 +645,7 @@ int application_start(cli_t *cli)
 
 /**
  * \brief Function to deactivate all activated applications
- * \param cli CLI pointer
+ * \param cli CLI context
  */
 int application_stop(cli_t *cli)
 {
@@ -727,11 +727,11 @@ int application_stop(cli_t *cli)
 
 /**
  * \brief Function to add a policy to an application
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param name Application name
- * \param p Operator-defined policy
+ * \param odp Operator-defined policy
  */
-int application_add_policy(cli_t *cli, char *name, char *p)
+int application_add_policy(cli_t *cli, char *name, char *odp)
 {
     if (app_ctx == NULL) {
         cli_print(cli, "Need to load configurations");
@@ -757,9 +757,9 @@ int application_add_policy(cli_t *cli, char *name, char *p)
     char parm[__NUM_OF_ODP_FIELDS][__CONF_WORD_LEN] = {{0}};
     char val[__NUM_OF_ODP_FIELDS][__CONF_WORD_LEN] = {{0}};
 
-    cli_print(cli, "Policy: %s, %s", c->name, p);
+    cli_print(cli, "Policy: %s, %s", c->name, odp);
 
-    char *token = strtok(p, ";");
+    char *token = strtok(odp, ";");
     while (token != NULL) {
         if (sscanf(token, "%[^':']:%[^':']", parm[cnt], val[cnt]) != 2) {
             return -1;
@@ -924,7 +924,7 @@ int application_add_policy(cli_t *cli, char *name, char *p)
 
 /**
  * \brief Function to delete a policy from an application
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param name Application name
  * \param idx The index of the target operator-defined policy
  */
@@ -977,7 +977,7 @@ int application_del_policy(cli_t *cli, char *name, int idx)
 
 /**
  * \brief Function to show all policies applied to an application
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param name Application name
  */
 int application_show_policy(cli_t *cli, char *name)
@@ -1140,7 +1140,7 @@ int application_show_policy(cli_t *cli, char *name)
 
 /**
  * \brief Function to deliver a command to the corresponding application
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param args Arguments
  */
 int application_cli(cli_t *cli, char **args)
@@ -1166,7 +1166,7 @@ int application_cli(cli_t *cli, char **args)
 }
 
 /**
- * \brief Function to free all configuration structures
+ * \brief Function to deallocate all configuration structures
  * \param num_apps The number of registered applications
  * \param app_list The list of the applications
  * \param av_num The number of applications for each event
@@ -1201,7 +1201,7 @@ static int clean_structs(int num_apps, app_t **app_list, int *av_num, app_t ***a
 
 /**
  * \brief Function to load application configurations from a file
- * \param cli CLI pointer
+ * \param cli CLI context
  * \param ctx The context of the Barista NOS
  */
 int application_load(cli_t *cli, ctx_t *ctx)

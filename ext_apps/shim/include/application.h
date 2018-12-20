@@ -3,6 +3,13 @@
  */
 
 /**
+ * \ingroup app_shim External Application Handler
+ * @{
+ * \ingroup app_load External Application Loader
+ * @{
+ */
+
+/**
  * \file
  * \author Jaehyun Nam <namjh@kaist.ac.kr>
  */
@@ -31,7 +38,7 @@ struct _app_t {
     uint32_t app_id; /**< Application ID */
 
     char name[__CONF_WORD_LEN]; /**< Application name */
-    char args[__CONF_WORD_LEN]; /**< Original argument string */
+    char args[__CONF_WORD_LEN]; /**< Unparsed arguments */
 
     int argc; /**< The number of arguments */
     char *argv[__CONF_ARGC + 1]; /**< Arguments */

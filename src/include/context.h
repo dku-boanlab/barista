@@ -3,6 +3,13 @@
  */
 
 /**
+ * \ingroup framework
+ * @{
+ * \ingroup context Context Management
+ * @{
+ */
+
+/**
  * \file
  * \author Jaehyun Nam <namjh@kaist.ac.kr>
  */

@@ -85,7 +85,7 @@ static void daemonize(void)
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to print out the Barista logo
+ * \brief Function to print the Barista logo
  * \return None
  */
 static void print_logo(void)
@@ -131,7 +131,7 @@ static void print_logo(void)
 }
 
 /**
- * \brief Function to print out the Barista usage
+ * \brief Function to print the Barista usage
  * \param name Program name
  */
 static void print_usage(char *name)
@@ -158,8 +158,8 @@ int main(int argc, char **argv)
     int autostart = FALSE;
     int daemon = FALSE;
 
-    char conf_file[__CONF_WORD_LEN] = {0};
-    char app_conf_file[__CONF_WORD_LEN] = {0};
+    char conf_file[__CONF_WORD_LEN] = DEFAULT_COMPNT_CONFIG_FILE;
+    char app_conf_file[__CONF_WORD_LEN] = DEFAULT_APP_CONFIG_FILE;
 
     print_logo();
 

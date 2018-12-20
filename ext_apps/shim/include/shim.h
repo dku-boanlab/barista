@@ -3,6 +3,13 @@
  */
 
 /**
+ * \ingroup app_shim External Application Handler
+ * @{
+ * \ingroup app_load External Application Loader
+ * @{
+ */
+
+/**
  * \file
  * \author Jaehyun Nam <namjh@kaist.ac.kr>
  */

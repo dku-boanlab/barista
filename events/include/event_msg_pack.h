@@ -3,6 +3,13 @@
  */
 
 /**
+ * \ingroup framework
+ * @{
+ * \ingroup events Event Handler
+ * @{
+ */
+
+/**
  * \file
  * \author Jaehyun Nam <namjh@kaist.ac.kr>
  */

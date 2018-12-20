@@ -20,9 +20,13 @@
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief Base64 padding size */
 #define PADDING 64
+
+/** \brief Base64 buffer size */
 #define MAX_BUFFER_SIZE 65535
 
+/** \brief Encoding table */
 const char enc_table[] = { 
     'A', 'B', 'C', 'D', 'E', 'F', 'G',
     'H', 'I', 'J', 'K', 'L', 'M', 'N',
@@ -36,6 +40,7 @@ const char enc_table[] = {
     '/', '=' 
 };
 
+/** \brief Decoding table */
 const int dec_table[] = {
     -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  
     -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  

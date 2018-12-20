@@ -20,8 +20,10 @@
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief Funtion to rotate 32-bits */
 #define rot(x,k) (((x)<<(k)) | ((x)>>(32-(k))))
 
+/** \brief Function to mix values */
 #define mix(a,b,c) \
 { \
     a -= c;  a ^= rot(c, 4);  c += b; \
@@ -32,6 +34,7 @@
     c -= b;  c ^= rot(b, 4);  b += a; \
 }
 
+/** \brief Function to finalize values */
 #define final(a,b,c) \
 { \
     c ^= b; c -= rot(b,14); \
