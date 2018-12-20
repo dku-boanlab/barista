@@ -6,6 +6,7 @@ var group__ev__msg =
     [ "deliver_events", "group__ev__msg.html#gaa427d71f97839d1e116fdb02c288a05b", null ],
     [ "ev_push_ext_msg", "group__ev__msg.html#gaed13ba63ae894d108f70c2f7752f8fb5", null ],
     [ "ev_send_ext_msg", "group__ev__msg.html#gadaa9ae4db3c7bc7413a856b1c8057129", null ],
+    [ "process_events", "group__ev__msg.html#gac236427ba4dcd94a269f5b03cd128197", null ],
     [ "receive_events", "group__ev__msg.html#ga5266b76f1f78c9ee4f85dc1a0023d3a2", null ],
     [ "reply_events", "group__ev__msg.html#gabf6fb99c307e00919cf7247c91e04966", null ],
     [ "reply_proxy", "group__ev__msg.html#gaa20d68b61733cb1aad1ada7082514a5b", null ]
