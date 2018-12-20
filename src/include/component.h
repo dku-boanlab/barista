@@ -3,13 +3,6 @@
  */
 
 /**
- * \ingroup framework
- * @{
- * \ingroup compnt_mgmt Component Management
- * @{
- */
-
-/**
  * \file
  * \author Jaehyun Nam <namjh@kaist.ac.kr>
  */

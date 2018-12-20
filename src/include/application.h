@@ -3,13 +3,6 @@
  */
 
 /**
- * \ingroup framework
- * @{
- * \ingroup app_mgmt Application Management
- * @{
- */
-
-/**
  * \file
  * \author Jaehyun Nam <namjh@kaist.ac.kr>
  */

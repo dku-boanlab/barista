@@ -7,6 +7,8 @@
  * @{
  * \ingroup events Event Handler
  * @{
+ * \defgroup ev_json Event-to-JSON convertor
+ * @{
  */
 
 /**
@@ -931,3 +933,11 @@ static int import_from_json(uint32_t *id, uint16_t *type, char *input, void *out
 
     return ret;
 }
+
+/**
+ * @}
+ *
+ * @}
+ *
+ * @}
+ */

@@ -3,13 +3,6 @@
  */
 
 /**
- * \ingroup compnt_shim External Component Handler
- * @{
- * \ingroup compnt_load External Component Loader
- * @{
- */
-
-/**
  * \file
  * \author Jaehyun Nam <namjh@kaist.ac.kr>
  */

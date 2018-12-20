@@ -3,13 +3,6 @@
  */
 
 /**
- * \ingroup compnt_shim
- * @{
- * \ingroup compnt_alt Component CLI Alternative
- * @{
- */
-
-/**
  * \file
  * \author Jaehyun Nam <namjh@kaist.ac.kr>
  */

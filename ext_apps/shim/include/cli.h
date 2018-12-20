@@ -3,13 +3,6 @@
  */
 
 /**
- * \ingroup app_shim
- * @{
- * \ingroup app_alt Application CLI Alternative
- * @{
- */
-
-/**
  * \file
  * \author Jaehyun Nam <namjh@kaist.ac.kr>
  */

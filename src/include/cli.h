@@ -3,13 +3,6 @@
  */
 
 /**
- * \ingroup framework
- * @{
- * \ingroup cli Command-Line Interface
- * @{
- */
-
-/**
  * \file
  * \author Jaehyun Nam <namjh@kaist.ac.kr>
  */

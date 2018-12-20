@@ -7,6 +7,8 @@
  * @{
  * \ingroup events Event Handler
  * @{
+ * \defgroup ev_msg External Event Handler
+ * @{
  */
 
 /**
@@ -503,26 +505,10 @@ static void *deliver_events(void *null)
     return NULL;
 }
 
-/////////////////////////////////////////////////////////////////////
-
 /**
- * \brief Function to destroy an event queue
- * \param ctx The context of the Barista NOS
+ * @}
+ *
+ * @}
+ *
+ * @}
  */
-int destroy_ev_workers(ctx_t *ctx)
-{
-    ctx->ev_on = FALSE;
-
-    waitsec(1, 0);
-
-    zmq_close(ev_pull_in_sock);
-    zmq_close(ev_pull_out_sock);
-    zmq_close(ev_rep_comp);
-    zmq_close(ev_rep_work);
-
-    zmq_ctx_destroy(ev_pull_in_ctx);
-    zmq_ctx_destroy(ev_pull_out_ctx);
-    zmq_ctx_destroy(ev_rep_ctx);
-
-    return 0;
-}

@@ -319,6 +319,28 @@ int app_event_init(ctx_t *ctx)
     return 0;
 }
 
+/**
+ * \brief Function to destroy an app event queue
+ * \param ctx The context of the Barista NOS
+ */
+int destroy_av_workers(ctx_t *ctx)
+{
+    ctx->av_on = FALSE;
+
+    waitsec(1, 0);
+
+    zmq_close(av_pull_in_sock);
+    zmq_close(av_pull_out_sock);
+    zmq_close(av_rep_app);
+    zmq_close(av_rep_work);
+
+    zmq_ctx_destroy(av_pull_in_ctx);
+    zmq_ctx_destroy(av_pull_out_ctx);
+    zmq_ctx_destroy(av_rep_ctx);
+
+    return 0;
+}
+
 /////////////////////////////////////////////////////////////////////
 
 #define ODP_FUNC compare_switch
