@@ -194,6 +194,83 @@ static int av_send_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, 
 /////////////////////////////////////////////////////////////////////
 
 /**
+ * \brief Function to process app events
+ * \param msg Application events
+ */
+static int process_app_events(msg_t *msg)
+{
+    int ret = 0;
+
+    switch (msg->type) {
+
+    // upstream events
+
+    case AV_DP_RECEIVE_PACKET:
+        pktin_av_raise(msg->id, AV_DP_RECEIVE_PACKET, sizeof(pktin_t), (const pktin_t *)msg->data);
+        break;
+    case AV_DP_FLOW_EXPIRED:
+        flow_av_raise(msg->id, AV_DP_FLOW_EXPIRED, sizeof(flow_t), (const flow_t *)msg->data);
+        break;
+    case AV_DP_FLOW_DELETED:
+        flow_av_raise(msg->id, AV_DP_FLOW_DELETED, sizeof(flow_t), (const flow_t *)msg->data);
+        break;
+    case AV_DP_PORT_ADDED:
+        port_av_raise(msg->id, AV_DP_PORT_ADDED, sizeof(port_t), (const port_t *)msg->data);
+        break;
+    case AV_DP_PORT_MODIFIED:
+        port_av_raise(msg->id, AV_DP_PORT_MODIFIED, sizeof(port_t), (const port_t *)msg->data);
+        break;
+    case AV_DP_PORT_DELETED:
+        port_av_raise(msg->id, AV_DP_PORT_DELETED, sizeof(port_t), (const port_t *)msg->data);
+        break;
+
+    // downstream events
+
+    case AV_DP_SEND_PACKET:
+        pktout_av_raise(msg->id, AV_DP_SEND_PACKET, sizeof(pktout_t), (const pktout_t *)msg->data);
+        break;
+    case AV_DP_INSERT_FLOW:
+        flow_av_raise(msg->id, AV_DP_INSERT_FLOW, sizeof(flow_t), (const flow_t *)msg->data);
+        break;
+    case AV_DP_MODIFY_FLOW:
+        flow_av_raise(msg->id, AV_DP_MODIFY_FLOW, sizeof(flow_t), (const flow_t *)msg->data);
+        break;
+    case AV_DP_DELETE_FLOW:
+        flow_av_raise(msg->id, AV_DP_DELETE_FLOW, sizeof(flow_t), (const flow_t *)msg->data);
+        break;
+
+    // internal events (request-reply)
+
+    // internal events (notification)
+
+    // log events
+
+    case AV_LOG_DEBUG:
+        log_av_raise(msg->id, AV_LOG_DEBUG, strlen((const char *)msg->data), (const char *)msg->data);
+        break;
+    case AV_LOG_INFO:
+        log_av_raise(msg->id, AV_LOG_INFO, strlen((const char *)msg->data), (const char *)msg->data);
+        break;
+    case AV_LOG_WARN:
+        log_av_raise(msg->id, AV_LOG_WARN, strlen((const char *)msg->data), (const char *)msg->data);
+        break;
+    case AV_LOG_ERROR:
+        log_av_raise(msg->id, AV_LOG_ERROR, strlen((const char *)msg->data), (const char *)msg->data);
+        break;
+    case AV_LOG_FATAL:
+        log_av_raise(msg->id, AV_LOG_FATAL, strlen((const char *)msg->data), (const char *)msg->data);
+        break;
+
+    default:
+        break;
+    }
+
+    return ret;
+}
+
+/////////////////////////////////////////////////////////////////////
+
+/**
  * \brief Function to process requests from external applications and reply outputs
  * \param null NULL
  */
@@ -251,17 +328,7 @@ static void *reply_app_events(void *null)
         if (msg.id == 0) continue;
         else if (msg.type > AV_NUM_EVENTS) continue;
 
-        int ret = 0;
-
-        switch (msg.type) {
-
-        // request-response events
-
-        default:
-            break;
-        }
-
-        msg.ret = ret;
+        msg.ret = process_app_events(&msg);
 
         char out_str[__MAX_EXT_MSG_SIZE];
         export_to_json(msg.id, msg.type, msg.data, out_str);
@@ -292,75 +359,6 @@ static void *reply_proxy(void *null)
 }
 
 /////////////////////////////////////////////////////////////////////
-
-/**
- * \brief Function to process app events
- * \param msg Application events
- */
-static int process_app_events(msg_t *msg)
-{
-    switch (msg->type) {
-
-    // upstream events
-
-    case AV_DP_RECEIVE_PACKET:
-        pktin_av_raise(msg->id, AV_DP_RECEIVE_PACKET, sizeof(pktin_t), (const pktin_t *)msg->data);
-        break;
-    case AV_DP_FLOW_EXPIRED:
-        flow_av_raise(msg->id, AV_DP_FLOW_EXPIRED, sizeof(flow_t), (const flow_t *)msg->data);
-        break;
-    case AV_DP_FLOW_DELETED:
-        flow_av_raise(msg->id, AV_DP_FLOW_DELETED, sizeof(flow_t), (const flow_t *)msg->data);
-        break;
-    case AV_DP_PORT_ADDED:
-        port_av_raise(msg->id, AV_DP_PORT_ADDED, sizeof(port_t), (const port_t *)msg->data);
-        break;
-    case AV_DP_PORT_MODIFIED:
-        port_av_raise(msg->id, AV_DP_PORT_MODIFIED, sizeof(port_t), (const port_t *)msg->data);
-        break;
-    case AV_DP_PORT_DELETED:
-        port_av_raise(msg->id, AV_DP_PORT_DELETED, sizeof(port_t), (const port_t *)msg->data);
-        break;
-
-    // downstream events
-
-    case AV_DP_SEND_PACKET:
-        pktout_av_raise(msg->id, AV_DP_SEND_PACKET, sizeof(pktout_t), (const pktout_t *)msg->data);
-        break;
-    case AV_DP_INSERT_FLOW:
-        flow_av_raise(msg->id, AV_DP_INSERT_FLOW, sizeof(flow_t), (const flow_t *)msg->data);
-        break;
-    case AV_DP_MODIFY_FLOW:
-        flow_av_raise(msg->id, AV_DP_MODIFY_FLOW, sizeof(flow_t), (const flow_t *)msg->data);
-        break;
-    case AV_DP_DELETE_FLOW:
-        flow_av_raise(msg->id, AV_DP_DELETE_FLOW, sizeof(flow_t), (const flow_t *)msg->data);
-        break;
-
-    // log events
-
-    case AV_LOG_DEBUG:
-        log_av_raise(msg->id, AV_LOG_DEBUG, strlen((const char *)msg->data), (const char *)msg->data);
-        break;
-    case AV_LOG_INFO:
-        log_av_raise(msg->id, AV_LOG_INFO, strlen((const char *)msg->data), (const char *)msg->data);
-        break;
-    case AV_LOG_WARN:
-        log_av_raise(msg->id, AV_LOG_WARN, strlen((const char *)msg->data), (const char *)msg->data);
-        break;
-    case AV_LOG_ERROR:
-        log_av_raise(msg->id, AV_LOG_ERROR, strlen((const char *)msg->data), (const char *)msg->data);
-        break;
-    case AV_LOG_FATAL:
-        log_av_raise(msg->id, AV_LOG_FATAL, strlen((const char *)msg->data), (const char *)msg->data);
-        break;
-
-    default:
-        break;
-    }
-
-    return 0;
-}
 
 /**
  * \brief Function to receive app events from external applications

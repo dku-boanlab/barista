@@ -6,6 +6,7 @@
  * \ingroup framework
  * @{
  * \defgroup compnt_shim External Component Handler
+ * \brief Functions to glue the Barista NOS and external components
  * @{
  * \defgroup compnt_load External Component Loader
  * \brief Functions to execute an external component

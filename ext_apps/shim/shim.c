@@ -6,6 +6,7 @@
  * \ingroup framework
  * @{
  * \defgroup app_shim External Application Handler
+ * \brief Functions to glue the Barista NOS and external applications
  * @{
  * \defgroup app_load External Application Loader
  * \brief Functions to execute an external application
