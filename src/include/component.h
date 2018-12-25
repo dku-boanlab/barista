@@ -46,7 +46,7 @@ enum {
     COMPNT_BASE,
     COMPNT_NETWORK,
     COMPNT_MANAGEMENT,
-    COMPNT_SECURITY_V1,
+    COMPNT_SECURITY,
     COMPNT_SECURITY_V2,
     COMPNT_ADMIN,
 };
@@ -77,10 +77,17 @@ struct _compnt_t {
     int status; /**< Status */
     int activated; /**< Activation */
 
-    void *push_ctx; /**< Context to push app events */
+    void *push_in_ctx; /**< Context to internally push events */
+    void *push_in_sock; /**< Socket to internally push events */
+
+    void *push_out_ctx; /**< Context to externally push events */
+    void *push_out_sock; /**< Socket to externally push events */
+
     void *req_ctx; /**< Context to request app events */
 
-    char pull_addr[__CONF_WORD_LEN]; /**< Component-side pulling address */
+    char pull_in_addr[__CONF_WORD_LEN]; /**< Internal pulling address */
+    char pull_addr[__CONF_WORD_LEN]; /**< External pulling address */
+
     char reply_addr[__CONF_WORD_LEN]; /**< Component-side replying address */
 
     compnt_main_f main; /**< The main function pointer */

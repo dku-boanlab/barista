@@ -22,6 +22,61 @@
 /////////////////////////////////////////////////////////////////////
 
 /**
+ * \brief Function to clean up a ZMQ message
+ * \param data ZMQ message
+ * \param hint Hint
+ */
+static void mq_free(void *data, void *hint)
+{
+    free(data);
+}
+
+/**
+ * \brief Function to push events to external components
+ * \param config Component configuration
+ */
+static void *push_events(void *config)
+{
+    compnt_t *compnt = (compnt_t *)config;
+
+    compnt->activated = TRUE;
+
+    while (compnt->activated) {
+        zmq_msg_t in_msg;
+        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
+        int zmq_ret = zmq_msg_recv(&in_msg, compnt->push_in_sock, 0);
+
+        if (!compnt->activated) {
+            zmq_msg_close(&in_msg);
+            break;
+        } else if (zmq_ret == -1) {
+            zmq_msg_close(&in_msg);
+
+            if (errno == EAGAIN) {
+                continue;
+            } else {
+                break;
+            }
+        }
+
+        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
+        memcpy(out_str, zmq_msg_data(&in_msg), zmq_msg_size(&in_msg));
+
+        zmq_msg_t out_msg;
+        zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
+
+        zmq_msg_send(&out_msg, compnt->push_out_sock, 0);
+
+        zmq_msg_close(&in_msg);
+    }
+
+    zmq_close(compnt->push_in_sock);
+    zmq_close(compnt->push_out_sock);
+
+    return NULL;
+}
+
+/**
  * \brief Function to activate an external component
  * \param in_str Handshake message
  */
@@ -55,7 +110,36 @@ static int activate_external_component(char *in_str)
     for (i=0; i<ev_ctx->num_compnts; i++) {
         if (ev_ctx->compnt_list[i]->component_id == id) {
             if (strcmp(ev_ctx->compnt_list[i]->name, name) == 0) {
-                ev_ctx->compnt_list[i]->activated = TRUE;
+                compnt_t *compnt = ev_ctx->compnt_list[i];
+
+                if (compnt->activated) {
+                    compnt->activated = FALSE;
+                    waitsec(1, 0);
+                }
+
+                compnt->push_in_sock = zmq_socket(compnt->push_in_ctx, ZMQ_PULL);
+
+                int timeout = 250;
+                zmq_setsockopt(compnt->push_in_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+
+                if (zmq_bind(compnt->push_in_sock, compnt->pull_in_addr)) {
+                    PERROR("zmq_bind");
+                    return -1;
+                }
+
+                compnt->push_out_sock = zmq_socket(compnt->push_out_ctx, ZMQ_PUSH);
+                if (zmq_connect(compnt->push_out_ctx, compnt->pull_addr)) {
+                    PERROR("zmq_connect");
+                    return -1;
+                }
+
+                pthread_t thread;
+                if (pthread_create(&thread, NULL, &push_events, compnt) < 0) {
+                    compnt->activated = FALSE;
+                    PERROR("pthread_create");
+                    return -1;
+                }
+
                 json_decref(json);
                 return 0;
             } else {
@@ -68,17 +152,6 @@ static int activate_external_component(char *in_str)
     json_decref(json);
 
     return -1;
-}
-
-/**
- * \brief Function to deactivate an external component
- * \param c Component context
- */
-static int deactivate_external_component(compnt_t *c)
-{
-    c->activated = FALSE;
-
-    return 0;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -95,32 +168,22 @@ static int ev_push_ext_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t siz
 {
     if (!c->activated) return -1;
 
-    char out_str[__MAX_EXT_MSG_SIZE];
+    char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
     export_to_json(id, type, input, out_str);
 
-    zmq_msg_t msg;
-    zmq_msg_init_size(&msg, strlen(out_str));
-    memcpy(zmq_msg_data(&msg), out_str, strlen(out_str));
+    zmq_msg_t out_msg;
+    zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
 
-    void *sock = zmq_socket(c->push_ctx, ZMQ_PUSH);
-    if (zmq_connect(sock, c->pull_addr)) {
-        zmq_msg_close(&msg);
-
-        deactivate_external_component(c);
-
+    void *sock = zmq_socket(c->push_in_ctx, ZMQ_PUSH);
+    if (zmq_connect(sock, c->pull_in_addr)) {
         return -1;
     } else {
-        if (zmq_msg_send(&msg, sock, 0) < 0) {
+        if (zmq_msg_send(&out_msg, sock, 0) < 0) {
             zmq_close(sock);
-            zmq_msg_close(&msg);
-
-            deactivate_external_component(c);
-
             return -1;
         }
 
         zmq_close(sock);
-        zmq_msg_close(&msg);
     }
 
     return 0;
@@ -140,41 +203,27 @@ static int ev_send_ext_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t siz
 {
     if (!c->activated) return -1;
 
-    char out_str[__MAX_EXT_MSG_SIZE];
+    char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
     export_to_json(id, type, input, out_str);
 
     zmq_msg_t out_msg;
-    zmq_msg_init_size(&out_msg, strlen(out_str));
-    memcpy(zmq_msg_data(&out_msg), out_str, strlen(out_str));
+    zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
 
     void *sock = zmq_socket(c->req_ctx, ZMQ_REQ);
     if (zmq_connect(sock, c->reply_addr)) {
-        zmq_msg_close(&out_msg);
-
-        deactivate_external_component(c);
-
         return -1;
     } else {
         if (zmq_msg_send(&out_msg, sock, 0) < 0) {
             zmq_close(sock);
-            zmq_msg_close(&out_msg);
-
-            deactivate_external_component(c);
-
             return -1;
         } else {
-            zmq_msg_close(&out_msg);
-
             zmq_msg_t in_msg;
-            zmq_msg_init(&in_msg);
+            zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
             int zmq_ret = zmq_msg_recv(&in_msg, sock, 0);
 
             if (zmq_ret < 0) {
-                zmq_close(sock);
                 zmq_msg_close(&in_msg);
-
-                deactivate_external_component(c);
-
+                zmq_close(sock);
                 return -1;
             } else {
                 char *in_str = zmq_msg_data(&in_msg);
@@ -182,8 +231,8 @@ static int ev_send_ext_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t siz
 
                 int ret = import_from_json(&id, &type, in_str, output);
 
-                zmq_close(sock);
                 zmq_msg_close(&in_msg);
+                zmq_close(sock);
 
                 return ret;
             }
@@ -205,9 +254,6 @@ static int process_events(msg_t *msg)
 
     // upstream events
 
-    case EV_OFP_MSG_IN:
-        raw_ev_raise(msg->id, EV_OFP_MSG_IN, sizeof(raw_msg_t), (const raw_msg_t *)msg->data);
-        break;
     case EV_DP_RECEIVE_PACKET:
         pktin_ev_raise(msg->id, EV_DP_RECEIVE_PACKET, sizeof(pktin_t), (const pktin_t *)msg->data);
         break;
@@ -238,9 +284,6 @@ static int process_events(msg_t *msg)
 
     // downstream events
 
-    case EV_OFP_MSG_OUT:
-        raw_ev_raise(msg->id, EV_OFP_MSG_OUT, sizeof(raw_msg_t), (const raw_msg_t *)msg->data);
-        break;
     case EV_DP_SEND_PACKET:
         pktout_ev_raise(msg->id, EV_DP_SEND_PACKET, sizeof(pktout_t), (const pktout_t *)msg->data);
         break;
@@ -361,7 +404,7 @@ static void *reply_events(void *null)
 
     while (ev_ctx->ev_on) {
         zmq_msg_t in_msg;
-        zmq_msg_init(&in_msg);
+        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
         int zmq_ret = zmq_msg_recv(&in_msg, recv, 0);
 
         if (!ev_ctx->ev_on) {
@@ -378,21 +421,21 @@ static void *reply_events(void *null)
         // handshake with external compnt
         if (in_str[0] == '#') {
             if (activate_external_component(in_str+1) == 0) {
-                char out_str[] = "#{\"return\": 0}";
+                char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
+                strcpy(out_str, "#{\"return\": 0}");
 
                 zmq_msg_t out_msg;
-                zmq_msg_init_size(&out_msg, strlen(out_str));
-                memcpy(zmq_msg_data(&out_msg), out_str, strlen(out_str));
+                zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
+
                 zmq_msg_send(&out_msg, recv, 0);
-                zmq_msg_close(&out_msg);
             } else {
-                char out_str[] = "#{\"return\": -1}";
+                char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
+                strcpy(out_str, "#{\"return\": -1}");
 
                 zmq_msg_t out_msg;
-                zmq_msg_init_size(&out_msg, strlen(out_str));
-                memcpy(zmq_msg_data(&out_msg), out_str, strlen(out_str));
+                zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
+
                 zmq_msg_send(&out_msg, recv, 0);
-                zmq_msg_close(&out_msg);
             }
 
             zmq_msg_close(&in_msg);
@@ -410,14 +453,15 @@ static void *reply_events(void *null)
 
         msg.ret = process_events(&msg);
 
-        char out_str[__MAX_EXT_MSG_SIZE];
+        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
         export_to_json(msg.id, msg.type, msg.data, out_str);
 
         zmq_msg_t out_msg;
-        zmq_msg_init_size(&out_msg, strlen(out_str));
-        memcpy(zmq_msg_data(&out_msg), out_str, strlen(out_str));
+        zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
+
         zmq_msg_send(&out_msg, recv, 0);
-        zmq_msg_close(&out_msg);
+
+        zmq_msg_close(&in_msg);
 
         if (!ev_ctx->ev_on) break;
     }
@@ -448,7 +492,7 @@ static void *receive_events(void *null)
 {
     while (ev_ctx->ev_on) {
         zmq_msg_t in_msg;
-        zmq_msg_init(&in_msg);
+        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
         int zmq_ret = zmq_msg_recv(&in_msg, ev_pull_in_sock, 0);
 
         if (!ev_ctx->ev_on) {
@@ -459,10 +503,13 @@ static void *receive_events(void *null)
             continue;
         }
 
-        char *in_str = zmq_msg_data(&in_msg);
-        in_str[zmq_ret] = '\0';
+        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
+        memcpy(out_str, zmq_msg_data(&in_msg), zmq_msg_size(&in_msg));
 
-        zmq_msg_send(&in_msg, ev_pull_out_sock, 0);
+        zmq_msg_t out_msg;
+        zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
+
+        zmq_msg_send(&out_msg, ev_pull_out_sock, 0);
 
         zmq_msg_close(&in_msg);
     }
@@ -481,7 +528,7 @@ static void *deliver_events(void *null)
 
     while (ev_ctx->ev_on) {
         zmq_msg_t in_msg;
-        zmq_msg_init(&in_msg);
+        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
         int zmq_ret = zmq_msg_recv(&in_msg, recv, 0);
 
         if (!ev_ctx->ev_on) {
@@ -492,18 +539,18 @@ static void *deliver_events(void *null)
             continue;
         }
 
-        char *in_str = zmq_msg_data(&in_msg);
-        in_str[zmq_ret] = '\0';
+        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
+        memcpy(out_str, zmq_msg_data(&in_msg), zmq_msg_size(&in_msg));
 
         msg_t msg = {0};
-        import_from_json(&msg.id, &msg.type, in_str, msg.data);
-
-        zmq_msg_close(&in_msg);
+        import_from_json(&msg.id, &msg.type, out_str, msg.data);
 
         if (msg.id == 0) continue;
         else if (msg.type > EV_NUM_EVENTS) continue;
 
         process_events(&msg);
+
+        zmq_msg_close(&in_msg);
     }
 
     zmq_close(recv);

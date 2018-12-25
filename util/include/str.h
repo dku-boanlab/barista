@@ -11,6 +11,6 @@
 
 #include "common.h"
 
-int   str2args(char *str, int *argc, char **argv, int max_argc);
+int str2args(char *str, int *argc, char **argv, int max_argc);
 char *str_read(char *fname);
 char *str_preproc(char *raw);

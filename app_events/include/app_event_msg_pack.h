@@ -22,6 +22,61 @@
 /////////////////////////////////////////////////////////////////////
 
 /**
+ * \brief Function to clean up a ZMQ message
+ * \param data ZMQ message
+ * \param hint Hint
+ */
+static void mq_free(void *data, void *hint)
+{
+    free(data);
+}
+
+/**
+ * \brief Function to push app events to external applications
+ * \param config Application configuration
+ */
+static void *push_app_events(void *config)
+{
+    app_t *app = (app_t *)config;
+
+    app->activated = TRUE;
+
+    while (app->activated) {
+        zmq_msg_t in_msg;
+        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
+        int zmq_ret = zmq_msg_recv(&in_msg, app->push_in_sock, 0);
+
+        if (!app->activated) {
+            zmq_msg_close(&in_msg);
+            break;
+        } else if (zmq_ret == -1) {
+            zmq_msg_close(&in_msg);
+
+            if (errno == EAGAIN) {
+                continue;
+            } else {
+                break;
+            }
+        }
+
+        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
+        memcpy(out_str, zmq_msg_data(&in_msg), zmq_msg_size(&in_msg));
+
+        zmq_msg_t out_msg;
+        zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
+
+        zmq_msg_send(&out_msg, app->push_out_sock, 0);
+
+        zmq_msg_close(&in_msg);
+    }
+
+    zmq_close(app->push_in_sock);
+    zmq_close(app->push_out_sock);
+
+    return NULL;
+}
+
+/**
  * \brief Function to activate an external application
  * \param in_str Handshake message
  */
@@ -55,7 +110,36 @@ static int activate_external_application(char *in_str)
     for (i=0; i<av_ctx->num_apps; i++) {
         if (av_ctx->app_list[i]->app_id == id) {
             if (strcmp(av_ctx->app_list[i]->name, name) == 0) {
-                av_ctx->app_list[i]->activated = TRUE;
+                app_t *app = av_ctx->app_list[i];
+
+                if (app->activated) {
+                    app->activated = FALSE;
+                    waitsec(1, 0);
+                }
+
+                app->push_in_sock = zmq_socket(app->push_in_ctx, ZMQ_PULL);
+
+                int timeout = 250;
+                zmq_setsockopt(app->push_in_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+
+                if (zmq_bind(app->push_in_sock, app->pull_in_addr)) {
+                    PERROR("zmq_bind");
+                    return -1;
+                }
+
+                app->push_out_sock = zmq_socket(app->push_out_ctx, ZMQ_PUSH);
+                if (zmq_connect(app->push_out_sock, app->pull_addr)) {
+                    PERROR("zmq_connect");
+                    return -1;
+                }
+
+                pthread_t thread;
+                if (pthread_create(&thread, NULL, &push_app_events, app) < 0) {
+                    app->activated = FALSE;
+                    PERROR("pthread_create");
+                    return -1;
+                }
+
                 json_decref(json);
                 return 0;
             } else {
@@ -68,17 +152,6 @@ static int activate_external_application(char *in_str)
     json_decref(json);
 
     return -1;
-}
-
-/**
- * \brief Function to deactivate an external application
- * \param c Application context
- */
-static int deactivate_external_application(app_t *c)
-{
-    c->activated = FALSE;
-
-    return 0;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -95,32 +168,22 @@ static int av_push_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, 
 {
     if (!c->activated) return -1;
 
-    char out_str[__MAX_EXT_MSG_SIZE];
+    char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
     export_to_json(id, type, input, out_str);
 
-    zmq_msg_t msg;
-    zmq_msg_init_size(&msg, strlen(out_str));
-    memcpy(zmq_msg_data(&msg), out_str, strlen(out_str));
+    zmq_msg_t out_msg;
+    zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
 
-    void *sock = zmq_socket(c->push_ctx, ZMQ_PUSH);
-    if (zmq_connect(sock, c->pull_addr)) {
-        zmq_msg_close(&msg);
-
-        deactivate_external_application(c);
-
+    void *sock = zmq_socket(c->push_in_ctx, ZMQ_PUSH);
+    if (zmq_connect(sock, c->pull_in_addr)) {
         return -1;
     } else {
-        if (zmq_msg_send(&msg, sock, 0) < 0) {
+        if (zmq_msg_send(&out_msg, sock, 0) < 0) {
             zmq_close(sock);
-            zmq_msg_close(&msg);
-
-            deactivate_external_application(c);
-
             return -1;
         }
 
         zmq_close(sock);
-        zmq_msg_close(&msg);
     }
 
     return 0;
@@ -140,41 +203,27 @@ static int av_send_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, 
 {
     if (!c->activated) return -1;
 
-    char out_str[__MAX_EXT_MSG_SIZE];
+    char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
     export_to_json(id, type, input, out_str);
 
     zmq_msg_t out_msg;
-    zmq_msg_init_size(&out_msg, strlen(out_str));
-    memcpy(zmq_msg_data(&out_msg), out_str, strlen(out_str));
+    zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
 
     void *sock = zmq_socket(c->req_ctx, ZMQ_REQ);
     if (zmq_connect(sock, c->reply_addr)) {
-        zmq_msg_close(&out_msg);
-
-        deactivate_external_application(c);
-
         return -1;
     } else {
         if (zmq_msg_send(&out_msg, sock, 0) < 0) {
             zmq_close(sock);
-            zmq_msg_close(&out_msg);
-
-            deactivate_external_application(c);
-
             return -1;
         } else {
-            zmq_msg_close(&out_msg);
-
             zmq_msg_t in_msg;
-            zmq_msg_init(&in_msg);
+            zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
             int zmq_ret = zmq_msg_recv(&in_msg, sock, 0);
 
             if (zmq_ret < 0) {
-                zmq_close(sock);
                 zmq_msg_close(&in_msg);
-
-                deactivate_external_application(c);
-
+                zmq_close(sock);
                 return -1;
             } else {
                 char *in_str = zmq_msg_data(&in_msg);
@@ -182,8 +231,8 @@ static int av_send_ext_msg(app_t *c, uint32_t id, uint16_t type, uint16_t size, 
 
                 int ret = import_from_json(&id, &type, in_str, output);
 
-                zmq_close(sock);
                 zmq_msg_close(&in_msg);
+                zmq_close(sock);
 
                 return ret;
             }
@@ -281,7 +330,7 @@ static void *reply_app_events(void *null)
 
     while (av_ctx->av_on) {
         zmq_msg_t in_msg;
-        zmq_msg_init(&in_msg);
+        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
         int zmq_ret = zmq_msg_recv(&in_msg, recv, 0);
 
         if (!av_ctx->av_on) {
@@ -298,21 +347,21 @@ static void *reply_app_events(void *null)
         // handshake with external app
         if (in_str[0] == '#') {
             if (activate_external_application(in_str+1) == 0) {
-                char out_str[] = "#{\"return\": 0}";
+                char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
+                strcpy(out_str, "#{\"return\": 0}");
 
                 zmq_msg_t out_msg;
-                zmq_msg_init_size(&out_msg, strlen(out_str));
-                memcpy(zmq_msg_data(&out_msg), out_str, strlen(out_str));
+                zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
+
                 zmq_msg_send(&out_msg, recv, 0);
-                zmq_msg_close(&out_msg);
             } else {
-                char out_str[] = "#{\"return\": -1}";
+                char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
+                strcpy(out_str, "#{\"return\": -1}");
 
                 zmq_msg_t out_msg;
-                zmq_msg_init_size(&out_msg, strlen(out_str));
-                memcpy(zmq_msg_data(&out_msg), out_str, strlen(out_str));
+                zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
+
                 zmq_msg_send(&out_msg, recv, 0);
-                zmq_msg_close(&out_msg);
             }
 
             zmq_msg_close(&in_msg);
@@ -323,21 +372,20 @@ static void *reply_app_events(void *null)
         msg_t msg = {0};
         import_from_json(&msg.id, &msg.type, in_str, msg.data);
 
-        zmq_msg_close(&in_msg);
-
         if (msg.id == 0) continue;
         else if (msg.type > AV_NUM_EVENTS) continue;
 
         msg.ret = process_app_events(&msg);
 
-        char out_str[__MAX_EXT_MSG_SIZE];
+        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
         export_to_json(msg.id, msg.type, msg.data, out_str);
 
         zmq_msg_t out_msg;
-        zmq_msg_init_size(&out_msg, strlen(out_str));
-        memcpy(zmq_msg_data(&out_msg), out_str, strlen(out_str));
+        zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
+
         zmq_msg_send(&out_msg, recv, 0);
-        zmq_msg_close(&out_msg);
+
+        zmq_msg_close(&in_msg);
 
         if (!av_ctx->av_on) break;
     }
@@ -368,7 +416,7 @@ static void *receive_app_events(void *null)
 {
     while (av_ctx->av_on) {
         zmq_msg_t in_msg;
-        zmq_msg_init(&in_msg);
+        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
         int zmq_ret = zmq_msg_recv(&in_msg, av_pull_in_sock, 0);
 
         if (!av_ctx->av_on) {
@@ -379,10 +427,13 @@ static void *receive_app_events(void *null)
             continue;
         }
 
-        char *in_str = zmq_msg_data(&in_msg);
-        in_str[zmq_ret] = '\0';
+        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
+        memcpy(out_str, zmq_msg_data(&in_msg), zmq_msg_size(&in_msg));
 
-        zmq_msg_send(&in_msg, av_pull_out_sock, 0);
+        zmq_msg_t out_msg;
+        zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
+
+        zmq_msg_send(&out_msg, av_pull_out_sock, 0);
 
         zmq_msg_close(&in_msg);
     }
@@ -401,7 +452,7 @@ static void *deliver_app_events(void *null)
 
     while (av_ctx->av_on) {
         zmq_msg_t in_msg;
-        zmq_msg_init(&in_msg);
+        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
         int zmq_ret = zmq_msg_recv(&in_msg, recv, 0);
 
         if (!av_ctx->av_on) {
@@ -412,18 +463,18 @@ static void *deliver_app_events(void *null)
             continue;
         }
 
-        char *in_str = zmq_msg_data(&in_msg);
-        in_str[zmq_ret] = '\0';
+        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
+        memcpy(out_str, zmq_msg_data(&in_msg), zmq_msg_size(&in_msg));
 
         msg_t msg = {0};
-        import_from_json(&msg.id, &msg.type, in_str, msg.data);
-
-        zmq_msg_close(&in_msg);
+        import_from_json(&msg.id, &msg.type, out_str, msg.data);
 
         if (msg.id == 0) continue;
         else if (msg.type > AV_NUM_EVENTS) continue;
 
         process_app_events(&msg);
+
+        zmq_msg_close(&in_msg);
     }
 
     zmq_close(recv);

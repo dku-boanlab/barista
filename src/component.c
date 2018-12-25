@@ -196,7 +196,7 @@ static int component_print(cli_t *cli, compnt_t *c, int details)
             cli_buffer(buf, ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
         else if (c->activated && (c->site == COMPNT_EXTERNAL))
             cli_buffer(buf, ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
-        else if (c->push_ctx && (c->site == COMPNT_EXTERNAL))
+        else if (c->push_out_ctx && (c->site == COMPNT_EXTERNAL))
             cli_buffer(buf, ANSI_COLOR_MAGENTA "ready to talk" ANSI_COLOR_RESET);
         else
             cli_buffer(buf, ANSI_COLOR_BLUE "enabled" ANSI_COLOR_RESET);
@@ -230,7 +230,7 @@ static int component_print(cli_t *cli, compnt_t *c, int details)
 
     if (c->role == COMPNT_ADMIN)
         cli_print(cli, "    Role: admin");
-    else if (c->role == COMPNT_SECURITY_V1)
+    else if (c->role == COMPNT_SECURITY)
         cli_print(cli, "    Role: security");
     else if (c->role == COMPNT_SECURITY_V2)
         cli_print(cli, "    Role: security (one by one)");
@@ -451,7 +451,9 @@ int component_activate(cli_t *cli, char *name)
                         }
                     // external?
                     } else {
-                        compnt_ctx->compnt_list[i]->push_ctx = zmq_ctx_new();
+                        compnt_ctx->compnt_list[i]->push_in_ctx = zmq_ctx_new();
+                        compnt_ctx->compnt_list[i]->push_out_ctx = zmq_ctx_new();
+
                         compnt_ctx->compnt_list[i]->req_ctx = zmq_ctx_new();
 
                         cli_print(cli, "%s is ready to talk", compnt_ctx->compnt_list[i]->name);
@@ -503,10 +505,16 @@ int component_deactivate(cli_t *cli, char *name)
                         }
                     // external?
                     } else {
-                        zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_ctx);
+                        waitsec(1, 0);
+
+                        zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_in_ctx);
+                        zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_out_ctx);
+
                         zmq_ctx_destroy(compnt_ctx->compnt_list[i]->req_ctx);
 
-                        compnt_ctx->compnt_list[i]->push_ctx = NULL;
+                        compnt_ctx->compnt_list[i]->push_in_ctx = NULL;
+                        compnt_ctx->compnt_list[i]->push_out_ctx = NULL;
+
                         compnt_ctx->compnt_list[i]->req_ctx = NULL;
 
                         compnt_ctx->compnt_list[i]->activated = FALSE;
@@ -586,7 +594,9 @@ int component_start(cli_t *cli)
                 }
             // external?
             } else {
-                compnt_ctx->compnt_list[cluster]->push_ctx = zmq_ctx_new();
+                compnt_ctx->compnt_list[cluster]->push_in_ctx = zmq_ctx_new();
+                compnt_ctx->compnt_list[cluster]->push_out_ctx = zmq_ctx_new();
+
                 compnt_ctx->compnt_list[cluster]->req_ctx = zmq_ctx_new();
 
                 cli_print(cli, "%s is ready to talk", compnt_ctx->compnt_list[cluster]->name);
@@ -631,7 +641,9 @@ int component_start(cli_t *cli)
                     }
                 // external?
                 } else {
-                    compnt_ctx->compnt_list[i]->push_ctx = zmq_ctx_new();
+                    compnt_ctx->compnt_list[i]->push_in_ctx = zmq_ctx_new();
+                    compnt_ctx->compnt_list[i]->push_out_ctx = zmq_ctx_new();
+
                     compnt_ctx->compnt_list[i]->req_ctx = zmq_ctx_new();
 
                     cli_print(cli, "%s is ready to talk", compnt_ctx->compnt_list[i]->name);
@@ -670,7 +682,9 @@ int component_start(cli_t *cli)
                 }
             // external?
             } else {
-                compnt_ctx->compnt_list[conn]->push_ctx = zmq_ctx_new();
+                compnt_ctx->compnt_list[conn]->push_in_ctx = zmq_ctx_new();
+                compnt_ctx->compnt_list[conn]->push_out_ctx = zmq_ctx_new();
+
                 compnt_ctx->compnt_list[conn]->req_ctx = zmq_ctx_new();
 
                 cli_print(cli, "%s is ready to talk", compnt_ctx->compnt_list[conn]->name);
@@ -727,10 +741,16 @@ int component_stop(cli_t *cli)
             }
         // external?
         } else {
-            zmq_ctx_destroy(compnt_ctx->compnt_list[conn]->push_ctx);
+            waitsec(1, 0);
+
+            zmq_ctx_destroy(compnt_ctx->compnt_list[conn]->push_in_ctx);
+            zmq_ctx_destroy(compnt_ctx->compnt_list[conn]->push_out_ctx);
+
             zmq_ctx_destroy(compnt_ctx->compnt_list[conn]->req_ctx);
 
-            compnt_ctx->compnt_list[conn]->push_ctx = NULL;
+            compnt_ctx->compnt_list[conn]->push_in_ctx = NULL;
+            compnt_ctx->compnt_list[conn]->push_out_ctx = NULL;
+
             compnt_ctx->compnt_list[conn]->req_ctx = NULL;
 
             compnt_ctx->compnt_list[conn]->activated = FALSE;
@@ -762,10 +782,16 @@ int component_stop(cli_t *cli)
                     }
                 // external?
                 } else {
-                    zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_ctx);
+                    waitsec(1, 0);
+
+                    zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_in_ctx);
+                    zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_out_ctx);
+
                     zmq_ctx_destroy(compnt_ctx->compnt_list[i]->req_ctx);
 
-                    compnt_ctx->compnt_list[i]->push_ctx = NULL;
+                    compnt_ctx->compnt_list[i]->push_in_ctx = NULL;
+                    compnt_ctx->compnt_list[i]->push_out_ctx = NULL;
+
                     compnt_ctx->compnt_list[i]->req_ctx = NULL;
 
                     compnt_ctx->compnt_list[i]->activated = FALSE;
@@ -788,10 +814,16 @@ int component_stop(cli_t *cli)
             }
         // external?
         } else {
-            zmq_ctx_destroy(compnt_ctx->compnt_list[cluster]->push_ctx);
+            waitsec(1, 0);
+
+            zmq_ctx_destroy(compnt_ctx->compnt_list[cluster]->push_in_ctx);
+            zmq_ctx_destroy(compnt_ctx->compnt_list[cluster]->push_out_ctx);
+
             zmq_ctx_destroy(compnt_ctx->compnt_list[cluster]->req_ctx);
 
-            compnt_ctx->compnt_list[cluster]->push_ctx = NULL;
+            compnt_ctx->compnt_list[cluster]->push_in_ctx = NULL;
+            compnt_ctx->compnt_list[cluster]->push_out_ctx = NULL;
+
             compnt_ctx->compnt_list[cluster]->req_ctx = NULL;
 
             compnt_ctx->compnt_list[cluster]->activated = FALSE;
@@ -1499,6 +1531,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
 
             if (strlen(pull_addr) > 0) {
                 strcpy(c->pull_addr, pull_addr);
+                sprintf(c->pull_in_addr, "inproc://%u", c->component_id);
             } else {
                  cli_print(cli, "No pulling address");
                  FREE(c);
@@ -1529,7 +1562,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
             else if (strcmp(role, "management") == 0)
                 c->role = COMPNT_MANAGEMENT;
             else if (strcmp(role, "security") == 0)
-                c->role = COMPNT_SECURITY_V1;
+                c->role = COMPNT_SECURITY;
             else if (strcmp(role, "security_v2") == 0)
                 c->role = COMPNT_SECURITY_V2;
             else if (strcmp(role, "admin") == 0)
@@ -1588,7 +1621,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
                 if (event_type(json_string_value(event)) == EV_NONE) {
                     break;
                 } else if (event_type(json_string_value(event)) == EV_ALL_UPSTREAM) {
-                    if (c->role < COMPNT_SECURITY_V1) {
+                    if (c->role < COMPNT_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(c);
                         clean_structs(num_compnts, compnt_list, ev_num, ev_list);
@@ -1607,7 +1640,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
                         ev_num[k]++;
                     }
                 } else if (event_type(json_string_value(event)) == EV_ALL_DOWNSTREAM) {
-                    if (c->role < COMPNT_SECURITY_V1) {
+                    if (c->role < COMPNT_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(c);
                         clean_structs(num_compnts, compnt_list, ev_num, ev_list);
@@ -1626,7 +1659,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
                         ev_num[k]++;
                     }
                 } else if (event_type(json_string_value(event)) == EV_WRT_INTSTREAM) {
-                    if (c->role < COMPNT_SECURITY_V1) {
+                    if (c->role < COMPNT_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(c);
                         clean_structs(num_compnts, compnt_list, ev_num, ev_list);
@@ -1645,7 +1678,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
                         ev_num[k]++;
                     }
                 } else if (event_type(json_string_value(event)) == EV_ALL_INTSTREAM) {
-                    if (c->role < COMPNT_SECURITY_V1) {
+                    if (c->role < COMPNT_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(c);
                         clean_structs(num_compnts, compnt_list, ev_num, ev_list);
@@ -1800,7 +1833,9 @@ int component_load(cli_t *cli, ctx_t *ctx)
                 new->status = old->status;
                 new->activated = old->activated;
 
-                new->push_ctx = old->push_ctx;
+                new->push_in_ctx = old->push_in_ctx;
+                new->push_out_ctx = old->push_out_ctx;
+
                 new->req_ctx = old->req_ctx;
 
                 break;

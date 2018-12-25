@@ -76,10 +76,17 @@ struct _app_t {
     int status; /**< Status */
     int activated; /**< Activation */
 
-    void *push_ctx; /**< Context to externally push app events */
+    void *push_in_ctx; /**< Context to internally push app events */
+    void *push_in_sock; /**< Socket to internally push app events */
+
+    void *push_out_ctx; /**< Context to externally push app events */
+    void *push_out_sock; /**< Socket to externally push app events */
+
     void *req_ctx; /**< Context to request app events */
 
-    char pull_addr[__CONF_WORD_LEN]; /**< Application-side pulling address */
+    char pull_in_addr[__CONF_WORD_LEN]; /**< Internal pulling address */
+    char pull_addr[__CONF_WORD_LEN]; /**< External pulling address */
+
     char reply_addr[__CONF_WORD_LEN]; /**< Application-side replying address */
 
     app_main_f main; /**< The main function pointer */

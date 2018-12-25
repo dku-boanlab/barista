@@ -204,7 +204,7 @@ static int application_print(cli_t *cli, app_t *c, int details)
             cli_buffer(buf, ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
         else if (c->activated && (c->site == APP_EXTERNAL))
             cli_buffer(buf, ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
-        else if (c->push_ctx && (c->site == APP_EXTERNAL))
+        else if (c->push_out_ctx && (c->site == APP_EXTERNAL))
             cli_buffer(buf, ANSI_COLOR_MAGENTA "ready to talk" ANSI_COLOR_RESET);
         else
             cli_buffer(buf, ANSI_COLOR_BLUE "enabled" ANSI_COLOR_RESET);
@@ -455,7 +455,9 @@ int application_activate(cli_t *cli, char *name)
                         }
                     // external?
                     } else {
-                        app_ctx->app_list[i]->push_ctx = zmq_ctx_new();
+                        app_ctx->app_list[i]->push_in_ctx = zmq_ctx_new();
+                        app_ctx->app_list[i]->push_out_ctx = zmq_ctx_new();
+
                         app_ctx->app_list[i]->req_ctx = zmq_ctx_new();
 
                         cli_print(cli, "%s is ready to talk", app_ctx->app_list[i]->name);
@@ -507,10 +509,16 @@ int application_deactivate(cli_t *cli, char *name)
                         }
                     // external?
                     } else {
-                        zmq_ctx_destroy(app_ctx->app_list[i]->push_ctx);
+                        waitsec(1, 0);
+
+                        zmq_ctx_destroy(app_ctx->app_list[i]->push_in_ctx);
+                        zmq_ctx_destroy(app_ctx->app_list[i]->push_out_ctx);
+
                         zmq_ctx_destroy(app_ctx->app_list[i]->req_ctx);
 
-                        app_ctx->app_list[i]->push_ctx = NULL;
+                        app_ctx->app_list[i]->push_in_ctx = NULL;
+                        app_ctx->app_list[i]->push_out_ctx = NULL;
+
                         app_ctx->app_list[i]->req_ctx = NULL;
 
                         app_ctx->app_list[i]->activated = FALSE;
@@ -586,7 +594,9 @@ int application_start(cli_t *cli)
                 }
             // external?
             } else {
-                app_ctx->app_list[appint]->push_ctx = zmq_ctx_new();
+                app_ctx->app_list[appint]->push_in_ctx = zmq_ctx_new();
+                app_ctx->app_list[appint]->push_out_ctx = zmq_ctx_new();
+
                 app_ctx->app_list[appint]->req_ctx = zmq_ctx_new();
 
                 cli_print(cli, "%s is ready to talk", app_ctx->app_list[appint]->name);
@@ -629,7 +639,9 @@ int application_start(cli_t *cli)
                     }
                 // external?
                 } else {
-                    app_ctx->app_list[i]->push_ctx = zmq_ctx_new();
+                    app_ctx->app_list[i]->push_in_ctx = zmq_ctx_new();
+                    app_ctx->app_list[i]->push_out_ctx = zmq_ctx_new();
+
                     app_ctx->app_list[i]->req_ctx = zmq_ctx_new();
 
                     cli_print(cli, "%s is ready to talk", app_ctx->app_list[i]->name);
@@ -683,10 +695,16 @@ int application_stop(cli_t *cli)
                     }
                 // external?
                 } else {
-                    zmq_ctx_destroy(app_ctx->app_list[i]->push_ctx);
+                    waitsec(1, 0);
+
+                    zmq_ctx_destroy(app_ctx->app_list[i]->push_in_ctx);
+                    zmq_ctx_destroy(app_ctx->app_list[i]->push_out_ctx);
+
                     zmq_ctx_destroy(app_ctx->app_list[i]->req_ctx);
 
-                    app_ctx->app_list[i]->push_ctx = NULL;
+                    app_ctx->app_list[i]->push_in_ctx = NULL;
+                    app_ctx->app_list[i]->push_out_ctx = NULL;
+
                     app_ctx->app_list[i]->req_ctx = NULL;
 
                     app_ctx->app_list[i]->activated = FALSE;
@@ -709,10 +727,16 @@ int application_stop(cli_t *cli)
             }
         // external?
         } else {
-            zmq_ctx_destroy(app_ctx->app_list[appint]->push_ctx);
+            waitsec(1, 0);
+
+            zmq_ctx_destroy(app_ctx->app_list[appint]->push_in_ctx);
+            zmq_ctx_destroy(app_ctx->app_list[appint]->push_out_ctx);
+
             zmq_ctx_destroy(app_ctx->app_list[appint]->req_ctx);
 
-            app_ctx->app_list[appint]->push_ctx = NULL;
+            app_ctx->app_list[appint]->push_in_ctx = NULL;
+            app_ctx->app_list[appint]->push_out_ctx = NULL;
+
             app_ctx->app_list[appint]->req_ctx = NULL;
 
             app_ctx->app_list[appint]->activated = FALSE;
@@ -1418,6 +1442,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
 
             if (strlen(pull_addr) > 0) {
                 strcpy(c->pull_addr, pull_addr);
+                sprintf(c->pull_in_addr, "inproc://%u", c->app_id);
             } else {
                  cli_print(cli, "No pulling address");
                  FREE(c);
@@ -1770,7 +1795,9 @@ int application_load(cli_t *cli, ctx_t *ctx)
                 new->status = old->status;
                 new->activated = old->activated;
 
-                new->push_ctx = old->push_ctx;
+                new->push_in_ctx = old->push_in_ctx;
+                new->push_out_ctx = old->push_out_ctx;
+
                 new->req_ctx = old->req_ctx;
 
                 break;

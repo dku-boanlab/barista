@@ -374,11 +374,13 @@ int destroy_ev_workers(ctx_t *ctx)
 
     zmq_close(ev_pull_in_sock);
     zmq_close(ev_pull_out_sock);
+
     zmq_close(ev_rep_comp);
     zmq_close(ev_rep_work);
 
     zmq_ctx_destroy(ev_pull_in_ctx);
     zmq_ctx_destroy(ev_pull_out_ctx);
+
     zmq_ctx_destroy(ev_rep_ctx);
 
     return 0;

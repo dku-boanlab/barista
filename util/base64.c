@@ -20,7 +20,7 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief Base64 padding size */
+/** \brief Base64 padding index */
 #define PADDING 64
 
 /** \brief Base64 buffer size */

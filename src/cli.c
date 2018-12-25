@@ -119,6 +119,13 @@ void sigterm_handler(int sig)
 
 /////////////////////////////////////////////////////////////////////
 
+/**
+ * \brief Function to load configuration files
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_load(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     // load components
@@ -171,6 +178,13 @@ static int cli_load(struct cli_def *cli, UNUSED(const char *command), char *argv
     return CLI_OK;
 }
 
+/**
+ * \brief Function to start the Barista NOS
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_start(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     if (component_start(cli)) {
@@ -190,6 +204,13 @@ static int cli_start(struct cli_def *cli, UNUSED(const char *command), char *arg
     return CLI_OK;
 }
 
+/**
+ * \brief Function to stop the Barista NOS
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_stop(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     if (component_stop(cli)) {
@@ -209,6 +230,13 @@ static int cli_stop(struct cli_def *cli, UNUSED(const char *command), char *argv
     return CLI_OK;
 }
 
+/**
+ * \brief Function to enable a component
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_set_enable_component(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     int i;
@@ -222,6 +250,13 @@ static int cli_set_enable_component(struct cli_def *cli, UNUSED(const char *comm
     return CLI_OK;
 }
 
+/**
+ * \brief Function to enable an application
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_set_enable_application(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     int i;
@@ -235,6 +270,13 @@ static int cli_set_enable_application(struct cli_def *cli, UNUSED(const char *co
     return CLI_OK;
 }
 
+/**
+ * \brief Function to disable a component
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_set_disable_component(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     int i;
@@ -248,6 +290,13 @@ static int cli_set_disable_component(struct cli_def *cli, UNUSED(const char *com
     return CLI_OK;
 }
 
+/**
+ * \brief Function to disable an application
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_set_disable_application(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     int i;
@@ -261,6 +310,13 @@ static int cli_set_disable_application(struct cli_def *cli, UNUSED(const char *c
     return CLI_OK;
 }
 
+/**
+ * \brief Function to activate an enabled component
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_set_activate_component(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     int i;
@@ -274,6 +330,13 @@ static int cli_set_activate_component(struct cli_def *cli, UNUSED(const char *co
     return CLI_OK;
 }
 
+/**
+ * \brief Function to activate an enabled application
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_set_activate_application(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     int i;
@@ -287,6 +350,13 @@ static int cli_set_activate_application(struct cli_def *cli, UNUSED(const char *
     return CLI_OK;
 }
 
+/**
+ * \brief Function to deactivate an activated component
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_set_deactivate_component(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     int i;
@@ -300,6 +370,13 @@ static int cli_set_deactivate_component(struct cli_def *cli, UNUSED(const char *
     return CLI_OK;
 }
 
+/**
+ * \brief Function to deactivate an activated application
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_set_deactivate_application(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     int i;
@@ -313,6 +390,13 @@ static int cli_set_deactivate_application(struct cli_def *cli, UNUSED(const char
     return CLI_OK;
 }
 
+/**
+ * \brief Function to add a new operator-defined policy in a component
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_policy_add_component(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     if (argc == 2) {
@@ -325,6 +409,13 @@ static int cli_policy_add_component(struct cli_def *cli, UNUSED(const char *comm
     return CLI_ERROR;
 }
 
+/**
+ * \brief Function to add a new operator-defined policy in an application
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_policy_add_application(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     if (argc == 2) {
@@ -337,6 +428,13 @@ static int cli_policy_add_application(struct cli_def *cli, UNUSED(const char *co
     return CLI_ERROR;
 }
 
+/**
+ * \brief Function to delete an operator-defined policy from a component
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_policy_del_component(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     if (argc == 2) {
@@ -349,6 +447,13 @@ static int cli_policy_del_component(struct cli_def *cli, UNUSED(const char *comm
     return CLI_ERROR;
 }
 
+/**
+ * \brief Function to delete an operator-defined policy from an application
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_policy_del_application(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     if (argc == 2) {
@@ -361,6 +466,13 @@ static int cli_policy_del_application(struct cli_def *cli, UNUSED(const char *co
     return CLI_ERROR;
 }
 
+/**
+ * \brief Function to print an event
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_show_event(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     int i;
@@ -374,6 +486,13 @@ static int cli_show_event(struct cli_def *cli, UNUSED(const char *command), char
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print an app event
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_show_app_event(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     int i;
@@ -387,6 +506,13 @@ static int cli_show_app_event(struct cli_def *cli, UNUSED(const char *command), 
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print the configuration of a component
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_show_component(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     int i;
@@ -400,6 +526,13 @@ static int cli_show_component(struct cli_def *cli, UNUSED(const char *command), 
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print the configuration of an application
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_show_application(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     int i;
@@ -413,6 +546,13 @@ static int cli_show_application(struct cli_def *cli, UNUSED(const char *command)
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print the operator-defined policies applied to a component
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_policy_show_component(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     if (argc == 1) {
@@ -425,6 +565,13 @@ static int cli_policy_show_component(struct cli_def *cli, UNUSED(const char *com
     return CLI_ERROR;
 }
 
+/**
+ * \brief Function to print the operator-defined policies applied to an application
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_policy_show_application(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     if (argc == 1) {
@@ -437,6 +584,13 @@ static int cli_policy_show_application(struct cli_def *cli, UNUSED(const char *c
     return CLI_ERROR;
 }
 
+/**
+ * \brief Function to print a switch
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_show_switch(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     char cmd[__CONF_WORD_LEN] = {0};
@@ -455,6 +609,13 @@ static int cli_show_switch(struct cli_def *cli, UNUSED(const char *command), cha
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print all hosts connected to a switch
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_show_host_switch(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     char cmd[__CONF_WORD_LEN] = {0};
@@ -473,6 +634,13 @@ static int cli_show_host_switch(struct cli_def *cli, UNUSED(const char *command)
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print a host containing an IP address
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_show_host_ip(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     char cmd[__CONF_WORD_LEN] = {0};
@@ -491,6 +659,13 @@ static int cli_show_host_ip(struct cli_def *cli, UNUSED(const char *command), ch
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print a host containing a MAC address
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_show_host_mac(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     char cmd[__CONF_WORD_LEN] = {0};
@@ -509,6 +684,13 @@ static int cli_show_host_mac(struct cli_def *cli, UNUSED(const char *command), c
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print links connected to a switch
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_show_link(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     char cmd[__CONF_WORD_LEN] = {0};
@@ -527,6 +709,13 @@ static int cli_show_link(struct cli_def *cli, UNUSED(const char *command), char 
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print flows in a switch
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_show_flow_switch(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     char cmd[__CONF_WORD_LEN] = {0};
@@ -545,6 +734,13 @@ static int cli_show_flow_switch(struct cli_def *cli, UNUSED(const char *command)
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print all events
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_list_events(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     event_list(cli);
@@ -552,6 +748,13 @@ static int cli_list_events(struct cli_def *cli, UNUSED(const char *command), cha
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print all app events
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_list_app_events(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     app_event_list(cli);
@@ -559,6 +762,13 @@ static int cli_list_app_events(struct cli_def *cli, UNUSED(const char *command),
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print all components
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_list_components(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     component_list(cli);
@@ -566,6 +776,13 @@ static int cli_list_components(struct cli_def *cli, UNUSED(const char *command),
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print all applications
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_list_applications(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     application_list(cli);
@@ -573,6 +790,13 @@ static int cli_list_applications(struct cli_def *cli, UNUSED(const char *command
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print all switches
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_list_switches(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     char cmd[__CONF_WORD_LEN] = {0};
@@ -589,6 +813,13 @@ static int cli_list_switches(struct cli_def *cli, UNUSED(const char *command), c
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print all hosts
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_list_hosts(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     char cmd[__CONF_WORD_LEN] = {0};
@@ -605,6 +836,13 @@ static int cli_list_hosts(struct cli_def *cli, UNUSED(const char *command), char
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print all links
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_list_links(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     char cmd[__CONF_WORD_LEN] = {0};
@@ -621,6 +859,13 @@ static int cli_list_links(struct cli_def *cli, UNUSED(const char *command), char
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print all flows
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_list_flows(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     char cmd[__CONF_WORD_LEN] = {0};
@@ -637,6 +882,13 @@ static int cli_list_flows(struct cli_def *cli, UNUSED(const char *command), char
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print the resource usage of the Barista NOS
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_stat_resource(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     char cmd[__CONF_WORD_LEN] = {0};
@@ -655,6 +907,13 @@ static int cli_stat_resource(struct cli_def *cli, UNUSED(const char *command), c
     return CLI_OK;
 }
 
+/**
+ * \brief Function to print the traffic statistics of control channels
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_stat_traffic(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     char cmd[__CONF_WORD_LEN] = {0};
@@ -673,6 +932,13 @@ static int cli_stat_traffic(struct cli_def *cli, UNUSED(const char *command), ch
     return CLI_OK;
 }
 
+/**
+ * \brief Function to deliver a command to a component
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_component(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     if (argc > 0) {
@@ -685,6 +951,13 @@ static int cli_component(struct cli_def *cli, UNUSED(const char *command), char 
     return CLI_ERROR;
 }
 
+/**
+ * \brief Function to deliver a command to an application
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_application(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     if (argc > 0) {
@@ -697,6 +970,13 @@ static int cli_application(struct cli_def *cli, UNUSED(const char *command), cha
     return CLI_ERROR;
 }
 
+/**
+ * \brief Function to print logs
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_log(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     int line = 20;
@@ -736,6 +1016,13 @@ static int cli_log(struct cli_def *cli, UNUSED(const char *command), char *argv[
     return CLI_OK;
 }
 
+/**
+ * \brief Function to terminate the Barista NOS
+ * \param cli CLI context
+ * \param command Command
+ * \param argv Arguments
+ * \param argc The number of arguments
+ */
 static int cli_exit(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     component_stop(cli);

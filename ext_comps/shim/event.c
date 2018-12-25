@@ -30,16 +30,66 @@ int ev_worker_on;
 /////////////////////////////////////////////////////////////////////
 
 /** \brief MQ contexts to push, pull, request and reply events */
-void *ev_push_ctx, *ev_pull_in_ctx, *ev_pull_out_ctx, *ev_req_ctx, *ev_rep_ctx;
+void *ev_push_in_ctx, *ev_push_out_ctx, *ev_pull_in_ctx, *ev_pull_out_ctx, *ev_req_ctx, *ev_rep_ctx;
 
-/** \brief MQ sockets to pull and reply events */
-void *ev_pull_in_sock, *ev_pull_out_sock, *ev_req_sock, *ev_rep_comp, *ev_rep_work;
+/** \brief MQ sockets to push, pull and reply events */
+void *ev_push_in_sock, *ev_push_out_sock, *ev_pull_in_sock, *ev_pull_out_sock, *ev_req_sock, *ev_rep_comp, *ev_rep_work;
+
+/////////////////////////////////////////////////////////////////////
+
+/** \brief Internal pulling address */
+char ev_push_in_addr[__CONF_WORD_LEN];
 
 /////////////////////////////////////////////////////////////////////
 
 #include "event_json.h"
 
 /////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Function to clean up a ZMQ message
+ * \param data ZMQ message
+ * \param hint Hint
+ */
+void mq_free(void *data, void *hint)
+{
+    free(data);
+}
+
+/**
+ * \brief Function to push app events to external components
+ * \param config Component configuration
+ */
+static void *push_events(void *config)
+{
+    compnt_t *compnt = (compnt_t *)config;
+
+    while (ev_worker_on) {
+        zmq_msg_t in_msg;
+        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
+        int zmq_ret = zmq_msg_recv(&in_msg, ev_push_in_sock, 0);
+
+        if (!ev_worker_on) {
+            zmq_msg_close(&in_msg);
+            break;
+        } else if (zmq_ret == -1) {
+            zmq_msg_close(&in_msg);
+            continue;
+        }
+
+        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
+        memcpy(out_str, zmq_msg_data(&in_msg), zmq_msg_size(&in_msg));
+
+        zmq_msg_t out_msg;
+        zmq_msg_init_data(&out_msg, out_str, strlen(in_str), mq_free, NULL);
+
+        zmq_msg_send(&out_msg, ev_push_out_sock, 0);
+
+        zmq_msg_close(&in_msg);
+    }
+
+    return NULL;
+}
 
 /**
  * \brief Function to have a handshake with the Barista NOS
@@ -53,29 +103,25 @@ static int handshake(uint32_t id, char *name)
         PERROR("zmq_connect");
         return -1;
     } else {
-        char out_str[__MAX_EXT_MSG_SIZE];
+        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
         sprintf(out_str, "#{\"id\": %u, \"name\": \"%s\"}", compnt.component_id, compnt.name);
 
         zmq_msg_t out_msg;
-        zmq_msg_init_size(&out_msg, strlen(out_str));
-        memcpy(zmq_msg_data(&out_msg), out_str, strlen(out_str));
+        zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
 
-        if (zmq_send(sock, out_str, strlen(out_str)+1, 0) < 0) {
+        if (zmq_msg_send(&out_smg, sock, 0) < 0) {
             PERROR("zmq_send");
             zmq_close(sock);
-            zmq_msg_close(&out_msg);
             return -1;
         }
 
-        zmq_msg_close(&out_msg);
-
         zmq_msg_t in_msg;
-        zmq_msg_init(&in_msg);
+        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
         int zmq_ret = zmq_msg_recv(&in_msg, sock, 0);
         if (zmq_ret < 0) {
             PERROR("zmq_recv");
-            zmq_close(sock);
             zmq_msg_close(&in_msg);
+            zmq_close(sock);
             return -1;
         } else {
             char *in_str = zmq_msg_data(&in_msg);
@@ -88,8 +134,14 @@ static int handshake(uint32_t id, char *name)
             }
         }
 
-        zmq_close(sock);
         zmq_msg_close(&in_msg);
+        zmq_close(sock);
+
+        pthread_t thread;
+        if (pthread_create(&thread, NULL, &push_events, &compnt) < 0) {
+            PERROR("pthread_create");
+            return -1;
+        }
     }
 
     return 0;
@@ -108,26 +160,22 @@ static int ev_push_msg(uint32_t id, uint16_t type, uint16_t size, const void *da
 {
     if (!ev_worker_on) return -1;
 
-    char out_str[__MAX_EXT_MSG_SIZE];
+    char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
     export_to_json(id, type, data, out_str);
 
     zmq_msg_t msg;
-    zmq_msg_init_size(&msg, strlen(out_str));
-    memcpy(zmq_msg_data(&msg), out_str, strlen(out_str));
+    zmq_msg_init_data(&msg, out_str, strlen(out_str), mq_free, NULL);
 
-    void *sock = zmq_socket(ev_push_ctx, ZMQ_PUSH);
-    if (zmq_connect(sock, EXT_COMP_PULL_ADDR)) {
-        zmq_msg_close(&msg);
+    void *sock = zmq_socket(ev_push_in_ctx, ZMQ_PUSH);
+    if (zmq_connect(sock, ev_push_in_addr)) {
         return -1;
     } else {
         if (zmq_msg_send(&msg, sock, 0) < 0) {
             zmq_close(sock);
-            zmq_msg_close(&msg);
             return -1;
         }
 
         zmq_close(sock);
-        zmq_msg_close(&msg);
     }
 
     return 0;
@@ -146,27 +194,22 @@ static int ev_send_msg(uint32_t id, uint16_t type, uint16_t size, const void *in
 {
     if (!ev_worker_on) return -1;
 
-    char out_str[__MAX_EXT_MSG_SIZE];
+    char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
     export_to_json(id, type, input, out_str);
 
-    zmq_msg_t msg;
-    zmq_msg_init_size(&msg, strlen(out_str));
-    memcpy(zmq_msg_data(&msg), out_str, strlen(out_str));
+    zmq_msg_t out_msg;
+    zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
 
     void *sock = zmq_socket(ev_req_ctx, ZMQ_REQ);
     if (zmq_connect(sock, EXT_COMP_REPLY_ADDR)) {
-        zmq_msg_close(&msg);
         return -1;
     } else {
-        if (zmq_msg_send(&msg, sock, 0) < 0) {
+        if (zmq_msg_send(&out_msg, sock, 0) < 0) {
             zmq_close(sock);
-            zmq_msg_close(&msg);
             return -1;
         } else {
-            zmq_msg_close(&msg);
-
             zmq_msg_t in_msg;
-            zmq_msg_init(&in_msg);
+            zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
             int zmq_ret = zmq_msg_recv(&in_msg, sock, 0);
 
             if (zmq_ret < 0) {
@@ -179,8 +222,8 @@ static int ev_send_msg(uint32_t id, uint16_t type, uint16_t size, const void *in
 
                 int ret = import_from_json(&id, &type, in_str, output);
 
-                zmq_close(sock);
                 zmq_msg_close(&in_msg);
+                zmq_close(sock);
 
                 return ret;
             }
@@ -338,14 +381,12 @@ void ev_log_fatal(uint32_t id, char *format, ...) {
  */
 static void *reply_events(void *null)
 {
-    waitsec(1, 0);
-
     void *recv = zmq_socket(ev_rep_ctx, ZMQ_REP);
     zmq_connect(recv, "inproc://ev_reply_workers");
 
     while (ev_worker_on) {
         zmq_msg_t in_msg;
-        zmq_msg_init(&in_msg);
+        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
         int zmq_ret = zmq_msg_recv(&in_msg, recv, 0);
 
         if (!ev_worker_on) {
@@ -361,8 +402,6 @@ static void *reply_events(void *null)
 
         msg_t msg = {0};
         import_from_json(&msg.id, &msg.type, in_str, msg.data);
-
-        zmq_msg_close(&in_msg);
 
         if (msg.id == 0) continue;
 	else if (msg.type > EV_NUM_EVENTS) continue;
@@ -380,10 +419,6 @@ static void *reply_events(void *null)
 
         // upstream events
 
-        case EV_OFP_MSG_IN:
-            out.length = sizeof(raw_msg_t);
-            ret = compnt.handler(in, &out);
-            break;
         case EV_DP_RECEIVE_PACKET:
             out.length = sizeof(pktin_t);
             ret = compnt.handler(in, &out);
@@ -405,10 +440,6 @@ static void *reply_events(void *null)
 
         // downstream events
 
-        case EV_OFP_MSG_OUT:
-            out.length = sizeof(raw_msg_t);
-            ret = compnt.handler(in, &out);
-            break;
         case EV_DP_SEND_PACKET:
             out.length = sizeof(pktout_t);
             ret = compnt.handler(in, &out);
@@ -477,14 +508,15 @@ static void *reply_events(void *null)
 
         msg.ret = ret;
 
-        char out_str[__MAX_EXT_MSG_SIZE];
+        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
         export_to_json(msg.id, msg.type, msg.data, out_str);
 
         zmq_msg_t out_msg;
-        zmq_msg_init(&out_msg);
-        memcpy(zmq_msg_data(&out_msg), out_str, strlen(out_str));
+        zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
+
         zmq_msg_send(&out_msg, recv, 0);
-        zmq_msg_close(&out_msg);
+
+        zmq_msg_close(&in_msg);
 
         if (!ev_worker_on) break;
     }
@@ -511,11 +543,9 @@ static void *reply_proxy(void *null)
  */
 static void *receive_events(void *null)
 {
-    waitsec(1, 0);
-
     while (ev_worker_on) {
         zmq_msg_t in_msg;
-        zmq_msg_init(&in_msg);
+        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
         int zmq_ret = zmq_msg_recv(&in_msg, ev_pull_in_sock, 0);
 
         if (!ev_worker_on) {
@@ -526,7 +556,13 @@ static void *receive_events(void *null)
             continue;
         }
 
-        zmq_msg_send(&in_msg, ev_pull_out_sock, 0);
+        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
+        memcpy(out_str, zmq_msg_data(&in_msg), zmq_msg_size(&in_msg));
+
+        zmq_msg_t out_msg;
+        zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
+
+        zmq_msg_send(&out_msg, ev_pull_out_sock, 0);
 
         zmq_msg_close(&in_msg);
     }
@@ -540,14 +576,12 @@ static void *receive_events(void *null)
  */
 static void *deliver_events(void *null)
 {
-    waitsec(1, 0);
-
     void *recv = zmq_socket(ev_pull_out_ctx, ZMQ_PULL);
     zmq_connect(recv, "inproc://ev_pull_workers");
 
     while (ev_worker_on) {
         zmq_msg_t in_msg;
-        zmq_msg_init(&in_msg);
+        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
         int zmq_ret = zmq_msg_recv(&in_msg, recv, 0);
 
         if (!ev_worker_on) {
@@ -564,8 +598,6 @@ static void *deliver_events(void *null)
         msg_t msg = {0};
         import_from_json(&msg.id, &msg.type, in_str, msg.data);
 
-        zmq_msg_close(&in_msg);
-
         if (msg.id == 0) continue;
 	else if (msg.type > EV_NUM_EVENTS) continue;
 
@@ -581,10 +613,6 @@ static void *deliver_events(void *null)
 
         // upstream events
 
-        case EV_OFP_MSG_IN:
-            out.length = sizeof(raw_msg_t);
-            compnt.handler(in, &out);
-            break;
         case EV_DP_RECEIVE_PACKET:
             out.length = sizeof(pktin_t);
             compnt.handler(in, &out);
@@ -606,10 +634,6 @@ static void *deliver_events(void *null)
 
         // downstream events
 
-        case EV_OFP_MSG_OUT:
-            out.length = sizeof(raw_msg_t);
-            compnt.handler(in, &out);
-            break;
         case EV_DP_SEND_PACKET:
             out.length = sizeof(pktout_t);
             compnt.handler(in, &out);
@@ -675,6 +699,8 @@ static void *deliver_events(void *null)
         default:
             break;
         }
+
+        zmq_msg_close(&in_msg);
     }
 
     zmq_close(recv);
@@ -694,19 +720,26 @@ int destroy_ev_workers(ctx_t *null)
 
     waitsec(1, 0);
 
+    zmq_close(ev_push_in_sock);
+    zmq_close(ev_push_out_sock);
+
     zmq_close(ev_pull_in_sock);
     zmq_close(ev_pull_out_sock);
+
     zmq_close(ev_req_sock);
     zmq_close(ev_rep_comp);
     zmq_close(ev_rep_work);
 
-    //waitsec(1, 0);
+    waitsec(1, 0);
 
-    //zmq_ctx_destroy(ev_push_ctx);
-    //zmq_ctx_destroy(ev_pull_in_ctx);
-    //zmq_ctx_destroy(ev_pull_out_ctx);
-    //zmq_ctx_destroy(ev_req_ctx);
-    //zmq_ctx_destroy(ev_rep_ctx);
+    zmq_ctx_destroy(ev_push_in_ctx);
+    zmq_ctx_destroy(ev_push_out_ctx);
+
+    zmq_ctx_destroy(ev_pull_in_ctx);
+    zmq_ctx_destroy(ev_pull_out_ctx);
+
+    zmq_ctx_destroy(ev_req_ctx);
+    zmq_ctx_destroy(ev_rep_ctx);
 
     return 0;
 }
@@ -719,14 +752,36 @@ int event_init(ctx_t *null)
 {
     ev_worker_on = TRUE;
 
+    int timeout = 250;
+
     // Push (downstream)
 
-    ev_push_ctx = zmq_ctx_new();
+    ev_push_in_ctx = zmq_ctx_new();
+    ev_push_in_sock = zmq_socket(ev_push_in_ctx, ZMQ_PULL);
+
+    zmq_setsockopt(ev_push_in_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+
+    sprintf(ev_push_in_addr, "inproc://%u", compnt.component_id);
+
+    if (zmq_bind(ev_push_in_sock, ev_push_in_addr)) {
+        PERROR("zmq_bind");
+        return -1;
+    }
+
+    ev_push_out_ctx = zmq_ctx_new();
+    ev_push_out_sock = zmq_socket(ev_push_out_ctx, ZMQ_PUSH);
+
+    if (zmq_connect(ev_push_out_sock, EXT_COMP_PULL_ADDR)) {
+        PERROR("zmq_connect");
+        return -1;
+    }
 
     // Pull (upstream, intstream)
 
     ev_pull_in_ctx = zmq_ctx_new();
     ev_pull_in_sock = zmq_socket(ev_pull_in_ctx, ZMQ_PULL);
+
+    zmq_setsockopt(ev_pull_in_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
 
     if (zmq_bind(ev_pull_in_sock, TARGET_COMP_PULL_ADDR)) {
         PERROR("zmq_bind");
@@ -765,12 +820,16 @@ int event_init(ctx_t *null)
     ev_rep_ctx = zmq_ctx_new();
     ev_rep_comp = zmq_socket(ev_rep_ctx, ZMQ_ROUTER);
 
+    zmq_setsockopt(ev_rep_comp, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+
     if (zmq_bind(ev_rep_comp, TARGET_COMP_REPLY_ADDR)) {
         PERROR("zmq_bind");
         return -1;
     }
 
     ev_rep_work = zmq_socket(ev_rep_ctx, ZMQ_DEALER);
+
+    zmq_setsockopt(ev_rep_work, ZMQ_RCVTIMEO, &timeout, sizeof(int));
 
     if (zmq_bind(ev_rep_work, "inproc://ev_reply_workers")) {
         PERROR("zmq_bind");

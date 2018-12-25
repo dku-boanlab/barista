@@ -331,11 +331,13 @@ int destroy_av_workers(ctx_t *ctx)
 
     zmq_close(av_pull_in_sock);
     zmq_close(av_pull_out_sock);
+
     zmq_close(av_rep_app);
     zmq_close(av_rep_work);
 
     zmq_ctx_destroy(av_pull_in_ctx);
     zmq_ctx_destroy(av_pull_out_ctx);
+
     zmq_ctx_destroy(av_rep_ctx);
 
     return 0;
