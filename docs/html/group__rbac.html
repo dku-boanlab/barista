@@ -383,6 +383,111 @@ Data Structures</h2></td></tr>
 </div><!-- fragment -->
 </div>
 </div>
+<a id="ga14da92bf216bfc9f28e4c988888c903e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga14da92bf216bfc9f28e4c988888c903e">&#9670;&nbsp;</a></span>verify_app_role()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static int verify_app_role </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>type</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">id</td><td>Application ID </td></tr>
+    <tr><td class="paramname">type</td><td>App event </td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;{</div><div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;    <span class="keywordtype">int</span> i;</div><div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    <span class="keywordflow">for</span> (i=0; i&lt;<a class="code" href="group__rbac.html#ga19c24f7fed9eeebb002fbd8bfc8222d9">app_to_role_cnt</a>; i++) {</div><div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;        <span class="keywordflow">if</span> (<a class="code" href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a>[i].<span class="keywordtype">id</span> == <span class="keywordtype">id</span>) { <span class="comment">// found the matched app</span></div><div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;            <span class="keywordflow">if</span> (<a class="code" href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a>[i].role == <a class="code" href="group__rbac.html#gga61dadd085c1777f559549e05962b2c9ea376bed6d3cd397f1c06b2d6fd5345943">APP_BASE</a>) <span class="comment">// skip base</span></div><div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;                <span class="keywordflow">return</span> -1;</div><div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;            <span class="keywordflow">else</span> <span class="keywordflow">if</span> (<a class="code" href="group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c">role_to_event</a>[<a class="code" href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a>[i].role].event[type] == 1) <span class="comment">// allow or deny</span></div><div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;                <span class="keywordflow">return</span> 1;</div><div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;            <span class="keywordflow">else</span></div><div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;                <span class="keywordflow">return</span> 0;</div><div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;        }</div><div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;    }</div><div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;</div><div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;    <span class="keywordflow">return</span> 0;</div><div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;}</div><div class="ttc" id="group__rbac_html_ga19c24f7fed9eeebb002fbd8bfc8222d9"><div class="ttname"><a href="group__rbac.html#ga19c24f7fed9eeebb002fbd8bfc8222d9">app_to_role_cnt</a></div><div class="ttdeci">int app_to_role_cnt</div><div class="ttdoc">The number of applications. </div><div class="ttdef"><b>Definition:</b> rbac.c:45</div></div>
+<div class="ttc" id="group__rbac_html_gga61dadd085c1777f559549e05962b2c9ea376bed6d3cd397f1c06b2d6fd5345943"><div class="ttname"><a href="group__rbac.html#gga61dadd085c1777f559549e05962b2c9ea376bed6d3cd397f1c06b2d6fd5345943">APP_BASE</a></div><div class="ttdef"><b>Definition:</b> rbac.c:27</div></div>
+<div class="ttc" id="group__rbac_html_gafba298f35fa9393b0f5cd68afba45f4c"><div class="ttname"><a href="group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c">role_to_event</a></div><div class="ttdeci">role2ev_t * role_to_event</div><div class="ttdoc">The mapping table of roles and their events. </div><div class="ttdef"><b>Definition:</b> rbac.c:59</div></div>
+<div class="ttc" id="group__rbac_html_ga53111a7aa28c4e3682625c431f6195d8"><div class="ttname"><a href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a></div><div class="ttdeci">app2role_t * app_to_role</div><div class="ttdoc">The mapping table of applications and their roles. </div><div class="ttdef"><b>Definition:</b> rbac.c:48</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ga6359f01be9c0a23cf5fb2716282d631e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6359f01be9c0a23cf5fb2716282d631e">&#9670;&nbsp;</a></span>rbac_main()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int rbac_main </td>
+          <td>(</td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>activated</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>argc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char **&#160;</td>
+          <td class="paramname"><em>argv</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">activated</td><td>The activation flag of this application </td></tr>
+    <tr><td class="paramname">argc</td><td>The number of arguments </td></tr>
+    <tr><td class="paramname">argv</td><td>Arguments </td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;{</div><div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;    <a class="code" href="ext__apps_2shim_2include_2common_8h.html#a9afb7d3b891cbf49e537dba4acbc3f09">ALOG_INFO</a>(<a class="code" href="group__rbac.html#gac8db2013fc2eb52fe724edd16b1d9524">RBAC_ID</a>, <span class="stringliteral">&quot;Init - Role-based access control&quot;</span>);</div><div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;</div><div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;    <a class="code" href="group__rbac.html#ga19c24f7fed9eeebb002fbd8bfc8222d9">app_to_role_cnt</a> = 0;</div><div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;</div><div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;    <a class="code" href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a> = (<a class="code" href="struct__app2role__t.html">app2role_t</a> *)<a class="code" href="ext__apps_2shim_2include_2common_8h.html#a669eabe559684f002c71d6e02ed3bb5b">CALLOC</a>(__MAX_APPLICATIONS, <span class="keyword">sizeof</span>(<a class="code" href="struct__app2role__t.html">app2role_t</a>));</div><div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a> == NULL) {</div><div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;        <a class="code" href="ext__apps_2shim_2include_2common_8h.html#a5fc2672f0d34c348ba70decdc32bcb30">PERROR</a>(<span class="stringliteral">&quot;calloc&quot;</span>);</div><div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;        <span class="keywordflow">return</span> -1;</div><div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;    }</div><div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;</div><div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;    <a class="code" href="group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c">role_to_event</a> = (<a class="code" href="struct__role2ev__t.html">role2ev_t</a> *)<a class="code" href="ext__apps_2shim_2include_2common_8h.html#a669eabe559684f002c71d6e02ed3bb5b">CALLOC</a>(<a class="code" href="group__rbac.html#gga61dadd085c1777f559549e05962b2c9eae6ad5e7f7077a633c366c7b3e476d334">NUM_APP_ROLES</a>, <span class="keyword">sizeof</span>(<a class="code" href="struct__role2ev__t.html">role2ev_t</a>));</div><div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c">role_to_event</a> == NULL) {</div><div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;        <a class="code" href="ext__apps_2shim_2include_2common_8h.html#a5fc2672f0d34c348ba70decdc32bcb30">PERROR</a>(<span class="stringliteral">&quot;calloc&quot;</span>);</div><div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;        <span class="keywordflow">return</span> -1;</div><div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;    }</div><div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;</div><div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;    <span class="comment">// load app roles</span></div><div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__rbac.html#ga795b8b022b5c9ff18b73005b9e753b10">load_app_roles</a>(<a class="code" href="ext__apps_2shim_2include_2common_8h.html#ad92fcbbe4b43f3c486cb19f0b16c3190">DEFAULT_APP_CONFIG_FILE</a>) &lt; 0) {</div><div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;        <a class="code" href="ext__apps_2shim_2include_2common_8h.html#a25875003b43b81a4302256caa4a13599">FREE</a>(<a class="code" href="group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c">role_to_event</a>);</div><div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;        <a class="code" href="ext__apps_2shim_2include_2common_8h.html#a25875003b43b81a4302256caa4a13599">FREE</a>(<a class="code" href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a>);</div><div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;        <span class="keywordflow">return</span> -1;</div><div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;    }</div><div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;</div><div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;    <span class="comment">// load app events for each role</span></div><div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__rbac.html#gaa6ee746e2606d6f1cfca507f7c10256a">load_events_for_roles</a>(<a class="code" href="ext__apps_2shim_2include_2common_8h.html#ae488d7cb11ca726348daa88f64463ede">DEFAULT_APP_ROLE_FILE</a>) &lt; 0) {</div><div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;        <a class="code" href="ext__apps_2shim_2include_2common_8h.html#a25875003b43b81a4302256caa4a13599">FREE</a>(<a class="code" href="group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c">role_to_event</a>);</div><div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;        <a class="code" href="ext__apps_2shim_2include_2common_8h.html#a25875003b43b81a4302256caa4a13599">FREE</a>(<a class="code" href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a>);</div><div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;        <span class="keywordflow">return</span> -1;</div><div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;    }</div><div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;</div><div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;    <a class="code" href="ext__apps_2shim_2include_2common_8h.html#a42b8c0b6938177cc6befbd7c43abe5ab">activate</a>();</div><div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;</div><div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;    <span class="keywordflow">return</span> 0;</div><div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;}</div><div class="ttc" id="ext__apps_2shim_2include_2common_8h_html_a5fc2672f0d34c348ba70decdc32bcb30"><div class="ttname"><a href="ext__apps_2shim_2include_2common_8h.html#a5fc2672f0d34c348ba70decdc32bcb30">PERROR</a></div><div class="ttdeci">#define PERROR(msg)</div><div class="ttdef"><b>Definition:</b> common.h:202</div></div>
+<div class="ttc" id="group__rbac_html_gaa6ee746e2606d6f1cfca507f7c10256a"><div class="ttname"><a href="group__rbac.html#gaa6ee746e2606d6f1cfca507f7c10256a">load_events_for_roles</a></div><div class="ttdeci">static int load_events_for_roles(char *role_file)</div><div class="ttdoc">Function to load the events grouped by each role. </div><div class="ttdef"><b>Definition:</b> rbac.c:171</div></div>
+<div class="ttc" id="ext__apps_2shim_2include_2common_8h_html_ae488d7cb11ca726348daa88f64463ede"><div class="ttname"><a href="ext__apps_2shim_2include_2common_8h.html#ae488d7cb11ca726348daa88f64463ede">DEFAULT_APP_ROLE_FILE</a></div><div class="ttdeci">#define DEFAULT_APP_ROLE_FILE</div><div class="ttdoc">The default application role file. </div><div class="ttdef"><b>Definition:</b> common.h:110</div></div>
+<div class="ttc" id="ext__apps_2shim_2include_2common_8h_html_a25875003b43b81a4302256caa4a13599"><div class="ttname"><a href="ext__apps_2shim_2include_2common_8h.html#a25875003b43b81a4302256caa4a13599">FREE</a></div><div class="ttdeci">#define FREE(x)</div><div class="ttdoc">Free a space if the space is valid. </div><div class="ttdef"><b>Definition:</b> common.h:164</div></div>
+<div class="ttc" id="ext__apps_2shim_2include_2common_8h_html_a42b8c0b6938177cc6befbd7c43abe5ab"><div class="ttname"><a href="ext__apps_2shim_2include_2common_8h.html#a42b8c0b6938177cc6befbd7c43abe5ab">activate</a></div><div class="ttdeci">#define activate()</div><div class="ttdoc">Activation code for the main function of each component. </div><div class="ttdef"><b>Definition:</b> common.h:146</div></div>
+<div class="ttc" id="struct__role2ev__t_html"><div class="ttname"><a href="struct__role2ev__t.html">_role2ev_t</a></div><div class="ttdoc">The structure to map app roles and events. </div><div class="ttdef"><b>Definition:</b> rbac.c:53</div></div>
+<div class="ttc" id="ext__apps_2shim_2include_2common_8h_html_ad92fcbbe4b43f3c486cb19f0b16c3190"><div class="ttname"><a href="ext__apps_2shim_2include_2common_8h.html#ad92fcbbe4b43f3c486cb19f0b16c3190">DEFAULT_APP_CONFIG_FILE</a></div><div class="ttdeci">#define DEFAULT_APP_CONFIG_FILE</div><div class="ttdoc">The default application configuration file. </div><div class="ttdef"><b>Definition:</b> common.h:92</div></div>
+<div class="ttc" id="group__rbac_html_gga61dadd085c1777f559549e05962b2c9eae6ad5e7f7077a633c366c7b3e476d334"><div class="ttname"><a href="group__rbac.html#gga61dadd085c1777f559549e05962b2c9eae6ad5e7f7077a633c366c7b3e476d334">NUM_APP_ROLES</a></div><div class="ttdef"><b>Definition:</b> rbac.c:32</div></div>
+<div class="ttc" id="group__rbac_html_ga19c24f7fed9eeebb002fbd8bfc8222d9"><div class="ttname"><a href="group__rbac.html#ga19c24f7fed9eeebb002fbd8bfc8222d9">app_to_role_cnt</a></div><div class="ttdeci">int app_to_role_cnt</div><div class="ttdoc">The number of applications. </div><div class="ttdef"><b>Definition:</b> rbac.c:45</div></div>
+<div class="ttc" id="group__rbac_html_gac8db2013fc2eb52fe724edd16b1d9524"><div class="ttname"><a href="group__rbac.html#gac8db2013fc2eb52fe724edd16b1d9524">RBAC_ID</a></div><div class="ttdeci">#define RBAC_ID</div><div class="ttdoc">Role-based authorization ID. </div><div class="ttdef"><b>Definition:</b> rbac.c:21</div></div>
+<div class="ttc" id="group__rbac_html_gafba298f35fa9393b0f5cd68afba45f4c"><div class="ttname"><a href="group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c">role_to_event</a></div><div class="ttdeci">role2ev_t * role_to_event</div><div class="ttdoc">The mapping table of roles and their events. </div><div class="ttdef"><b>Definition:</b> rbac.c:59</div></div>
+<div class="ttc" id="group__rbac_html_ga795b8b022b5c9ff18b73005b9e753b10"><div class="ttname"><a href="group__rbac.html#ga795b8b022b5c9ff18b73005b9e753b10">load_app_roles</a></div><div class="ttdeci">static int load_app_roles(char *conf_file)</div><div class="ttdoc">Function to load application roles. </div><div class="ttdef"><b>Definition:</b> rbac.c:89</div></div>
+<div class="ttc" id="struct__app2role__t_html"><div class="ttname"><a href="struct__app2role__t.html">_app2role_t</a></div><div class="ttdoc">The structure to map application IDs and roles. </div><div class="ttdef"><b>Definition:</b> rbac.c:38</div></div>
+<div class="ttc" id="ext__apps_2shim_2include_2common_8h_html_a669eabe559684f002c71d6e02ed3bb5b"><div class="ttname"><a href="ext__apps_2shim_2include_2common_8h.html#a669eabe559684f002c71d6e02ed3bb5b">CALLOC</a></div><div class="ttdeci">#define CALLOC(x, y)</div><div class="ttdef"><b>Definition:</b> common.h:161</div></div>
+<div class="ttc" id="group__rbac_html_ga53111a7aa28c4e3682625c431f6195d8"><div class="ttname"><a href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a></div><div class="ttdeci">app2role_t * app_to_role</div><div class="ttdoc">The mapping table of applications and their roles. </div><div class="ttdef"><b>Definition:</b> rbac.c:48</div></div>
+<div class="ttc" id="ext__apps_2shim_2include_2common_8h_html_a9afb7d3b891cbf49e537dba4acbc3f09"><div class="ttname"><a href="ext__apps_2shim_2include_2common_8h.html#a9afb7d3b891cbf49e537dba4acbc3f09">ALOG_INFO</a></div><div class="ttdeci">#define ALOG_INFO(id, format, args...)</div><div class="ttdef"><b>Definition:</b> common.h:219</div></div>
+</div><!-- fragment -->
+</div>
+</div>
 <a id="ga416bc0eb6b77247121ea73a4cff3f5cd"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga416bc0eb6b77247121ea73a4cff3f5cd">&#9670;&nbsp;</a></span>rbac_cleanup()</h2>
 
@@ -491,120 +596,15 @@ Data Structures</h2></td></tr>
 </div><!-- fragment -->
 </div>
 </div>
-<a id="ga6359f01be9c0a23cf5fb2716282d631e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga6359f01be9c0a23cf5fb2716282d631e">&#9670;&nbsp;</a></span>rbac_main()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int rbac_main </td>
-          <td>(</td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>activated</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>argc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char **&#160;</td>
-          <td class="paramname"><em>argv</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">activated</td><td>The activation flag of this application </td></tr>
-    <tr><td class="paramname">argc</td><td>The number of arguments </td></tr>
-    <tr><td class="paramname">argv</td><td>Arguments </td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"><div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;{</div><div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;    <a class="code" href="ext__apps_2shim_2include_2common_8h.html#a9afb7d3b891cbf49e537dba4acbc3f09">ALOG_INFO</a>(<a class="code" href="group__rbac.html#gac8db2013fc2eb52fe724edd16b1d9524">RBAC_ID</a>, <span class="stringliteral">&quot;Init - Role-based access control&quot;</span>);</div><div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;</div><div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;    <a class="code" href="group__rbac.html#ga19c24f7fed9eeebb002fbd8bfc8222d9">app_to_role_cnt</a> = 0;</div><div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;</div><div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;    <a class="code" href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a> = (<a class="code" href="struct__app2role__t.html">app2role_t</a> *)<a class="code" href="ext__apps_2shim_2include_2common_8h.html#a669eabe559684f002c71d6e02ed3bb5b">CALLOC</a>(__MAX_APPLICATIONS, <span class="keyword">sizeof</span>(<a class="code" href="struct__app2role__t.html">app2role_t</a>));</div><div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a> == NULL) {</div><div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;        <a class="code" href="ext__apps_2shim_2include_2common_8h.html#a5fc2672f0d34c348ba70decdc32bcb30">PERROR</a>(<span class="stringliteral">&quot;calloc&quot;</span>);</div><div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;        <span class="keywordflow">return</span> -1;</div><div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;    }</div><div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;</div><div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;    <a class="code" href="group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c">role_to_event</a> = (<a class="code" href="struct__role2ev__t.html">role2ev_t</a> *)<a class="code" href="ext__apps_2shim_2include_2common_8h.html#a669eabe559684f002c71d6e02ed3bb5b">CALLOC</a>(<a class="code" href="group__rbac.html#gga61dadd085c1777f559549e05962b2c9eae6ad5e7f7077a633c366c7b3e476d334">NUM_APP_ROLES</a>, <span class="keyword">sizeof</span>(<a class="code" href="struct__role2ev__t.html">role2ev_t</a>));</div><div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c">role_to_event</a> == NULL) {</div><div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;        <a class="code" href="ext__apps_2shim_2include_2common_8h.html#a5fc2672f0d34c348ba70decdc32bcb30">PERROR</a>(<span class="stringliteral">&quot;calloc&quot;</span>);</div><div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;        <span class="keywordflow">return</span> -1;</div><div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;    }</div><div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;</div><div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;    <span class="comment">// load app roles</span></div><div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__rbac.html#ga795b8b022b5c9ff18b73005b9e753b10">load_app_roles</a>(<a class="code" href="ext__apps_2shim_2include_2common_8h.html#ad92fcbbe4b43f3c486cb19f0b16c3190">DEFAULT_APP_CONFIG_FILE</a>) &lt; 0) {</div><div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;        <a class="code" href="ext__apps_2shim_2include_2common_8h.html#a25875003b43b81a4302256caa4a13599">FREE</a>(<a class="code" href="group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c">role_to_event</a>);</div><div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;        <a class="code" href="ext__apps_2shim_2include_2common_8h.html#a25875003b43b81a4302256caa4a13599">FREE</a>(<a class="code" href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a>);</div><div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;        <span class="keywordflow">return</span> -1;</div><div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;    }</div><div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;</div><div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;    <span class="comment">// load app events for each role</span></div><div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;    <span class="keywordflow">if</span> (<a class="code" href="group__rbac.html#gaa6ee746e2606d6f1cfca507f7c10256a">load_events_for_roles</a>(<a class="code" href="ext__apps_2shim_2include_2common_8h.html#ae488d7cb11ca726348daa88f64463ede">DEFAULT_APP_ROLE_FILE</a>) &lt; 0) {</div><div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;        <a class="code" href="ext__apps_2shim_2include_2common_8h.html#a25875003b43b81a4302256caa4a13599">FREE</a>(<a class="code" href="group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c">role_to_event</a>);</div><div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;        <a class="code" href="ext__apps_2shim_2include_2common_8h.html#a25875003b43b81a4302256caa4a13599">FREE</a>(<a class="code" href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a>);</div><div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;        <span class="keywordflow">return</span> -1;</div><div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;    }</div><div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;</div><div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;    <a class="code" href="ext__apps_2shim_2include_2common_8h.html#a42b8c0b6938177cc6befbd7c43abe5ab">activate</a>();</div><div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;</div><div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;    <span class="keywordflow">return</span> 0;</div><div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;}</div><div class="ttc" id="ext__apps_2shim_2include_2common_8h_html_a5fc2672f0d34c348ba70decdc32bcb30"><div class="ttname"><a href="ext__apps_2shim_2include_2common_8h.html#a5fc2672f0d34c348ba70decdc32bcb30">PERROR</a></div><div class="ttdeci">#define PERROR(msg)</div><div class="ttdef"><b>Definition:</b> common.h:202</div></div>
-<div class="ttc" id="group__rbac_html_gaa6ee746e2606d6f1cfca507f7c10256a"><div class="ttname"><a href="group__rbac.html#gaa6ee746e2606d6f1cfca507f7c10256a">load_events_for_roles</a></div><div class="ttdeci">static int load_events_for_roles(char *role_file)</div><div class="ttdoc">Function to load the events grouped by each role. </div><div class="ttdef"><b>Definition:</b> rbac.c:171</div></div>
-<div class="ttc" id="ext__apps_2shim_2include_2common_8h_html_ae488d7cb11ca726348daa88f64463ede"><div class="ttname"><a href="ext__apps_2shim_2include_2common_8h.html#ae488d7cb11ca726348daa88f64463ede">DEFAULT_APP_ROLE_FILE</a></div><div class="ttdeci">#define DEFAULT_APP_ROLE_FILE</div><div class="ttdoc">The default application role file. </div><div class="ttdef"><b>Definition:</b> common.h:110</div></div>
-<div class="ttc" id="ext__apps_2shim_2include_2common_8h_html_a25875003b43b81a4302256caa4a13599"><div class="ttname"><a href="ext__apps_2shim_2include_2common_8h.html#a25875003b43b81a4302256caa4a13599">FREE</a></div><div class="ttdeci">#define FREE(x)</div><div class="ttdoc">Free a space if the space is valid. </div><div class="ttdef"><b>Definition:</b> common.h:164</div></div>
-<div class="ttc" id="ext__apps_2shim_2include_2common_8h_html_a42b8c0b6938177cc6befbd7c43abe5ab"><div class="ttname"><a href="ext__apps_2shim_2include_2common_8h.html#a42b8c0b6938177cc6befbd7c43abe5ab">activate</a></div><div class="ttdeci">#define activate()</div><div class="ttdoc">Activation code for the main function of each component. </div><div class="ttdef"><b>Definition:</b> common.h:146</div></div>
-<div class="ttc" id="struct__role2ev__t_html"><div class="ttname"><a href="struct__role2ev__t.html">_role2ev_t</a></div><div class="ttdoc">The structure to map app roles and events. </div><div class="ttdef"><b>Definition:</b> rbac.c:53</div></div>
-<div class="ttc" id="ext__apps_2shim_2include_2common_8h_html_ad92fcbbe4b43f3c486cb19f0b16c3190"><div class="ttname"><a href="ext__apps_2shim_2include_2common_8h.html#ad92fcbbe4b43f3c486cb19f0b16c3190">DEFAULT_APP_CONFIG_FILE</a></div><div class="ttdeci">#define DEFAULT_APP_CONFIG_FILE</div><div class="ttdoc">The default application configuration file. </div><div class="ttdef"><b>Definition:</b> common.h:92</div></div>
-<div class="ttc" id="group__rbac_html_gga61dadd085c1777f559549e05962b2c9eae6ad5e7f7077a633c366c7b3e476d334"><div class="ttname"><a href="group__rbac.html#gga61dadd085c1777f559549e05962b2c9eae6ad5e7f7077a633c366c7b3e476d334">NUM_APP_ROLES</a></div><div class="ttdef"><b>Definition:</b> rbac.c:32</div></div>
-<div class="ttc" id="group__rbac_html_ga19c24f7fed9eeebb002fbd8bfc8222d9"><div class="ttname"><a href="group__rbac.html#ga19c24f7fed9eeebb002fbd8bfc8222d9">app_to_role_cnt</a></div><div class="ttdeci">int app_to_role_cnt</div><div class="ttdoc">The number of applications. </div><div class="ttdef"><b>Definition:</b> rbac.c:45</div></div>
-<div class="ttc" id="group__rbac_html_gac8db2013fc2eb52fe724edd16b1d9524"><div class="ttname"><a href="group__rbac.html#gac8db2013fc2eb52fe724edd16b1d9524">RBAC_ID</a></div><div class="ttdeci">#define RBAC_ID</div><div class="ttdoc">Role-based authorization ID. </div><div class="ttdef"><b>Definition:</b> rbac.c:21</div></div>
-<div class="ttc" id="group__rbac_html_gafba298f35fa9393b0f5cd68afba45f4c"><div class="ttname"><a href="group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c">role_to_event</a></div><div class="ttdeci">role2ev_t * role_to_event</div><div class="ttdoc">The mapping table of roles and their events. </div><div class="ttdef"><b>Definition:</b> rbac.c:59</div></div>
-<div class="ttc" id="group__rbac_html_ga795b8b022b5c9ff18b73005b9e753b10"><div class="ttname"><a href="group__rbac.html#ga795b8b022b5c9ff18b73005b9e753b10">load_app_roles</a></div><div class="ttdeci">static int load_app_roles(char *conf_file)</div><div class="ttdoc">Function to load application roles. </div><div class="ttdef"><b>Definition:</b> rbac.c:89</div></div>
-<div class="ttc" id="struct__app2role__t_html"><div class="ttname"><a href="struct__app2role__t.html">_app2role_t</a></div><div class="ttdoc">The structure to map application IDs and roles. </div><div class="ttdef"><b>Definition:</b> rbac.c:38</div></div>
-<div class="ttc" id="ext__apps_2shim_2include_2common_8h_html_a669eabe559684f002c71d6e02ed3bb5b"><div class="ttname"><a href="ext__apps_2shim_2include_2common_8h.html#a669eabe559684f002c71d6e02ed3bb5b">CALLOC</a></div><div class="ttdeci">#define CALLOC(x, y)</div><div class="ttdef"><b>Definition:</b> common.h:161</div></div>
-<div class="ttc" id="group__rbac_html_ga53111a7aa28c4e3682625c431f6195d8"><div class="ttname"><a href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a></div><div class="ttdeci">app2role_t * app_to_role</div><div class="ttdoc">The mapping table of applications and their roles. </div><div class="ttdef"><b>Definition:</b> rbac.c:48</div></div>
-<div class="ttc" id="ext__apps_2shim_2include_2common_8h_html_a9afb7d3b891cbf49e537dba4acbc3f09"><div class="ttname"><a href="ext__apps_2shim_2include_2common_8h.html#a9afb7d3b891cbf49e537dba4acbc3f09">ALOG_INFO</a></div><div class="ttdeci">#define ALOG_INFO(id, format, args...)</div><div class="ttdef"><b>Definition:</b> common.h:219</div></div>
-</div><!-- fragment -->
-</div>
-</div>
-<a id="ga14da92bf216bfc9f28e4c988888c903e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga14da92bf216bfc9f28e4c988888c903e">&#9670;&nbsp;</a></span>verify_app_role()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static int verify_app_role </td>
-          <td>(</td>
-          <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>id</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>type</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">id</td><td>Application ID </td></tr>
-    <tr><td class="paramname">type</td><td>App event </td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="fragment"><div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;{</div><div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;    <span class="keywordtype">int</span> i;</div><div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    <span class="keywordflow">for</span> (i=0; i&lt;<a class="code" href="group__rbac.html#ga19c24f7fed9eeebb002fbd8bfc8222d9">app_to_role_cnt</a>; i++) {</div><div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;        <span class="keywordflow">if</span> (<a class="code" href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a>[i].<span class="keywordtype">id</span> == <span class="keywordtype">id</span>) { <span class="comment">// found the matched app</span></div><div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;            <span class="keywordflow">if</span> (<a class="code" href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a>[i].role == <a class="code" href="group__rbac.html#gga61dadd085c1777f559549e05962b2c9ea376bed6d3cd397f1c06b2d6fd5345943">APP_BASE</a>) <span class="comment">// skip base</span></div><div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;                <span class="keywordflow">return</span> -1;</div><div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;            <span class="keywordflow">else</span> <span class="keywordflow">if</span> (<a class="code" href="group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c">role_to_event</a>[<a class="code" href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a>[i].role].event[type] == 1) <span class="comment">// allow or deny</span></div><div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;                <span class="keywordflow">return</span> 1;</div><div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;            <span class="keywordflow">else</span></div><div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;                <span class="keywordflow">return</span> 0;</div><div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;        }</div><div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;    }</div><div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;</div><div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;    <span class="keywordflow">return</span> 0;</div><div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;}</div><div class="ttc" id="group__rbac_html_ga19c24f7fed9eeebb002fbd8bfc8222d9"><div class="ttname"><a href="group__rbac.html#ga19c24f7fed9eeebb002fbd8bfc8222d9">app_to_role_cnt</a></div><div class="ttdeci">int app_to_role_cnt</div><div class="ttdoc">The number of applications. </div><div class="ttdef"><b>Definition:</b> rbac.c:45</div></div>
-<div class="ttc" id="group__rbac_html_gga61dadd085c1777f559549e05962b2c9ea376bed6d3cd397f1c06b2d6fd5345943"><div class="ttname"><a href="group__rbac.html#gga61dadd085c1777f559549e05962b2c9ea376bed6d3cd397f1c06b2d6fd5345943">APP_BASE</a></div><div class="ttdef"><b>Definition:</b> rbac.c:27</div></div>
-<div class="ttc" id="group__rbac_html_gafba298f35fa9393b0f5cd68afba45f4c"><div class="ttname"><a href="group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c">role_to_event</a></div><div class="ttdeci">role2ev_t * role_to_event</div><div class="ttdoc">The mapping table of roles and their events. </div><div class="ttdef"><b>Definition:</b> rbac.c:59</div></div>
-<div class="ttc" id="group__rbac_html_ga53111a7aa28c4e3682625c431f6195d8"><div class="ttname"><a href="group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8">app_to_role</a></div><div class="ttdeci">app2role_t * app_to_role</div><div class="ttdoc">The mapping table of applications and their roles. </div><div class="ttdef"><b>Definition:</b> rbac.c:48</div></div>
-</div><!-- fragment -->
-</div>
-</div>
 <h2 class="groupheader">Variable Documentation</h2>
-<a id="ga44b19fe8d4eb6fd35ce1492820d3a39f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga44b19fe8d4eb6fd35ce1492820d3a39f">&#9670;&nbsp;</a></span>app_ev_list</h2>
+<a id="ga19c24f7fed9eeebb002fbd8bfc8222d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga19c24f7fed9eeebb002fbd8bfc8222d9">&#9670;&nbsp;</a></span>app_to_role_cnt</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">const char app_ev_list[<a class="el" href="ext__apps_2shim_2include_2app__event__string_8h.html#a6a0ffbc231be5505965f4eba620b69a3">AV_NUM_EVENTS</a>+1][<a class="el" href="src_2include_2common_8h.html#a8b3387f5d212041981e2b6ad4bec9287">__CONF_WORD_LEN</a>]</td>
+          <td class="memname">int app_to_role_cnt</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -625,20 +625,6 @@ Data Structures</h2></td></tr>
 
 </div>
 </div>
-<a id="ga19c24f7fed9eeebb002fbd8bfc8222d9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga19c24f7fed9eeebb002fbd8bfc8222d9">&#9670;&nbsp;</a></span>app_to_role_cnt</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int app_to_role_cnt</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="gafba298f35fa9393b0f5cd68afba45f4c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gafba298f35fa9393b0f5cd68afba45f4c">&#9670;&nbsp;</a></span>role_to_event</h2>
 
@@ -647,6 +633,20 @@ Data Structures</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="group__rbac.html#ga9ead28aa59c1296620f85eadb3b32cf7">role2ev_t</a>* role_to_event</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ga44b19fe8d4eb6fd35ce1492820d3a39f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga44b19fe8d4eb6fd35ce1492820d3a39f">&#9670;&nbsp;</a></span>app_ev_list</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char app_ev_list[<a class="el" href="ext__apps_2shim_2include_2app__event__string_8h.html#a6a0ffbc231be5505965f4eba620b69a3">AV_NUM_EVENTS</a>+1][<a class="el" href="src_2include_2common_8h.html#a8b3387f5d212041981e2b6ad4bec9287">__CONF_WORD_LEN</a>]</td>
         </tr>
       </table>
 </div><div class="memdoc">

@@ -12,13 +12,13 @@ var rbac_8c =
     [ "app_event_type", "group__rbac.html#gab67fe7e9ecb05676abd54c97d3f66a6b", null ],
     [ "load_app_roles", "group__rbac.html#ga795b8b022b5c9ff18b73005b9e753b10", null ],
     [ "load_events_for_roles", "group__rbac.html#gaa6ee746e2606d6f1cfca507f7c10256a", null ],
+    [ "verify_app_role", "group__rbac.html#ga14da92bf216bfc9f28e4c988888c903e", null ],
+    [ "rbac_main", "group__rbac.html#ga6359f01be9c0a23cf5fb2716282d631e", null ],
     [ "rbac_cleanup", "group__rbac.html#ga416bc0eb6b77247121ea73a4cff3f5cd", null ],
     [ "rbac_cli", "group__rbac.html#ga14414f3f3ec91615dc1680f75d33109a", null ],
     [ "rbac_handler", "group__rbac.html#ga8dc5e2e2c6c4e1213bce8e2e29e046ef", null ],
-    [ "rbac_main", "group__rbac.html#ga6359f01be9c0a23cf5fb2716282d631e", null ],
-    [ "verify_app_role", "group__rbac.html#ga14da92bf216bfc9f28e4c988888c903e", null ],
-    [ "app_ev_list", "group__rbac.html#ga44b19fe8d4eb6fd35ce1492820d3a39f", null ],
-    [ "app_to_role", "group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8", null ],
     [ "app_to_role_cnt", "group__rbac.html#ga19c24f7fed9eeebb002fbd8bfc8222d9", null ],
-    [ "role_to_event", "group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c", null ]
+    [ "app_to_role", "group__rbac.html#ga53111a7aa28c4e3682625c431f6195d8", null ],
+    [ "role_to_event", "group__rbac.html#gafba298f35fa9393b0f5cd68afba45f4c", null ],
+    [ "app_ev_list", "group__rbac.html#ga44b19fe8d4eb6fd35ce1492820d3a39f", null ]
 ];

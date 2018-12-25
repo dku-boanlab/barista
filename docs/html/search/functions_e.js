@@ -14,7 +14,9 @@ var searchData=
   ['print_5fusage',['print_usage',['../group__base.html#ga5bea056a7d160fcf78023ff624e9c690',1,'main.c']]],
   ['process_5fapp_5fevents',['process_app_events',['../group__av__msg.html#ga0e0884cd94efc34e63763011e9635ab5',1,'app_event_msg_pack.h']]],
   ['process_5fevents',['process_events',['../group__ev__msg.html#gac236427ba4dcd94a269f5b03cd128197',1,'event_msg_pack.h']]],
+  ['push_5fapp_5fevents',['push_app_events',['../group__av__msg.html#ga62aa4a04f8f8584d38ef798c3be1ce36',1,'push_app_events(void *config):&#160;app_event_msg_pack.h'],['../group__app__event.html#ga62aa4a04f8f8584d38ef798c3be1ce36',1,'push_app_events(void *config):&#160;app_event.c']]],
   ['push_5fback',['push_back',['../epoll__env_8h.html#af86d38ad4e4b4a93fd92586fc6415c8b',1,'epoll_env.h']]],
+  ['push_5fevents',['push_events',['../group__ev__msg.html#ga89c9fec3399e0f19035da72369ab3965',1,'push_events(void *config):&#160;event_msg_pack.h'],['../group__compnt__event.html#ga89c9fec3399e0f19035da72369ab3965',1,'push_events(void *config):&#160;event.c']]],
   ['push_5fmsg_5finto_5fqueue',['push_msg_into_queue',['../group__log.html#ga8f9e2a6d4d345ccb31de6fb019e3c2d9',1,'log.c']]],
   ['push_5fmsgs_5finto_5ffile',['push_msgs_into_file',['../group__log.html#gae1621946b1351d8e0315011dddaadacd',1,'log.c']]]
 ];
