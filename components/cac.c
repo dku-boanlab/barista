@@ -27,7 +27,7 @@ char compnt_file[__CONF_WORD_LEN] = DEFAULT_COMPNT_CONFIG_FILE;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The structure of a component configuration */
+/** \brief The structure of a component */
 typedef struct _component_t {
     uint32_t id; /**< Component ID */
     char name[__CONF_WORD_LEN]; /**< Component name for logging */
