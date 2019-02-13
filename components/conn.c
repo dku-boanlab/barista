@@ -33,7 +33,7 @@ struct of_header {
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The structure to keep the remaining part of a raw message */
+/** \brief The structure to keep the remaining part of a message */
 typedef struct _buffer_t {
     int need; /**< The bytes that it needs to read */
     int done; /**< The bytes that it has */
@@ -191,7 +191,7 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to do something when a new client is connected
+ * \brief Function to do something when a new device is connected
  * \return None
  */
 static int new_connection(int sock)
@@ -207,7 +207,7 @@ static int new_connection(int sock)
 }
 
 /**
- * \brief Function to do something when a client is disconnected
+ * \brief Function to do something when a device is disconnected
  * \return None
  */
 static int closed_connection(int sock)

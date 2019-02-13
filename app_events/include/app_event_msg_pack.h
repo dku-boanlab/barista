@@ -551,7 +551,7 @@ static int new_connection(int sock)
 }
 
 /**
- * \brief Function to do something when a application is disconnected
+ * \brief Function to do something when an application is disconnected
  * \return None
  */
 static int closed_connection(int sock)
