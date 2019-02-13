@@ -12,4 +12,3 @@
 #include "common.h"
 #include "event.h"
 #include "hash.h"
-#include "mac2int.h"

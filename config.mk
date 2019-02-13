@@ -1,5 +1,7 @@
 CONFIG= \
     __DEFAULT_PORT=6633 \
+    \
+    __CLI_ALLOW_CONNECT=\"127.0.0.1\" \
     __CLI_PORT=8000 \
     \
     __MAX_COMPONENTS=20 \

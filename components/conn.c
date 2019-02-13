@@ -33,6 +33,42 @@ struct of_header {
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief The structure to keep the remaining part of a raw message */
+typedef struct _buffer_t {
+    int need; /**< The bytes that it needs to read */
+    int done; /**< The bytes that it has */
+
+    uint8_t temp[__MAX_RAW_DATA_LEN]; /**< Temporary data */
+} buffer_t;
+
+/** \brief Buffers for all possible sockets */
+buffer_t *buffer;
+
+/**
+ * \brief Function to initialize all buffers
+ * \return None
+ */
+static void init_buffers(void)
+{
+    buffer = (buffer_t *)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(buffer_t));
+    if (buffer == NULL) {
+        PERROR("calloc");
+        return;
+    }
+}
+
+/**
+ * \brief Function to clean up a buffer
+ * \param sock Network socket
+ */
+static void clean_buffer(int sock)
+{
+    if (buffer)
+        memset(&buffer[sock], 0, sizeof(buffer_t));
+}
+
+/////////////////////////////////////////////////////////////////////
+
 #include "epoll_env.h"
 
 /////////////////////////////////////////////////////////////////////
@@ -47,11 +83,11 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 {
     // 4 = version + type + length
 
-    context_t *c = &context[sock];
+    buffer_t *b = &buffer[sock];
 
-    uint8_t *temp = c->temp;
-    int need = c->need;
-    int done = c->done;
+    uint8_t *temp = b->temp;
+    int need = b->need;
+    int done = b->done;
 
     int buf_ptr = 0;
     while (bytes > 0) {
@@ -146,8 +182,8 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
         }
     }
 
-    c->need = need;
-    c->done = done;
+    b->need = need;
+    b->done = done;
 
     return bytes;
 }
@@ -165,6 +201,8 @@ static int new_connection(int sock)
     sw.fd = sock;
     ev_sw_new_conn(CONN_ID, &sw);
 
+    clean_buffer(sock);
+
     return 0;
 }
 
@@ -178,6 +216,8 @@ static int closed_connection(int sock)
     switch_t sw = {0};
     sw.fd = sock;
     ev_sw_expired_conn(CONN_ID, &sw);
+
+    clean_buffer(sock);
 
     return 0;
 }
@@ -194,6 +234,7 @@ int conn_main(int *activated, int argc, char **argv)
 {
     LOG_INFO(CONN_ID, "Init - Packet I/O engine");
 
+    init_buffers();
     create_epoll_env(INADDR_ANY, __DEFAULT_PORT);
 
     activate();
@@ -214,6 +255,7 @@ int conn_cleanup(int *activated)
     deactivate();
 
     destroy_epoll_env();
+    FREE(buffer);
 
     return 0;
 }

@@ -194,9 +194,9 @@ static int component_print(cli_t *cli, compnt_t *c, int details)
             cli_buffer(buf, "disabled");
         else if (c->activated && (c->site == COMPNT_INTERNAL))
             cli_buffer(buf, ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
-        else if (c->activated && (c->site == COMPNT_EXTERNAL))
+        else if (c->activated && (c->site == COMPNT_EXTERNAL_RAW || c->site == COMPNT_EXTERNAL_JSON))
             cli_buffer(buf, ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
-        else if (c->push_out_ctx && (c->site == COMPNT_EXTERNAL))
+        else if (c->site == COMPNT_EXTERNAL_RAW || c->site == COMPNT_EXTERNAL_JSON)
             cli_buffer(buf, ANSI_COLOR_MAGENTA "ready to talk" ANSI_COLOR_RESET);
         else
             cli_buffer(buf, ANSI_COLOR_BLUE "enabled" ANSI_COLOR_RESET);
@@ -225,8 +225,10 @@ static int component_print(cli_t *cli, compnt_t *c, int details)
 
     if (c->site == COMPNT_INTERNAL)
         cli_print(cli, "    Site: internal");
+    else if (c->site == COMPNT_EXTERNAL_RAW)
+        cli_print(cli, "    Site: external (RAW)");
     else
-        cli_print(cli, "    Site: external");
+        cli_print(cli, "    Site: external (JSON)");
 
     if (c->role == COMPNT_ADMIN)
         cli_print(cli, "    Role: admin");
@@ -451,8 +453,11 @@ int component_activate(cli_t *cli, char *name)
                         }
                     // external?
                     } else {
-                        compnt_ctx->compnt_list[i]->push_in_ctx = zmq_ctx_new();
-                        compnt_ctx->compnt_list[i]->push_out_ctx = zmq_ctx_new();
+                        int j;
+                        for (j=0; j<__NUM_PULL_THREADS; j++) {
+                            compnt_ctx->compnt_list[i]->push_sock[j] = 0;
+                            pthread_spin_init(&compnt_ctx->compnt_list[i]->push_lock[j], PTHREAD_PROCESS_PRIVATE);
+                        }
 
                         compnt_ctx->compnt_list[i]->req_ctx = zmq_ctx_new();
 
@@ -505,16 +510,14 @@ int component_deactivate(cli_t *cli, char *name)
                         }
                     // external?
                     } else {
-                        waitsec(1, 0);
-
-                        zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_in_ctx);
-                        zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_out_ctx);
+                        int j;
+                        for (j=0; j<__NUM_PULL_THREADS; j++) {
+                            pthread_spin_destroy(&compnt_ctx->compnt_list[i]->push_lock[j]);
+                            close(compnt_ctx->compnt_list[i]->push_sock[j]);
+                            compnt_ctx->compnt_list[i]->push_sock[j] = 0;
+                        }
 
                         zmq_ctx_destroy(compnt_ctx->compnt_list[i]->req_ctx);
-
-                        compnt_ctx->compnt_list[i]->push_in_ctx = NULL;
-                        compnt_ctx->compnt_list[i]->push_out_ctx = NULL;
-
                         compnt_ctx->compnt_list[i]->req_ctx = NULL;
 
                         compnt_ctx->compnt_list[i]->activated = FALSE;
@@ -594,8 +597,11 @@ int component_start(cli_t *cli)
                 }
             // external?
             } else {
-                compnt_ctx->compnt_list[cluster]->push_in_ctx = zmq_ctx_new();
-                compnt_ctx->compnt_list[cluster]->push_out_ctx = zmq_ctx_new();
+                int j;
+                for (j=0; j<__NUM_PULL_THREADS; j++) {
+                    compnt_ctx->compnt_list[cluster]->push_sock[j] = 0;
+                    pthread_spin_init(&compnt_ctx->compnt_list[cluster]->push_lock[j], PTHREAD_PROCESS_PRIVATE);
+                }
 
                 compnt_ctx->compnt_list[cluster]->req_ctx = zmq_ctx_new();
 
@@ -641,8 +647,11 @@ int component_start(cli_t *cli)
                     }
                 // external?
                 } else {
-                    compnt_ctx->compnt_list[i]->push_in_ctx = zmq_ctx_new();
-                    compnt_ctx->compnt_list[i]->push_out_ctx = zmq_ctx_new();
+                    int j;
+                    for (j=0; j<__NUM_PULL_THREADS; j++) {
+                        compnt_ctx->compnt_list[i]->push_sock[j] = 0;
+                        pthread_spin_init(&compnt_ctx->compnt_list[i]->push_lock[j], PTHREAD_PROCESS_PRIVATE);
+                    }
 
                     compnt_ctx->compnt_list[i]->req_ctx = zmq_ctx_new();
 
@@ -682,8 +691,11 @@ int component_start(cli_t *cli)
                 }
             // external?
             } else {
-                compnt_ctx->compnt_list[conn]->push_in_ctx = zmq_ctx_new();
-                compnt_ctx->compnt_list[conn]->push_out_ctx = zmq_ctx_new();
+                int j;
+                for (j=0; j<__NUM_PULL_THREADS; j++) {
+                    compnt_ctx->compnt_list[conn]->push_sock[j] = 0;
+                    pthread_spin_init(&compnt_ctx->compnt_list[conn]->push_lock[j], PTHREAD_PROCESS_PRIVATE);
+                }
 
                 compnt_ctx->compnt_list[conn]->req_ctx = zmq_ctx_new();
 
@@ -741,16 +753,14 @@ int component_stop(cli_t *cli)
             }
         // external?
         } else {
-            waitsec(1, 0);
-
-            zmq_ctx_destroy(compnt_ctx->compnt_list[conn]->push_in_ctx);
-            zmq_ctx_destroy(compnt_ctx->compnt_list[conn]->push_out_ctx);
+            int j;
+            for (j=0; j<__NUM_PULL_THREADS; j++) {
+                pthread_spin_destroy(&compnt_ctx->compnt_list[conn]->push_lock[j]);
+                close(compnt_ctx->compnt_list[conn]->push_sock[j]);
+                compnt_ctx->compnt_list[conn]->push_sock[j] = 0;
+            }
 
             zmq_ctx_destroy(compnt_ctx->compnt_list[conn]->req_ctx);
-
-            compnt_ctx->compnt_list[conn]->push_in_ctx = NULL;
-            compnt_ctx->compnt_list[conn]->push_out_ctx = NULL;
-
             compnt_ctx->compnt_list[conn]->req_ctx = NULL;
 
             compnt_ctx->compnt_list[conn]->activated = FALSE;
@@ -782,16 +792,14 @@ int component_stop(cli_t *cli)
                     }
                 // external?
                 } else {
-                    waitsec(1, 0);
-
-                    zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_in_ctx);
-                    zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_out_ctx);
+                    int j;
+                    for (j=0; j<__NUM_PULL_THREADS; j++) {
+                        pthread_spin_destroy(&compnt_ctx->compnt_list[i]->push_lock[j]);
+                        close(compnt_ctx->compnt_list[i]->push_sock[j]);
+                        compnt_ctx->compnt_list[i]->push_sock[j] = 0;
+                    }
 
                     zmq_ctx_destroy(compnt_ctx->compnt_list[i]->req_ctx);
-
-                    compnt_ctx->compnt_list[i]->push_in_ctx = NULL;
-                    compnt_ctx->compnt_list[i]->push_out_ctx = NULL;
-
                     compnt_ctx->compnt_list[i]->req_ctx = NULL;
 
                     compnt_ctx->compnt_list[i]->activated = FALSE;
@@ -814,16 +822,14 @@ int component_stop(cli_t *cli)
             }
         // external?
         } else {
-            waitsec(1, 0);
-
-            zmq_ctx_destroy(compnt_ctx->compnt_list[cluster]->push_in_ctx);
-            zmq_ctx_destroy(compnt_ctx->compnt_list[cluster]->push_out_ctx);
+            int j;
+            for (j=0; j<__NUM_PULL_THREADS; j++) {
+                pthread_spin_destroy(&compnt_ctx->compnt_list[cluster]->push_lock[j]);
+                close(compnt_ctx->compnt_list[cluster]->push_sock[j]);
+                compnt_ctx->compnt_list[cluster]->push_sock[j] = 0;
+            }
 
             zmq_ctx_destroy(compnt_ctx->compnt_list[cluster]->req_ctx);
-
-            compnt_ctx->compnt_list[cluster]->push_in_ctx = NULL;
-            compnt_ctx->compnt_list[cluster]->push_out_ctx = NULL;
-
             compnt_ctx->compnt_list[cluster]->req_ctx = NULL;
 
             compnt_ctx->compnt_list[cluster]->activated = FALSE;
@@ -922,14 +928,14 @@ int component_add_policy(cli_t *cli, char *name, char *odp)
                         c->odp[c->num_policies].flag |= ODP_PROTO;
                         c->odp[c->num_policies].proto |= PROTO_ARP;
                         cli_print(cli, "\tProtocol: ARP");
-                    } else if (strcmp(v, "dhcp") == 0) {
-                        c->odp[c->num_policies].flag |= ODP_PROTO;
-                        c->odp[c->num_policies].proto |= PROTO_DHCP;
-                        cli_print(cli, "\tProtocol: DHCP");
                     } else if (strcmp(v, "lldp") == 0) {
                         c->odp[c->num_policies].flag |= ODP_PROTO;
                         c->odp[c->num_policies].proto |= PROTO_LLDP;
                         cli_print(cli, "\tProtocol: LLDP");
+                    } else if (strcmp(v, "dhcp") == 0) {
+                        c->odp[c->num_policies].flag |= ODP_PROTO;
+                        c->odp[c->num_policies].proto |= PROTO_DHCP;
+                        cli_print(cli, "\tProtocol: DHCP");
                     } else if (strcmp(v, "ipv4") == 0) {
                         c->odp[c->num_policies].flag |= ODP_PROTO;
                         c->odp[c->num_policies].proto |= PROTO_IPV4;
@@ -961,7 +967,7 @@ int component_add_policy(cli_t *cli, char *name, char *odp)
                     struct in_addr input;
                     if (inet_aton(v, &input)) {
                         c->odp[c->num_policies].flag |= ODP_SRCIP;
-                        c->odp[c->num_policies].srcip[idx] = input.s_addr;
+                        c->odp[c->num_policies].srcip[idx] = ip_addr_int(v);
                         cli_print(cli, "\tSource IP: %s", v);
                         idx++;
                     } else {
@@ -979,7 +985,7 @@ int component_add_policy(cli_t *cli, char *name, char *odp)
                     struct in_addr input;
                     if (inet_aton(v, &input)) {
                         c->odp[c->num_policies].flag |= ODP_DSTIP;
-                        c->odp[c->num_policies].dstip[idx] = input.s_addr;
+                        c->odp[c->num_policies].dstip[idx] = ip_addr_int(v);
                         cli_print(cli, "\tDestination IP: %s", v);
                         idx++;
                     } else {
@@ -1157,6 +1163,12 @@ int component_show_policy(cli_t *cli, char *name)
             cli_bufcls(buf);
             cli_buffer(buf, "    Protocol: ");
 
+            if (c->odp[i].proto & PROTO_ARP)
+                cli_buffer(buf, "ARP ");
+            if (c->odp[i].proto & PROTO_LLDP)
+                cli_buffer(buf, "LLDP ");
+            if (c->odp[i].proto & PROTO_DHCP)
+                cli_buffer(buf, "DHCP ");
             if (c->odp[i].proto & PROTO_IPV4)
                 cli_buffer(buf, "IPv4 ");
             if (c->odp[i].proto & PROTO_TCP)
@@ -1165,12 +1177,6 @@ int component_show_policy(cli_t *cli, char *name)
                 cli_buffer(buf, "UDP ");
             if (c->odp[i].proto & PROTO_ICMP)
                 cli_buffer(buf, "ICMP ");
-            if (c->odp[i].proto & PROTO_ARP)
-                cli_buffer(buf, "ARP ");
-            if (c->odp[i].proto & PROTO_DHCP)
-                cli_buffer(buf, "DHCP ");
-            if (c->odp[i].proto & PROTO_LLDP)
-                cli_buffer(buf, "LLDP ");
 
             cli_bufprt(cli, buf);
         }
@@ -1185,9 +1191,7 @@ int component_show_policy(cli_t *cli, char *name)
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
                 if (c->odp[i].srcip[j] == 0)
                     break;
-                struct in_addr ip;
-                ip.s_addr = c->odp[i].srcip[j];
-                cli_buffer(buf, "%s ", inet_ntoa(ip));
+                cli_buffer(buf, "%s ", ip_addr_str(c->odp[i].srcip[j]));
             }
 
             cli_bufprt(cli, buf);
@@ -1203,9 +1207,7 @@ int component_show_policy(cli_t *cli, char *name)
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
                 if (c->odp[i].dstip[j] == 0)
                     break;
-                struct in_addr ip;
-                ip.s_addr = c->odp[i].dstip[j];
-                cli_buffer(buf, "%s ", inet_ntoa(ip));
+                cli_buffer(buf, "%s ", ip_addr_str(c->odp[i].dstip[j]));
             }
 
             cli_bufprt(cli, buf);
@@ -1508,7 +1510,12 @@ int component_load(cli_t *cli, ctx_t *ctx)
         if (strlen(site) == 0) {
             c->site = COMPNT_INTERNAL;
         } else {
-            c->site = (strcmp(site, "internal") == 0) ? COMPNT_INTERNAL : COMPNT_EXTERNAL;
+            if (strcmp(site, "external:raw") == 0)
+                c->site = COMPNT_EXTERNAL_RAW;
+            else if (strcmp(site, "external:json") == 0)
+                c->site = COMPNT_EXTERNAL_JSON;
+            else
+                c->site = COMPNT_INTERNAL;
         }
         cli_print(cli, "     Site: %s", site);
 
@@ -1531,7 +1538,6 @@ int component_load(cli_t *cli, ctx_t *ctx)
 
             if (strlen(pull_addr) > 0) {
                 strcpy(c->pull_addr, pull_addr);
-                sprintf(c->pull_in_addr, "inproc://%u", c->component_id);
             } else {
                  cli_print(cli, "No pulling address");
                  FREE(c);
@@ -1787,8 +1793,20 @@ int component_load(cli_t *cli, ctx_t *ctx)
         if (ev_num[i] == 0)
             continue;
 
-        // first, based on role
+        // first, based on priority
         int j;
+        for (j=0; j<ev_num[i]-1; j++) {
+            int k;
+            for (k=0; k<ev_num[i]-j-1; k++) {
+                if (list[k]->priority < list[k+1]->priority) {
+                    compnt_t *temp = list[k];
+                    list[k] = list[k+1];
+                    list[k+1] = temp;
+                }
+            }
+        }
+
+        // second, based on role
         for (j=0; j<ev_num[i]-1; j++) {
             int k;
             for (k=0; k<ev_num[i]-j-1; k++) {
@@ -1800,7 +1818,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
             }
         }
 
-        // second, based on perm while keeping the order of roles
+        // third, based on perm while keeping the order of roles
         for (j=0; j<ev_num[i]-1; j++) {
             int k;
             for (k=0; k<ev_num[i]-j-1; k++) {
@@ -1830,15 +1848,20 @@ int component_load(cli_t *cli, ctx_t *ctx)
             compnt_t *old = temp_compnt_list[j];
 
             if (strcmp(new->name, old->name) == 0) {
-                new->status = old->status;
-                new->activated = old->activated;
+                if (new->site == old->site) {
+                    new->status = old->status;
+                    new->activated = old->activated;
 
-                new->push_in_ctx = old->push_in_ctx;
-                new->push_out_ctx = old->push_out_ctx;
+                    int k;
+                    for (k=0; k<__NUM_PULL_THREADS; k++) {
+                        new->push_sock[k] = old->push_sock[k];
+                        new->push_lock[k] = old->push_lock[k];
+                    }
 
-                new->req_ctx = old->req_ctx;
+                    new->req_ctx = old->req_ctx;
 
-                break;
+                    break;
+                }
             }
         }
     }
@@ -1852,9 +1875,10 @@ int component_load(cli_t *cli, ctx_t *ctx)
             compnt_t *new = compnt_list[j];
 
             if (strcmp(old->name, new->name) == 0) {
-                pass = TRUE;
-
-                break;
+                if (old->site == new->site) {
+                    pass = TRUE;
+                    break;
+                }
             }
         }
 

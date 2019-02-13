@@ -18,9 +18,6 @@
 
 #include "ofp10_veri.h"
 
-/** \brief OpenFlow structure */
-#include "openflow10.h"
-
 /** \brief OpenFlow message verification ID */
 #define OFP10_VERI_ID 1489022063
 

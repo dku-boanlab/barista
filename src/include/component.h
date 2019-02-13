@@ -32,7 +32,8 @@ enum {
 /** \brief The site of a component */
 enum {
     COMPNT_INTERNAL,
-    COMPNT_EXTERNAL,
+    COMPNT_EXTERNAL_RAW,
+    COMPNT_EXTERNAL_JSON,
 };
 
 /** \brief The status of a component */
@@ -75,19 +76,16 @@ struct _compnt_t {
     int role; /**< Role */
     int perm; /**< Permission */
     int status; /**< Status */
+    int priority; /**< Priority */
     int activated; /**< Activation */
 
-    void *push_in_ctx; /**< Context to internally push events */
-    void *push_in_sock; /**< Socket to internally push events */
+    void *req_ctx; /**< Context to request events */
 
-    void *push_out_ctx; /**< Context to externally push events */
-    void *push_out_sock; /**< Socket to externally push events */
+    uint32_t push_ptr; /**< Socket pointer to push events */
+    int push_sock[__NUM_PULL_THREADS]; /**< Socket to push events */
+    pthread_spinlock_t push_lock[__NUM_PULL_THREADS]; /**< Lock for push_sock */
 
-    void *req_ctx; /**< Context to request app events */
-
-    char pull_in_addr[__CONF_WORD_LEN]; /**< Internal pulling address */
-    char pull_addr[__CONF_WORD_LEN]; /**< External pulling address */
-
+    char pull_addr[__CONF_WORD_LEN]; /**< Component-side pulling address */
     char reply_addr[__CONF_WORD_LEN]; /**< Component-side replying address */
 
     compnt_main_f main; /**< The main function pointer */

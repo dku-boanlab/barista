@@ -4,12 +4,12 @@
 
 /**
  * \file
- * \author Hyeonseong Jo <hsjjo@kaist.ac.kr>
  * \author Jaehyun Nam <namjh@kaist.ac.kr>
  */
 
 #pragma once
 
 #include "common.h"
-#include "event.h"
-#include "openflow10.h"
+
+char *ip_addr_str(const uint32_t ip);
+uint32_t ip_addr_int(const char *ipaddr);

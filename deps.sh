@@ -17,8 +17,13 @@ sudo apt-get -y install cloc
 
 # dependency => libcli
 cd libs/libcli
-make && sudo make install && make clean
+./compile.sh
 
 # dependency => zeromq
-cd ../libs/zeromq
+cd ../zeromq
 ./compile.sh
+
+# dependency => LP solver
+sudo apt-get -y install python-pip
+sudo pip install pulp
+sudo apt-get -y install glpk-utils coinor-cbc

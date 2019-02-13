@@ -22,6 +22,34 @@
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief The structure of Ethernet header with VLAN fields */
+struct ether_vlan_header {
+    uint8_t ether_dhost[ETH_ALEN];
+    uint8_t ether_short[ETH_ALEN];
+    uint16_t tpid;
+    uint16_t tci;
+    uint16_t ether_type;
+} __attribute__((packed));
+
+/** \brief The structure of ARP header */
+struct arphdr {
+    __be16        ar_hrd;
+    __be16        ar_pro;
+    unsigned char ar_hln;
+    unsigned char ar_pln;
+    __be16        ar_op;
+
+    uint8_t arp_sha[ETH_ALEN];
+    uint8_t arp_spa[4];
+    uint8_t arp_tha[ETH_ALEN];
+    uint8_t arp_tpa[4];
+};
+
+#define DHCP_SVR_PORT 67
+#define DHCP_CLI_PORT 68
+
+/////////////////////////////////////////////////////////////////////
+
 static uint32_t get_xid(uint32_t fd)
 {
     switch_t sw = {0};
@@ -336,8 +364,8 @@ static int ofp10_packet_in(const raw_msg_t *msg)
         pktin.proto |= PROTO_IPV4;
         pktin.ip_tos = ip_header->tos;
 
-        pktin.src_ip = ip_header->saddr;
-        pktin.dst_ip = ip_header->daddr;
+        pktin.src_ip = ntohl(ip_header->saddr);
+        pktin.dst_ip = ntohl(ip_header->daddr);
 
         if (ip_header->protocol == IPPROTO_ICMP) {
             struct icmphdr *icmp_header = (struct icmphdr *)((uint8_t *)ip_header + header_len);
@@ -375,8 +403,8 @@ static int ofp10_packet_in(const raw_msg_t *msg)
 
         pktin.proto |= PROTO_ARP;
 
-        pktin.src_ip = *src_ip;
-        pktin.dst_ip = *dst_ip;
+        pktin.src_ip = ntohl(*src_ip);
+        pktin.dst_ip = ntohl(*dst_ip);
 
         pktin.opcode = ntohs(arp_header->ar_op);
 
@@ -468,8 +496,8 @@ static int ofp10_flow_removed(const raw_msg_t *msg)
     memmove(flow.src_mac, removed->match.dl_src, ETH_ALEN);
     memmove(flow.dst_mac, removed->match.dl_dst, ETH_ALEN);
 
-    flow.src_ip = removed->match.nw_src;
-    flow.dst_ip = removed->match.nw_dst;
+    flow.src_ip = ntohl(removed->match.nw_src);
+    flow.dst_ip = ntohl(removed->match.nw_dst);
 
     flow.src_port = ntohs(removed->match.tp_src);
     flow.dst_port = ntohs(removed->match.tp_dst);
@@ -632,8 +660,8 @@ static int ofp10_stats_reply(const raw_msg_t *msg)
             memmove(flow.src_mac, stats->match.dl_src, ETH_ALEN);
             memmove(flow.dst_mac, stats->match.dl_dst, ETH_ALEN);
 
-            flow.src_ip = stats->match.nw_src;
-            flow.dst_ip = stats->match.nw_dst;
+            flow.src_ip = ntohl(stats->match.nw_src);
+            flow.dst_ip = ntohl(stats->match.nw_dst);
 
             flow.src_port = ntohs(stats->match.tp_src);
             flow.dst_port = ntohs(stats->match.tp_dst);
@@ -936,14 +964,14 @@ static int ofp10_flow_mod(const flow_t *flow, int command)
         mod->match.dl_type = htons(0x0806);
         mod->match.nw_proto = htons(flow->opcode);
 
-        mod->match.nw_src = flow->src_ip;
-        mod->match.nw_dst = flow->dst_ip;
+        mod->match.nw_src = htonl(flow->src_ip);
+        mod->match.nw_dst = htonl(flow->dst_ip);
     } else if (flow->proto & (PROTO_IPV4 | PROTO_TCP | PROTO_UDP | PROTO_ICMP | PROTO_DHCP)) { // IPv4
         mod->match.dl_type = htons(0x0800);
         mod->match.nw_tos = flow->ip_tos;
 
-        mod->match.nw_src = flow->src_ip;
-        mod->match.nw_dst = flow->dst_ip;
+        mod->match.nw_src = htonl(flow->src_ip);
+        mod->match.nw_dst = htonl(flow->dst_ip);
 
         if (flow->proto & (PROTO_TCP | PROTO_UDP | PROTO_ICMP | PROTO_DHCP)) { // TCP,UDP,ICMP
             if (flow->proto & PROTO_TCP)
@@ -1049,14 +1077,14 @@ static int ofp10_flow_stats(const flow_t *flow)
         stat->match.dl_type = htons(0x0806);
         stat->match.nw_proto = htons(flow->opcode);
 
-        stat->match.nw_src = flow->src_ip;
-        stat->match.nw_dst = flow->dst_ip;
+        stat->match.nw_src = htonl(flow->src_ip);
+        stat->match.nw_dst = htonl(flow->dst_ip);
     } else if (flow->proto & (PROTO_IPV4 | PROTO_TCP | PROTO_UDP | PROTO_ICMP | PROTO_DHCP)) { // IPv4
         stat->match.dl_type = htons(0x0800);
         stat->match.nw_tos = flow->ip_tos;
 
-        stat->match.nw_src = flow->src_ip;
-        stat->match.nw_dst = flow->dst_ip;
+        stat->match.nw_src = htonl(flow->src_ip);
+        stat->match.nw_dst = htonl(flow->dst_ip);
 
         if (flow->proto & (PROTO_TCP | PROTO_UDP | PROTO_ICMP | PROTO_DHCP)) { // TCP,UDP,ICMP
             if (flow->proto & PROTO_TCP)

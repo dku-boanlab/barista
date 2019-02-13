@@ -26,11 +26,11 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief Maximum hop counts */
-#define MAX_HOP_COUNT 30
-
 /** \brief Infinite number for Floyd-Warshall algorithm */
 #define INF 99999
+
+/** \brief Maximum hop counts */
+#define MAX_HOP_COUNT 30
 
 /** \brief Switch list to convert datapath IDs to small numbers */
 uint64_t *node_list;
@@ -53,9 +53,8 @@ pthread_rwlock_t path_lock;
 static int floyd_warshall(void)
 {
     // initialze dist and next
-    int i;
+    int i, j, k;
     for (i=0; i<__MAX_NUM_SWITCHES; i++) {
-        int j;
         for (j=0; j<__MAX_NUM_SWITCHES; j++) {
             dist[i][j] = path[i][j];
 
@@ -68,11 +67,8 @@ static int floyd_warshall(void)
     }
 
     // update dist and next
-    int k;
     for (k=0; k<__MAX_NUM_SWITCHES; k++) {
-        int i;
         for (i=0; i<__MAX_NUM_SWITCHES; i++) {
-            int j;
             for (j=0; j<__MAX_NUM_SWITCHES; j++) {
                 if (dist[i][j] > dist[i][k] + dist[k][j]) {
                     dist[i][j] = dist[i][k] + dist[k][j];
@@ -269,22 +265,23 @@ static int shortest_path(int *route, uint64_t src_dpid, uint64_t dst_dpid)
  */
 static int path_init(void)
 {
+    int i, j;
+
     node_list = (uint64_t *)CALLOC(__MAX_NUM_SWITCHES, sizeof(uint64_t));
     if (node_list == NULL) {
-        PERROR("calloc");
+        ALOG_ERROR(L2_SHORTEST_ID, "calloc() error");
         return -1;
     }
 
     edge_list = (int **)MALLOC(sizeof(int *) * __MAX_NUM_SWITCHES);
     if (edge_list == NULL) {
-        PERROR("malloc");
+        ALOG_ERROR(L2_SHORTEST_ID, "malloc() error");
         return -1;
     } else {
-        int i;
         for (i=0; i<__MAX_NUM_SWITCHES; i++) {
             edge_list[i] = (int *)CALLOC(__MAX_NUM_SWITCHES, sizeof(int));
             if (edge_list[i] == NULL) {
-                PERROR("calloc");
+                ALOG_ERROR(L2_SHORTEST_ID, "calloc() error");
                 return -1;
             }
         }
@@ -292,17 +289,15 @@ static int path_init(void)
 
     path = (int **)MALLOC(sizeof(int *) * __MAX_NUM_SWITCHES);
     if (path == NULL) {
-        PERROR("malloc");
+        ALOG_ERROR(L2_SHORTEST_ID, "malloc() error");
         return -1;
     } else {
-        int i;
         for (i=0; i<__MAX_NUM_SWITCHES; i++) {
             path[i] = (int *)MALLOC(sizeof(int) * __MAX_NUM_SWITCHES);
             if (path[i] == NULL) {
-                PERROR("malloc");
+                ALOG_ERROR(L2_SHORTEST_ID, "malloc() error");
                 return -1;
             } else {
-                int j;
                 for (j=0; j<__MAX_NUM_SWITCHES; j++) {
                     if (i == j) {
                         path[i][j] = 0;
@@ -316,14 +311,13 @@ static int path_init(void)
 
     dist = (int **)MALLOC(sizeof(int *) * __MAX_NUM_SWITCHES);
     if (dist == NULL) {
-        PERROR("malloc");
+        ALOG_ERROR(L2_SHORTEST_ID, "malloc() error");
         return -1;
     } else {
-        int i;
         for (i=0; i<__MAX_NUM_SWITCHES; i++) {
             dist[i] = (int *)MALLOC(sizeof(int) * __MAX_NUM_SWITCHES);
             if (dist[i] == NULL) {
-                PERROR("malloc");
+                ALOG_ERROR(L2_SHORTEST_ID, "malloc() error");
                 return -1;
             }
         }
@@ -331,14 +325,13 @@ static int path_init(void)
 
     next = (int **)MALLOC(sizeof(int *) * __MAX_NUM_SWITCHES);
     if (next == NULL) {
-        PERROR("malloc");
+        ALOG_ERROR(L2_SHORTEST_ID, "malloc() error");
         return -1;
     } else {
-        int i;
         for (i=0; i<__MAX_NUM_SWITCHES; i++) {
             next[i] = (int *)MALLOC(sizeof(int) * __MAX_NUM_SWITCHES);
             if (next[i] == NULL) {
-                PERROR("malloc");
+                ALOG_ERROR(L2_SHORTEST_ID, "malloc() error");
                 return -1;
             }
         }
@@ -509,6 +502,7 @@ static int l2_shortest(const pktin_t *pktin)
 
     // 3. get destination MAC
     mac = mac2int(pktin->dst_mac);
+    mkey = hash_func((uint32_t *)&mac, 2) % MAC_HASH_SIZE;
 
     // 4. if dst mac == broadcast and ...
     if (mac == __BROADCAST_MAC) {
@@ -545,8 +539,6 @@ static int l2_shortest(const pktin_t *pktin)
     uint64_t dpid = 0;
     uint16_t port = 0;
 
-    mkey = hash_func((uint32_t *)&mac, 2) % MAC_HASH_SIZE;
-
     pthread_rwlock_rdlock(&mac_table[mkey].lock);
 
     // 5. look up where to forward
@@ -577,9 +569,12 @@ static int l2_shortest(const pktin_t *pktin)
         return 0;
     }
 
-    // 8. get the shortest path from src to dst, and send it to the next hop
     int route[MAX_HOP_COUNT] = {0};
+
+    // 8. get the shortest path from src to dst
     int hop = shortest_path(route, pktin->dpid, dpid);
+
+    // 9. send it to the next hop
     if (hop > 0) {
         insert_flow_next(pktin, hop, route, port);
     }
@@ -643,10 +638,7 @@ static int list_all_entries(cli_t *cli)
             char macaddr[__CONF_WORD_LEN];
             mac2str(mac, macaddr);
 
-            struct in_addr ip_addr;
-            ip_addr.s_addr = curr->ip;
-
-            cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, inet_ntoa(ip_addr), curr->port);
+            cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, ip_addr_str(curr->ip), curr->port);
         }
 
         pthread_rwlock_unlock(&mac_table[i].lock);
@@ -682,10 +674,7 @@ static int show_entry_switch(cli_t *cli, char *dpid_str)
                 char macaddr[__CONF_WORD_LEN];
                 mac2str(mac, macaddr);
 
-                struct in_addr ip_addr;
-                ip_addr.s_addr = curr->ip;
-
-                cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, inet_ntoa(ip_addr), curr->port);
+                cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, ip_addr_str(curr->ip), curr->port);
 
                 cnt++;
             }
@@ -721,10 +710,7 @@ static int show_entry_mac(cli_t *cli, const char *macaddr)
         mac_entry_t *curr = NULL;
         for (curr = mac_table[i].head; curr != NULL; curr = curr->next) {
             if (curr->mac == macval) {
-                struct in_addr ip_addr;
-                ip_addr.s_addr = curr->ip;
-
-                cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, inet_ntoa(ip_addr), curr->port);
+                cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, ip_addr_str(curr->ip), curr->port);
 
                 cnt++;
             }
@@ -746,10 +732,7 @@ static int show_entry_mac(cli_t *cli, const char *macaddr)
  */
 static int show_entry_ip(cli_t *cli, const char *ipaddr)
 {
-    struct in_addr ip_addr;
-    inet_aton(ipaddr, &ip_addr);
-
-    uint32_t ip = ip_addr.s_addr;
+    uint32_t ip = ip_addr_int(ipaddr);
 
     cli_print(cli, "<MAC Entry [%s]>", ipaddr);
 

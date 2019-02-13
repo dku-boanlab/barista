@@ -17,8 +17,6 @@
 
 #include "cluster.h"
 
-#include "db_password.h"
-
 /** \brief Cluster ID */
 #define CLUSTER_ID 235171752
 
@@ -40,11 +38,11 @@ char ctrl_ip[__CONF_SHORT_LEN];
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of queries in a waiting queue */
-int write_query;
-
 /** \brief The waiting queue for queries */
 char query[BATCH_SIZE][__CONF_LSTR_LEN];
+
+/** \brief The number of queries in a waiting queue */
+int write_query;
 
 /** \brief The lock for queue management */
 pthread_spinlock_t cluster_lock;
@@ -52,6 +50,8 @@ pthread_spinlock_t cluster_lock;
 /////////////////////////////////////////////////////////////////////
 
 #ifdef __ENABLE_CLUSTER
+
+#include "db_password.h"
 
 /////////////////////////////////////////////////////////////////////
 
@@ -272,7 +272,7 @@ int cluster_main(int *activated, int argc, char **argv)
 
 #else /* !__ENABLE_CLUSTER */
 
-    LOG_INFO(CLUSTER_ID, "Cluster is not enabled");
+    LOG_WARN(CLUSTER_ID, "Cluster is not enabled");
 
 #endif /* !__ENABLED_CLUSTER */
 
@@ -403,6 +403,12 @@ int cluster_main(int *activated, int argc, char **argv)
                         ev_flow_added(CLUSTER_ID, flow);
                     }
                     break;
+                case EV_FLOW_MODIFIED:
+                    {
+                        flow_t *flow = (flow_t *)data;
+                        flow->remote = TRUE;
+                        ev_flow_modified(CLUSTER_ID, flow);
+                    }
                 case EV_FLOW_DELETED:
                     {
                         flow_t *flow = (flow_t *)data;
@@ -617,8 +623,8 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
             char sql_query[__CONF_LSTR_LEN] = {0};
             snprintf(sql_query, __CONF_LSTR_LEN-1, "update Barista.switches set mfr_desc = '%s', hw_desc = '%s', "
                                                    "serial_num = '%s', dp_desc = '%s' where dpid = %lu "
-                                                   "and ctrl_ip = '%s';", sw->mfr_desc, sw->hw_desc, sw->serial_num, 
-                                                   sw->dp_desc, sw->dpid, ctrl_ip);
+                                                   "and ctrl_ip = '%s';", sw->mfr_desc, sw->hw_desc,
+                                                   sw->serial_num, sw->dp_desc, sw->dpid, ctrl_ip);
             push_query_into_queue(sql_query);
 
             insert_event_data(ev);
@@ -634,14 +640,11 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
             uint8_t mac[ETH_ALEN];
             int2mac(host->mac, mac);
 
-            struct in_addr ip;
-            ip.s_addr = host->ip;
-
             char sql_query[__CONF_LSTR_LEN] = {0};
             snprintf(sql_query, __CONF_LSTR_LEN-1, "insert into Barista.hosts (dpid, port, mac, ip, ctrl_ip) "
                                                    "values (%lu, %u, '%02x:%02x:%02x:%02x:%02x:%02x', '%s', '%s');", 
                                                    host->dpid, host->port, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], 
-                                                   inet_ntoa(ip), ctrl_ip);
+                                                   ip_addr_str(host->ip), ctrl_ip);
             push_query_into_queue(sql_query);
 
             insert_event_data(ev);
@@ -657,15 +660,12 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
             uint8_t mac[ETH_ALEN];
             int2mac(host->mac, mac);
 
-            struct in_addr ip;
-            ip.s_addr = host->ip;
-
             char sql_query[__CONF_LSTR_LEN] = {0};
             snprintf(sql_query, __CONF_LSTR_LEN-1, "delete from Barista.hosts where dpid = %lu "
                                                    "and mac = '%02x:%02x:%02x:%02x:%02x:%02x' "
                                                    "and ip = '%s' and ctrl_ip = '%s';", 
                                                    host->dpid, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], 
-                                                   inet_ntoa(ip), ctrl_ip);
+                                                   ip_addr_str(host->ip), ctrl_ip);
             push_query_into_queue(sql_query);
 
             insert_event_data(ev);
@@ -681,7 +681,7 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
             char sql_query[__CONF_LSTR_LEN] = {0};
             snprintf(sql_query, __CONF_LSTR_LEN-1, "insert into Barista.links (src_dpid, src_port, dst_dpid, dst_port, ctrl_ip) "
                                                    "values (%lu, %u, %lu, %u, '%s');", 
-                                                   link->dpid, link->port, link->target_dpid, link->target_port, ctrl_ip);
+                                                   link->dpid, link->port, link->next_dpid, link->next_port, ctrl_ip);
             push_query_into_queue(sql_query);
 
             insert_event_data(ev);
@@ -734,18 +734,6 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
             char dmac[__CONF_WORD_LEN] = {0};
             mac2str(flow->dst_mac, dmac);
 
-            struct in_addr src_ip;
-            src_ip.s_addr = flow->src_ip;
-
-            char srcip[__CONF_WORD_LEN] = {0};
-            sprintf(srcip, "%s", inet_ntoa(src_ip));
-
-            struct in_addr dst_ip;
-            dst_ip.s_addr = flow->dst_ip;
-
-            char dstip[__CONF_WORD_LEN] = {0};
-            sprintf(dstip, "%s", inet_ntoa(dst_ip));
-
             char actions[__CONF_WORD_LEN] = {0};
             sprintf(actions, "%u", flow->num_actions);
 
@@ -755,11 +743,18 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
                                                    "dst_port, actions, ctrl_ip) values (%lu, %u, %u, %u, %u, %u, %u, '%s', %u, "
                                                    "'%s', '%s', '%s', '%s', %u, %u, '%s', '%s');", 
                                                    flow->dpid, flow->port, flow->idle_timeout, flow->hard_timeout, flow->wildcards,
-                                                   flow->vlan_id, flow->vlan_pcp, proto, flow->ip_tos, smac, dmac, srcip, dstip,
+                                                   flow->vlan_id, flow->vlan_pcp, proto, flow->ip_tos, smac, dmac,
+                                                   ip_addr_str(flow->src_ip), ip_addr_str(flow->dst_ip),
                                                    flow->src_port, flow->dst_port, actions, ctrl_ip);
             push_query_into_queue(sql_query);
 
             insert_event_data(ev);
+        }
+        break;
+    case EV_FLOW_MODIFIED:
+        PRINT_EV("EV_FLOW_MODIFIED\n");
+        {
+            //TODO
         }
         break;
     case EV_FLOW_DELETED:
@@ -793,24 +788,13 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
             char dmac[__CONF_WORD_LEN] = {0};
             mac2str(flow->dst_mac, dmac);
 
-            struct in_addr src_ip;
-            src_ip.s_addr = flow->src_ip;
-
-            char srcip[__CONF_WORD_LEN] = {0};
-            sprintf(srcip, "%s", inet_ntoa(src_ip));
-
-            struct in_addr dst_ip;
-            dst_ip.s_addr = flow->dst_ip;
-
-            char dstip[__CONF_WORD_LEN] = {0};
-            sprintf(dstip, "%s", inet_ntoa(dst_ip));
-
             char sql_query[__CONF_LSTR_LEN] = {0};
             snprintf(sql_query, __CONF_LSTR_LEN-1, "delete from Barista.flows where dpid = %lu and port = %u and proto = '%s' "
                                                    "and src_mac = '%s' and dst_mac = '%s' and src_ip = '%s' and dst_ip = '%s' "
                                                    "and src_port = %u and dst_port = %u and ctrl_ip = '%s';", 
-                                                   flow->dpid, flow->port, proto, smac, dmac, srcip, dstip, flow->src_port, 
-                                                   flow->dst_port, ctrl_ip);
+                                                   flow->dpid, flow->port, proto, smac, dmac,
+                                                   ip_addr_str(flow->src_ip), ip_addr_str(flow->dst_ip),
+                                                   flow->src_port, flow->dst_port, ctrl_ip);
             push_query_into_queue(sql_query);
 
             insert_event_data(ev);
@@ -848,26 +832,15 @@ int cluster_handler(const event_t *ev, event_out_t *ev_out)
             char dmac[__CONF_WORD_LEN] = {0};
             mac2str(flow->dst_mac, dmac);
 
-            struct in_addr src_ip;
-            src_ip.s_addr = flow->src_ip;
-
-            char srcip[__CONF_WORD_LEN] = {0};
-            sprintf(srcip, "%s", inet_ntoa(src_ip));
-
-            struct in_addr dst_ip;
-            dst_ip.s_addr = flow->dst_ip;
-
-            char dstip[__CONF_WORD_LEN] = {0};
-            sprintf(dstip, "%s", inet_ntoa(dst_ip));
-
             char sql_query[__CONF_LSTR_LEN] = {0};
             snprintf(sql_query, __CONF_LSTR_LEN-1, "update Barista.flows set pkt_count = %lu and byte_count = %lu "
                                                    "where dpid = %lu and port = %u and proto = '%s' "
                                                    "and src_mac = '%s' and dst_mac = '%s' and src_ip = '%s' and dst_ip = '%s' "
                                                    "and src_port = %u and dst_port = %u and ctrl_ip = '%s';",
                                                    flow->pkt_count, flow->byte_count,
-                                                   flow->dpid, flow->port, proto, smac, dmac, srcip, dstip, flow->src_port, 
-                                                   flow->dst_port, ctrl_ip);
+                                                   flow->dpid, flow->port, proto, smac, dmac, 
+                                                   ip_addr_str(flow->src_ip), ip_addr_str(flow->dst_ip),
+                                                   flow->src_port, flow->dst_port, ctrl_ip);
             push_query_into_queue(sql_query);
 
             insert_event_data(ev);

@@ -30,6 +30,9 @@
 #include "libcli.h"
 #include <zmq.h>
 
+#include "mac2int.h"
+#include "ip2int.h"
+
 #define __CONF_ARGC 16
 #define __CONF_SHORT_LEN 16
 #define __CONF_WORD_LEN 256

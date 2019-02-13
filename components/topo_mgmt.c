@@ -27,16 +27,15 @@
 typedef struct _topo_t {
     uint64_t dpid; /**< Datapath ID */
     uint32_t remote; /**< Remote switch */
+
     port_t port[__MAX_NUM_PORTS]; /**< Ports */
 } topo_t;
 
-/////////////////////////////////////////////////////////////////////
+/** \brief Network topology */
+topo_t *topo;
 
 /** \brief The number of links */
 int num_links;
-
-/** \brief Network topology */
-topo_t *topo;
 
 /** \brief Lock for topology updates */
 pthread_rwlock_t topo_lock;
@@ -214,7 +213,7 @@ int topo_mgmt_main(int *activated, int argc, char **argv)
 
     topo = (topo_t *)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(topo_t));
     if (topo == NULL) {
-        PERROR("calloc");
+        LOG_ERROR(TOPO_MGMT_ID, "calloc() error");
         return -1;
     }
 
@@ -225,13 +224,12 @@ int topo_mgmt_main(int *activated, int argc, char **argv)
     while (*activated) {
         pthread_rwlock_rdlock(&topo_lock);
 
-        int i;
+        int i, j;
         for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
             if (topo[i].dpid > 0) { // check source dpid
                 if (topo[i].remote == TRUE) // check location
                     continue;
 
-                int j;
                 for (j=0; j<__MAX_NUM_PORTS; j++) {
                     if (topo[i].port[j].port > 0) { // check source port
                         send_lldp(topo[i].dpid, &topo[i].port[j]);
@@ -244,7 +242,7 @@ int topo_mgmt_main(int *activated, int argc, char **argv)
 
         for (i=0; i<TOPO_MGMT_REQUEST_TIME; i++) {
             if (!*activated) break;
-            waitsec(1, 0);
+            else waitsec(1, 0);
         }
     }
 
@@ -260,8 +258,6 @@ int topo_mgmt_cleanup(int *activated)
     LOG_INFO(TOPO_MGMT_ID, "Clean up - Topology management");
 
     deactivate();
-
-    waitsec(1, 0);
 
     pthread_rwlock_destroy(&topo_lock);
 
@@ -281,18 +277,17 @@ static int topo_listup(cli_t *cli)
     cli_print(cli, "<Link List>");
     cli_print(cli, "  The total number of links: %d", num_links);
 
-    int i, cnt = 0;
+    int i, j, cnt = 0;
     for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
         if (topo[i].dpid > 0) { // check source dpid
-            int j;
             for (j=0; j<__MAX_NUM_PORTS; j++) {
                 if (topo[i].port[j].port > 0) { // check source port
                     if (topo[i].port[j].next_port > 0) { // check destination port
                         cli_print(cli, "  Link #%d (%s): {(%lu, %u) -> (%lu, %u)}, rx_pkts: %lu, rx_bytes: %lu, "
                                        "tx_pkts: %lu, tx_bytes: %lu", ++cnt, (topo[i].remote == TRUE) ? "Remote" : "Local",
                                   topo[i].dpid, topo[i].port[j].port, topo[i].port[j].next_dpid, topo[i].port[j].next_port,
-                                  topo[i].port[j].rx_packets, topo[i].port[j].rx_bytes, topo[i].port[j].tx_packets, 
-                                  topo[i].port[j].tx_bytes);
+                                  topo[i].port[j].rx_packets, topo[i].port[j].rx_bytes,
+                                  topo[i].port[j].tx_packets, topo[i].port[j].tx_bytes);
                     }
                 }
             }
@@ -326,8 +321,8 @@ static int topo_showup(cli_t *cli, char *dpid_str)
                         cli_print(cli, "  Link #%d (%s): {(%lu, %u) -> (%lu, %u)}, rx_pkts: %lu, rx_bytes: %lu, "
                                        "tx_pkts: %lu, tx_bytes: %lu", ++cnt, (topo[i].remote == TRUE) ? "Remote" : "Local",
                                   topo[i].dpid, topo[i].port[j].port, topo[i].port[j].next_dpid, topo[i].port[j].next_port,
-                                  topo[i].port[j].rx_packets, topo[i].port[j].rx_bytes, topo[i].port[j].tx_packets, 
-                                  topo[i].port[j].tx_bytes);
+                                  topo[i].port[j].rx_packets, topo[i].port[j].rx_bytes, 
+                                  topo[i].port[j].tx_packets, topo[i].port[j].tx_bytes);
                     }
                 }
             }
@@ -347,16 +342,12 @@ static int topo_showup(cli_t *cli, char *dpid_str)
  */
 int topo_mgmt_cli(cli_t *cli, char **args)
 {
-    if (args[0] != NULL && strcmp(args[0], "list") == 0) {
-        if (args[1] != NULL && strcmp(args[1], "links") == 0 && args[2] == NULL) {
-            topo_listup(cli);
-            return 0;
-        }
-    } else if (args[0] != NULL && strcmp(args[0], "show") == 0) {
-        if (args[1] != NULL && args[2] == NULL) {
-            topo_showup(cli, args[1]);
-            return 0;
-        }
+    if (args[0] != NULL && strcmp(args[0], "list") == 0 && args[1] != NULL && strcmp(args[1], "links") == 0 && args[2] == NULL) {
+        topo_listup(cli);
+        return 0;
+    } else if (args[0] != NULL && strcmp(args[0], "show") == 0 && args[1] != NULL && args[2] == NULL) {
+        topo_showup(cli, args[1]);
+        return 0;
     }
 
     cli_print(cli, "<Available Commands>");
@@ -461,8 +452,9 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                     for (j=0; j<__MAX_NUM_PORTS; j++) {
                         if (topo[i].port[j].port > 0) { // check source port
                             if (topo[i].port[j].next_port > 0) { // check destination port
-                                LOG_INFO(TOPO_MGMT_ID, "Deleted a link {(%lu, %u) -> (%lu, %u)}", topo[i].dpid, 
-                                         topo[i].port[j].port, topo[i].port[j].next_dpid, topo[i].port[j].next_port);
+                                LOG_INFO(TOPO_MGMT_ID, "Deleted a link {(%lu, %u) -> (%lu, %u)}", 
+                                         topo[i].dpid, topo[i].port[j].port, 
+                                         topo[i].port[j].next_dpid, topo[i].port[j].next_port);
 
                                 if (topo[i].remote == FALSE) {
                                     port_t link = {0};
@@ -529,7 +521,7 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                     if (topo[i].port[port->port].port == port->port) { // check source port
                         if (topo[i].port[port->port].next_port > 0) { // check destination port
                             LOG_INFO(TOPO_MGMT_ID, "Deleted a link {(%lu, %u) -> (%lu, %u)}",
-                                     topo[i].dpid, topo[i].port[port->port].port, 
+                                     topo[i].dpid, topo[i].port[port->port].port,
                                      topo[i].port[port->port].next_dpid, topo[i].port[port->port].next_port);
 
                             if (topo[i].remote == FALSE) {
@@ -584,9 +576,9 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                         topo[i].port[port->port].old_tx_bytes = port->tx_bytes;
 
                         DEBUG("[%lu, %u] - rx_pkts: %lu, rx_bytes: %lu, tx_pkts: %lu, tx_bytes: %lu\n",
-                               port->dpid, port->port, topo[i].port[port->port].rx_packets,
-                               topo[i].port[port->port].rx_bytes, topo[i].port[port->port].tx_packets,
-                               topo[i].port[port->port].tx_bytes);
+                               port->dpid, port->port,
+                               topo[i].port[port->port].rx_packets, topo[i].port[port->port].rx_bytes,
+                               topo[i].port[port->port].tx_packets, topo[i].port[port->port].tx_bytes);
 
                         break;
                     }
@@ -616,7 +608,7 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
                         num_links++;
 
-                        LOG_INFO(TOPO_MGMT_ID, "Detected a new link {(%lu, %u) -> (%lu, %u)}", 
+                        LOG_INFO(TOPO_MGMT_ID, "Detected a new link {(%lu, %u) -> (%lu, %u)}",
                                  link->dpid, link->port, link->next_dpid, link->next_port);
                     }
 

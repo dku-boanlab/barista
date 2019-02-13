@@ -25,13 +25,11 @@
 /** \brief Traffic statistics */
 traffic_t traffic;
 
-/////////////////////////////////////////////////////////////////////
+/** \brief Traffic statistics history */
+traffic_t *tr_history;
 
 /** \brief The pointer to record the current traffic statistics */
 uint32_t tr_history_ptr;
-
-/** \brief Traffic statistics history */
-traffic_t *tr_history;
 
 /** \brief Lock for statistics updates */
 pthread_spinlock_t tr_lock;
@@ -53,7 +51,7 @@ int traffic_mgmt_main(int *activated, int argc, char **argv)
 
     tr_history = (traffic_t *)CALLOC(TRAFFIC_MGMT_HISTORY, sizeof(traffic_t));
     if (tr_history == NULL) {
-        PERROR("calloc");
+        LOG_ERROR(TRAFFIC_MGMT_ID, "calloc() error");
         return -1;
     }
 
@@ -98,7 +96,7 @@ int traffic_mgmt_main(int *activated, int argc, char **argv)
         int i;
         for (i=0; i<TRAFFIC_MGMT_MONITOR_TIME; i++) {
             if (!*activated) break;
-            waitsec(1, 0);
+            else waitsec(1, 0);
         }
     }
 
@@ -114,8 +112,6 @@ int traffic_mgmt_cleanup(int *activated)
     LOG_INFO(TRAFFIC_MGMT_ID, "Clean up - Control channel management");
 
     deactivate();
-
-    waitsec(1, 0);
 
     pthread_spin_destroy(&tr_lock);
 
@@ -163,7 +159,7 @@ static int traffic_stat_summary(cli_t *cli, char *seconds)
     cli_print(cli, "    Inbound byte count   : %lu bytes", tr.in_byte_cnt);
     cli_print(cli, "    Outbound packet count: %lu packets", tr.out_pkt_cnt);
     cli_print(cli, "    Outbound byte count  : %lu bytes", tr.out_byte_cnt);
-    cli_print(cli, "  - Average values");
+    cli_print(cli, "  - Average values (per second)");
     cli_print(cli, "    Inbound packet count : %.2f packets", in_pkt_cnt);
     cli_print(cli, "    Inbound byte count   : %.2f bytes", in_byte_cnt);
     cli_print(cli, "    Outbound packet count: %.2f packets", out_pkt_cnt);

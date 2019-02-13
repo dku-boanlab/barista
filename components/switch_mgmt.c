@@ -26,11 +26,11 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of switches */
-int num_switches;
-
 /** \brief Switch table */
 switch_table_t switches;
+
+/** \brief The number of switches */
+int num_switches;
 
 /** \brief Switch list */
 switch_t **switch_table;
@@ -52,7 +52,7 @@ int switch_mgmt_main(int *activated, int argc, char **argv)
 
     switch_table = (switch_t **)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(switch_t *));
     if (switch_table == NULL) {
-        PERROR("calloc");
+        LOG_ERROR(SWITCH_MGMT_ID, "calloc() error");
         return -1;
     }
 
@@ -203,16 +203,12 @@ static int switch_showup(cli_t *cli, char *dpid_str)
  */
 int switch_mgmt_cli(cli_t *cli, char **args)
 {
-    if (args[0] != NULL && strcmp(args[0], "list") == 0) {
-        if (args[1] != NULL && strcmp(args[1], "switches") == 0 && args[2] == NULL) {
-            switch_listup(cli);
-            return 0;
-        }
-    } else if (args[0] != NULL && strcmp(args[0], "show") == 0) {
-        if (args[1] != NULL && args[2] == NULL) {
-            switch_showup(cli, args[1]);
-            return 0;
-        }
+    if (args[0] != NULL && strcmp(args[0], "list") == 0 && args[1] != NULL && strcmp(args[1], "switches") == 0 && args[2] == NULL) {
+        switch_listup(cli);
+        return 0;
+    } else if (args[0] != NULL && strcmp(args[0], "show") == 0 && args[1] != NULL && args[2] == NULL) {
+        switch_showup(cli, args[1]);
+        return 0;
     }
 
     cli_print(cli, "<Available Commands>");

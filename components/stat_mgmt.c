@@ -75,7 +75,7 @@ int stat_mgmt_main(int *activated, int argc, char **argv)
 
     switch_list = (uint64_t *)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(uint64_t));
     if (switch_list == NULL) {
-        PERROR("calloc");
+        LOG_ERROR(STAT_MGMT_ID, "calloc() error");
         return -1;
     }
 
@@ -103,7 +103,7 @@ int stat_mgmt_main(int *activated, int argc, char **argv)
 
         for (i=0; i<STAT_MGMT_REQUEST_TIME; i++) {
             if (!*activated) break;
-            waitsec(1, 0);
+            else waitsec(1, 0);
         }
     }
 
@@ -119,8 +119,6 @@ int stat_mgmt_cleanup(int *activated)
     LOG_INFO(STAT_MGMT_ID, "Clean up - Statistics management");
 
     deactivate();
-
-    waitsec(1, 0);
 
     pthread_rwlock_destroy(&stat_lock);
 

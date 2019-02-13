@@ -32,7 +32,8 @@ enum {
 /** \brief The site of an application */
 enum {
     APP_INTERNAL,
-    APP_EXTERNAL,
+    APP_EXTERNAL_RAW,
+    APP_EXTERNAL_JSON,
 };
 
 /** \brief The status of an application */
@@ -74,19 +75,16 @@ struct _app_t {
     int role; /**< Role */
     int perm; /**< Permission */
     int status; /**< Status */
+    int priority; /**< Priority */
     int activated; /**< Activation */
-
-    void *push_in_ctx; /**< Context to internally push app events */
-    void *push_in_sock; /**< Socket to internally push app events */
-
-    void *push_out_ctx; /**< Context to externally push app events */
-    void *push_out_sock; /**< Socket to externally push app events */
 
     void *req_ctx; /**< Context to request app events */
 
-    char pull_in_addr[__CONF_WORD_LEN]; /**< Internal pulling address */
-    char pull_addr[__CONF_WORD_LEN]; /**< External pulling address */
+    uint32_t push_ptr; /**< Socket pointer to push app events */
+    int push_sock[__NUM_PULL_THREADS]; /**< Socket to push app events */
+    pthread_spinlock_t push_lock[__NUM_PULL_THREADS]; /**< Lock for push_sock */
 
+    char pull_addr[__CONF_WORD_LEN]; /**< Application-side pulling address */
     char reply_addr[__CONF_WORD_LEN]; /**< Application-side replying address */
 
     app_main_f main; /**< The main function pointer */

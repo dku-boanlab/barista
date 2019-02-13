@@ -7,5 +7,4 @@ tar xvfz zeromq-4.3.0.tar.gz -C /tmp
 cd /tmp/zeromq-4.3.0
 
 # compile ZeroMQ
-./autogen.sh && ./configure
-make && sudo make install && sudo ldconfig
+./autogen.sh && ./configure && make && sudo make install && sudo ldconfig

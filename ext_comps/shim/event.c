@@ -29,20 +29,30 @@ int ev_worker_on;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief MQ contexts to push, pull, request and reply events */
-void *ev_push_in_ctx, *ev_push_out_ctx, *ev_pull_in_ctx, *ev_pull_out_ctx, *ev_req_ctx, *ev_rep_ctx;
+/** \brief MQ contexts to request and reply events */
+void *ev_req_ctx, *ev_rep_ctx;
 
-/** \brief MQ sockets to push, pull and reply events */
-void *ev_push_in_sock, *ev_push_out_sock, *ev_pull_in_sock, *ev_pull_out_sock, *ev_req_sock, *ev_rep_comp, *ev_rep_work;
-
-/////////////////////////////////////////////////////////////////////
-
-/** \brief Internal pulling address */
-char ev_push_in_addr[__CONF_WORD_LEN];
+/** \brief MQ sockets to request and reply events */
+void *ev_req_sock, *ev_rep_comp, *ev_rep_work;
 
 /////////////////////////////////////////////////////////////////////
 
 #include "event_json.h"
+
+/////////////////////////////////////////////////////////////////////
+
+/** \brief Socket pointer to push events */
+uint32_t ev_push_ptr;
+
+/** \brief Socket to push events */
+int ev_push_sock[__NUM_PULL_THREADS];
+
+/** \brief Lock for av_push_sock */
+pthread_spinlock_t ev_push_lock[__NUM_PULL_THREADS];
+
+/////////////////////////////////////////////////////////////////////
+
+#include "event_epoll_env.h"
 
 /////////////////////////////////////////////////////////////////////
 
@@ -54,41 +64,6 @@ char ev_push_in_addr[__CONF_WORD_LEN];
 void mq_free(void *data, void *hint)
 {
     free(data);
-}
-
-/**
- * \brief Function to push app events to external components
- * \param config Component configuration
- */
-static void *push_events(void *config)
-{
-    compnt_t *compnt = (compnt_t *)config;
-
-    while (ev_worker_on) {
-        zmq_msg_t in_msg;
-        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
-        int zmq_ret = zmq_msg_recv(&in_msg, ev_push_in_sock, 0);
-
-        if (!ev_worker_on) {
-            zmq_msg_close(&in_msg);
-            break;
-        } else if (zmq_ret == -1) {
-            zmq_msg_close(&in_msg);
-            continue;
-        }
-
-        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
-        memcpy(out_str, zmq_msg_data(&in_msg), zmq_msg_size(&in_msg));
-
-        zmq_msg_t out_msg;
-        zmq_msg_init_data(&out_msg, out_str, strlen(in_str), mq_free, NULL);
-
-        zmq_msg_send(&out_msg, ev_push_out_sock, 0);
-
-        zmq_msg_close(&in_msg);
-    }
-
-    return NULL;
 }
 
 /**
@@ -109,7 +84,7 @@ static int handshake(uint32_t id, char *name)
         zmq_msg_t out_msg;
         zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
 
-        if (zmq_msg_send(&out_smg, sock, 0) < 0) {
+        if (zmq_msg_send(&out_msg, sock, 0) < 0) {
             PERROR("zmq_send");
             zmq_close(sock);
             return -1;
@@ -136,18 +111,18 @@ static int handshake(uint32_t id, char *name)
 
         zmq_msg_close(&in_msg);
         zmq_close(sock);
-
-        pthread_t thread;
-        if (pthread_create(&thread, NULL, &push_events, &compnt) < 0) {
-            PERROR("pthread_create");
-            return -1;
-        }
     }
 
     return 0;
 }
 
 /////////////////////////////////////////////////////////////////////
+
+/** \brief The header of a JSON message */
+typedef struct _json_header {
+    uint16_t len;
+    char json[__MAX_EXT_MSG_SIZE];
+} __attribute__((packed)) json_header;
 
 /**
  * \brief Function to send events to the Barista NOS
@@ -160,23 +135,34 @@ static int ev_push_msg(uint32_t id, uint16_t type, uint16_t size, const void *da
 {
     if (!ev_worker_on) return -1;
 
-    char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
-    export_to_json(id, type, data, out_str);
+    json_header jsonh = {0};
 
-    zmq_msg_t msg;
-    zmq_msg_init_data(&msg, out_str, strlen(out_str), mq_free, NULL);
+    export_to_json(id, type, data, jsonh.json);
+    jsonh.len = strlen(jsonh.json) + 2 + 1; // json_len + length variable + NULL
 
-    void *sock = zmq_socket(ev_push_in_ctx, ZMQ_PUSH);
-    if (zmq_connect(sock, ev_push_in_addr)) {
-        return -1;
-    } else {
-        if (zmq_msg_send(&msg, sock, 0) < 0) {
-            zmq_close(sock);
-            return -1;
+    int remain = jsonh.len;
+    int bytes = 0;
+    int done = 0;
+
+    jsonh.len = htons(jsonh.len);
+
+    uint32_t ptr = (ev_push_ptr++) % __NUM_PULL_THREADS;
+
+    pthread_spin_lock(&ev_push_lock[ptr]);
+
+    while (remain > 0) {
+        bytes = write(ev_push_sock[ptr], (uint8_t *)&jsonh + done, remain);
+        if (bytes < 0 && errno != EAGAIN) {
+            break;
+        } else if (bytes < 0) {
+            continue;
         }
 
-        zmq_close(sock);
+        remain -= bytes;
+        done += bytes;
     }
+
+    pthread_spin_unlock(&ev_push_lock[ptr]);
 
     return 0;
 }
@@ -537,175 +523,286 @@ static void *reply_proxy(void *null)
     return NULL;
 }
 
+/////////////////////////////////////////////////////////////////////
+
 /**
- * \brief Function to receive events from the Barista NOS
- * \param null NULL
+ * \brief Function to process events
+ * \param msg Application events
  */
-static void *receive_events(void *null)
+static int process_events(msg_t *msg)
 {
-    while (ev_worker_on) {
-        zmq_msg_t in_msg;
-        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
-        int zmq_ret = zmq_msg_recv(&in_msg, ev_pull_in_sock, 0);
+    event_out_t out = {0};
+    int ret = 0;
 
-        if (!ev_worker_on) {
-            zmq_msg_close(&in_msg);
-            break;
-        } else if (zmq_ret == -1) {
-            zmq_msg_close(&in_msg);
-            continue;
-        }
+    out.id = msg->id;
+    out.type = msg->type;
+    out.data = msg->data;
 
-        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
-        memcpy(out_str, zmq_msg_data(&in_msg), zmq_msg_size(&in_msg));
+    const event_t *in = (const event_t *)&out;
 
-        zmq_msg_t out_msg;
-        zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
+    switch (out.type) {
 
-        zmq_msg_send(&out_msg, ev_pull_out_sock, 0);
+    // upstream events
 
-        zmq_msg_close(&in_msg);
+    case EV_DP_RECEIVE_PACKET:
+        out.length = sizeof(pktin_t);
+        compnt.handler(in, &out);
+        break;
+    case EV_DP_FLOW_EXPIRED:
+    case EV_DP_FLOW_DELETED:
+    case EV_DP_FLOW_STATS:
+    case EV_DP_AGGREGATE_STATS:
+        out.length = sizeof(flow_t);
+        compnt.handler(in, &out);
+        break;
+    case EV_DP_PORT_ADDED:
+    case EV_DP_PORT_MODIFIED:
+    case EV_DP_PORT_DELETED:
+    case EV_DP_PORT_STATS:
+        out.length = sizeof(port_t);
+        compnt.handler(in, &out);
+        break;
+
+    // downstream events
+
+    case EV_DP_SEND_PACKET:
+        out.length = sizeof(pktout_t);
+        compnt.handler(in, &out);
+        break;
+    case EV_DP_INSERT_FLOW:
+    case EV_DP_MODIFY_FLOW:
+    case EV_DP_DELETE_FLOW:
+    case EV_DP_REQUEST_FLOW_STATS:
+    case EV_DP_REQUEST_AGGREGATE_STATS:
+        out.length = sizeof(flow_t);
+        compnt.handler(in, &out);
+        break;
+    case EV_DP_REQUEST_PORT_STATS:
+        out.length = sizeof(port_t);
+        compnt.handler(in, &out);
+        break;
+
+    // internal events (request-response)
+
+    case EV_SW_GET_DPID:
+    case EV_SW_GET_FD:
+    case EV_SW_GET_XID:
+        out.length = sizeof(switch_t);
+        compnt.handler(in, &out);
+        break;
+
+    // internal events (notification)
+
+    case EV_SW_NEW_CONN:
+    case EV_SW_EXPIRED_CONN:
+    case EV_SW_CONNECTED:
+    case EV_SW_DISCONNECTED:
+    case EV_SW_UPDATE_CONFIG:
+    case EV_SW_UPDATE_DESC:
+        out.length = sizeof(switch_t);
+        compnt.handler(in, &out);
+        break;
+    case EV_HOST_ADDED:
+    case EV_HOST_DELETED:
+        out.length = sizeof(host_t);
+        compnt.handler(in, &out);
+        break;
+    case EV_LINK_ADDED:
+    case EV_LINK_DELETED:
+        out.length = sizeof(port_t);
+        compnt.handler(in, &out);
+        break;
+    case EV_FLOW_ADDED:
+    case EV_FLOW_MODIFIED:
+    case EV_FLOW_DELETED:
+        out.length = sizeof(flow_t);
+        compnt.handler(in, &out);
+        break;
+    case EV_RS_UPDATE_USAGE:
+        out.length = sizeof(resource_t);
+        compnt.handler(in, &out);
+        break;
+    case EV_TR_UPDATE_STATS:
+        out.length = sizeof(traffic_t);
+        compnt.handler(in, &out);
+        break;
+
+    default:
+        break;
     }
 
-    return NULL;
+    return ret;
+}
+
+/////////////////////////////////////////////////////////////////////
+
+/** \brief The structure to keep the remaining part of a message */
+typedef struct _buffer_t {
+    int need; /**< The bytes that it needs to read */
+    int done; /**< The bytes that it has */
+
+    uint8_t temp[__MAX_EXT_MSG_SIZE]; /**< Temporary data */
+} buffer_t;
+
+/** \brief Buffers for all possible sockets */
+buffer_t *buffer;
+
+/**
+ * \brief Function to initialize all buffers
+ * \return None
+ */
+static void init_buffers(void)
+{
+    buffer = (buffer_t *)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(buffer_t));
+    if (buffer == NULL) {
+        PERROR("calloc");
+        return;
+    }
 }
 
 /**
- * \brief Function to get events from an app event queue
- * \param null NULL
+ * \brief Function to clean up a buffer
+ * \param sock Network socket
  */
-static void *deliver_events(void *null)
+static void clean_buffer(int sock)
 {
-    void *recv = zmq_socket(ev_pull_out_ctx, ZMQ_PULL);
-    zmq_connect(recv, "inproc://ev_pull_workers");
+    if (buffer)
+        memset(&buffer[sock], 0, sizeof(buffer_t));
+}
 
-    while (ev_worker_on) {
-        zmq_msg_t in_msg;
-        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
-        int zmq_ret = zmq_msg_recv(&in_msg, recv, 0);
+/////////////////////////////////////////////////////////////////////
 
-        if (!ev_worker_on) {
-            zmq_msg_close(&in_msg);
-            break;
-        } else if (zmq_ret == -1) {
-            zmq_msg_close(&in_msg);
-            continue;
+/**
+ * \brief Function to handle incoming messages from the Barista NOS
+ * \param sock Network socket
+ * \param rx_buf Input buffer
+ * \param bytes The size of the input buffer
+ */
+static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
+{
+    buffer_t *b = &buffer[sock];
+
+    uint8_t *temp = b->temp;
+    int need = b->need;
+    int done = b->done;
+
+    int buf_ptr = 0;
+    while (bytes > 0) {
+        if (0 < done && done < 2) {
+            if (done + bytes < 2) {
+                memmove(temp + done, rx_buf + buf_ptr, bytes);
+
+                done += bytes;
+                bytes = 0;
+
+                break;
+            } else {
+                memmove(temp + done, rx_buf + buf_ptr, (2 - done));
+
+                bytes -= (2 - done);
+                buf_ptr += (2 - done);
+
+                need = ntohs(((json_header *)temp)->len) - 2;
+                done = 2;
+            }
         }
 
-        char *in_str = zmq_msg_data(&in_msg);
-        in_str[zmq_ret] = '\0';
+        if (need == 0) {
+            json_header *jsonh = (json_header *)(rx_buf + buf_ptr);
 
-        msg_t msg = {0};
-        import_from_json(&msg.id, &msg.type, in_str, msg.data);
+            if (bytes < 2) {
+                memmove(temp, rx_buf + buf_ptr, bytes);
 
-        if (msg.id == 0) continue;
-	else if (msg.type > EV_NUM_EVENTS) continue;
+                need = 0;
+                done = bytes;
 
-        event_out_t out = {0};
+                bytes = 0;
+            } else {
+                uint16_t len = ntohs(jsonh->len);
 
-        out.id = msg.id;
-        out.type = msg.type;
-        out.data = msg.data;
+                if (bytes < len) {
+                    memmove(temp, rx_buf + buf_ptr, bytes);
 
-        const event_t *in = (const event_t *)&out;
+                    need = len - bytes;
+                    done = bytes;
 
-        switch (out.type) {
+                    bytes = 0;
+                } else if (len > 0) {
+                    char *in_str = jsonh->json;
 
-        // upstream events
+                    msg_t msg = {0};
+                    import_from_json(&msg.id, &msg.type, in_str, msg.data);
 
-        case EV_DP_RECEIVE_PACKET:
-            out.length = sizeof(pktin_t);
-            compnt.handler(in, &out);
-            break;
-        case EV_DP_FLOW_EXPIRED:
-        case EV_DP_FLOW_DELETED:
-        case EV_DP_FLOW_STATS:
-        case EV_DP_AGGREGATE_STATS:
-            out.length = sizeof(flow_t);
-            compnt.handler(in, &out);
-            break;
-        case EV_DP_PORT_ADDED:
-        case EV_DP_PORT_MODIFIED:
-        case EV_DP_PORT_DELETED:
-        case EV_DP_PORT_STATS:
-            out.length = sizeof(port_t);
-            compnt.handler(in, &out);
-            break;
+                    if (msg.id != 0 && msg.type < EV_NUM_EVENTS)
+                        process_events(&msg);
 
-        // downstream events
+                    bytes -= len;
+                    buf_ptr += len;
 
-        case EV_DP_SEND_PACKET:
-            out.length = sizeof(pktout_t);
-            compnt.handler(in, &out);
-            break;
-        case EV_DP_INSERT_FLOW:
-        case EV_DP_MODIFY_FLOW:
-        case EV_DP_DELETE_FLOW:
-        case EV_DP_REQUEST_FLOW_STATS:
-        case EV_DP_REQUEST_AGGREGATE_STATS:
-            out.length = sizeof(flow_t);
-            compnt.handler(in, &out);
-            break;
-        case EV_DP_REQUEST_PORT_STATS:
-            out.length = sizeof(port_t);
-            compnt.handler(in, &out);
-            break;
+                    need = 0;
+                    done = 0;
+                } else {
+                    return -1;
+                }
+            }
+        } else {
+            json_header *jsonh = (json_header *)temp;
 
-        // internal events (request-response)
+            if (need > bytes) {
+                memmove(temp + done, rx_buf + buf_ptr, bytes);
 
-        case EV_SW_GET_DPID:
-        case EV_SW_GET_FD:
-        case EV_SW_GET_XID:
-            out.length = sizeof(switch_t);
-            compnt.handler(in, &out);
-            break;
+                need -= bytes;
+                done += bytes;
 
-        // internal events (notification)
+                bytes = 0;
+            } else if (jsonh->len > 0) {
+                memmove(temp + done, rx_buf + buf_ptr, need);
 
-        case EV_SW_NEW_CONN:
-        case EV_SW_EXPIRED_CONN:
-        case EV_SW_CONNECTED:
-        case EV_SW_DISCONNECTED:
-        case EV_SW_UPDATE_CONFIG:
-        case EV_SW_UPDATE_DESC:
-            out.length = sizeof(switch_t);
-            compnt.handler(in, &out);
-            break;
-        case EV_HOST_ADDED:
-        case EV_HOST_DELETED:
-            out.length = sizeof(host_t);
-            compnt.handler(in, &out);
-            break;
-        case EV_LINK_ADDED:
-        case EV_LINK_DELETED:
-            out.length = sizeof(port_t);
-            compnt.handler(in, &out);
-            break;
-        case EV_FLOW_ADDED:
-        case EV_FLOW_MODIFIED:
-        case EV_FLOW_DELETED:
-            out.length = sizeof(flow_t);
-            compnt.handler(in, &out);
-            break;
-        case EV_RS_UPDATE_USAGE:
-            out.length = sizeof(resource_t);
-            compnt.handler(in, &out);
-            break;
-        case EV_TR_UPDATE_STATS:
-            out.length = sizeof(traffic_t);
-            compnt.handler(in, &out);
-            break;
+                char *in_str = jsonh->json;
 
-        default:
-            break;
+                msg_t msg = {0};
+                import_from_json(&msg.id, &msg.type, in_str, msg.data);
+
+                if (msg.id != 0 && msg.type < EV_NUM_EVENTS)
+                    process_events(&msg);
+
+                bytes -= need;
+                buf_ptr += need;
+
+                need = 0;
+                done = 0;
+            } else {
+                return -1;
+            }
         }
-
-        zmq_msg_close(&in_msg);
     }
 
-    zmq_close(recv);
+    b->need = need;
+    b->done = done;
 
-    return NULL;
+    return bytes;
+}
+
+/////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Function to do something when the Barista NOS is connected
+ * \return None
+ */
+static int new_connection(int sock)
+{
+    return 0;
+}
+
+/**
+ * \brief Function to do something when the Barista NOS is disconnected
+ * \return None
+ */
+static int closed_connection(int sock)
+{
+    clean_buffer(sock);
+
+    return 0;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -720,23 +817,21 @@ int destroy_ev_workers(ctx_t *null)
 
     waitsec(1, 0);
 
-    zmq_close(ev_push_in_sock);
-    zmq_close(ev_push_out_sock);
+    int i;
+    for (i=0; i<__NUM_PULL_THREADS; i++) {
+        pthread_spin_destroy(&ev_push_lock[i]);
+        close(ev_push_sock[i]);
+        ev_push_sock[i] = 0;
+    }
 
-    zmq_close(ev_pull_in_sock);
-    zmq_close(ev_pull_out_sock);
+    destroy_epoll_env();
+    FREE(buffer);
 
     zmq_close(ev_req_sock);
     zmq_close(ev_rep_comp);
     zmq_close(ev_rep_work);
 
     waitsec(1, 0);
-
-    zmq_ctx_destroy(ev_push_in_ctx);
-    zmq_ctx_destroy(ev_push_out_ctx);
-
-    zmq_ctx_destroy(ev_pull_in_ctx);
-    zmq_ctx_destroy(ev_pull_out_ctx);
 
     zmq_ctx_destroy(ev_req_ctx);
     zmq_ctx_destroy(ev_rep_ctx);
@@ -752,63 +847,48 @@ int event_init(ctx_t *null)
 {
     ev_worker_on = TRUE;
 
-    int timeout = 250;
-
     // Push (downstream)
 
-    ev_push_in_ctx = zmq_ctx_new();
-    ev_push_in_sock = zmq_socket(ev_push_in_ctx, ZMQ_PULL);
+    char push_addr[__CONF_WORD_LEN];
+    int push_port;
 
-    zmq_setsockopt(ev_push_in_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+    sscanf(EXT_COMP_PULL_ADDR, "tcp://%[^:]:%d", push_addr, &push_port);
 
-    sprintf(ev_push_in_addr, "inproc://%u", compnt.component_id);
+    struct sockaddr_in push;
+    memset(&push, 0, sizeof(push));
+    push.sin_family = AF_INET;
+    push.sin_addr.s_addr = inet_addr(push_addr);
+    push.sin_port = htons(push_port);
 
-    if (zmq_bind(ev_push_in_sock, ev_push_in_addr)) {
-        PERROR("zmq_bind");
-        return -1;
-    }
+    int i;
+    for (i=0; i<__NUM_PULL_THREADS; i++) {
+        if ((ev_push_sock[i] = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
+            PERROR("socket");
+            return -1;
+        }
 
-    ev_push_out_ctx = zmq_ctx_new();
-    ev_push_out_sock = zmq_socket(ev_push_out_ctx, ZMQ_PUSH);
+        if (connect(ev_push_sock[i], (struct sockaddr *)&push, sizeof(push)) < 0) {
+            PERROR("connect");
+            return -1;
+        }
 
-    if (zmq_connect(ev_push_out_sock, EXT_COMP_PULL_ADDR)) {
-        PERROR("zmq_connect");
-        return -1;
+        pthread_spin_init(&ev_push_lock[i], PTHREAD_PROCESS_PRIVATE);
     }
 
     // Pull (upstream, intstream)
 
-    ev_pull_in_ctx = zmq_ctx_new();
-    ev_pull_in_sock = zmq_socket(ev_pull_in_ctx, ZMQ_PULL);
+    char pull_addr[__CONF_WORD_LEN];
+    int pull_port;
 
-    zmq_setsockopt(ev_pull_in_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+    sscanf(TARGET_COMP_PULL_ADDR, "tcp://%[^:]:%d", pull_addr, &pull_port);
 
-    if (zmq_bind(ev_pull_in_sock, TARGET_COMP_PULL_ADDR)) {
-        PERROR("zmq_bind");
-        return -1;
-    }
-
-    ev_pull_out_ctx = zmq_ctx_new();
-    ev_pull_out_sock = zmq_socket(ev_pull_out_ctx, ZMQ_PUSH);
-
-    if (zmq_bind(ev_pull_out_sock, "inproc://ev_pull_workers")) {
-        PERROR("zmq_bind");
-        return -1;
-    }
+    init_buffers();
+    create_epoll_env(pull_addr, pull_port);
 
     pthread_t thread;
-    if (pthread_create(&thread, NULL, &receive_events, NULL) < 0) {
+    if (pthread_create(&thread, NULL, &socket_listen, NULL) < 0) {
         PERROR("pthread_create");
         return -1;
-    }
-
-    int i;
-    for (i=0; i<__NUM_PULL_THREADS; i++) {
-        pthread_t thread;
-        if (pthread_create(&thread, NULL, &deliver_events, NULL) < 0) {
-            PERROR("pthread_create");
-            return -1;
-        }
     }
 
     // Request (intsteam)
@@ -820,6 +900,7 @@ int event_init(ctx_t *null)
     ev_rep_ctx = zmq_ctx_new();
     ev_rep_comp = zmq_socket(ev_rep_ctx, ZMQ_ROUTER);
 
+    int timeout = 250;
     zmq_setsockopt(ev_rep_comp, ZMQ_RCVTIMEO, &timeout, sizeof(int));
 
     if (zmq_bind(ev_rep_comp, TARGET_COMP_REPLY_ADDR)) {

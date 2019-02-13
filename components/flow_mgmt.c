@@ -26,11 +26,14 @@
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief Flow tables */
+flow_table_t *flow_table;
+
 /** \brief The number of flows */
 int num_flows;
 
-/** \brief Flow tables */
-flow_table_t *flow_table;
+/** \brief Key for table lookup */
+#define FLOW_KEY(a) (a->dpid % __DEFAULT_TABLE_SIZE)
 
 /////////////////////////////////////////////////////////////////////
 
@@ -91,9 +94,6 @@ static int add_flow(flow_table_t *list, const flow_t *flow)
         new->num_actions = flow->num_actions;
         memmove(new->action, flow->action, sizeof(action_t) * new->num_actions);
 
-        flow_t out;
-        memmove(&out, new, sizeof(flow_t));
-
         pthread_spin_lock(&list->lock);
 
         if (list->head == NULL) {
@@ -109,8 +109,11 @@ static int add_flow(flow_table_t *list, const flow_t *flow)
 
         pthread_spin_unlock(&list->lock);
 
-        if (new->remote == FALSE)
+        if (new->remote == FALSE) {
+            flow_t out;
+            memmove(&out, new, sizeof(flow_t));
             ev_flow_added(FLOW_MGMT_ID, &out);
+        }
     }
 
     return ret;
@@ -169,13 +172,13 @@ static int modify_flow(flow_table_t *list, const flow_t *flow)
 
         curr->prev = curr->next = curr->r_next = NULL;
 
-        flow_t out;
-        memmove(&out, curr, sizeof(flow_t));
-
         pthread_spin_unlock(&list->lock);
 
-        if (curr->remote == FALSE)
+        if (curr->remote == FALSE) {
+            flow_t out;
+            memmove(&out, curr, sizeof(flow_t));
             ev_flow_modified(FLOW_MGMT_ID, &out);
+        }
     } else {
         pthread_spin_unlock(&list->lock);
     }
@@ -431,7 +434,7 @@ int flow_mgmt_main(int *activated, int argc, char **argv)
 
     flow_table = (flow_table_t *)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(flow_table_t));
     if (flow_table == NULL) {
-        PERROR("calloc");
+        LOG_ERROR(FLOW_MGMT_ID, "calloc() error");
         return -1;
     }
 
@@ -444,7 +447,7 @@ int flow_mgmt_main(int *activated, int argc, char **argv)
 
     pthread_t thread;
     if (pthread_create(&thread, NULL, timeout_thread, NULL) < 0) {
-        PERROR("pthread_create");
+        LOG_ERROR(FLOW_MGMT_ID, "pthread_create() error");
     }
 
     activate();
@@ -523,18 +526,6 @@ static int flow_listup(cli_t *cli)
             else
                 strcpy(proto, "Unknown");
 
-            struct in_addr src_ip;
-            src_ip.s_addr = curr->src_ip;
-
-            char srcip[__CONF_WORD_LEN];
-            sprintf(srcip, "%s", inet_ntoa(src_ip));
-
-            struct in_addr dst_ip;
-            dst_ip.s_addr = curr->dst_ip;
-
-            char dstip[__CONF_WORD_LEN];
-            sprintf(dstip, "%s", inet_ntoa(dst_ip));
-
             if (curr->proto & PROTO_ICMP) {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
                                "    src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
@@ -544,8 +535,8 @@ static int flow_listup(cli_t *cli)
                           curr->dpid, curr->idle_timeout, curr->hard_timeout, curr->port, 
                           curr->src_mac[0], curr->src_mac[1], curr->src_mac[2], curr->src_mac[3], curr->src_mac[4], curr->src_mac[5], 
                           curr->dst_mac[0], curr->dst_mac[1], curr->dst_mac[2], curr->dst_mac[3], curr->dst_mac[4], curr->dst_mac[5], 
-                          curr->vlan_id, curr->vlan_pcp, proto, srcip, dstip, curr->type, curr->code,
-                          curr->num_actions, curr->pkt_count, curr->byte_count);
+                          curr->vlan_id, curr->vlan_pcp, proto, ip_addr_str(curr->src_ip), ip_addr_str(curr->dst_ip),
+                          curr->type, curr->code, curr->num_actions, curr->pkt_count, curr->byte_count);
             } else if (curr->proto & PROTO_TCP || curr->proto & PROTO_UDP || curr->proto & PROTO_DHCP) {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
                                "    src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
@@ -555,8 +546,8 @@ static int flow_listup(cli_t *cli)
                           curr->dpid, curr->idle_timeout, curr->hard_timeout, curr->port, 
                           curr->src_mac[0], curr->src_mac[1], curr->src_mac[2], curr->src_mac[3], curr->src_mac[4], curr->src_mac[5], 
                           curr->dst_mac[0], curr->dst_mac[1], curr->dst_mac[2], curr->dst_mac[3], curr->dst_mac[4], curr->dst_mac[5], 
-                          curr->vlan_id, curr->vlan_pcp, proto, srcip, dstip, curr->src_port, curr->dst_port,
-                          curr->num_actions, curr->pkt_count, curr->byte_count);
+                          curr->vlan_id, curr->vlan_pcp, proto, ip_addr_str(curr->src_ip), ip_addr_str(curr->dst_ip),
+                          curr->src_port, curr->dst_port, curr->num_actions, curr->pkt_count, curr->byte_count);
             } else if (curr->proto & PROTO_IPV4) {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
                           "     src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
@@ -566,7 +557,7 @@ static int flow_listup(cli_t *cli)
                           curr->dpid, curr->idle_timeout, curr->hard_timeout, curr->port, 
                           curr->src_mac[0], curr->src_mac[1], curr->src_mac[2], curr->src_mac[3], curr->src_mac[4], curr->src_mac[5], 
                           curr->dst_mac[0], curr->dst_mac[1], curr->dst_mac[2], curr->dst_mac[3], curr->dst_mac[4], curr->dst_mac[5], 
-                          curr->vlan_id, curr->vlan_pcp, proto, srcip, dstip,
+                          curr->vlan_id, curr->vlan_pcp, proto, ip_addr_str(curr->src_ip), ip_addr_str(curr->dst_ip),
                           curr->num_actions, curr->pkt_count, curr->byte_count);
             } else {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
@@ -631,18 +622,6 @@ static int flow_showup(cli_t *cli, char *dpid_str)
             else
                 strcpy(proto, "Unknown");
 
-            struct in_addr src_ip;
-            src_ip.s_addr = curr->src_ip;
-
-            char srcip[__CONF_WORD_LEN];
-            sprintf(srcip, "%s", inet_ntoa(src_ip));
-
-            struct in_addr dst_ip;
-            dst_ip.s_addr = curr->dst_ip;
-
-            char dstip[__CONF_WORD_LEN];
-            sprintf(dstip, "%s", inet_ntoa(dst_ip));
-
             if (curr->proto & PROTO_ICMP) {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
                                "    src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
@@ -652,8 +631,8 @@ static int flow_showup(cli_t *cli, char *dpid_str)
                           curr->dpid, curr->idle_timeout, curr->hard_timeout, curr->port,
                           curr->src_mac[0], curr->src_mac[1], curr->src_mac[2], curr->src_mac[3], curr->src_mac[4], curr->src_mac[5],
                           curr->dst_mac[0], curr->dst_mac[1], curr->dst_mac[2], curr->dst_mac[3], curr->dst_mac[4], curr->dst_mac[5],
-                          curr->vlan_id, curr->vlan_pcp, proto, srcip, dstip, curr->type, curr->code,
-                          curr->num_actions, curr->pkt_count, curr->byte_count);
+                          curr->vlan_id, curr->vlan_pcp, proto, ip_addr_str(curr->src_ip), ip_addr_str(curr->dst_ip),
+                          curr->type, curr->code, curr->num_actions, curr->pkt_count, curr->byte_count);
             } else if (curr->proto & PROTO_TCP || curr->proto & PROTO_UDP || curr->proto & PROTO_DHCP) {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
                                "    src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
@@ -663,8 +642,8 @@ static int flow_showup(cli_t *cli, char *dpid_str)
                           curr->dpid, curr->idle_timeout, curr->hard_timeout, curr->port,
                           curr->src_mac[0], curr->src_mac[1], curr->src_mac[2], curr->src_mac[3], curr->src_mac[4], curr->src_mac[5],
                           curr->dst_mac[0], curr->dst_mac[1], curr->dst_mac[2], curr->dst_mac[3], curr->dst_mac[4], curr->dst_mac[5],
-                          curr->vlan_id, curr->vlan_pcp, proto, srcip, dstip, curr->src_port, curr->dst_port,
-                          curr->num_actions, curr->pkt_count, curr->byte_count);
+                          curr->vlan_id, curr->vlan_pcp, proto, ip_addr_str(curr->src_ip), ip_addr_str(curr->dst_ip),
+                          curr->src_port, curr->dst_port, curr->num_actions, curr->pkt_count, curr->byte_count);
             } else if (curr->proto & PROTO_IPV4) {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
                                "     src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
@@ -674,7 +653,7 @@ static int flow_showup(cli_t *cli, char *dpid_str)
                           curr->dpid, curr->idle_timeout, curr->hard_timeout, curr->port,
                           curr->src_mac[0], curr->src_mac[1], curr->src_mac[2], curr->src_mac[3], curr->src_mac[4], curr->src_mac[5],
                           curr->dst_mac[0], curr->dst_mac[1], curr->dst_mac[2], curr->dst_mac[3], curr->dst_mac[4], curr->dst_mac[5],
-                          curr->vlan_id, curr->vlan_pcp, proto, srcip, dstip,
+                          curr->vlan_id, curr->vlan_pcp, proto, ip_addr_str(curr->src_ip), ip_addr_str(curr->dst_ip),
                           curr->num_actions, curr->pkt_count, curr->byte_count);
             } else {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
@@ -708,16 +687,12 @@ static int flow_showup(cli_t *cli, char *dpid_str)
  */
 int flow_mgmt_cli(cli_t *cli, char **args)
 {
-    if (args[0] != NULL && strcmp(args[0], "list") == 0) {
-        if (args[1] != NULL && strcmp(args[1], "flows") == 0 && args[2] == NULL) {
-            flow_listup(cli);
-            return 0;
-        }
-    } else if (args[0] != NULL && strcmp(args[0], "show") == 0) {
-        if (args[1] != NULL && args[2] == NULL) {
-            flow_showup(cli, args[1]);
-            return 0;
-        }
+    if (args[0] != NULL && strcmp(args[0], "list") == 0 && args[1] != NULL && strcmp(args[1], "flows") == 0 && args[2] == NULL) {
+        flow_listup(cli);
+        return 0;
+    } else if (args[0] != NULL && strcmp(args[0], "show") == 0 && args[1] != NULL && args[2] == NULL) {
+        flow_showup(cli, args[1]);
+        return 0;
     }
 
     PRINTF("<Available Commands>\n");
@@ -744,7 +719,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const flow_t *flow = ev->flow;
 
-            flow_table_t *flow_tbl = &flow_table[flow->dpid % __DEFAULT_TABLE_SIZE];
+            flow_table_t *flow_tbl = &flow_table[FLOW_KEY(flow)];
             add_flow(flow_tbl, ev->flow);
         }
         break;
@@ -753,7 +728,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const flow_t *flow = ev->flow;
 
-            flow_table_t *flow_tbl = &flow_table[flow->dpid % __DEFAULT_TABLE_SIZE];
+            flow_table_t *flow_tbl = &flow_table[FLOW_KEY(flow)];
             modify_flow(flow_tbl, ev->flow);
         }
         break;
@@ -762,7 +737,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const flow_t *flow = ev->flow;
 
-            flow_table_t *flow_tbl = &flow_table[flow->dpid % __DEFAULT_TABLE_SIZE];
+            flow_table_t *flow_tbl = &flow_table[FLOW_KEY(flow)];
             delete_flow(flow_tbl, ev->flow);
         }
         break;
@@ -771,7 +746,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const flow_t *flow = ev->flow;
 
-            flow_table_t *flow_tbl = &flow_table[flow->dpid % __DEFAULT_TABLE_SIZE];
+            flow_table_t *flow_tbl = &flow_table[FLOW_KEY(flow)];
             delete_flow(flow_tbl, ev->flow);
         }
         break;
@@ -780,7 +755,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const flow_t *flow = ev->flow;
 
-            flow_table_t *flow_tbl = &flow_table[flow->dpid % __DEFAULT_TABLE_SIZE];
+            flow_table_t *flow_tbl = &flow_table[FLOW_KEY(flow)];
             delete_flow(flow_tbl, ev->flow);
         }
         break;
@@ -789,7 +764,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const flow_t *flow = ev->flow;
 
-            flow_table_t *flow_tbl = &flow_table[flow->dpid % __DEFAULT_TABLE_SIZE];
+            flow_table_t *flow_tbl = &flow_table[FLOW_KEY(flow)];
             update_flow(flow_tbl, ev->flow);
         }
         break;
@@ -798,7 +773,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const switch_t *sw = ev->sw;
 
-            flow_table_t *flow_tbl = &flow_table[sw->dpid % __DEFAULT_TABLE_SIZE];
+            flow_table_t *flow_tbl = &flow_table[FLOW_KEY(sw)];
             delete_all_flows(flow_tbl, ev->sw->dpid);
         }
         break;
@@ -807,7 +782,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const switch_t *sw = ev->sw;
 
-            flow_table_t *flow_tbl = &flow_table[sw->dpid % __DEFAULT_TABLE_SIZE];
+            flow_table_t *flow_tbl = &flow_table[FLOW_KEY(sw)];
             delete_all_flows(flow_tbl, ev->sw->dpid);
         }
         break;
@@ -818,7 +793,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             if (flow->remote == FALSE) break;
 
-            flow_table_t *flow_tbl = &flow_table[flow->dpid % __DEFAULT_TABLE_SIZE];
+            flow_table_t *flow_tbl = &flow_table[FLOW_KEY(flow)];
             add_flow(flow_tbl, ev->flow);
         }
         break;
@@ -829,7 +804,7 @@ int flow_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             if (flow->remote == FALSE) break;
 
-            flow_table_t *flow_tbl = &flow_table[flow->dpid % __DEFAULT_TABLE_SIZE];
+            flow_table_t *flow_tbl = &flow_table[FLOW_KEY(flow)];
             delete_flow(flow_tbl, ev->flow);
         }
         break;

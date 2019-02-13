@@ -22,11 +22,11 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The pointer to record the current resource usages */
-uint32_t rs_history_ptr;
-
 /** \brief Resource usage history */
 resource_t *rs_history;
+
+/** \brief The pointer to record the current resource usages */
+uint32_t rs_history_ptr;
 
 /** \brief Command to get CPU and memory usages */
 char cmd[] = "ps -p $(pgrep -x barista) -o %cpu,%mem 2> /dev/null | tail -n 1";
@@ -69,7 +69,7 @@ int resource_mgmt_main(int *activated, int argc, char **argv)
 
     rs_history = (resource_t *)CALLOC(RESOURCE_MGMT_HISTORY, sizeof(resource_t));
     if (rs_history == NULL) {
-        PERROR("calloc");
+        LOG_ERROR(RSM_ID, "calloc() error");
         return -1;
     }
 
@@ -109,7 +109,7 @@ int resource_mgmt_main(int *activated, int argc, char **argv)
         int i;
         for (i=0; i<RESOURCE_MGMT_MONITOR_TIME; i++) {
             if (!*activated) break;
-            waitsec(1, 0);
+            else waitsec(1, 0);
         }
     }
 
@@ -125,8 +125,6 @@ int resource_mgmt_cleanup(int *activated)
     LOG_INFO(RSM_ID, "Clean up - Resource management");
 
     deactivate();
-
-    waitsec(1, 0);
 
     FREE(rs_history);
 

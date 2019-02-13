@@ -77,7 +77,7 @@ uint8_t *str2mac(const char *macaddr, uint8_t *mac)
  * \brief Function to convert a byte array to a string
  * \param mac Byte array
  * \param macaddr String to store the converted result
- * \return String
+ * \return String (xx:xx:xx:xx:xx:xx)
  */
 char *mac2str(const uint8_t *mac, char *macaddr)
 {

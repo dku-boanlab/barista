@@ -26,11 +26,11 @@ static ctx_t *ev_ctx;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief MQ contexts to pull and reply events */
-void *ev_pull_in_ctx, *ev_pull_out_ctx, *ev_rep_ctx;
+/** \brief MQ contexts to reply events */
+void *ev_rep_ctx;
 
-/** \brief MQ sockets to pull and reply events */
-void *ev_pull_in_sock, *ev_pull_out_sock, *ev_rep_comp, *ev_rep_work;
+/** \brief MQ sockets to reply events */
+void *ev_rep_comp, *ev_rep_work;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -300,33 +300,17 @@ int event_init(ctx_t *ctx)
 
         // pull
 
-        ev_pull_in_ctx = zmq_ctx_new();
-        ev_pull_in_sock = zmq_socket(ev_pull_in_ctx, ZMQ_PULL);
+        char pull_addr[__CONF_WORD_LEN];
+        int pull_port;
 
-        if (zmq_bind(ev_pull_in_sock, EXT_COMP_PULL_ADDR)) {
-            PERROR("zmq_bind");
-            return -1;
-        }
+        sscanf(EXT_COMP_PULL_ADDR, "tcp://%[^:]:%d", pull_addr, &pull_port);
 
-        ev_pull_out_ctx = zmq_ctx_new();
-        ev_pull_out_sock = zmq_socket(ev_pull_out_ctx, ZMQ_PUSH);
+        init_buffers();
+        create_epoll_env(pull_addr, pull_port);
 
-        if (zmq_bind(ev_pull_out_sock, "inproc://ev_pull_workers")) {
-            PERROR("zmq_bind");
-            return -1;
-        }
-
-        if (pthread_create(&thread, NULL, &receive_events, NULL) < 0) {
+        if (pthread_create(&thread, NULL, &socket_listen, NULL) < 0) {
             PERROR("pthread_create");
             return -1;
-        }
-
-        int i;
-        for (i=0; i<__NUM_PULL_THREADS; i++) {
-            if (pthread_create(&thread, NULL, &deliver_events, NULL) < 0) {
-                PERROR("pthread_create");
-                return -1;
-            }
         }
 
         // reply
@@ -346,6 +330,7 @@ int event_init(ctx_t *ctx)
             return -1;
         }
 
+        int i;
         for (i=0; i<__NUM_REP_THREADS; i++) {
             if (pthread_create(&thread, NULL, &reply_events, NULL) < 0) {
                 PERROR("pthread_create");
@@ -372,14 +357,11 @@ int destroy_ev_workers(ctx_t *ctx)
 
     waitsec(1, 0);
 
-    zmq_close(ev_pull_in_sock);
-    zmq_close(ev_pull_out_sock);
+    destroy_epoll_env();
+    FREE(buffer);
 
     zmq_close(ev_rep_comp);
     zmq_close(ev_rep_work);
-
-    zmq_ctx_destroy(ev_pull_in_ctx);
-    zmq_ctx_destroy(ev_pull_out_ctx);
 
     zmq_ctx_destroy(ev_rep_ctx);
 

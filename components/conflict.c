@@ -27,11 +27,14 @@
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief Rule tables */
+rule_table_t *rule_table;
+
 /** \brief The number of rules */
 int num_rules;
 
-/** \brief Rule tables */
-rule_table_t *rule_table;
+/** \brief Key for table lookup */
+#define RULE_KEY(a) (a->dpid % __DEFAULT_TABLE_SIZE)
 
 /////////////////////////////////////////////////////////////////////
 
@@ -61,70 +64,61 @@ static int flow_rule_conflict(const flow_t *rule)
 
     memmove(&list[curr++], &rule, sizeof(flow_t));
 
-    int i;
+    int i, j;
     for (i=0; i<num_actions; i++) {
         int type = rule->action[i].type;
 
         if (type == ACTION_OUTPUT) {
             action = FORWARD;
         } else if (type == ACTION_SET_VLAN_VID) {
-            int j;
             for (j=0; j<(2 * (i + 1)); j++, curr++) {
                 memmove(&list[curr], &list[curr/2], sizeof(flow_t));
                 if ((j % 2) != 0)
                     list[curr].vlan_id = rule->action[i].vlan_id;
             }
         } else if (type == ACTION_SET_VLAN_PCP) {
-            int j;
             for (j=0; j<(2 * (i + 1)); j++, curr++) {
                 memmove(&list[curr], &list[curr/2], sizeof(flow_t));
                 if ((j % 2) != 0)
                     list[curr].vlan_pcp = rule->action[i].vlan_pcp;
             }
         } else if (type == ACTION_SET_SRC_MAC) {
-            int j;
             for (j=0; j<(2 * (i + 1)); j++, curr++) {
                 memmove(&list[curr], &list[curr/2], sizeof(flow_t));
                 if ((j % 2) != 0)
                     memmove(&list[curr].src_mac, rule->action[i].mac_addr, ETH_ALEN);
             }
         } else if (type == ACTION_SET_DST_MAC) {
-            int j;
             for (j=0; j<(2 * (i + 1)); j++, curr++) {
                 memmove(&list[curr], &list[curr/2], sizeof(flow_t));
                 if ((j % 2) != 0)
                     memmove(&list[curr].dst_mac, rule->action[i].mac_addr, ETH_ALEN);
             }
         } else if (type == ACTION_SET_SRC_IP) {
-            int j;
             for (j=0; j<(2 * (i + 1)); j++, curr++) {
                 memmove(&list[curr], &list[curr/2], sizeof(flow_t));
                 if ((j % 2) != 0)
                     list[curr].src_ip = rule->action[i].ip_addr;
             }
         } else if (type == ACTION_SET_DST_IP) {
-            int j;
             for (j=0; j<(2 * (i + 1)); j++, curr++) {
                 memmove(&list[curr], &list[curr/2], sizeof(flow_t));
                 if ((j % 2) != 0)
                     list[curr].dst_ip = rule->action[i].ip_addr;
             }
         } else if (type == ACTION_SET_IP_TOS) {
-            int j;
             for (j=0; j<(2 * (i + 1)); j++, curr++) {
                 memmove(&list[curr], &list[curr/2], sizeof(flow_t));
                 if ((j % 2) != 0)
                     list[curr].ip_tos = rule->action[i].ip_tos;
             }
         } else if (type == ACTION_SET_SRC_PORT) {
-            int j;
             for (j=0; j<(2 * (i + 1)); j++, curr++) {
                 memmove(&list[curr], &list[curr/2], sizeof(flow_t));
                 if ((j % 2) != 0)
                     list[curr].src_port = rule->action[i].port;
             }
         } else if (type == ACTION_SET_DST_PORT) {
-            int j;
             for (j=0; j<(2 * (i + 1)); j++, curr++) {
                 memmove(&list[curr], &list[curr/2], sizeof(flow_t));
                 if ((j % 2) != 0)
@@ -134,7 +128,7 @@ static int flow_rule_conflict(const flow_t *rule)
     }
 
     for (i=(curr/2); i<curr; i++) {
-        rule_table_t *rule_tbl = &rule_table[rule->dpid % __DEFAULT_TABLE_SIZE];
+        rule_table_t *rule_tbl = &rule_table[RULE_KEY(rule)];
         flow_t *target = &list[i];
 
         pthread_rwlock_rdlock(&rule_tbl->lock);
@@ -144,7 +138,6 @@ static int flow_rule_conflict(const flow_t *rule)
             if (FLOW_COMPARE(curr, target)) {
                 int target_action = DROP;
 
-                int j;
                 for (j=0; j<curr->num_actions; j++) {
                     if (curr->action[j].type == ACTION_OUTPUT)
                         target_action = FORWARD;
@@ -185,7 +178,7 @@ int conflict_main(int *activated, int argc, char **argv)
 
     rule_table = (rule_table_t *)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(rule_table_t));
     if (rule_table == NULL) {
-        PERROR("calloc");
+        LOG_ERROR(CONFLICT_ID, "calloc() error");
         return -1;
     }
 
@@ -282,7 +275,7 @@ int conflict_handler(const event_t *ev, event_out_t *ev_out)
         PRINT_EV("EV_FLOW_ADDED\n");
         {
             const flow_t *flow = ev->flow;
-            rule_table_t *rule_tbl = &rule_table[flow->dpid % __DEFAULT_TABLE_SIZE];
+            rule_table_t *rule_tbl = &rule_table[RULE_KEY(flow)];
 
             flow_t *new = arr_dequeue();
             if (new == NULL) break;
@@ -309,7 +302,7 @@ int conflict_handler(const event_t *ev, event_out_t *ev_out)
         PRINT_EV("EV_FLOW_DELETED\n");
         {
             const flow_t *flow = ev->flow;
-            rule_table_t *rule_tbl = &rule_table[flow->dpid % __DEFAULT_TABLE_SIZE];
+            rule_table_t *rule_tbl = &rule_table[RULE_KEY(flow)];
 
             rule_table_t tmp_list = {0};
 

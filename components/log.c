@@ -22,11 +22,11 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of log messages */
-int write_msg;
-
 /** \brief Log queue */
 char **msgs;
+
+/** \brief The number of log messages */
+int write_msg;
 
 /** \brief The lock for log updates */
 pthread_spinlock_t log_lock;

@@ -11,4 +11,3 @@
 
 #include "common.h"
 #include "event.h"
-#include "mac2int.h"

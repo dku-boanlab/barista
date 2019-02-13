@@ -125,6 +125,7 @@ static int l2_learning(const pktin_t *pktin)
 
     // 3. get destination MAC
     mac = mac2int(pktin->dst_mac);
+    mkey = hash_func((uint32_t *)&mac, 2) % MAC_HASH_SIZE;
 
     // 4. if dst mac == broadcast, flood it
     if (mac == __BROADCAST_MAC) {
@@ -133,7 +134,6 @@ static int l2_learning(const pktin_t *pktin)
     }
 
     uint16_t port = 0;
-    mkey = hash_func((uint32_t *)&mac, 2) % MAC_HASH_SIZE;
 
     pthread_rwlock_rdlock(&mac_table[mkey].lock);
 
@@ -218,10 +218,7 @@ static int list_all_entries(cli_t *cli)
             char macaddr[__CONF_WORD_LEN];
             mac2str(mac, macaddr);
 
-            struct in_addr ip_addr;
-            ip_addr.s_addr = curr->ip;
-
-            cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, inet_ntoa(ip_addr), curr->port);
+            cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, ip_addr_str(curr->ip), curr->port);
         }
 
         pthread_rwlock_unlock(&mac_table[i].lock);
@@ -257,10 +254,7 @@ static int show_entry_switch(cli_t *cli, char *dpid_str)
                 char macaddr[__CONF_WORD_LEN] = {0};
                 mac2str(mac, macaddr);
 
-                struct in_addr ip_addr;
-                ip_addr.s_addr = curr->ip;
-
-                cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, inet_ntoa(ip_addr), curr->port);
+                cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, ip_addr_str(curr->ip), curr->port);
 
                 cnt++;
             }
@@ -296,10 +290,7 @@ static int show_entry_mac(cli_t *cli, const char *macaddr)
         mac_entry_t *curr = NULL;
         for (curr = mac_table[i].head; curr != NULL; curr = curr->next) {
             if (curr->mac == macval) {
-                struct in_addr ip_addr;
-                ip_addr.s_addr = curr->ip;
-
-                cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, inet_ntoa(ip_addr), curr->port);
+                cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, ip_addr_str(curr->ip), curr->port);
 
                 cnt++;
             }
@@ -321,10 +312,7 @@ static int show_entry_mac(cli_t *cli, const char *macaddr)
  */
 static int show_entry_ip(cli_t *cli, const char *ipaddr)
 {
-    struct in_addr ip_addr;
-    inet_aton(ipaddr, &ip_addr);
-
-    uint32_t ip = ip_addr.s_addr;
+    uint32_t ip = ip_addr_int(ipaddr);
 
     cli_print(cli, "<MAC Entry [%s]>", ipaddr);
 

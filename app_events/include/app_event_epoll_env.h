@@ -17,27 +17,27 @@
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The running flag for listening connections */
-int listening;
+int ap_listening;
 
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The size of a network socket queue */
-#define MAXQLEN 1024
+#define AP_MAXQLEN 1024
 
 /** \brief The pointer of the first entry in a network socket queue */
-#define FIRST &queue[0]
+#define AP_FIRST &ap_queue[0]
 
 /** \brief The pointer of the last entry in a network socket queue */
-#define LAST &queue[MAXQLEN - 1]
+#define AP_LAST &ap_queue[AP_MAXQLEN - 1]
 
 /** \brief Network socket queue */
-int queue[MAXQLEN];
+int ap_queue[AP_MAXQLEN];
 
 /** \brief The head and tail pointers of a network socket queue */
-int *head, *tail;
+int *ap_head, *ap_tail;
 
 /** \brief The number of entries in a network socket queue */
-int size;
+int ap_size;
 
 /**
  * \brief Function to initialize a network socket queue
@@ -45,9 +45,9 @@ int size;
  */
 static void init_queue(void)
 {
-    memset(queue, 0, sizeof(int) * MAXQLEN);
-    head = tail = NULL;
-    size = 0;
+    memset(ap_queue, 0, sizeof(int) * AP_MAXQLEN);
+    ap_head = ap_tail = NULL;
+    ap_size = 0;
 }
 
 /**
@@ -56,15 +56,15 @@ static void init_queue(void)
  */
 static void push_back(int v)
 {
-    if (size == 0) {
-        head = tail = FIRST;
+    if (ap_size == 0) {
+        ap_head = ap_tail = AP_FIRST;
     } else {
-        tail = (LAST - tail > 0) ? tail + 1 : FIRST;
+        ap_tail = (AP_LAST - ap_tail > 0) ? ap_tail + 1 : AP_FIRST;
     }
 
-    *tail = v;
+    *ap_tail = v;
 
-    size++;
+    ap_size++;
 }
 
 /**
@@ -75,10 +75,10 @@ static int pop_front(void)
 {
     int ret = -1;
 
-    if (size > 0) {
-        ret = *head;
-        head = (LAST - head > 0) ? head + 1 : FIRST;
-        size--;
+    if (ap_size > 0) {
+        ret = *ap_head;
+        ap_head = (AP_LAST - ap_head > 0) ? ap_head + 1 : AP_FIRST;
+        ap_size--;
     }
 
     return ret;
@@ -90,13 +90,13 @@ static int pop_front(void)
  */
 static int get_qsize(void)
 {
-    return size;
+    return ap_size;
 }
 
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to handle incoming messages from network sockets
+ * \brief Function to handle incoming messages from external applications
  * \param sock Network socket
  * \param rx_buf Input buffer
  * \param bytes The size of the input buffer
@@ -104,27 +104,27 @@ static int get_qsize(void)
 static int msg_proc(int sock, uint8_t *rx_buf, int bytes);
 
 /**
- * \brief Function to do something when a new client is connected
+ * \brief Function to do something when a new application is connected
  * \return None
  */
 static int new_connection(int sock);
 
 /**
- * \brief Function to do something when a client is disconnected
+ * \brief Function to do something when an application is disconnected
  * \return None
  */
 static int closed_connection(int sock);
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The maximum number of events */
-#define MAXEVENTS 1024
+/** \brief The maximum number of epoll events */
+#define AP_MAXEVENTS 1024
 
 /** \brief Epoll for network sockets */
-int epoll;
+int ap_epoll;
 
 /** \brief The event list for network sockets */
-struct epoll_event events[MAXEVENTS];
+struct epoll_event ap_events[AP_MAXEVENTS];
 
 /**
  * \brief Function to create an epoll
@@ -132,14 +132,14 @@ struct epoll_event events[MAXEVENTS];
  */
 static int init_epoll(void)
 {
-    memset(events, 0, sizeof(struct epoll_event) * MAXEVENTS);
+    memset(ap_events, 0, sizeof(struct epoll_event) * AP_MAXEVENTS);
 
-    if ((epoll = epoll_create1(0)) < 0) {
+    if ((ap_epoll = epoll_create1(0)) < 0) {
         PERROR("epoll_create1");
         return -1;
     }
 
-    return epoll;
+    return ap_epoll;
 }
 
 /**
@@ -187,24 +187,24 @@ static int relink_epoll(int epol, int fd, int flags)
 #define BUFFER_SIZE 8192
 
 /** \brief The callback definition for network sockets */
-typedef int (*recv_cb_t)(int sock, uint8_t *rx_buf, int bytes);
+typedef int (*ap_recv_cb_t)(int sock, uint8_t *rx_buf, int bytes);
 
 /** \brief The callback initialization for network sockets */
-recv_cb_t recv_cb;
+ap_recv_cb_t ap_recv_cb;
 
 /** \brief Mutexlock for workers */
-pthread_mutex_t queue_mutex;
+pthread_mutex_t ap_queue_mutex;
 
 /** \brief Condition for workers */
-pthread_cond_t queue_cond;
+pthread_cond_t ap_queue_cond;
 
 /**
  * \brief Function to register a callback function for network sockets
  * \param cb The callback function for network sockets
  */
-static void recv_cb_register(recv_cb_t cb)
+static void recv_cb_register(ap_recv_cb_t cb)
 {
-    recv_cb = cb;
+    ap_recv_cb = cb;
 }
 
 /**
@@ -216,9 +216,9 @@ static void *do_tasks(void *null)
     int wsock, bytes, done = 0;
     uint8_t rx_buf[BUFFER_SIZE];
 
-    pthread_mutex_lock(&queue_mutex);
+    pthread_mutex_lock(&ap_queue_mutex);
 
-    while (listening) {
+    while (ap_listening) {
         struct timeval now;
         gettimeofday(&now, NULL);
 
@@ -226,17 +226,17 @@ static void *do_tasks(void *null)
         time_wait.tv_sec = now.tv_sec+1;
         time_wait.tv_nsec = now.tv_usec;
 
-        pthread_cond_timedwait(&queue_cond, &queue_mutex, &time_wait);
+        pthread_cond_timedwait(&ap_queue_cond, &ap_queue_mutex, &time_wait);
 
 FETCH_ONE_FD:
-        if (listening == FALSE) { // clean up
-            pthread_mutex_unlock(&queue_mutex);
+        if (ap_listening == FALSE) { // clean up
+            pthread_mutex_unlock(&ap_queue_mutex);
             break;
         }
 
         wsock = pop_front();
         if (wsock < 0) continue;
-        pthread_mutex_unlock(&queue_mutex);
+        pthread_mutex_unlock(&ap_queue_mutex);
 
         done = 0;
         bytes = 1;
@@ -252,7 +252,7 @@ FETCH_ONE_FD:
                 break;
             }
 
-            bytes = recv_cb(wsock, rx_buf, bytes);
+            bytes = ap_recv_cb(wsock, rx_buf, bytes);
             if (bytes == -1) {
                 done = 1;
                 break;
@@ -264,14 +264,14 @@ FETCH_ONE_FD:
             closed_connection(wsock);
             close(wsock);
         } else {
-            if (relink_epoll(epoll, wsock, EPOLLIN | EPOLLET | EPOLLONESHOT) < 0) {
+            if (relink_epoll(ap_epoll, wsock, EPOLLIN | EPOLLET | EPOLLONESHOT) < 0) {
                 // closed connection
                 closed_connection(wsock);
                 close(wsock);
             }
         }
 
-        pthread_mutex_lock(&queue_mutex);
+        pthread_mutex_lock(&ap_queue_mutex);
 
         if (get_qsize() > 0) {
             goto FETCH_ONE_FD;
@@ -289,8 +289,8 @@ static void init_workers(void)
 {
     init_queue();
 
-    pthread_mutex_init(&queue_mutex, NULL);
-    pthread_cond_init(&queue_cond, NULL);
+    pthread_mutex_init(&ap_queue_mutex, NULL);
+    pthread_cond_init(&ap_queue_cond, NULL);
 
     int i;
     pthread_t thread;
@@ -304,7 +304,7 @@ static void init_workers(void)
 /////////////////////////////////////////////////////////////////////
 
 /** \brief Network socket */
-int sc;
+int ap_sc;
 
 /**
  * \brief Function to set the non-blocking mode to a socket
@@ -337,46 +337,46 @@ static int nonblocking_mode(const int fd)
  * \param addr Binding address
  * \param port Port number
  */
-static int init_socket(uint32_t addr, uint16_t port)
+static int init_socket(char *addr, uint16_t port)
 {
-    if ((sc = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((ap_sc = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         PERROR("socket");
         return -1;
     }
 
     int option = 1;
-    if (setsockopt(sc, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) {
+    if (setsockopt(ap_sc, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) {
         PERROR("setsockopt");
     }
 
-    if (nonblocking_mode(sc) < 0) {
-        close(sc);
+    if (nonblocking_mode(ap_sc) < 0) {
+        close(ap_sc);
         return -1;
     }
 
     struct sockaddr_in server;
     server.sin_family = AF_INET;
-    server.sin_addr.s_addr = htonl(addr);
+    server.sin_addr.s_addr = inet_addr(addr);
     server.sin_port = htons(port);
 
-    if (bind(sc, (struct sockaddr *)&server, sizeof(server)) < 0) {
+    if (bind(ap_sc, (struct sockaddr *)&server, sizeof(server)) < 0) {
         PERROR("bind");
-        close(sc);
+        close(ap_sc);
         return -1;
     }
 
-    if (listen(sc, SOMAXCONN) < 0) {
+    if (listen(ap_sc, SOMAXCONN) < 0) {
         PERROR("listen");
-        close(sc);
+        close(ap_sc);
         return -1;
     }
 
-    if (link_epoll(epoll, sc, EPOLLIN | EPOLLET) < 0) {
-        close(sc);
+    if (link_epoll(ap_epoll, ap_sc, EPOLLIN | EPOLLET) < 0) {
+        close(ap_sc);
         return -1;
     }
 
-    return sc;
+    return ap_sc;
 }
 
 /**
@@ -390,16 +390,16 @@ static void *socket_listen(void *arg)
     struct sockaddr_in client;
     socklen_t len = sizeof(struct sockaddr);
 
-    while (listening) {
-        nums = epoll_wait(epoll, events, MAXEVENTS, 100);
+    while (ap_listening) {
+        nums = epoll_wait(ap_epoll, ap_events, AP_MAXEVENTS, 100);
 
-        if (listening == FALSE) break;
+        if (ap_listening == FALSE) break;
 
         int i;
         for (i=0; i<nums; i++) {
-            if (events[i].data.fd == sc) {
+            if (ap_events[i].data.fd == ap_sc) {
                 while (1) {
-                    if ((csock = accept(sc, (struct sockaddr *)&client, &len)) < 0) {
+                    if ((csock = accept(ap_sc, (struct sockaddr *)&client, &len)) < 0) {
                         if (errno != EAGAIN && errno != EWOULDBLOCK) {
                             PERROR("accept");
                         }
@@ -416,7 +416,7 @@ static void *socket_listen(void *arg)
                         break;
                     }
 
-                    if (link_epoll(epoll, csock, EPOLLIN | EPOLLET | EPOLLONESHOT) < 0) {
+                    if (link_epoll(ap_epoll, csock, EPOLLIN | EPOLLET | EPOLLONESHOT) < 0) {
                         // closed connection
                         closed_connection(csock);
                         close(csock);
@@ -424,10 +424,10 @@ static void *socket_listen(void *arg)
                     }
                 }
             } else {
-                pthread_mutex_lock(&queue_mutex);
-                push_back(events[i].data.fd);
-                pthread_cond_signal(&queue_cond);
-                pthread_mutex_unlock(&queue_mutex);
+                pthread_mutex_lock(&ap_queue_mutex);
+                push_back(ap_events[i].data.fd);
+                pthread_cond_signal(&ap_queue_cond);
+                pthread_mutex_unlock(&ap_queue_mutex);
             }
         }
 
@@ -438,8 +438,8 @@ static void *socket_listen(void *arg)
     if (nums < 0)
         PERROR("epoll_wait");
 
-    close(epoll);
-    close(sc);
+    close(ap_epoll);
+    close(ap_sc);
 
     return NULL;
 }
@@ -450,9 +450,9 @@ static void *socket_listen(void *arg)
  * \brief Function to initialize socket, epoll, and other things
  * \return None
  */
-static int create_epoll_env(uint32_t addr, uint16_t port)
+static int create_epoll_env(char *addr, uint16_t port)
 {
-    listening = TRUE;
+    ap_listening = TRUE;
 
     recv_cb_register(msg_proc);
 
@@ -471,20 +471,20 @@ static int create_epoll_env(uint32_t addr, uint16_t port)
  */
 static int destroy_epoll_env(void)
 {
-    listening = FALSE;
+    ap_listening = FALSE;
 
     waitsec(1, 0);
 
     int i;
     for (i=0; i<__NUM_PULL_THREADS; i++) {
-        pthread_mutex_lock(&queue_mutex);
+        pthread_mutex_lock(&ap_queue_mutex);
         push_back(0);
-        pthread_mutex_unlock(&queue_mutex);
-        pthread_cond_signal(&queue_cond);
+        pthread_mutex_unlock(&ap_queue_mutex);
+        pthread_cond_signal(&ap_queue_cond);
     }
 
-    pthread_cond_destroy(&queue_cond);
-    pthread_mutex_destroy(&queue_mutex);
+    pthread_cond_destroy(&ap_queue_cond);
+    pthread_mutex_destroy(&ap_queue_mutex);
 
     signal(SIGPIPE, SIG_DFL);
 

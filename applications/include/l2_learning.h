@@ -11,5 +11,4 @@
 
 #include "common.h"
 #include "app_event.h"
-#include "mac2int.h"
 #include "hash.h"

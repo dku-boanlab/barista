@@ -36,6 +36,8 @@ typedef struct _mac_table_t {
 /** \brief MAC table */
 mac_table_t *mac_table;
 
+/////////////////////////////////////////////////////////////////////
+
 /** \brief The size of a MAC table */
 #define MAC_HASH_SIZE 4096
 

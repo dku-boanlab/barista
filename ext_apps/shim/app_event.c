@@ -29,20 +29,30 @@ int av_worker_on;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief MQ contexts to push, pull, request and reply events */
-void *av_push_in_ctx, *av_push_out_ctx, *av_pull_in_ctx, *av_pull_out_ctx, *av_req_ctx, *av_rep_ctx;
+/** \brief MQ contexts to request and reply app events */
+void *av_req_ctx, *av_rep_ctx;
 
-/** \brief MQ sockets to push, pull and reply events */
-void *av_push_in_sock, *av_push_out_sock, *av_pull_in_sock, *av_pull_out_sock, *av_req_sock, *av_rep_app, *av_rep_work;
-
-/////////////////////////////////////////////////////////////////////
-
-/** \brief Internal pulling address */
-char av_push_in_addr[__CONF_WORD_LEN];
+/** \brief MQ sockets to request and reply app events */
+void *av_req_sock, *av_rep_app, *av_rep_work;
 
 /////////////////////////////////////////////////////////////////////
 
 #include "app_event_json.h"
+
+/////////////////////////////////////////////////////////////////////
+
+/** \brief Socket pointer to push app events */
+uint32_t av_push_ptr;
+
+/** \brief Socket to push app events */
+int av_push_sock[__NUM_PULL_THREADS];
+
+/** \brief Lock for av_push_sock */
+pthread_spinlock_t av_push_lock[__NUM_PULL_THREADS];
+
+/////////////////////////////////////////////////////////////////////
+
+#include "app_event_epoll_env.h"
 
 /////////////////////////////////////////////////////////////////////
 
@@ -54,39 +64,6 @@ char av_push_in_addr[__CONF_WORD_LEN];
 void mq_free(void *data, void *hint)
 {
     free(data);
-}
-
-/**
- * \brief Function to push app events to external applications
- * \param config Application configuration
- */
-static void *push_app_events(void *config)
-{
-    while (av_worker_on) {
-        zmq_msg_t in_msg;
-        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
-        int zmq_ret = zmq_msg_recv(&in_msg, av_push_in_sock, 0);
-
-        if (!av_worker_on) {
-            zmq_msg_close(&in_msg);
-            break;
-        } else if (zmq_ret == -1) {
-            zmq_msg_close(&in_msg);
-            continue;
-        }
-
-        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
-        memcpy(out_str, zmq_msg_data(&in_msg), zmq_msg_size(&in_msg));
-
-        zmq_msg_t out_msg;
-        zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
-
-        zmq_msg_send(&out_msg, av_push_out_sock, 0);
-
-        zmq_msg_close(&in_msg);
-    }
-
-    return NULL;
 }
 
 /**
@@ -134,12 +111,6 @@ static int handshake(uint32_t id, char *name)
 
         zmq_msg_close(&in_msg);
         zmq_close(sock);
-
-        pthread_t thread;
-        if (pthread_create(&thread, NULL, &push_app_events, &app) < 0) {
-            PERROR("pthread_create");
-            return -1;
-        }
     }
 
     return 0;
@@ -147,8 +118,14 @@ static int handshake(uint32_t id, char *name)
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief The header of a JSON message */
+typedef struct _json_header {
+    uint16_t len;
+    char json[__MAX_EXT_MSG_SIZE];
+} __attribute__((packed)) json_header;
+
 /**
- * \brief Function to send events to the Barista NOS
+ * \brief Function to send app events to the Barista NOS
  * \param id Application ID
  * \param type Application event type
  * \param size The size of the given data
@@ -158,23 +135,34 @@ static int av_push_msg(uint32_t id, uint16_t type, uint16_t size, const void *da
 {
     if (!av_worker_on) return -1;
 
-    char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
-    export_to_json(id, type, data, out_str);
+    json_header jsonh = {0};
 
-    zmq_msg_t out_msg;
-    zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
+    export_to_json(id, type, data, jsonh.json);
+    jsonh.len = strlen(jsonh.json) + 2 + 1; // json_len + length variable + NULL
 
-    void *sock = zmq_socket(av_push_in_ctx, ZMQ_PUSH);
-    if (zmq_connect(sock, av_push_in_addr)) {
-        return -1;
-    } else {
-        if (zmq_msg_send(&out_msg, sock, 0) < 0) {
-            zmq_close(sock);
-            return -1;
+    int remain = jsonh.len;
+    int bytes = 0;
+    int done = 0;
+
+    jsonh.len = htons(jsonh.len);
+
+    uint32_t ptr = (av_push_ptr++) % __NUM_PULL_THREADS;
+
+    pthread_spin_lock(&av_push_lock[ptr]);
+
+    while (remain > 0) {
+        bytes = write(av_push_sock[ptr], (uint8_t *)&jsonh + done, remain);
+        if (bytes < 0 && errno != EAGAIN) {
+            break;
+        } else if (bytes < 0) {
+            continue;
         }
 
-        zmq_close(sock);
+        remain -= bytes;
+        done += bytes;
     }
+
+    pthread_spin_unlock(&av_push_lock[ptr]);
 
     return 0;
 }
@@ -361,7 +349,7 @@ static void *reply_app_events(void *null)
 }
 
 /**
- * \brief Function to connect worker threads to application threads via a queue proxy
+ * \brief Function to connect worker threads to app threads via a queue proxy
  * \param null NULL
  */
 static void *reply_proxy(void *null)
@@ -371,131 +359,242 @@ static void *reply_proxy(void *null)
     return NULL;
 }
 
+/////////////////////////////////////////////////////////////////////
+
 /**
- * \brief Function to receive app events from the Barista NOS
- * \param null NULL
+ * \brief Function to process app events
+ * \param msg Application events
  */
-static void *receive_app_events(void *null)
+static int process_app_events(msg_t *msg)
 {
-    while (av_worker_on) {
-        zmq_msg_t in_msg;
-        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
-        int zmq_ret = zmq_msg_recv(&in_msg, av_pull_in_sock, 0);
+    app_event_out_t out = {0};
+    int ret = 0;
 
-        if (!av_worker_on) {
-            zmq_msg_close(&in_msg);
-            break;
-        } else if (zmq_ret == -1) {
-            zmq_msg_close(&in_msg);
-            continue;
-        }
+    out.id = msg->id;
+    out.type = msg->type;
+    out.data = msg->data;
 
-        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
-        memcpy(out_str, zmq_msg_data(&in_msg), zmq_msg_size(&in_msg));
+    const app_event_t *in = (const app_event_t *)&out;
 
-        zmq_msg_t out_msg;
-        zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
+    switch (out.type) {
 
-        zmq_msg_send(&out_msg, av_pull_out_sock, 0);
+    // upstream events
 
-        zmq_msg_close(&in_msg);
+    case AV_DP_RECEIVE_PACKET:
+        out.length = sizeof(pktin_t);
+        app.handler(in, &out);
+        break;
+    case AV_DP_FLOW_EXPIRED:
+    case AV_DP_FLOW_DELETED:
+        out.length = sizeof(flow_t);
+        break;
+    case AV_DP_PORT_ADDED:
+    case AV_DP_PORT_MODIFIED:
+    case AV_DP_PORT_DELETED:
+        out.length = sizeof(port_t);
+        app.handler(in, &out);
+        break;
+
+    // internal events
+
+    case AV_SW_CONNECTED:
+    case AV_SW_DISCONNECTED:
+        out.length = sizeof(switch_t);
+        app.handler(in, &out);
+        break;
+    case AV_HOST_ADDED:
+    case AV_HOST_DELETED:
+        out.length = sizeof(host_t);
+        app.handler(in, &out);
+        break;
+    case AV_LINK_ADDED:
+    case AV_LINK_DELETED:
+        out.length = sizeof(port_t);
+        app.handler(in, &out);
+        break;
+    case AV_FLOW_ADDED:
+    case AV_FLOW_MODIFIED:
+    case AV_FLOW_DELETED:
+        out.length = sizeof(flow_t);
+        app.handler(in, &out);
+        break;
+
+    default:
+        break;
     }
 
-    return NULL;
+    return ret;
+}
+
+/////////////////////////////////////////////////////////////////////
+
+/** \brief The structure to keep the remaining part of a message */
+typedef struct _buffer_t {
+    int need; /**< The bytes that it needs to read */
+    int done; /**< The bytes that it has */
+
+    uint8_t temp[__MAX_EXT_MSG_SIZE]; /**< Temporary data */
+} buffer_t;
+
+/** \brief Buffers for all possible sockets */
+buffer_t *buffer;
+
+/**
+ * \brief Function to initialize all buffers
+ * \return None
+ */
+static void init_buffers(void)
+{
+    buffer = (buffer_t *)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(buffer_t));
+    if (buffer == NULL) {
+        PERROR("calloc");
+        return;
+    }
 }
 
 /**
- * \brief Function to get app events from an app event queue
- * \param null NULL
+ * \brief Function to clean up a buffer
+ * \param sock Network socket
  */
-static void *deliver_app_events(void *null)
+static void clean_buffer(int sock)
 {
-    void *recv = zmq_socket(av_pull_out_ctx, ZMQ_PULL);
-    zmq_connect(recv, "inproc://av_pull_workers");
+    if (buffer)
+        memset(&buffer[sock], 0, sizeof(buffer_t));
+}
 
-    while (av_worker_on) {
-        zmq_msg_t in_msg;
-        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
-        int zmq_ret = zmq_msg_recv(&in_msg, recv, 0);
+/////////////////////////////////////////////////////////////////////
 
-        if (!av_worker_on) {
-            zmq_msg_close(&in_msg);
-            break;
-        } else if (zmq_ret == -1) {
-            zmq_msg_close(&in_msg);
-            continue;
+/**
+ * \brief Function to handle incoming messages from the Barista NOS
+ * \param sock Network socket
+ * \param rx_buf Input buffer
+ * \param bytes The size of the input buffer
+ */
+static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
+{
+    buffer_t *b = &buffer[sock];
+
+    uint8_t *temp = b->temp;
+    int need = b->need;
+    int done = b->done;
+
+    int buf_ptr = 0;
+    while (bytes > 0) {
+        if (0 < done && done < 2) {
+            if (done + bytes < 2) {
+                memmove(temp + done, rx_buf + buf_ptr, bytes);
+
+                done += bytes;
+                bytes = 0;
+
+                break;
+            } else {
+                memmove(temp + done, rx_buf + buf_ptr, (2 - done));
+
+                bytes -= (2 - done);
+                buf_ptr += (2 - done);
+
+                need = ntohs(((json_header *)temp)->len) - 2;
+                done = 2;
+            }
         }
 
-        char *in_str = zmq_msg_data(&in_msg);
-        in_str[zmq_ret] = '\0';
+        if (need == 0) {
+            json_header *jsonh = (json_header *)(rx_buf + buf_ptr);
 
-        msg_t msg = {0};
-        import_from_json(&msg.id, &msg.type, in_str, msg.data);
+            if (bytes < 2) {
+                memmove(temp, rx_buf + buf_ptr, bytes);
 
-        if (msg.id == 0) continue;
-        else if (msg.type > AV_NUM_EVENTS) continue;
+                need = 0;
+                done = bytes;
 
-        app_event_out_t out = {0};
+                bytes = 0;
+            } else {
+                uint16_t len = ntohs(jsonh->len);
 
-        out.id = msg.id;
-        out.type = msg.type;
-        out.data = msg.data;
+                if (bytes < len) {
+                    memmove(temp, rx_buf + buf_ptr, bytes);
 
-        const app_event_t *in = (const app_event_t *)&out;
+                    need = len - bytes;
+                    done = bytes;
 
-        switch (out.type) {
+                    bytes = 0;
+                } else if (len > 0) {
+                    char *in_str = jsonh->json;
 
-        // upstream events
+                    msg_t msg = {0};
+                    import_from_json(&msg.id, &msg.type, in_str, msg.data);
 
-        case AV_DP_RECEIVE_PACKET:
-            out.length = sizeof(pktin_t);
-            app.handler(in, &out);
-            break;
-        case AV_DP_FLOW_EXPIRED:
-        case AV_DP_FLOW_DELETED:
-            out.length = sizeof(flow_t);
-            break;
-        case AV_DP_PORT_ADDED:
-        case AV_DP_PORT_MODIFIED:
-        case AV_DP_PORT_DELETED:
-            out.length = sizeof(port_t);
-            app.handler(in, &out);
-            break;
+                    if (msg.id != 0 && msg.type < AV_NUM_EVENTS)
+                        process_app_events(&msg);
 
-        // internal events
+                    bytes -= len;
+                    buf_ptr += len;
 
-        case AV_SW_CONNECTED:
-        case AV_SW_DISCONNECTED:
-            out.length = sizeof(switch_t);
-            app.handler(in, &out);
-            break;
-        case AV_HOST_ADDED:
-        case AV_HOST_DELETED:
-            out.length = sizeof(host_t);
-            app.handler(in, &out);
-            break;
-        case AV_LINK_ADDED:
-        case AV_LINK_DELETED:
-            out.length = sizeof(port_t);
-            app.handler(in, &out);
-            break;
-        case AV_FLOW_ADDED:
-        case AV_FLOW_MODIFIED:
-        case AV_FLOW_DELETED:
-            out.length = sizeof(flow_t);
-            app.handler(in, &out);
-            break;
+                    need = 0;
+                    done = 0;
+                } else {
+                    return -1;
+                }
+            }
+        } else {
+            json_header *jsonh = (json_header *)temp;
 
-        default:
-            break;
+            if (need > bytes) {
+                memmove(temp + done, rx_buf + buf_ptr, bytes);
+
+                need -= bytes;
+                done += bytes;
+
+                bytes = 0;
+            } else if (jsonh->len > 0) {
+                memmove(temp + done, rx_buf + buf_ptr, need);
+
+                char *in_str = jsonh->json;
+
+                msg_t msg = {0};
+                import_from_json(&msg.id, &msg.type, in_str, msg.data);
+
+                if (msg.id != 0 && msg.type < AV_NUM_EVENTS)
+                    process_app_events(&msg);
+
+                bytes -= need;
+                buf_ptr += need;
+
+                need = 0;
+                done = 0;
+            } else {
+                return -1;
+            }
         }
-
-        zmq_msg_close(&in_msg);
     }
 
-    zmq_close(recv);
+    b->need = need;
+    b->done = done;
 
-    return NULL;
+    return bytes;
+}
+
+/////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Function to do something when the Barista NOS is connected
+ * \return None
+ */
+static int new_connection(int sock)
+{
+    return 0;
+}
+
+/**
+ * \brief Function to do something when the Barista NOS is disconnected
+ * \return None
+ */
+static int closed_connection(int sock)
+{
+    clean_buffer(sock);
+
+    return 0;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -510,23 +609,21 @@ int destroy_av_workers(ctx_t *null)
 
     waitsec(1, 0);
 
-    zmq_close(av_push_in_sock);
-    zmq_close(av_push_out_sock);
+    int i;
+    for (i=0; i<__NUM_PULL_THREADS; i++) {
+        pthread_spin_destroy(&av_push_lock[i]);
+        close(av_push_sock[i]);
+        av_push_sock[i] = 0;
+    }
 
-    zmq_close(av_pull_in_sock);
-    zmq_close(av_pull_out_sock);
+    destroy_epoll_env();
+    FREE(buffer);
 
     zmq_close(av_req_sock);
     zmq_close(av_rep_app);
     zmq_close(av_rep_work);
 
     waitsec(1, 0);
-
-    zmq_ctx_destroy(av_push_in_ctx);
-    zmq_ctx_destroy(av_push_out_ctx);
-
-    zmq_ctx_destroy(av_pull_in_ctx);
-    zmq_ctx_destroy(av_pull_out_ctx);
 
     zmq_ctx_destroy(av_req_ctx);
     zmq_ctx_destroy(av_rep_ctx);
@@ -542,63 +639,48 @@ int app_event_init(ctx_t *null)
 {
     av_worker_on = TRUE;
 
-    int timeout = 250;
-
     // Push (downstream)
 
-    av_push_in_ctx = zmq_ctx_new();
-    av_push_in_sock = zmq_socket(av_push_in_ctx, ZMQ_PULL);
+    char push_addr[__CONF_WORD_LEN];
+    int push_port;
 
-    zmq_setsockopt(av_push_in_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+    sscanf(EXT_APP_PULL_ADDR, "tcp://%[^:]:%d", push_addr, &push_port);
 
-    sprintf(av_push_in_addr, "inproc://%u", app.app_id);
+    struct sockaddr_in push;
+    memset(&push, 0, sizeof(push));
+    push.sin_family = AF_INET;
+    push.sin_addr.s_addr = inet_addr(push_addr);
+    push.sin_port = htons(push_port);
 
-    if (zmq_bind(av_push_in_sock, av_push_in_addr)) {
-        PERROR("zmq_bind");
-        return -1;
-    }
+    int i;
+    for (i=0; i<__NUM_PULL_THREADS; i++) {
+        if ((av_push_sock[i] = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
+            PERROR("socket");
+            return -1;
+        }
 
-    av_push_out_ctx = zmq_ctx_new();
-    av_push_out_sock = zmq_socket(av_push_out_ctx, ZMQ_PUSH);
+        if (connect(av_push_sock[i], (struct sockaddr *)&push, sizeof(push)) < 0) {
+            PERROR("connect");
+            return -1;
+        }
 
-    if (zmq_connect(av_push_out_sock, EXT_APP_PULL_ADDR)) {
-        PERROR("zmq_connect");
-        return -1;
+        pthread_spin_init(&av_push_lock[i], PTHREAD_PROCESS_PRIVATE);
     }
 
     // Pull (upstream, intstream)
 
-    av_pull_in_ctx = zmq_ctx_new();
-    av_pull_in_sock = zmq_socket(av_pull_in_ctx, ZMQ_PULL);
+    char pull_addr[__CONF_WORD_LEN];
+    int pull_port;
 
-    zmq_setsockopt(av_pull_in_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+    sscanf(TARGET_APP_PULL_ADDR, "tcp://%[^:]:%d", pull_addr, &pull_port);
 
-    if (zmq_bind(av_pull_in_sock, TARGET_APP_PULL_ADDR)) {
-        PERROR("zmq_bind");
-        return -1;
-    }
-
-    av_pull_out_ctx = zmq_ctx_new();
-    av_pull_out_sock = zmq_socket(av_pull_out_ctx, ZMQ_PUSH);
-
-    if (zmq_bind(av_pull_out_sock, "inproc://av_pull_workers")) {
-        PERROR("zmq_bind");
-        return -1;
-    }
+    init_buffers();
+    create_epoll_env(pull_addr, pull_port);
 
     pthread_t thread;
-    if (pthread_create(&thread, NULL, &receive_app_events, NULL) < 0) {
+    if (pthread_create(&thread, NULL, &socket_listen, NULL) < 0) {
         PERROR("pthread_create");
         return -1;
-    }
-
-    int i;
-    for (i=0; i<__NUM_PULL_THREADS; i++) {
-        pthread_t thread;
-        if (pthread_create(&thread, NULL, &deliver_app_events, NULL) < 0) {
-            PERROR("pthread_create");
-            return -1;
-        }
     }
 
     // Request (intsteam)
@@ -610,6 +692,7 @@ int app_event_init(ctx_t *null)
     av_rep_ctx = zmq_ctx_new();
     av_rep_app = zmq_socket(av_rep_ctx, ZMQ_ROUTER);
 
+    int timeout = 250;
     zmq_setsockopt(av_rep_app, ZMQ_RCVTIMEO, &timeout, sizeof(int));
 
     if (zmq_bind(av_rep_app, TARGET_APP_REPLY_ADDR)) {
@@ -627,7 +710,6 @@ int app_event_init(ctx_t *null)
     }
 
     for (i=0; i<__NUM_REP_THREADS; i++) {
-        pthread_t thread;
         if (pthread_create(&thread, NULL, &reply_app_events, NULL) < 0) {
             PERROR("pthread_create");
             return -1;

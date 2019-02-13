@@ -26,11 +26,11 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of hosts */
-int num_hosts;
-
 /** \brief Host tables */
 host_table_t *host_table;
+
+/** \brief The number of hosts */
+int num_hosts;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -77,14 +77,11 @@ static int clean_up_tmp_list(int idx, host_table_t *tmp_list, int remote)
             ev_host_deleted(HOST_MGMT_ID, &out);
         }
 
-        struct in_addr ip_addr;
-        ip_addr.s_addr = out.ip;
-
         uint8_t macaddr[6];
         int2mac(out.mac, macaddr);
 
         LOG_INFO(HOST_MGMT_ID, "Deleted a device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
-                 out.dpid, inet_ntoa(ip_addr),
+                 out.dpid, ip_addr_str(out.ip),
                  macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], out.port);
 
         host_enqueue(tmp);
@@ -113,31 +110,24 @@ static int check_host(host_table_t *list, uint32_t ip, uint64_t mac)
             return 1;
         } else if (curr->ip == ip && curr->mac != mac) {
             uint8_t orig[ETH_ALEN], in[ETH_ALEN];
-            struct in_addr orig_ip;
 
             int2mac(curr->mac, orig);
             int2mac(mac, in);
 
-            orig_ip.s_addr = curr->ip;
-
             LOG_WARN(HOST_MGMT_ID, "Wrong MAC address (IP: %s, original MAC: %02x:%02x:%02x:%02x:%02x:%02x, "
                                    "incoming MAC: %02x:%02x:%02x:%02x:%02x:%02x)",
-                                   inet_ntoa(orig_ip), orig[0], orig[1], orig[2], orig[3], orig[4], orig[5],
+                                   ip_addr_str(curr->ip), orig[0], orig[1], orig[2], orig[3], orig[4], orig[5],
                                    in[0], in[1], in[2], in[3], in[4], in[5]);
 
             return 2;
         } else if (curr->mac == mac && curr->ip != ip) {
             uint8_t m[ETH_ALEN];
-            struct in_addr orig, in;
 
             int2mac(curr->mac, m);
 
-            orig.s_addr = curr->ip;
-            in.s_addr = ip;
-
-            if (strcmp(inet_ntoa(orig), inet_ntoa(in)) != 0) {
+            if (strcmp(ip_addr_str(curr->ip), ip_addr_str(ip)) != 0) {
                 LOG_WARN(HOST_MGMT_ID, "Wrong IP address (MAC: %02x:%02x:%02x:%02x:%02x:%02x, original IP: %s, incoming IP: %s)", 
-                                       m[0], m[1], m[2], m[3], m[4], m[5], inet_ntoa(orig), inet_ntoa(in));
+                                       m[0], m[1], m[2], m[3], m[4], m[5], ip_addr_str(curr->ip), ip_addr_str(ip));
             } else {
                 curr->ip = ip;
             }
@@ -157,12 +147,6 @@ static int check_host(host_table_t *list, uint32_t ip, uint64_t mac)
  */
 static int add_new_host(const pktin_t *pktin)
 {
-    struct in_addr src_ip;
-    src_ip.s_addr = pktin->src_ip;
-
-    if (strncmp(inet_ntoa(src_ip), "169.254.", 8) == 0)
-        return -1;
-
     uint64_t mac = mac2int(pktin->src_mac);
     uint32_t mkey = hash_func((uint32_t *)&mac, 2) % __DEFAULT_TABLE_SIZE;
 
@@ -198,7 +182,7 @@ static int add_new_host(const pktin_t *pktin)
         ev_host_added(HOST_MGMT_ID, new);
 
         LOG_INFO(HOST_MGMT_ID, "Detected a new device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
-                 pktin->dpid, inet_ntoa(src_ip),
+                 pktin->dpid, ip_addr_str(pktin->src_ip),
                  pktin->src_mac[0], pktin->src_mac[1], pktin->src_mac[2], pktin->src_mac[3], pktin->src_mac[4], pktin->src_mac[5],
                  pktin->port);
     }
@@ -222,7 +206,7 @@ int host_mgmt_main(int *activated, int argc, char **argv)
 
     host_table = (host_table_t *)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(host_table_t));
     if (host_table == NULL) {
-        PERROR("calloc");
+        LOG_ERROR(HOST_MGMT_ID, "calloc() error");
         return -1;
     }
 
@@ -288,11 +272,8 @@ static int host_listup(cli_t *cli)
             uint8_t macaddr[ETH_ALEN];
             int2mac(curr->mac, macaddr);
 
-            struct in_addr ip_addr;
-            ip_addr.s_addr = curr->ip;
-
             cli_print(cli, "  Host #%d\n    DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u", 
-                      ++cnt, curr->dpid, inet_ntoa(ip_addr), 
+                      ++cnt, curr->dpid, ip_addr_str(curr->ip),
                       macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], curr->port);
         }
 
@@ -323,11 +304,8 @@ static int host_showup_switch(cli_t *cli, const char *dpid_str)
                 uint8_t mac[ETH_ALEN];
                 int2mac(curr->mac, mac);
 
-                struct in_addr ip_addr;
-                ip_addr.s_addr = curr->ip;
-
                 cli_print(cli, "  Host #%d\n    DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u",
-                          ++cnt, curr->dpid, inet_ntoa(ip_addr),
+                          ++cnt, curr->dpid, ip_addr_str(curr->ip),
                           mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], curr->port);
             }
         }
@@ -357,10 +335,7 @@ static int host_showup_ip(cli_t *cli, const char *ipaddr)
 
         host_t *curr = NULL;
         for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
-            struct in_addr ip_addr;
-            inet_aton(ipaddr, &ip_addr);
-
-            if (curr->ip == ip_addr.s_addr) {
+            if (curr->ip == ip_addr_int(ipaddr)) {
                 uint8_t macaddr[ETH_ALEN];
                 int2mac(curr->mac, macaddr);
 
@@ -400,12 +375,8 @@ static int host_showup_mac(cli_t *cli, const char *macaddr)
         host_t *curr = NULL;
         for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
             if (curr->mac == macval) {
-                struct in_addr ip_addr;
-                ip_addr.s_addr = curr->ip;
-
-                cli_print(cli, "  Host #%d\n    DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u",
-                          ++cnt, curr->dpid, inet_ntoa(ip_addr),
-                          mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], curr->port);
+                cli_print(cli, "  Host #%d\n    DPID: %lu, IP: %s, Mac: %s, Port: %u",
+                          ++cnt, curr->dpid, ip_addr_str(curr->ip), macaddr, curr->port);
             }
         }
 
@@ -425,11 +396,9 @@ static int host_showup_mac(cli_t *cli, const char *macaddr)
  */
 int host_mgmt_cli(cli_t *cli, char **args)
 {
-    if (args[0] != NULL && strcmp(args[0], "list") == 0) {
-        if (args[1] != NULL && strcmp(args[1], "hosts") == 0 && args[2] == NULL) {
-            host_listup(cli);
-            return 0;
-        }
+    if (args[0] != NULL && strcmp(args[0], "list") == 0 && args[1] != NULL && strcmp(args[1], "hosts") == 0 && args[2] == NULL) {
+        host_listup(cli);
+        return 0;
     } else if (args[0] != NULL && strcmp(args[0], "show") == 0) {
         if (args[1] != NULL && strcmp(args[1], "switch") == 0 && args[2] != NULL && args[3] == NULL) {
             host_showup_switch(cli, args[2]);
@@ -650,14 +619,11 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
                 pthread_rwlock_unlock(&host_table[mkey].lock);
 
-                struct in_addr ip_addr;
-                ip_addr.s_addr = new->ip;
-
                 uint8_t macaddr[ETH_ALEN];
                 int2mac(new->mac, macaddr);
 
                 LOG_INFO(HOST_MGMT_ID, "Detected a new device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
-                         new->dpid, inet_ntoa(ip_addr),
+                         new->dpid, ip_addr_str(new->ip),
                          macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], new->port);
             }
         }

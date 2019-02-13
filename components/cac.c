@@ -39,11 +39,11 @@ typedef struct _component_t {
     int out_list[__MAX_EVENTS]; /**< The list of outbound events */
 } component_t;
 
-/** \brief The number of components */
-int num_components;
-
 /** \brief Component list */
 component_t *component;
+
+/** \brief The number of components */
+int num_components;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -90,15 +90,15 @@ static int config_load(char *conf_file)
 
     json = json_loads(conf, 0, &error);
     if (!json) {
-        PERROR("json_loads");
+        LOG_ERROR(CAC_ID, "json_loads() error");
         return -1;
     } else if (!json_is_array(json)) {
-        PERROR("json_is_array");
+        LOG_ERROR(CAC_ID, "json_is_array() error");
         json_decref(json);
         return -1;
     }
 
-    int i;
+    int i, j, k;
     for (i=0; i<json_array_size(json); i++) {
         json_t *data = json_array_get(json, i);
 
@@ -121,12 +121,11 @@ static int config_load(char *conf_file)
         // set inbound events
         json_t *events = json_object_get(data, "inbounds");
         if (json_is_array(events)) {
-            int j;
             for (j=0; j<json_array_size(events); j++) {
                 json_t *event = json_array_get(events, j);
 
                 if (ev_type(json_string_value(event)) == EV_NUM_EVENTS) {
-                    LOG_ERROR(CAC_ID, "Wrong event name");
+                    LOG_ERROR(CAC_ID, "Wrong event name: %s", json_string_value(event));
                     json_decref(json);
                     return -1;
                 }
@@ -138,25 +137,21 @@ static int config_load(char *conf_file)
                 if (ev_type(json_string_value(event)) == EV_NONE) {
                     break;
                 } else if (ev_type(json_string_value(event)) == EV_ALL_UPSTREAM) {
-                    int k;
                     for (k=EV_NONE+1; k<EV_ALL_UPSTREAM; k++) {
                         component[num_components].in_list[component[num_components].in_num] = k;
                         component[num_components].in_num++;
                     }
                 } else if (ev_type(json_string_value(event)) == EV_ALL_DOWNSTREAM) {
-                    int k;
                     for (k=EV_ALL_UPSTREAM+1; k<EV_ALL_DOWNSTREAM; k++) {
                         component[num_components].in_list[component[num_components].in_num] = k;
                         component[num_components].in_num++;
                     }
                 } else if (ev_type(json_string_value(event)) == EV_WRT_INTSTREAM) {
-                    int k;
                     for (k=EV_ALL_DOWNSTREAM+1; k<EV_WRT_INTSTREAM; k++) {
                         component[num_components].in_list[component[num_components].in_num] = k;
                         component[num_components].in_num++;
                     }
                 } else if (ev_type(json_string_value(event)) == EV_ALL_INTSTREAM) {
-                    int k;
                     for (k=EV_WRT_INTSTREAM+1; k<EV_ALL_INTSTREAM; k++) {
                         component[num_components].in_list[component[num_components].in_num] = k;
                         component[num_components].in_num++;
@@ -171,12 +166,11 @@ static int config_load(char *conf_file)
         // set outbound events
         json_t *out_events = json_object_get(data, "outbounds");
         if (json_is_array(out_events)) {
-            int j;
             for (j=0; j<json_array_size(out_events); j++) {
                 json_t *out_event = json_array_get(out_events, j);
 
                 if (ev_type(json_string_value(out_event)) == EV_NUM_EVENTS) {
-                    LOG_ERROR(CAC_ID, "Wrong event name");
+                    LOG_ERROR(CAC_ID, "Wrong event name: %s", json_string_value(out_event));
                     json_decref(json);
                     return -1;
                 }
@@ -235,7 +229,7 @@ int cac_main(int *activated, int argc, char **argv)
 
     component = (component_t *)CALLOC(__MAX_COMPONENTS, sizeof(component_t));
     if (component == NULL) {
-        PERROR("calloc");
+        LOG_ERROR(CAC_ID, "calloc() error");
         return -1;
     }
 

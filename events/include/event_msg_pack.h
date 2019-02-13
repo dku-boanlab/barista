@@ -21,6 +21,10 @@
 
 /////////////////////////////////////////////////////////////////////
 
+#include "event_epoll_env.h"
+
+/////////////////////////////////////////////////////////////////////
+
 /**
  * \brief Function to clean up a ZMQ message
  * \param data ZMQ message
@@ -29,51 +33,6 @@
 static void mq_free(void *data, void *hint)
 {
     free(data);
-}
-
-/**
- * \brief Function to push events to external components
- * \param config Component configuration
- */
-static void *push_events(void *config)
-{
-    compnt_t *compnt = (compnt_t *)config;
-
-    compnt->activated = TRUE;
-
-    while (compnt->activated) {
-        zmq_msg_t in_msg;
-        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
-        int zmq_ret = zmq_msg_recv(&in_msg, compnt->push_in_sock, 0);
-
-        if (!compnt->activated) {
-            zmq_msg_close(&in_msg);
-            break;
-        } else if (zmq_ret == -1) {
-            zmq_msg_close(&in_msg);
-
-            if (errno == EAGAIN) {
-                continue;
-            } else {
-                break;
-            }
-        }
-
-        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
-        memcpy(out_str, zmq_msg_data(&in_msg), zmq_msg_size(&in_msg));
-
-        zmq_msg_t out_msg;
-        zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
-
-        zmq_msg_send(&out_msg, compnt->push_out_sock, 0);
-
-        zmq_msg_close(&in_msg);
-    }
-
-    zmq_close(compnt->push_in_sock);
-    zmq_close(compnt->push_out_sock);
-
-    return NULL;
 }
 
 /**
@@ -117,28 +76,33 @@ static int activate_external_component(char *in_str)
                     waitsec(1, 0);
                 }
 
-                compnt->push_in_sock = zmq_socket(compnt->push_in_ctx, ZMQ_PULL);
+                char push_addr[__CONF_WORD_LEN];
+                int push_port;
 
-                int timeout = 250;
-                zmq_setsockopt(compnt->push_in_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+                sscanf(compnt->pull_addr, "tcp://%[^:]:%d", push_addr, &push_port);
 
-                if (zmq_bind(compnt->push_in_sock, compnt->pull_in_addr)) {
-                    PERROR("zmq_bind");
-                    return -1;
+                struct sockaddr_in push;
+                memset(&push, 0, sizeof(push));
+                push.sin_family = AF_INET;
+                push.sin_addr.s_addr = inet_addr(push_addr);
+                push.sin_port = htons(push_port);
+
+                int j;
+                for (j=0; j<__NUM_PULL_THREADS; j++) {
+                    if ((compnt->push_sock[j] = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
+                        compnt->activated = FALSE;
+                        PERROR("socket");
+                        return -1;
+                    }
+
+                    if (connect(compnt->push_sock[j], (struct sockaddr *)&push, sizeof(push)) < 0) {
+                        compnt->activated = FALSE;
+                        PERROR("connect");
+                        return -1;
+                    }
                 }
 
-                compnt->push_out_sock = zmq_socket(compnt->push_out_ctx, ZMQ_PUSH);
-                if (zmq_connect(compnt->push_out_ctx, compnt->pull_addr)) {
-                    PERROR("zmq_connect");
-                    return -1;
-                }
-
-                pthread_t thread;
-                if (pthread_create(&thread, NULL, &push_events, compnt) < 0) {
-                    compnt->activated = FALSE;
-                    PERROR("pthread_create");
-                    return -1;
-                }
+                compnt->activated = TRUE;
 
                 json_decref(json);
                 return 0;
@@ -156,6 +120,12 @@ static int activate_external_component(char *in_str)
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief The header of a JSON message */
+typedef struct _json_header {
+    uint16_t len;
+    char json[__MAX_EXT_MSG_SIZE];
+} __attribute__((packed)) json_header;
+
 /**
  * \brief Function to send events to an external component
  * \param c Component context
@@ -168,23 +138,35 @@ static int ev_push_ext_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t siz
 {
     if (!c->activated) return -1;
 
-    char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
-    export_to_json(id, type, input, out_str);
+    json_header jsonh = {0};
 
-    zmq_msg_t out_msg;
-    zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
+    export_to_json(id, type, input, jsonh.json);
+    jsonh.len = strlen(jsonh.json) + 2 + 1; // json_len + length variable + NULL
 
-    void *sock = zmq_socket(c->push_in_ctx, ZMQ_PUSH);
-    if (zmq_connect(sock, c->pull_in_addr)) {
-        return -1;
-    } else {
-        if (zmq_msg_send(&out_msg, sock, 0) < 0) {
-            zmq_close(sock);
-            return -1;
+    int remain = jsonh.len;
+    int bytes = 0;
+    int done = 0;
+
+    jsonh.len = htons(jsonh.len);
+
+    uint32_t ptr = (c->push_ptr++) % __NUM_PULL_THREADS;
+
+    pthread_spin_lock(&c->push_lock[ptr]);
+
+    while (remain > 0) {
+        bytes = write(c->push_sock[ptr], (uint8_t *)&jsonh + done, remain);
+        if (bytes < 0 && errno != EAGAIN) {
+            c->activated = FALSE;
+            break;
+        } else if (bytes < 0) {
+            continue;
         }
 
-        zmq_close(sock);
+        remain -= bytes;
+        done += bytes;
     }
+
+    pthread_spin_unlock(&c->push_lock[ptr]);
 
     return 0;
 }
@@ -484,78 +466,173 @@ static void *reply_proxy(void *null)
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief The structure to keep the remaining part of a message */
+typedef struct _buffer_t {
+    int need; /**< The bytes that it needs to read */
+    int done; /**< The bytes that it has */
+
+    uint8_t temp[__MAX_EXT_MSG_SIZE]; /**< Temporary data */
+} buffer_t;
+
+/** \brief Buffers for all possible sockets */
+buffer_t *buffer;
+
 /**
- * \brief Function to receive events from external components
- * \param null NULL
+ * \brief Function to initialize all buffers
+ * \return None
  */
-static void *receive_events(void *null)
+static void init_buffers(void)
 {
-    while (ev_ctx->ev_on) {
-        zmq_msg_t in_msg;
-        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
-        int zmq_ret = zmq_msg_recv(&in_msg, ev_pull_in_sock, 0);
-
-        if (!ev_ctx->ev_on) {
-            zmq_msg_close(&in_msg);
-            break;
-        } else if (zmq_ret == -1) {
-            zmq_msg_close(&in_msg);
-            continue;
-        }
-
-        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
-        memcpy(out_str, zmq_msg_data(&in_msg), zmq_msg_size(&in_msg));
-
-        zmq_msg_t out_msg;
-        zmq_msg_init_data(&out_msg, out_str, strlen(out_str), mq_free, NULL);
-
-        zmq_msg_send(&out_msg, ev_pull_out_sock, 0);
-
-        zmq_msg_close(&in_msg);
+    buffer = (buffer_t *)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(buffer_t));
+    if (buffer == NULL) {
+        PERROR("calloc");
+        return;
     }
-
-    return NULL;
 }
 
 /**
- * \brief Function to get events from an event queue
- * \param null NULL
+ * \brief Function to clean up a buffer
+ * \param sock Network socket
  */
-static void *deliver_events(void *null)
+static void clean_buffer(int sock)
 {
-    void *recv = zmq_socket(ev_pull_out_ctx, ZMQ_PULL);
-    zmq_connect(recv, "inproc://ev_pull_workers");
+    if (buffer)
+        memset(&buffer[sock], 0, sizeof(buffer_t));
+}
 
-    while (ev_ctx->ev_on) {
-        zmq_msg_t in_msg;
-        zmq_msg_init_size(&in_msg, __MAX_EXT_MSG_SIZE);
-        int zmq_ret = zmq_msg_recv(&in_msg, recv, 0);
+/////////////////////////////////////////////////////////////////////
 
-        if (!ev_ctx->ev_on) {
-            zmq_msg_close(&in_msg);
-            break;
-        } else if (zmq_ret == -1) {
-            zmq_msg_close(&in_msg);
-            continue;
+/**
+ * \brief Function to handle incoming messages from external components
+ * \param sock Network socket
+ * \param rx_buf Input buffer
+ * \param bytes The size of the input buffer
+ */
+static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
+{
+    // json_header = length (2) + json (__MAX_EXT_MSG_SIZE)
+
+    buffer_t *b = &buffer[sock];
+
+    uint8_t *temp = b->temp;
+    int need = b->need;
+    int done = b->done;
+
+    int buf_ptr = 0;
+    while (bytes > 0) {
+        if (0 < done && done < 2) {
+            if (done + bytes < 2) {
+                memmove(temp + done, rx_buf + buf_ptr, bytes);
+
+                done += bytes;
+                bytes = 0;
+
+                break;
+            } else {
+                memmove(temp + done, rx_buf + buf_ptr, (2 - done));
+
+                bytes -= (2 - done);
+                buf_ptr += (2 - done);
+
+                need = ntohs(((json_header *)temp)->len) - 2;
+                done = 2;
+            }
         }
 
-        char *out_str = CALLOC(__MAX_EXT_MSG_SIZE, sizeof(char));
-        memcpy(out_str, zmq_msg_data(&in_msg), zmq_msg_size(&in_msg));
+        if (need == 0) {
+            json_header *jsonh = (json_header *)(rx_buf + buf_ptr);
 
-        msg_t msg = {0};
-        import_from_json(&msg.id, &msg.type, out_str, msg.data);
+            if (bytes < 2) {
+                memmove(temp, rx_buf + buf_ptr, bytes);
 
-        if (msg.id == 0) continue;
-        else if (msg.type > EV_NUM_EVENTS) continue;
+                need = 0;
+                done = bytes;
 
-        process_events(&msg);
+                bytes = 0;
+            } else {
+                uint16_t len = ntohs(jsonh->len);
 
-        zmq_msg_close(&in_msg);
+                if (bytes < len) {
+                    memmove(temp, rx_buf + buf_ptr, bytes);
+
+                    need = len - bytes;
+                    done = bytes;
+
+                    bytes = 0;
+                } else if (len > 0) {
+                    char *in_str = jsonh->json;
+
+                    msg_t msg = {0};
+                    import_from_json(&msg.id, &msg.type, in_str, msg.data);
+
+                    if (msg.id != 0 && msg.type < EV_NUM_EVENTS)
+                        process_events(&msg);
+
+                    bytes -= len;
+                    buf_ptr += len;
+
+                    need = 0;
+                    done = 0;
+                } else {
+                    return -1;
+                }
+            }
+        } else {
+            json_header *jsonh = (json_header *)temp;
+
+            if (need > bytes) {
+                memmove(temp + done, rx_buf + buf_ptr, bytes);
+
+                need -= bytes;
+                done += bytes;
+
+                bytes = 0;
+            } else if (jsonh->len > 0) {
+                memmove(temp + done, rx_buf + buf_ptr, need);
+
+                char *in_str = jsonh->json;
+
+                msg_t msg = {0};
+                import_from_json(&msg.id, &msg.type, in_str, msg.data);
+
+                if (msg.id != 0 && msg.type < EV_NUM_EVENTS)
+                    process_events(&msg);
+
+                bytes -= need;
+                buf_ptr += need;
+
+                need = 0;
+                done = 0;
+            }
+        }
     }
 
-    zmq_close(recv);
+    b->need = need;
+    b->done = done;
 
-    return NULL;
+    return bytes;
+}
+
+/////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Function to do something when a new component is connected
+ * \return None
+ */
+static int new_connection(int sock)
+{
+    return 0;
+}
+
+/**
+ * \brief Function to do something when a component is disconnected
+ * \return None
+ */
+static int closed_connection(int sock)
+{
+    clean_buffer(sock);
+
+    return 0;
 }
 
 /**
