@@ -76,29 +76,52 @@ static int activate_external_component(char *in_str)
                     waitsec(1, 0);
                 }
 
+                char push_type[__CONF_WORD_LEN];
                 char push_addr[__CONF_WORD_LEN];
                 int push_port;
 
-                sscanf(compnt->pull_addr, "tcp://%[^:]:%d", push_addr, &push_port);
+                sscanf(compnt->pull_addr, "%[^:]://%[^:]:%d", push_type, push_addr, &push_port);
 
-                struct sockaddr_in push;
-                memset(&push, 0, sizeof(push));
-                push.sin_family = AF_INET;
-                push.sin_addr.s_addr = inet_addr(push_addr);
-                push.sin_port = htons(push_port);
+                if (strcmp(push_type, "tcp") == 0) {
+                    struct sockaddr_in push;
+                    memset(&push, 0, sizeof(push));
+                    push.sin_family = AF_INET;
+                    push.sin_addr.s_addr = inet_addr(push_addr);
+                    push.sin_port = htons(push_port);
 
-                int j;
-                for (j=0; j<__NUM_PULL_THREADS; j++) {
-                    if ((compnt->push_sock[j] = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
-                        compnt->activated = FALSE;
-                        PERROR("socket");
-                        return -1;
+                    int j;
+                    for (j=0; j<__NUM_PULL_THREADS; j++) {
+                        if ((compnt->push_sock[j] = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
+                            compnt->activated = FALSE;
+                            PERROR("socket");
+                            return -1;
+                        }
+
+                        if (connect(compnt->push_sock[j], (struct sockaddr *)&push, sizeof(push)) < 0) {
+                            compnt->activated = FALSE;
+                            PERROR("connect");
+                            return -1;
+                        }
                     }
+                } else { // ipc
+                    struct sockaddr_un push;
+                    memset(&push, 0, sizeof(push));
+                    push.sun_family = AF_UNIX;
+                    strcpy(push.sun_path, push_addr);
 
-                    if (connect(compnt->push_sock[j], (struct sockaddr *)&push, sizeof(push)) < 0) {
-                        compnt->activated = FALSE;
-                        PERROR("connect");
-                        return -1;
+                    int j;
+                    for (j=0; j<__NUM_PULL_THREADS; j++) {
+                        if ((compnt->push_sock[j] = socket(PF_UNIX, SOCK_STREAM, 0)) < 0) {
+                            compnt->activated = FALSE;
+                            PERROR("socket");
+                            return -1;
+                        }
+
+                        if (connect(compnt->push_sock[j], (struct sockaddr *)&push, sizeof(push)) < 0) {
+                            compnt->activated = FALSE;
+                            PERROR("connect");
+                            return -1;
+                        }
                     }
                 }
 

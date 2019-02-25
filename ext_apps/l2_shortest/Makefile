@@ -11,9 +11,9 @@ BIN_DIR = ../../bin
 
 CPPFLAGS = $(addprefix -I,$(shell find $(SRC_DIR) -type d))
 
-#CFLAGS   = -O2 -Wall -std=gnu99 -D__DISABLE_CLI
-CFLAGS   = -g -ggdb -Wall -std=gnu99 -D__DISABLE_CLI
-LDFLAGS  = -lpthread -ljansson -lzmq
+CFLAGS   = -O2 -Wall -std=gnu99 -D__DISABLE_CLI
+#CFLAGS   = -g -ggdb -Wall -std=gnu99 -D__DISABLE_CLI
+LDFLAGS  = -lpthread -ljansson -lzmq -lsqlite3
 
 include $(CONFIG_MK)
 CFLAGS += $(addprefix -D, $(CONFIG))

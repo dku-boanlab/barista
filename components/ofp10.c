@@ -1351,56 +1351,56 @@ int ofp10_handler(const event_t *ev, event_out_t *ev_out)
         PRINT_EV("EV_OFP_MSG_IN\n");
         {
             const raw_msg_t *msg = ev->raw_msg;
-            return ofp10_engine(msg);
+            ofp10_engine(msg);
         }
         break;
     case EV_DP_SEND_PACKET:
         PRINT_EV("EV_DP_SEND_PACKET\n");
         {
             const pktout_t *pktout = ev->pktout;
-            return ofp10_packet_out(pktout);
+            ofp10_packet_out(pktout);
         }
         break;
     case EV_DP_INSERT_FLOW:
         PRINT_EV("EV_DP_INSERT_FLOW\n");
         {
             const flow_t *flow = ev->flow;
-            return ofp10_flow_mod(flow, FLOW_ADD);
+            ofp10_flow_mod(flow, FLOW_ADD);
         }
         break;
     case EV_DP_MODIFY_FLOW:
         PRINT_EV("EV_DP_MODIFY_FLOW\n");
         {
             const flow_t *flow = ev->flow;
-            return ofp10_flow_mod(flow, FLOW_MODIFY);
+            ofp10_flow_mod(flow, FLOW_MODIFY);
         }
         break;
     case EV_DP_DELETE_FLOW:
         PRINT_EV("EV_DP_DELETE_FLOW\n");
         {
             const flow_t *flow = ev->flow;
-            return ofp10_flow_mod(flow, FLOW_DELETE);
+            ofp10_flow_mod(flow, FLOW_DELETE);
         }
         break;
     case EV_DP_REQUEST_FLOW_STATS:
         PRINT_EV("EV_DP_REQUEST_FLOW_STATS\n");
         {
             const flow_t *flow = ev->flow;
-            return ofp10_flow_stats(flow);
+            ofp10_flow_stats(flow);
         }
         break;
     case EV_DP_REQUEST_AGGREGATE_STATS:
         PRINT_EV("EV_DP_REQUEST_AGGREGATE_STATS\n");
         {
             const flow_t *flow = ev->flow;
-            return ofp10_aggregate_stats(flow);
+            ofp10_aggregate_stats(flow);
         }
         break;
     case EV_DP_REQUEST_PORT_STATS:
         PRINT_EV("EV_DP_REQUEST_PORT_STATS\n");
         {
             const port_t *port = ev->port;
-            return ofp10_port_stats(port);
+            ofp10_port_stats(port);
         }
         break;
     default:

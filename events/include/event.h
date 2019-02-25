@@ -66,3 +66,4 @@ int destroy_ev_workers(ctx_t *ctx);
 
 /** \brief The cluster ID updated by cluster */
 int cluster_id;
+

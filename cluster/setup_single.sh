@@ -19,3 +19,4 @@ echo
 mysql -u root -p$root_pw < schemes/schemes.sql
 
 echo "Single setting is done"
+

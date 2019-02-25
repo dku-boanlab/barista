@@ -12,3 +12,5 @@
 #include "common.h"
 #include "app_event.h"
 #include "hash.h"
+#include <sqlite3.h>
+

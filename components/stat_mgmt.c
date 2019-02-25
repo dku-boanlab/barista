@@ -121,7 +121,6 @@ int stat_mgmt_cleanup(int *activated)
     deactivate();
 
     pthread_rwlock_destroy(&stat_lock);
-
     FREE(switch_list);
 
     return 0;

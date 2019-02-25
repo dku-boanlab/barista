@@ -29,11 +29,20 @@ int ev_worker_on;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief MQ contexts to request and reply events */
-void *ev_req_ctx, *ev_rep_ctx;
+/** \brief MQ contexts to request events */
+void *ev_req_ctx;
 
-/** \brief MQ sockets to request and reply events */
-void *ev_req_sock, *ev_rep_comp, *ev_rep_work;
+/** \brief MQ contexts to reply events */
+void *ev_rep_ctx;
+
+/** \brief MQ sockets to request events */
+void *ev_req_sock;
+
+/** \brief MQ sockets to reply events (component-side) */
+void *ev_rep_comp;
+
+/** \brief MQ sockets to reply events (worker-side)  */
+void *ev_rep_work;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -640,7 +649,6 @@ static int process_events(msg_t *msg)
 typedef struct _buffer_t {
     int need; /**< The bytes that it needs to read */
     int done; /**< The bytes that it has */
-
     uint8_t temp[__MAX_EXT_MSG_SIZE]; /**< Temporary data */
 } buffer_t;
 
@@ -849,41 +857,65 @@ int event_init(ctx_t *null)
 
     // Push (downstream)
 
+    char push_type[__CONF_WORD_LEN];
     char push_addr[__CONF_WORD_LEN];
     int push_port;
 
-    sscanf(EXT_COMP_PULL_ADDR, "tcp://%[^:]:%d", push_addr, &push_port);
+    sscanf(EXT_COMP_PULL_ADDR, "%[^:]://%[^:]:%d", push_type, push_addr, &push_port);
 
-    struct sockaddr_in push;
-    memset(&push, 0, sizeof(push));
-    push.sin_family = AF_INET;
-    push.sin_addr.s_addr = inet_addr(push_addr);
-    push.sin_port = htons(push_port);
+    if (strcmp(push_type, "tcp") == 0) {
+        struct sockaddr_in push;
+        memset(&push, 0, sizeof(push));
+        push.sin_family = AF_INET;
+        push.sin_addr.s_addr = inet_addr(push_addr);
+        push.sin_port = htons(push_port);
 
-    int i;
-    for (i=0; i<__NUM_PULL_THREADS; i++) {
-        if ((ev_push_sock[i] = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
-            PERROR("socket");
-            return -1;
+        int i;
+        for (i=0; i<__NUM_PULL_THREADS; i++) {
+            if ((ev_push_sock[i] = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
+                PERROR("socket");
+                return -1;
+            }
+
+            if (connect(ev_push_sock[i], (struct sockaddr *)&push, sizeof(push)) < 0) {
+                PERROR("connect");
+                return -1;
+            }
+
+            pthread_spin_init(&ev_push_lock[i], PTHREAD_PROCESS_PRIVATE);
         }
+    } else { // ipc
+        struct sockaddr_un push;
+        memset(&push, 0, sizeof(push));
+        push.sun_family = AF_UNIX;
+        strcpy(push.sun_path, push_addr);
 
-        if (connect(ev_push_sock[i], (struct sockaddr *)&push, sizeof(push)) < 0) {
-            PERROR("connect");
-            return -1;
+        int i;
+        for (i=0; i<__NUM_PULL_THREADS; i++) {
+            if ((ev_push_sock[i] = socket(PF_UNIX, SOCK_STREAM, 0)) < 0) {
+                PERROR("socket");
+                return -1;
+            }
+
+            if (connect(ev_push_sock[i], (struct sockaddr *)&push, sizeof(push)) < 0) {
+                PERROR("connect");
+                return -1;
+            }
+
+            pthread_spin_init(&ev_push_lock[i], PTHREAD_PROCESS_PRIVATE);
         }
-
-        pthread_spin_init(&ev_push_lock[i], PTHREAD_PROCESS_PRIVATE);
     }
 
     // Pull (upstream, intstream)
 
+    char pull_type[__CONF_WORD_LEN];
     char pull_addr[__CONF_WORD_LEN];
     int pull_port;
 
-    sscanf(TARGET_COMP_PULL_ADDR, "tcp://%[^:]:%d", pull_addr, &pull_port);
+    sscanf(TARGET_COMP_PULL_ADDR, "%[^:]://%[^:]:%d", pull_type, pull_addr, &pull_port);
 
     init_buffers();
-    create_epoll_env(pull_addr, pull_port);
+    create_epoll_env(pull_type, pull_addr, pull_port);
 
     pthread_t thread;
     if (pthread_create(&thread, NULL, &socket_listen, NULL) < 0) {
@@ -917,6 +949,7 @@ int event_init(ctx_t *null)
         return -1;
     }
 
+    int i;
     for (i=0; i<__NUM_REP_THREADS; i++) {
         pthread_t thread;
         if (pthread_create(&thread, NULL, &reply_events, NULL) < 0) {

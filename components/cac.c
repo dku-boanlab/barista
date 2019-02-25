@@ -49,7 +49,7 @@ int num_components;
 
 /** \brief The event list to convert an event string to an event ID */
 const char ev_str[EV_NUM_EVENTS+1][__CONF_WORD_LEN] = {
-#include "event_string.h"
+    #include "event_string.h"
 };
 
 /**
@@ -288,6 +288,7 @@ int cac_handler(const event_t *ev, event_out_t *ev_out)
                 break;
             }
         }
+
         return -1;
     }
 

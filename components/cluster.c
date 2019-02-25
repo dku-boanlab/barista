@@ -36,8 +36,6 @@ char ctrl_ip[__CONF_SHORT_LEN];
 /** \brief The batch size of queries */
 #define BATCH_SIZE 1024
 
-/////////////////////////////////////////////////////////////////////
-
 /** \brief The waiting queue for queries */
 char query[BATCH_SIZE][__CONF_LSTR_LEN];
 

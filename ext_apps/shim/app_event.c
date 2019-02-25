@@ -21,7 +21,7 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The configuration of an external application */
+/** \brief The context of an external application */
 extern app_t app;
 
 /** \brief The running flag for external app event workers */
@@ -29,11 +29,20 @@ int av_worker_on;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief MQ contexts to request and reply app events */
-void *av_req_ctx, *av_rep_ctx;
+/** \brief MQ context to request app events */
+void *av_req_ctx;
 
-/** \brief MQ sockets to request and reply app events */
-void *av_req_sock, *av_rep_app, *av_rep_work;
+/** \brief MQ context to reply app events */
+void *av_rep_ctx;
+
+/** \brief MQ socket to request app events */
+void *av_req_sock;
+
+/** \brief MQ socket to reply app events (application-side) */
+void *av_rep_app;
+
+/** \brief MQ socket to reply app events (worker-side) */
+void *av_rep_work;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -432,7 +441,6 @@ static int process_app_events(msg_t *msg)
 typedef struct _buffer_t {
     int need; /**< The bytes that it needs to read */
     int done; /**< The bytes that it has */
-
     uint8_t temp[__MAX_EXT_MSG_SIZE]; /**< Temporary data */
 } buffer_t;
 
@@ -641,41 +649,65 @@ int app_event_init(ctx_t *null)
 
     // Push (downstream)
 
+    char push_type[__CONF_WORD_LEN];
     char push_addr[__CONF_WORD_LEN];
     int push_port;
 
-    sscanf(EXT_APP_PULL_ADDR, "tcp://%[^:]:%d", push_addr, &push_port);
+    sscanf(EXT_APP_PULL_ADDR, "%[^:]://%[^:]:%d", push_type, push_addr, &push_port);
 
-    struct sockaddr_in push;
-    memset(&push, 0, sizeof(push));
-    push.sin_family = AF_INET;
-    push.sin_addr.s_addr = inet_addr(push_addr);
-    push.sin_port = htons(push_port);
+    if (strcmp(push_type, "tcp") == 0) {
+        struct sockaddr_in push;
+        memset(&push, 0, sizeof(push));
+        push.sin_family = AF_INET;
+        push.sin_addr.s_addr = inet_addr(push_addr);
+        push.sin_port = htons(push_port);
 
-    int i;
-    for (i=0; i<__NUM_PULL_THREADS; i++) {
-        if ((av_push_sock[i] = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
-            PERROR("socket");
-            return -1;
+        int i;
+        for (i=0; i<__NUM_PULL_THREADS; i++) {
+            if ((av_push_sock[i] = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
+                PERROR("socket");
+                return -1;
+            }
+
+            if (connect(av_push_sock[i], (struct sockaddr *)&push, sizeof(push)) < 0) {
+                PERROR("connect");
+                return -1;
+            }
+
+            pthread_spin_init(&av_push_lock[i], PTHREAD_PROCESS_PRIVATE);
         }
+    } else { // ipc
+        struct sockaddr_un push;
+        memset(&push, 0, sizeof(push));
+        push.sun_family = AF_UNIX;
+        strcpy(push.sun_path, push_addr);
 
-        if (connect(av_push_sock[i], (struct sockaddr *)&push, sizeof(push)) < 0) {
-            PERROR("connect");
-            return -1;
+        int i;
+        for (i=0; i<__NUM_PULL_THREADS; i++) {
+            if ((av_push_sock[i] = socket(PF_UNIX, SOCK_STREAM, 0)) < 0) {
+                PERROR("socket");
+                return -1;
+            }
+
+            if (connect(av_push_sock[i], (struct sockaddr *)&push, sizeof(push)) < 0) {
+                PERROR("connect");
+                return -1;
+            }
+
+            pthread_spin_init(&av_push_lock[i], PTHREAD_PROCESS_PRIVATE);
         }
-
-        pthread_spin_init(&av_push_lock[i], PTHREAD_PROCESS_PRIVATE);
     }
 
     // Pull (upstream, intstream)
 
+    char pull_type[__CONF_WORD_LEN];
     char pull_addr[__CONF_WORD_LEN];
     int pull_port;
 
-    sscanf(TARGET_APP_PULL_ADDR, "tcp://%[^:]:%d", pull_addr, &pull_port);
+    sscanf(TARGET_APP_PULL_ADDR, "%[^:]://%[^:]:%d", pull_type, pull_addr, &pull_port);
 
     init_buffers();
-    create_epoll_env(pull_addr, pull_port);
+    create_epoll_env(pull_type, pull_addr, pull_port);
 
     pthread_t thread;
     if (pthread_create(&thread, NULL, &socket_listen, NULL) < 0) {
@@ -709,6 +741,7 @@ int app_event_init(ctx_t *null)
         return -1;
     }
 
+    int i;
     for (i=0; i<__NUM_REP_THREADS; i++) {
         if (pthread_create(&thread, NULL, &reply_app_events, NULL) < 0) {
             PERROR("pthread_create");

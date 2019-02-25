@@ -32,8 +32,7 @@ enum {
 /** \brief The site of an application */
 enum {
     APP_INTERNAL,
-    APP_EXTERNAL_RAW,
-    APP_EXTERNAL_JSON,
+    APP_EXTERNAL,
 };
 
 /** \brief The status of an application */
@@ -126,3 +125,4 @@ int application_show_policy(cli_t *, char *);
 int application_show(cli_t *, char *);
 int application_list(cli_t *);
 int application_cli(cli_t *, char **);
+

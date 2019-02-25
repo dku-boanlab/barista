@@ -32,8 +32,7 @@ enum {
 /** \brief The site of a component */
 enum {
     COMPNT_INTERNAL,
-    COMPNT_EXTERNAL_RAW,
-    COMPNT_EXTERNAL_JSON,
+    COMPNT_EXTERNAL,
 };
 
 /** \brief The status of a component */
@@ -127,3 +126,4 @@ int component_show_policy(cli_t *, char *);
 int component_show(cli_t *, char *);
 int component_list(cli_t *);
 int component_cli(cli_t *, char **);
+

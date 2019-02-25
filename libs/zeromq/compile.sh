@@ -8,3 +8,4 @@ cd /tmp/zeromq-4.3.0
 
 # compile ZeroMQ
 ./autogen.sh && ./configure && make && sudo make install && sudo ldconfig
+

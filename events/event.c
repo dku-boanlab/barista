@@ -26,11 +26,14 @@ static ctx_t *ev_ctx;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief MQ contexts to reply events */
+/** \brief MQ context to reply events */
 void *ev_rep_ctx;
 
-/** \brief MQ sockets to reply events */
-void *ev_rep_comp, *ev_rep_work;
+/** \brief MQ socket to reply events (component-side) */
+void *ev_rep_comp;
+
+/** \brief MQ socket to reply events (worker-side)  */
+void *ev_rep_work;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -300,13 +303,14 @@ int event_init(ctx_t *ctx)
 
         // pull
 
+        char pull_type[__CONF_WORD_LEN];
         char pull_addr[__CONF_WORD_LEN];
         int pull_port;
 
-        sscanf(EXT_COMP_PULL_ADDR, "tcp://%[^:]:%d", pull_addr, &pull_port);
+        sscanf(EXT_COMP_PULL_ADDR, "%[^:]://%[^:]:%d", pull_type, pull_addr, &pull_port);
 
         init_buffers();
-        create_epoll_env(pull_addr, pull_port);
+        create_epoll_env(pull_type, pull_addr, pull_port);
 
         if (pthread_create(&thread, NULL, &socket_listen, NULL) < 0) {
             PERROR("pthread_create");
@@ -408,7 +412,6 @@ int destroy_ev_workers(ctx_t *ctx)
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The code of sw_rw_raise() */
 #define FUNC_NAME sw_rw_raise
 #define FUNC_TYPE switch_t
 #define FUNC_DATA sw_data
@@ -417,7 +420,6 @@ int destroy_ev_workers(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/** \brief The code of port_rw_raise() */
 //#define FUNC_NAME port_rw_raise
 //#define FUNC_TYPE port_t
 //#define FUNC_DATA port_data
@@ -426,7 +428,6 @@ int destroy_ev_workers(ctx_t *ctx)
 //#undef FUNC_TYPE
 //#undef FUNC_DATA
 
-/** \brief The code of host_rw_raise() */
 //#define FUNC_NAME host_rw_raise
 //#define FUNC_TYPE host_t
 //#define FUNC_DATA host_data
@@ -435,7 +436,6 @@ int destroy_ev_workers(ctx_t *ctx)
 //#undef FUNC_TYPE
 //#undef FUNC_DATA
 
-/** \brief The code of flow_rw_raise() */
 //#define FUNC_NAME flow_rw_raise
 //#define FUNC_TYPE flow_t
 //#define FUNC_DATA flow_data
@@ -444,7 +444,6 @@ int destroy_ev_workers(ctx_t *ctx)
 //#undef FUNC_TYPE
 //#undef FUNC_DATA
 
-/** \brief The code of raw_ev_raise() */
 #define FUNC_NAME raw_ev_raise
 #define FUNC_TYPE raw_msg_t
 #define FUNC_DATA raw_msg
@@ -453,7 +452,6 @@ int destroy_ev_workers(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/** \brief The code of sw_ev_raise() */
 #define FUNC_NAME sw_ev_raise
 #define FUNC_TYPE switch_t
 #define FUNC_DATA sw
@@ -464,7 +462,6 @@ int destroy_ev_workers(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/** \brief The code of port_ev_raise() */
 #define FUNC_NAME port_ev_raise
 #define FUNC_TYPE port_t
 #define FUNC_DATA port
@@ -475,7 +472,6 @@ int destroy_ev_workers(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/** \brief The code of host_ev_raise() */
 #define FUNC_NAME host_ev_raise
 #define FUNC_TYPE host_t
 #define FUNC_DATA host
@@ -486,7 +482,6 @@ int destroy_ev_workers(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/** \brief The code of pktin_ev_raise() */
 #define FUNC_NAME pktin_ev_raise
 #define FUNC_TYPE pktin_t
 #define FUNC_DATA pktin
@@ -497,7 +492,6 @@ int destroy_ev_workers(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/** \brief The code of pktout_ev_raise() */
 #define FUNC_NAME pktout_ev_raise
 #define FUNC_TYPE pktout_t
 #define FUNC_DATA pktout
@@ -508,7 +502,6 @@ int destroy_ev_workers(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/** \brief The code of flow_ev_raise() */
 #define FUNC_NAME flow_ev_raise
 #define FUNC_TYPE flow_t
 #define FUNC_DATA flow
@@ -519,7 +512,6 @@ int destroy_ev_workers(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/** \brief The code of rs_ev_raise() */
 #define FUNC_NAME rs_ev_raise
 #define FUNC_TYPE resource_t
 #define FUNC_DATA resource
@@ -528,7 +520,6 @@ int destroy_ev_workers(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/** \brief The code of tr_ev_raise() */
 #define FUNC_NAME tr_ev_raise
 #define FUNC_TYPE traffic_t
 #define FUNC_DATA traffic
@@ -537,7 +528,6 @@ int destroy_ev_workers(ctx_t *ctx)
 #undef FUNC_TYPE
 #undef FUNC_DATA
 
-/** \brief The code of log_ev_raise() */
 #define FUNC_NAME log_ev_raise
 #define FUNC_TYPE char
 #define FUNC_DATA log

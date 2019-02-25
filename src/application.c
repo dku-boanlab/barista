@@ -186,7 +186,7 @@ int app_event_list(cli_t *cli)
 /**
  * \brief Function to print the configuration of an application
  * \param cli CLI context
- * \param a Application configuration
+ * \param a Application context
  * \param details The flag to enable the detailed description
  */
 static int application_print(cli_t *cli, app_t *a, int details)
@@ -202,9 +202,9 @@ static int application_print(cli_t *cli, app_t *a, int details)
             cli_buffer(buf, "disabled");
         else if (a->activated && (a->site == APP_INTERNAL))
             cli_buffer(buf, ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
-        else if (a->activated && (a->site == APP_EXTERNAL_RAW || a->site == APP_EXTERNAL_JSON))
+        else if (a->activated && (a->site == APP_EXTERNAL))
             cli_buffer(buf, ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
-        else if (a->site == APP_EXTERNAL_RAW || a->site == APP_EXTERNAL_JSON)
+        else if (a->site == APP_EXTERNAL)
             cli_buffer(buf, ANSI_COLOR_MAGENTA "ready to talk" ANSI_COLOR_RESET);
         else
             cli_buffer(buf, ANSI_COLOR_BLUE "enabled" ANSI_COLOR_RESET);
@@ -233,10 +233,8 @@ static int application_print(cli_t *cli, app_t *a, int details)
 
     if (a->site == APP_INTERNAL)
         cli_print(cli, "    Site: internal");
-    else if (a->site == APP_EXTERNAL_RAW)
-        cli_print(cli, "    Site: external (RAW)");
     else
-        cli_print(cli, "    Site: external (JSON)");
+        cli_print(cli, "    Site: external");
 
     if (a->role == APP_ADMIN)
         cli_print(cli, "    Role: admin");
@@ -1341,6 +1339,12 @@ int application_load(cli_t *cli, ctx_t *ctx)
             strcpy(perm, json_string_value(j_perm));
         }
 
+        char priority[__CONF_WORD_LEN] = {0};
+        json_t *j_pri = json_object_get(data, "priority");
+        if (json_is_string(j_pri)) {
+            strcpy(priority, json_string_value(j_pri));
+        }
+
         char status[__CONF_WORD_LEN] = {0};
         json_t *j_status = json_object_get(data, "status");
         if (json_is_string(j_status)) {
@@ -1420,10 +1424,8 @@ int application_load(cli_t *cli, ctx_t *ctx)
         if (strlen(site) == 0) {
             a->site = APP_INTERNAL;
         } else {
-            if (strcmp(site, "external:raw") == 0)
-                a->site = APP_EXTERNAL_RAW;
-            else if (strcmp(site, "external:json") == 0)
-                a->site = APP_EXTERNAL_JSON;
+            if (strcmp(site, "external") == 0)
+                a->site = APP_EXTERNAL;
             else
                 a->site = APP_INTERNAL;
         }
@@ -1511,6 +1513,13 @@ int application_load(cli_t *cli, ctx_t *ctx)
         }
         if (a->perm == 0) a->perm |= APP_READ;
         cli_print(cli, "     Permission: %s", perm);
+
+        // set priority
+        if (strlen(priority) == 0)
+            a->priority = 0;
+        else
+            a->priority = atoi(priority);
+        cli_print(cli, "    Priority: %s", priority);
 
         // set a status
         if (strlen(status) == 0) {

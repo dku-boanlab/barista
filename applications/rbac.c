@@ -62,7 +62,7 @@ role2ev_t *role_to_event;
 
 /** \brief The app event list to convert an app event string to an app event ID */
 const char app_ev_list[AV_NUM_EVENTS+1][__CONF_WORD_LEN] = {
-#include "app_event_string.h"
+    #include "app_event_string.h"
 };
 
 /**
@@ -354,8 +354,9 @@ int rbac_cli(cli_t *cli, char **args)
  */
 int rbac_handler(const app_event_t *av, app_event_out_t *av_out)
 {
-    if (verify_app_role(av->id, av->type))
+    if (verify_app_role(av->id, av->type)) {
         return 0;
+    }
 
     int i;
     for (i=0; i<app_to_role_cnt; i++) {

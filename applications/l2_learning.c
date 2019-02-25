@@ -78,11 +78,6 @@ static int insert_flow(const pktin_t *pktin, uint16_t port)
  */
 static int l2_learning(const pktin_t *pktin)
 {
-#ifdef __ENABLE_CBENCH
-    send_packet(pktin, PORT_FLOOD);
-    return 0;
-#endif /* __ENABLE_CBENCH */
-
     uint64_t mac = mac2int(pktin->src_mac);
     uint32_t mkey = hash_func((uint32_t *)&mac, 2) % MAC_HASH_SIZE;
 

@@ -16,3 +16,4 @@ typedef struct _cli_t {
 } cli_t;
 
 int cli_print(cli_t *cli, char *buf);
+

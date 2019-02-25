@@ -8,3 +8,4 @@ sudo apt-get update
 sudo apt-get -y install mariadb-galera-server
 sudo apt-get -y install mariadb-client libmariadbclient-dev
 sudo systemctl enable mysql
+

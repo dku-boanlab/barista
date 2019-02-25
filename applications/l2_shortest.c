@@ -455,11 +455,6 @@ static int insert_flow_next(const pktin_t *pktin, int hop, int *route, uint16_t 
  */
 static int l2_shortest(const pktin_t *pktin)
 {
-#ifdef __ENABLE_CBENCH
-    send_packet(pktin, PORT_FLOOD);
-    return 0;
-#endif /* __ENABLE_CBENCH */
-
     uint64_t mac = mac2int(pktin->src_mac);
     uint32_t mkey = hash_func((uint32_t *)&mac, 2) % MAC_HASH_SIZE;
 

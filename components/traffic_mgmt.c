@@ -114,7 +114,6 @@ int traffic_mgmt_cleanup(int *activated)
     deactivate();
 
     pthread_spin_destroy(&tr_lock);
-
     FREE(tr_history);
 
     return 0;

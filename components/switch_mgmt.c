@@ -29,11 +29,11 @@
 /** \brief Switch table */
 switch_table_t switches;
 
-/** \brief The number of switches */
-int num_switches;
-
 /** \brief Switch list */
 switch_t **switch_table;
+
+/** \brief The number of switches */
+int num_switches;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -305,7 +305,7 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             if (pass == FALSE) {
                 switch_t *new = sw_dequeue();
-                if (new == NULL) return -1;
+                if (new == NULL) break;
 
                 new->dpid = sw->dpid;
                 new->fd = sw->fd;

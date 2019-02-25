@@ -37,7 +37,6 @@ struct of_header {
 typedef struct _buffer_t {
     int need; /**< The bytes that it needs to read */
     int done; /**< The bytes that it has */
-
     uint8_t temp[__MAX_RAW_DATA_LEN]; /**< Temporary data */
 } buffer_t;
 

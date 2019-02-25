@@ -37,3 +37,4 @@ struct _app_func_t {
 } g_applications[] = {
     {"l2_shortest", l2_shortest_main, l2_shortest_handler, l2_shortest_cleanup, l2_shortest_cli},
 }; /**< The list of function pointers */
+

@@ -18,6 +18,7 @@
 #include <pthread.h>
 #include <ctype.h>
 #include <errno.h>
+#include <time.h>
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -25,33 +26,31 @@
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <netinet/ip_icmp.h>
+#include "mac2int.h"
+#include "ip2int.h"
 
 #include <jansson.h>
 #include "libcli.h"
 #include <zmq.h>
 
-#include "mac2int.h"
-#include "ip2int.h"
+#include "type.h"
+
+/* Default */
 
 #define __CONF_ARGC 16
 #define __CONF_SHORT_LEN 16
 #define __CONF_WORD_LEN 256
 #define __CONF_STR_LEN 1024
 #define __CONF_LSTR_LEN 2048
-
 #define __DEFAULT_TABLE_SIZE 65536
-#define __HASHING_NAME_LENGTH 8
 
-//#define __ENABLE_META_EVENTS
-
-#define EXT_COMP_PULL_ADDR "tcp://127.0.0.1:5001"
-#define EXT_COMP_REPLY_ADDR "tcp://127.0.0.1:5002"
-
-#define EXT_APP_PULL_ADDR "tcp://127.0.0.1:6001"
-#define EXT_APP_REPLY_ADDR "tcp://127.0.0.1:6002"
+/* Component / Application */
 
 #define BATCH_LOGS 1024
 #define LOG_UPDATE_TIME 1
+
+/** \brief The default log file */
+#define DEFAULT_LOG_FILE "../log/message.log"
 
 #define FLOW_MGMT_REQUEST_TIME 5
 #define TOPO_MGMT_REQUEST_TIME 5
@@ -60,11 +59,20 @@
 #define RESOURCE_MGMT_MONITOR_TIME 1
 #define RESOURCE_MGMT_HISTORY 86400
 
+/** \brief The default resource file */
+#define DEFAULT_RESOURCE_FILE "../log/resource.log"
+
 #define TRAFFIC_MGMT_MONITOR_TIME 1
 #define TRAFFIC_MGMT_HISTORY 86400
 
+/** \brief The default traffic file */
+#define DEFAULT_TRAFFIC_FILE "../log/traffic.log"
+
 #define CLUSTER_UPDATE_TIME_NS (1000*1000)
 #define CLUSTER_DELIMITER 2000
+
+/** \brief The default application role file */
+#define DEFAULT_APP_ROLE_FILE "config/app_events.role"
 
 /** \brief The number of pre-allocated mac entries used in l2_learning and l2_shortest */
 #define MAC_PRE_ALLOC 4096
@@ -81,9 +89,21 @@
 /** \brief The number of pre-allocated switch entries used in switch_mgmt */
 #define SW_PRE_ALLOC 1024
 
-//#define __SHOW_COMPONENT_ID
+/* Barista NOS */
 
-#include "type.h"
+#define __SHOW_COMPONENT_ID
+
+#define __HASHING_NAME_LENGTH 8
+
+//#define EXT_COMP_PULL_ADDR "tcp://127.0.0.1:5001"
+#define EXT_COMP_PULL_ADDR "ipc://tmp/ext_comp_pull"
+//#define EXT_COMP_REPLY_ADDR "tcp://127.0.0.1:5002"
+#define EXT_COMP_REPLY_ADDR "ipc://tmp/ext_comp_reply"
+
+//#define EXT_APP_PULL_ADDR "tcp://127.0.0.1:6001"
+#define EXT_APP_PULL_ADDR "ipc://tmp/ext_app_pull"
+//#define EXT_APP_REPLY_ADDR "tcp://127.0.0.1:6002"
+#define EXT_APP_REPLY_ADDR "ipc://tmp/ext_app_reply"
 
 /** \brief The default component configuration file */
 #define DEFAULT_COMPNT_CONFIG_FILE "config/components.conf"
@@ -99,18 +119,6 @@
 
 /** \brief The default operator-defined policy file */
 #define DEFAULT_ODP_FILE "config/operator-defined.policy"
-
-/** \brief The default log file */
-#define DEFAULT_LOG_FILE "../log/message.log"
-
-/** \brief The default resource file */
-#define DEFAULT_RESOURCE_FILE "../log/resource.log"
-
-/** \brief The default traffic file */
-#define DEFAULT_TRAFFIC_FILE "../log/traffic.log"
-
-/** \brief The default application role file */
-#define DEFAULT_APP_ROLE_FILE "config/app_events.role"
 
 /** \brief Font color */
 /* @{ */
@@ -136,7 +144,6 @@
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
 /** \brief Timer */
-#include <time.h>
 #define waitsec(sec, nsec) \
 { \
     struct timespec req; \
@@ -158,6 +165,36 @@
     *activated = FALSE; \
     waitsec(0, 1000); \
 }
+
+/** \brief Function to print a current event */
+#define print_current_app_event(type) \
+    fprintf(stderr, "MEASURE_APP_LATENCY %u\n", type);
+
+/** \brief Function to measure the start time */
+#define start_to_measure_app_time() \
+    struct timespec start, end; \
+    clock_gettime(CLOCK_REALTIME, &start);
+
+/** \brief Function to measure the end time */
+#define stop_measuring_app_time(app_name, av_type) \
+    clock_gettime(CLOCK_REALTIME, &end); \
+    fprintf(stderr, "MEASURE_APP_LATENCY %u %s %lu\n", av_type, app_name, \
+           ((end.tv_sec * 1000000000 + end.tv_nsec) - (start.tv_sec * 1000000000 + start.tv_nsec)));
+
+/** \brief Function to print a current event */
+#define print_current_event(type) \
+    fprintf(stderr, "MEASURE_COMP_LATENCY %u\n", type);
+
+/** \brief Function to measure the start time */
+#define start_to_measure_comp_time() \
+    struct timespec start, end; \
+    clock_gettime(CLOCK_REALTIME, &start);
+
+/** \brief Function to measure the end time */
+#define stop_measuring_comp_time(comp_name, ev_type) \
+    clock_gettime(CLOCK_REALTIME, &end); \
+    fprintf(stderr, "MEASURE_COMP_LATENCY %u %s %lu\n", ev_type, comp_name, \
+           ((end.tv_sec * 1000000000 + end.tv_nsec) - (start.tv_sec * 1000000000 + start.tv_nsec)));
 
 /** \brief Allocate a space */
 #define MALLOC(x) malloc(x)
@@ -222,3 +259,4 @@
 #define ALOG_INFO(id, format, args...)  av_log_info(id, format, ##args)
 #define ALOG_DEBUG(id, format, args...) av_log_debug(id, format, ##args)
 /* @} */
+

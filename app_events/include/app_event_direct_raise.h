@@ -27,63 +27,97 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
     av_ctx->num_app_events[type]++;
 #endif /* __ENABLE_META_EVENTS */
 
+#ifdef __ANALYZE_BARISTA
+    print_current_app_event(type);
+#endif /* __ANALYZE_BARISTA */
+
     int i;
     for (i=0; i<av_num; i++) {
-        app_t *c = av_list[i];
+        app_t *a = av_list[i];
 
-        if (!c) continue;
-        else if (!c->activated) continue; // not activated yet
+        if (!a) continue;
+        else if (!a->activated) continue; // not activated yet
 
 #ifdef ODP_FUNC
-        if (ODP_FUNC(c->odp, data)) continue;
+        if (ODP_FUNC(a->odp, data)) continue;
 #endif /* ODP_FUNC */
 
-        if (c->perm & APP_WRITE) {
-            if (c->site == APP_INTERNAL) { // internal site
+        if (a->perm & APP_WRITE) {
+            if (a->site == APP_INTERNAL) { // internal site
 #ifdef __ENABLE_META_EVENTS
-                c->num_app_events[type]++;
+                a->num_app_events[type]++;
 #endif /* __ENABLE_META_EVENTS */
 
-                int ret = c->handler(av, &av_out);
-                if (ret && c->perm & APP_EXECUTE) {
+#ifdef __ANALYZE_BARISTA
+                start_to_measure_app_time();
+#endif /* __ANALYZE_BARISTA */
+                int ret = a->handler(av, &av_out);
+#ifdef __ANALYZE_BARISTA
+                stop_measuring_app_time(a->name, type);
+#endif /* __ANALYZE_BARISTA */
+                if (ret && a->perm & APP_EXECUTE) {
                     break;
                 }
             } else { // external site
                 app_event_out_t *out = &av_out;
 
 #ifdef __ENABLE_META_EVENTS
-                c->num_app_events[type]++;
+                a->num_app_events[type]++;
 #endif /* __ENABLE_META_EVENTS */
 
-                int ret = av_send_ext_msg(c, id, type, len, data, out->data);
-                if (ret && c->perm & APP_EXECUTE) {
+#ifdef __ANALYZE_BARISTA
+                start_to_measure_app_time();
+#endif /* __ANALYZE_BARISTA */
+                int ret = av_send_ext_msg(a, id, type, len, data, out->data);
+#ifdef __ANALYZE_BARISTA
+                stop_measuring_app_time(a->name, type);
+#endif /* __ANALYZE_BARISTA */
+                if (ret && a->perm & APP_EXECUTE) {
                     break;
                 }
             }
         } else {
-            if (c->site == APP_INTERNAL) { // internal site
+            if (a->site == APP_INTERNAL) { // internal site
 #ifdef __ENABLE_META_EVENTS
-                c->num_app_events[type]++;
+                a->num_app_events[type]++;
 #endif /* __ENABLE_META_EVENTS */
 
-                int ret = c->handler(av, NULL);
-                if (ret && c->perm & APP_EXECUTE) {
+#ifdef __ANALYZE_BARISTA
+                start_to_measure_app_time();
+#endif /* __ANALYZE_BARISTA */
+                int ret = a->handler(av, NULL);
+#ifdef __ANALYZE_BARISTA
+                stop_measuring_app_time(a->name, type);
+#endif /* __ANALYZE_BARISTA */
+                if (ret && a->perm & APP_EXECUTE) {
                     break;
                 }
             } else { // external site
                 app_event_out_t *out = &av_out;
 
 #ifdef __ENABLE_META_EVENTS
-                c->num_app_events[type]++;
+                a->num_app_events[type]++;
 #endif /* __ENABLE_META_EVENTS */
 
-                if (c->perm & APP_EXECUTE) {
-                    int ret = av_send_ext_msg(c, id, type, len, data, out->data);
+                if (a->perm & APP_EXECUTE) {
+#ifdef __ANALYZE_BARISTA
+                    start_to_measure_app_time();
+#endif /* __ANALYZE_BARISTA */
+                    int ret = av_send_ext_msg(a, id, type, len, data, out->data);
+#ifdef __ANALYZE_BARISTA
+                    stop_measuring_app_time(a->name, type);
+#endif /* __ANALYZE_BARISTA */
                     if (ret) {
                         break;
                     }
                 } else {
-                    av_push_ext_msg(c, id, type, len, data);
+#ifdef __ANALYZE_BARISTA
+                    start_to_measure_app_time();
+#endif /* __ANALYZE_BARISTA */
+                    av_push_ext_msg(a, id, type, len, data);
+#ifdef __ANALYZE_BARISTA
+                    stop_measuring_app_time(a->name, type);
+#endif /* __ANALYZE_BARISTA */
                 }
             }
         }
@@ -91,3 +125,4 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
     return 0;
 }
+

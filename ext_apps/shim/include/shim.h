@@ -16,7 +16,8 @@
 #include "application_list.h"
 #include "application_info.h"
 
-#include "str.h"
 #include "hash.h"
+#include "str.h"
 
 #include <signal.h>
+

@@ -44,3 +44,4 @@ struct _compnt_t {
     compnt_cleanup_f cleanup; /**< The cleanup function pointer */
     compnt_cli_f cli; /**< The CLI function pointer */
 };
+

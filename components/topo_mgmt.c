@@ -27,7 +27,6 @@
 typedef struct _topo_t {
     uint64_t dpid; /**< Datapath ID */
     uint32_t remote; /**< Remote switch */
-
     port_t port[__MAX_NUM_PORTS]; /**< Ports */
 } topo_t;
 
@@ -260,7 +259,6 @@ int topo_mgmt_cleanup(int *activated)
     deactivate();
 
     pthread_rwlock_destroy(&topo_lock);
-
     FREE(topo);
 
     return 0;
@@ -364,10 +362,6 @@ int topo_mgmt_cli(cli_t *cli, char **args)
  */
 int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 {
-#ifdef __ENABLE_CBENCH
-    return 0;
-#endif /* __ENABLE_CBENCH */
-
     switch (ev->type) {
     case EV_DP_RECEIVE_PACKET:
         PRINT_EV("EV_DP_RECEIVE_PACKET\n");

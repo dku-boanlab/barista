@@ -37,3 +37,4 @@ struct _compnt_func_t {
 } g_components[] = {
     {"conflict", conflict_main, conflict_handler, conflict_cleanup, conflict_cli},
 }; /**< The list of function pointers */
+

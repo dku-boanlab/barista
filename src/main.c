@@ -194,6 +194,11 @@ int main(int argc, char **argv)
         }
     }
 
+    if (system("rm -f tmp/*") < 0) {
+        PERROR("system");
+        return -1;
+    }
+
     // initialize context
     ctx_init(&ctx);
 

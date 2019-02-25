@@ -178,7 +178,7 @@ int event_list(cli_t *cli)
 /**
  * \brief Function to print the configuration of a component
  * \param cli CLI context
- * \param c Component configuration
+ * \param c Component context
  * \param details The flag to print the detailed description
  */
 static int component_print(cli_t *cli, compnt_t *c, int details)
@@ -194,9 +194,9 @@ static int component_print(cli_t *cli, compnt_t *c, int details)
             cli_buffer(buf, "disabled");
         else if (c->activated && (c->site == COMPNT_INTERNAL))
             cli_buffer(buf, ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
-        else if (c->activated && (c->site == COMPNT_EXTERNAL_RAW || c->site == COMPNT_EXTERNAL_JSON))
+        else if (c->activated && (c->site == COMPNT_EXTERNAL))
             cli_buffer(buf, ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
-        else if (c->site == COMPNT_EXTERNAL_RAW || c->site == COMPNT_EXTERNAL_JSON)
+        else if (c->site == COMPNT_EXTERNAL)
             cli_buffer(buf, ANSI_COLOR_MAGENTA "ready to talk" ANSI_COLOR_RESET);
         else
             cli_buffer(buf, ANSI_COLOR_BLUE "enabled" ANSI_COLOR_RESET);
@@ -225,17 +225,15 @@ static int component_print(cli_t *cli, compnt_t *c, int details)
 
     if (c->site == COMPNT_INTERNAL)
         cli_print(cli, "    Site: internal");
-    else if (c->site == COMPNT_EXTERNAL_RAW)
-        cli_print(cli, "    Site: external (RAW)");
     else
-        cli_print(cli, "    Site: external (JSON)");
+        cli_print(cli, "    Site: external");
 
     if (c->role == COMPNT_ADMIN)
         cli_print(cli, "    Role: admin");
     else if (c->role == COMPNT_SECURITY)
         cli_print(cli, "    Role: security");
     else if (c->role == COMPNT_SECURITY_V2)
-        cli_print(cli, "    Role: security (one by one)");
+        cli_print(cli, "    Role: security (v2)");
     else if (c->role == COMPNT_MANAGEMENT)
         cli_print(cli, "    Role: management");
     else if (c->role == COMPNT_NETWORK)
@@ -1431,6 +1429,12 @@ int component_load(cli_t *cli, ctx_t *ctx)
             strcpy(perm, json_string_value(j_perm));
         }
 
+        char priority[__CONF_WORD_LEN] = {0};
+        json_t *j_pri = json_object_get(data, "priority");
+        if (json_is_string(j_pri)) {
+            strcpy(priority, json_string_value(j_pri));
+        }
+
         char status[__CONF_WORD_LEN] = {0};
         json_t *j_status = json_object_get(data, "status");
         if (json_is_string(j_status)) {
@@ -1510,10 +1514,8 @@ int component_load(cli_t *cli, ctx_t *ctx)
         if (strlen(site) == 0) {
             c->site = COMPNT_INTERNAL;
         } else {
-            if (strcmp(site, "external:raw") == 0)
-                c->site = COMPNT_EXTERNAL_RAW;
-            else if (strcmp(site, "external:json") == 0)
-                c->site = COMPNT_EXTERNAL_JSON;
+            if (strcmp(site, "external") == 0)
+                c->site = COMPNT_EXTERNAL;
             else
                 c->site = COMPNT_INTERNAL;
         }
@@ -1592,6 +1594,13 @@ int component_load(cli_t *cli, ctx_t *ctx)
         }
         if (c->perm == 0) c->perm |= COMPNT_READ;
         cli_print(cli, "     Permission: %s", perm);
+
+        // set priority
+        if (strlen(priority) == 0)
+            c->priority = 0;
+        else
+            c->priority = atoi(priority);
+        cli_print(cli, "    Priority: %s", priority);
 
         // set a status
         if (strlen(status) == 0) {

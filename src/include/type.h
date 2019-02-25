@@ -67,6 +67,8 @@ typedef struct _msg_t {
     uint8_t data[__MAX_STRUCT_SIZE]; /**< Data */
 } msg_t;
 
+/////////////////////////////////////////////////////////////////////
+
 /** \brief The maximum length of external messages */
 #define __MAX_EXT_MSG_SIZE 4096
 
@@ -559,6 +561,7 @@ typedef struct _odp_t {
 /////////////////////////////////////////////////////////////////////
 
 #ifdef __ENABLE_META_EVENTS
+
 /** \brief The kinds of meta event conditions */
 enum {
     META_GT,
@@ -575,6 +578,8 @@ typedef struct meta_event_t {
     int threshold;
     char cmd[__CONF_STR_LEN];
 } meta_event_t;
+
 #endif /* __ENABLE_META_EVENTS */
 
 /////////////////////////////////////////////////////////////////////
+

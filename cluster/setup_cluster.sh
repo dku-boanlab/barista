@@ -72,3 +72,4 @@ echo
 mysql -u root -p$root_pw < schemes/schemes.sql
 
 echo "Cluster setting is done"
+

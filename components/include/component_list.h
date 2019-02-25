@@ -102,6 +102,11 @@ DECLARE_HANDLER_FUNC(conflict_handler);
 DECLARE_CLEANUP_FUNC(conflict_cleanup);
 DECLARE_CLI_FUNC(conflict_cli);
 
+DECLARE_MAIN_FUNC(flow_cache_main);
+DECLARE_HANDLER_FUNC(flow_cache_handler);
+DECLARE_CLEANUP_FUNC(flow_cache_cleanup);
+DECLARE_CLI_FUNC(flow_cache_cli);
+
 /** \brief The function pointer of a component */
 struct _compnt_func_t {
     char *name; /**< Component name */
@@ -126,4 +131,6 @@ struct _compnt_func_t {
     {"dit", dit_main, dit_handler, dit_cleanup, dit_cli},
     {"ofp10_veri", ofp10_veri_main, ofp10_veri_handler, ofp10_veri_cleanup, ofp10_veri_cli},
     {"conflict", conflict_main, conflict_handler, conflict_cleanup, conflict_cli},
+    {"flow_cache", flow_cache_main, flow_cache_handler, flow_cache_cleanup, flow_cache_cli},
 }; /**< The list of function pointers */
+

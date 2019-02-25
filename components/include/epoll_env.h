@@ -33,8 +33,11 @@ int listening;
 /** \brief Network socket queue */
 int queue[MAXQLEN];
 
-/** \brief The head and tail pointers of a network socket queue */
-int *head, *tail;
+/** \brief The head pointer of a network socket queue */
+int *head;
+
+/** \brief The tail pointer of a network socket queue */
+int *tail;
 
 /** \brief The number of entries in a network socket queue */
 int size;
@@ -143,7 +146,7 @@ static int init_epoll(void)
 }
 
 /**
- * \brief Function to add a new socket into an epoll structure
+ * \brief Function to add a new socket into an epoll
  * \param epol Epoll
  * \param fd Socket
  * \param flags Epoll flags
@@ -164,7 +167,7 @@ static int link_epoll(int epol, int fd, int flags)
 }
 
 /**
- * \brief Function to add a used socket into an epoll structure
+ * \brief Function to add a used socket into an epoll
  * \param epol Epoll
  * \param fd Socket
  * \param flags Epoll flags
@@ -490,3 +493,6 @@ static int destroy_epoll_env(void)
 
     return 0;
 }
+
+/////////////////////////////////////////////////////////////////////
+

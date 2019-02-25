@@ -44,3 +44,4 @@ struct _app_t {
     app_cleanup_f cleanup; /**< The cleanup function pointer */
     app_cli_f cli; /**< The CLI function pointer */
 };
+

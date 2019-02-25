@@ -8,3 +8,4 @@ else
     # for other nodes
     sudo service mysql start
 fi
+

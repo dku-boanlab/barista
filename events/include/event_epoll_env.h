@@ -33,8 +33,11 @@ int ep_listening;
 /** \brief Network socket queue */
 int ep_queue[EP_MAXQLEN];
 
-/** \brief The head and tail pointers of a network socket queue */
-int *ep_head, *ep_tail;
+/** \brief The head pointer of a network socket queue */
+int *ep_head;
+
+/** \brief The tail pointer of a network socket queue */
+int *ep_tail;
 
 /** \brief The number of entries in a network socket queue */
 int ep_size;
@@ -143,7 +146,7 @@ static int init_epoll(void)
 }
 
 /**
- * \brief Function to add a new socket into an epoll structure
+ * \brief Function to add a new socket into an epoll
  * \param epol Epoll
  * \param fd Socket
  * \param flags Epoll flags
@@ -164,7 +167,7 @@ static int link_epoll(int epol, int fd, int flags)
 }
 
 /**
- * \brief Function to add a used socket into an epoll structure
+ * \brief Function to add a used socket into an epoll
  * \param epol Epoll
  * \param fd Socket
  * \param flags Epoll flags
@@ -306,6 +309,9 @@ static void init_workers(void)
 /** \brief Network socket */
 int ep_sc;
 
+/** \brief Network socket type (TRUE: tcp, FALSE: ipc) */
+int ep_type;
+
 /**
  * \brief Function to set the non-blocking mode to a socket
  * \param fd Socket
@@ -334,46 +340,91 @@ static int nonblocking_mode(const int fd)
 
 /**
  * \brief Function to initialize a socket
+ * \param type Socket type
  * \param addr Binding address
  * \param port Port number
  */
-static int init_socket(char *addr, uint16_t port)
+static int init_socket(char *type, char *addr, uint16_t port)
 {
-    if ((ep_sc = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        PERROR("socket");
-        return -1;
-    }
+    if (strcmp(type, "tcp") == 0) {
+        ep_type = TRUE;
 
-    int option = 1;
-    if (setsockopt(ep_sc, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) {
-        PERROR("setsockopt");
-    }
+        if ((ep_sc = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+            PERROR("socket");
+            return -1;
+        }
 
-    if (nonblocking_mode(ep_sc) < 0) {
-        close(ep_sc);
-        return -1;
-    }
+        int option = 1;
+        if (setsockopt(ep_sc, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) {
+            PERROR("setsockopt");
+        }
 
-    struct sockaddr_in server;
-    server.sin_family = AF_INET;
-    server.sin_addr.s_addr = inet_addr(addr);
-    server.sin_port = htons(port);
+        if (nonblocking_mode(ep_sc) < 0) {
+            close(ep_sc);
+            return -1;
+        }
 
-    if (bind(ep_sc, (struct sockaddr *)&server, sizeof(server)) < 0) {
-        PERROR("bind");
-        close(ep_sc);
-        return -1;
-    }
+        struct sockaddr_in server;
+        memset(&server, 0, sizeof(server));
+        server.sin_family = AF_INET;
+        server.sin_addr.s_addr = inet_addr(addr);
+        server.sin_port = htons(port);
 
-    if (listen(ep_sc, SOMAXCONN) < 0) {
-        PERROR("listen");
-        close(ep_sc);
-        return -1;
-    }
+        if (bind(ep_sc, (struct sockaddr *)&server, sizeof(server)) < 0) {
+            PERROR("bind");
+            close(ep_sc);
+            return -1;
+        }
 
-    if (link_epoll(ep_epoll, ep_sc, EPOLLIN | EPOLLET) < 0) {
-        close(ep_sc);
-        return -1;
+        if (listen(ep_sc, SOMAXCONN) < 0) {
+            PERROR("listen");
+            close(ep_sc);
+            return -1;
+        }
+
+        if (link_epoll(ep_epoll, ep_sc, EPOLLIN | EPOLLET) < 0) {
+            close(ep_sc);
+            return -1;
+        }
+    } else { // ipc
+        ep_type = FALSE;
+
+        if ((ep_sc = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
+            PERROR("socket");
+            return -1;
+        }
+
+        int option = 1;
+        if (setsockopt(ep_sc, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) {
+            PERROR("setsockopt");
+        }
+
+        if (nonblocking_mode(ep_sc) < 0) {
+            close(ep_sc);
+            return -1;
+        }
+
+        struct sockaddr_un server;
+        memset(&server, 0, sizeof(server));
+        server.sun_family = AF_UNIX;
+        strcpy(server.sun_path, addr);
+
+        if (bind(ep_sc, (struct sockaddr *)&server, sizeof(server)) < 0) {
+            PERROR("bind");
+            close(ep_sc);
+            return -1;
+        }
+
+        if (listen(ep_sc, SOMAXCONN) < 0) {
+            PERROR("listen");
+            close(ep_sc);
+            return -1;
+        }
+
+        if (link_epoll(ep_epoll, ep_sc, EPOLLIN | EPOLLET) < 0) {
+            close(ep_sc);
+            return -1;
+        }
     }
 
     return ep_sc;
@@ -385,61 +436,119 @@ static int init_socket(char *addr, uint16_t port)
  */
 static void *socket_listen(void *arg)
 {
-    int csock;
-    int nums = 0;
-    struct sockaddr_in client;
-    socklen_t len = sizeof(struct sockaddr);
+    if (ep_type == TRUE) { // tcp
+        int csock;
+        int nums = 0;
+        struct sockaddr_in client;
+        socklen_t len = sizeof(struct sockaddr);
 
-    while (ep_listening) {
-        nums = epoll_wait(ep_epoll, ep_events, EP_MAXEVENTS, 100);
+        while (ep_listening) {
+            nums = epoll_wait(ep_epoll, ep_events, EP_MAXEVENTS, 100);
 
-        if (ep_listening == FALSE) break;
+            if (ep_listening == FALSE) break;
 
-        int i;
-        for (i=0; i<nums; i++) {
-            if (ep_events[i].data.fd == ep_sc) {
-                while (1) {
-                    if ((csock = accept(ep_sc, (struct sockaddr *)&client, &len)) < 0) {
-                        if (errno != EAGAIN && errno != EWOULDBLOCK) {
-                            PERROR("accept");
+            int i;
+            for (i=0; i<nums; i++) {
+                if (ep_events[i].data.fd == ep_sc) {
+                    while (1) {
+                        if ((csock = accept(ep_sc, (struct sockaddr *)&client, &len)) < 0) {
+                            if (errno != EAGAIN && errno != EWOULDBLOCK) {
+                                PERROR("accept");
+                            }
+                            break;
                         }
-                        break;
-                    }
 
-                    // new connection
-                    new_connection(csock);
+                        // new connection
+                        new_connection(csock);
 
-                    if (nonblocking_mode(csock) < 0) {
-                        // closed connection
-                        closed_connection(csock);
-                        close(csock);
-                        break;
-                    }
+                        if (nonblocking_mode(csock) < 0) {
+                            // closed connection
+                            closed_connection(csock);
+                            close(csock);
+                            break;
+                        }
 
-                    if (link_epoll(ep_epoll, csock, EPOLLIN | EPOLLET | EPOLLONESHOT) < 0) {
-                        // closed connection
-                        closed_connection(csock);
-                        close(csock);
-                        break;
+                        if (link_epoll(ep_epoll, csock, EPOLLIN | EPOLLET | EPOLLONESHOT) < 0) {
+                            // closed connection
+                            closed_connection(csock);
+                            close(csock);
+                            break;
+                        }
                     }
+                } else {
+                    pthread_mutex_lock(&ep_queue_mutex);
+                    push_back(ep_events[i].data.fd);
+                    pthread_cond_signal(&ep_queue_cond);
+                    pthread_mutex_unlock(&ep_queue_mutex);
                 }
-            } else {
-                pthread_mutex_lock(&ep_queue_mutex);
-                push_back(ep_events[i].data.fd);
-                pthread_cond_signal(&ep_queue_cond);
-                pthread_mutex_unlock(&ep_queue_mutex);
             }
+
+            if (nums < 0 && errno != EINTR)
+                break;
         }
 
-        if (nums < 0 && errno != EINTR)
-            break;
+        if (nums < 0)
+            PERROR("epoll_wait");
+
+        close(ep_epoll);
+        close(ep_sc);
+    } else { // ipc
+        int csock;
+        int nums = 0;
+        struct sockaddr_un client;
+        socklen_t len = sizeof(struct sockaddr);
+
+        while (ep_listening) {
+            nums = epoll_wait(ep_epoll, ep_events, EP_MAXEVENTS, 100);
+
+            if (ep_listening == FALSE) break;
+
+            int i;
+            for (i=0; i<nums; i++) {
+                if (ep_events[i].data.fd == ep_sc) {
+                    while (1) {
+                        if ((csock = accept(ep_sc, (struct sockaddr *)&client, &len)) < 0) {
+                            if (errno != EAGAIN && errno != EWOULDBLOCK) {
+                                PERROR("accept");
+                            }
+                            break;
+                        }
+
+                        // new connection
+                        new_connection(csock);
+
+                        if (nonblocking_mode(csock) < 0) {
+                            // closed connection
+                            closed_connection(csock);
+                            close(csock);
+                            break;
+                        }
+
+                        if (link_epoll(ep_epoll, csock, EPOLLIN | EPOLLET | EPOLLONESHOT) < 0) {
+                            // closed connection
+                            closed_connection(csock);
+                            close(csock);
+                            break;
+                        }
+                    }
+                } else {
+                    pthread_mutex_lock(&ep_queue_mutex);
+                    push_back(ep_events[i].data.fd);
+                    pthread_cond_signal(&ep_queue_cond);
+                    pthread_mutex_unlock(&ep_queue_mutex);
+                }
+            }
+
+            if (nums < 0 && errno != EINTR)
+                break;
+        }
+
+        if (nums < 0)
+            PERROR("epoll_wait");
+
+        close(ep_epoll);
+        close(ep_sc);
     }
-
-    if (nums < 0)
-        PERROR("epoll_wait");
-
-    close(ep_epoll);
-    close(ep_sc);
 
     return NULL;
 }
@@ -450,7 +559,7 @@ static void *socket_listen(void *arg)
  * \brief Function to initialize socket, epoll, and other things
  * \return None
  */
-static int create_epoll_env(char *addr, uint16_t port)
+static int create_epoll_env(char *type, char *addr, uint16_t port)
 {
     ep_listening = TRUE;
 
@@ -458,7 +567,7 @@ static int create_epoll_env(char *addr, uint16_t port)
 
     init_epoll();
     init_workers();
-    init_socket(addr, port);
+    init_socket(type, addr, port);
 
     signal(SIGPIPE, SIG_IGN);
 
@@ -490,3 +599,6 @@ static int destroy_epoll_env(void)
 
     return 0;
 }
+
+/////////////////////////////////////////////////////////////////////
+
