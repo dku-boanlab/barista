@@ -49,7 +49,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 #endif /* __ENABLE_META_EVENTS */
 
 #ifdef __ANALYZE_BARISTA
-                start_to_measure_app_time();
+                start_to_measure_app_time(a->name, type);
 #endif /* __ANALYZE_BARISTA */
                 int ret = a->handler(av, &av_out);
 #ifdef __ANALYZE_BARISTA
@@ -66,7 +66,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 #endif /* __ENABLE_META_EVENTS */
 
 #ifdef __ANALYZE_BARISTA
-                start_to_measure_app_time();
+                start_to_measure_app_time(a->name, type);
 #endif /* __ANALYZE_BARISTA */
                 int ret = av_send_ext_msg(a, id, type, len, data, out->data);
 #ifdef __ANALYZE_BARISTA
@@ -83,7 +83,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 #endif /* __ENABLE_META_EVENTS */
 
 #ifdef __ANALYZE_BARISTA
-                start_to_measure_app_time();
+                start_to_measure_app_time(a->name, type);
 #endif /* __ANALYZE_BARISTA */
                 int ret = a->handler(av, NULL);
 #ifdef __ANALYZE_BARISTA
@@ -101,7 +101,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
                 if (a->perm & APP_EXECUTE) {
 #ifdef __ANALYZE_BARISTA
-                    start_to_measure_app_time();
+                    start_to_measure_app_time(a->name, type);
 #endif /* __ANALYZE_BARISTA */
                     int ret = av_send_ext_msg(a, id, type, len, data, out->data);
 #ifdef __ANALYZE_BARISTA
@@ -112,7 +112,7 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
                     }
                 } else {
 #ifdef __ANALYZE_BARISTA
-                    start_to_measure_app_time();
+                    start_to_measure_app_time(a->name, type);
 #endif /* __ANALYZE_BARISTA */
                     av_push_ext_msg(a, id, type, len, data);
 #ifdef __ANALYZE_BARISTA

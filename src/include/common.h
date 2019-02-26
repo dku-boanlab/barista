@@ -152,32 +152,34 @@
 
 /** \brief Function to print a current event */
 #define print_current_app_event(type) \
-    fprintf(stderr, "MEASURE_APP_LATENCY %u\n", type);
+    //fprintf(stderr, "MEASURE_APP_LATENCY %u\n", type);
 
 /** \brief Function to measure the start time */
-#define start_to_measure_app_time() \
+#define start_to_measure_app_time(app_name, av_type) \
     struct timespec start, end; \
+    fprintf(stderr, "MEASURE_APP_LATENCY_START %u %s\n", av_type, app_name); \
     clock_gettime(CLOCK_REALTIME, &start);
 
 /** \brief Function to measure the end time */
 #define stop_measuring_app_time(app_name, av_type) \
     clock_gettime(CLOCK_REALTIME, &end); \
-    fprintf(stderr, "MEASURE_APP_LATENCY %u %s %lu\n", av_type, app_name, \
+    fprintf(stderr, "MEASURE_APP_LATENCY_END %u %s %lu\n", av_type, app_name, \
            ((end.tv_sec * 1000000000 + end.tv_nsec) - (start.tv_sec * 1000000000 + start.tv_nsec)));
 
 /** \brief Function to print a current event */
 #define print_current_event(type) \
-    fprintf(stderr, "MEASURE_COMP_LATENCY %u\n", type);
+    //fprintf(stderr, "MEASURE_COMP_LATENCY %u\n", type);
 
 /** \brief Function to measure the start time */
-#define start_to_measure_comp_time() \
+#define start_to_measure_comp_time(comp_name, ev_type) \
     struct timespec start, end; \
+    fprintf(stderr, "MEASURE_COMP_LATENCY_START %u %s\n", ev_type, comp_name); \
     clock_gettime(CLOCK_REALTIME, &start);
 
 /** \brief Function to measure the end time */
 #define stop_measuring_comp_time(comp_name, ev_type) \
     clock_gettime(CLOCK_REALTIME, &end); \
-    fprintf(stderr, "MEASURE_COMP_LATENCY %u %s %lu\n", ev_type, comp_name, \
+    fprintf(stderr, "MEASURE_COMP_LATENCY_END %u %s %lu\n", ev_type, comp_name, \
            ((end.tv_sec * 1000000000 + end.tv_nsec) - (start.tv_sec * 1000000000 + start.tv_nsec)));
 
 /** \brief Allocate a space */

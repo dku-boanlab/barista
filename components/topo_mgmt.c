@@ -220,6 +220,10 @@ int topo_mgmt_main(int *activated, int argc, char **argv)
 
     activate();
 
+#ifdef __ANALYSIS_BARISTA
+    return 0;
+#endif /* __ANALYSIS_BARISTA */
+
     while (*activated) {
         pthread_rwlock_rdlock(&topo_lock);
 
