@@ -11,6 +11,9 @@
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief The number of pre-allocated host entries used in host_mgmt */
+#define HOST_PRE_ALLOC 4096
+
 /** \brief The structure of a host table */
 typedef struct _host_table_t {
     host_t *head; /**< The head pointer */

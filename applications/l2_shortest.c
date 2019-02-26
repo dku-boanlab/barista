@@ -607,8 +607,8 @@ int l2_shortest_cleanup(int *activated)
 
     deactivate();
 
-    mac_destroy();
     path_destroy();
+    mac_destroy();
 
     return 0;
 }

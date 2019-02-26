@@ -35,7 +35,7 @@
 
 #include "type.h"
 
-/* Default */
+/* ==== Default ==== */
 
 #define __CONF_ARGC 16
 #define __CONF_SHORT_LEN 16
@@ -44,7 +44,7 @@
 #define __CONF_LSTR_LEN 2048
 #define __DEFAULT_TABLE_SIZE 65536
 
-/* Component / Application */
+/* ==== Component / Application ==== */
 
 #define BATCH_LOGS 1024
 #define LOG_UPDATE_TIME 1
@@ -74,25 +74,9 @@
 /** \brief The default application role file */
 #define DEFAULT_APP_ROLE_FILE "config/app_events.role"
 
-/** \brief The number of pre-allocated mac entries used in l2_learning and l2_shortest */
-#define MAC_PRE_ALLOC 4096
-
-/** \brief The number of pre-allocated host entries used in host_mgmt */
-#define HOST_PRE_ALLOC 4096
-
-/** \biref The number of pre-allocated flow entries used in conflict */
-#define ARR_PRE_ALLOC 65536
-
-/** \brief The number of pre-allocated flow entries used in flow_mgmt */
-#define FLOW_PRE_ALLOC 65536
-
-/** \brief The number of pre-allocated switch entries used in switch_mgmt */
-#define SW_PRE_ALLOC 1024
-
-/* Barista NOS */
+/* ==== Barista NOS ==== */
 
 #define __SHOW_COMPONENT_ID
-
 #define __HASHING_NAME_LENGTH 8
 
 //#define EXT_COMP_PULL_ADDR "tcp://127.0.0.1:5001"

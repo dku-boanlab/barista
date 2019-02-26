@@ -11,6 +11,9 @@
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief The number of pre-allocated switch entries used in switch_mgmt */
+#define SW_PRE_ALLOC 1024
+
 /** \brief The structure of a switch table */
 typedef struct _switch_table_t {
     switch_t *head; /**< The head pointer */

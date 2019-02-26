@@ -11,6 +11,9 @@
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief The number of pre-allocated mac entries used in l2_learning and l2_shortest */
+#define MAC_PRE_ALLOC 4096
+
 /** \brief The structure of a MAC entry */
 typedef struct _mac_entry_t {
     uint64_t dpid; /**< Datapath ID */

@@ -108,13 +108,13 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes);
 
 /**
  * \brief Function to do something when a new application is connected
- * \return None
+ * \param sock Network socket
  */
 static int new_connection(int sock);
 
 /**
  * \brief Function to do something when an application is disconnected
- * \return None
+ * \param sock Network socket
  */
 static int closed_connection(int sock);
 
@@ -557,7 +557,9 @@ static void *socket_listen(void *arg)
 
 /**
  * \brief Function to initialize socket, epoll, and other things
- * \return None
+ * \param type Socket type
+ * \param addr Address
+ * \param port Port
  */
 static int create_epoll_env(char *type, char *addr, uint16_t port)
 {

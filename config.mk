@@ -22,6 +22,7 @@ CONFIG= \
     __MAX_NUM_PORTS=64 \
     \
     #__ANALYZE_BARISTA \
+    #__ENABLE_CBENCH \
     #\
     #__ENABLE_META_EVENTS \
     #__MAX_META_EVENTS=10 \

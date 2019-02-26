@@ -43,7 +43,7 @@ int flow_cache_main(int *activated, int argc, char **argv)
  */
 int flow_cache_cleanup(int *activated)
 {
-    LOG_INFO(CACHE_ID, "Clean up - Flwo cache");
+    LOG_INFO(CACHE_ID, "Clean up - Flow cache");
 
     deactivate();
 

@@ -11,6 +11,9 @@
 
 /////////////////////////////////////////////////////////////////////
 
+/** \biref The number of pre-allocated flow entries used in conflict */
+#define ARR_PRE_ALLOC 65536
+
 /** \brief The structure of a rule table */
 typedef struct _rule_table_t {
     flow_t *head; /**< The head pointer */

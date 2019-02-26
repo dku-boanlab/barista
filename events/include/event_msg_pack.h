@@ -640,7 +640,7 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 
 /**
  * \brief Function to do something when a new component is connected
- * \return None
+ * \param sock Network socket
  */
 static int new_connection(int sock)
 {
@@ -649,7 +649,7 @@ static int new_connection(int sock)
 
 /**
  * \brief Function to do something when a component is disconnected
- * \return None
+ * \param sock Network socket
  */
 static int closed_connection(int sock)
 {

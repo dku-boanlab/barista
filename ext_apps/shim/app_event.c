@@ -587,7 +587,7 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 
 /**
  * \brief Function to do something when the Barista NOS is connected
- * \return None
+ * \param sock Network socket
  */
 static int new_connection(int sock)
 {
@@ -596,7 +596,7 @@ static int new_connection(int sock)
 
 /**
  * \brief Function to do something when the Barista NOS is disconnected
- * \return None
+ * \param sock Network socket
  */
 static int closed_connection(int sock)
 {
