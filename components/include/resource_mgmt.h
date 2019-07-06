@@ -15,3 +15,6 @@
 #include <sys/time.h>
 #include <sys/sysinfo.h>
 
+#define RESOURCE_MGMT_MONITOR_TIME 1
+#define RESOURCE_MGMT_HISTORY 86400
+#define DEFAULT_RESOURCE_FILE "../log/resource.log"

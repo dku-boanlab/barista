@@ -21,9 +21,9 @@
  * \brief Function to initialize the context of the Barista NOS
  * \param ctx The context of the Barista NOS
  */
-int ctx_init(ctx_t *ctx)
+int init_ctx(ctx_t *ctx)
 {
-    // initialize all fields in a context
+    // initialize all fields at once
     memset(ctx, 0, sizeof(ctx_t));
 
     return 0;

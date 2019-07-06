@@ -15,4 +15,3 @@ uint64_t mac2int(const uint8_t *mac);
 uint8_t *int2mac(const uint64_t mac, uint8_t *macaddr);
 uint8_t *str2mac(const char *macaddr, uint8_t *mac);
 char *mac2str(const uint8_t *mac, char *macaddr);
-

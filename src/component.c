@@ -21,7 +21,7 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief Global context structure */
+/** \brief The context of the Barista NOS */
 ctx_t *compnt_ctx;
 
 /////////////////////////////////////////////////////////////////////
@@ -390,15 +390,14 @@ int component_disable(cli_t *cli, char *name)
 static void *thread_main(void *c_id)
 {
     int id = *(int *)c_id;
-
     compnt_t *c = compnt_ctx->compnt_list[id];
+
+    FREE(c_id);
 
     if (c->main(&c->activated, c->argc, c->argv) < 0) {
         c->activated = FALSE;
-        FREE(c_id);
         return NULL;
     } else {
-        FREE(c_id);
         return c;
     }
 }
@@ -451,13 +450,7 @@ int component_activate(cli_t *cli, char *name)
                         }
                     // external?
                     } else {
-                        int j;
-                        for (j=0; j<__NUM_PULL_THREADS; j++) {
-                            compnt_ctx->compnt_list[i]->push_sock[j] = 0;
-                            pthread_spin_init(&compnt_ctx->compnt_list[i]->push_lock[j], PTHREAD_PROCESS_PRIVATE);
-                        }
-
-                        compnt_ctx->compnt_list[i]->req_ctx = zmq_ctx_new();
+                        compnt_ctx->compnt_list[i]->push_ctx = zmq_ctx_new();
 
                         cli_print(cli, "%s is ready to talk", compnt_ctx->compnt_list[i]->name);
                     }
@@ -508,15 +501,8 @@ int component_deactivate(cli_t *cli, char *name)
                         }
                     // external?
                     } else {
-                        int j;
-                        for (j=0; j<__NUM_PULL_THREADS; j++) {
-                            pthread_spin_destroy(&compnt_ctx->compnt_list[i]->push_lock[j]);
-                            close(compnt_ctx->compnt_list[i]->push_sock[j]);
-                            compnt_ctx->compnt_list[i]->push_sock[j] = 0;
-                        }
-
-                        zmq_ctx_destroy(compnt_ctx->compnt_list[i]->req_ctx);
-                        compnt_ctx->compnt_list[i]->req_ctx = NULL;
+                        zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_ctx);
+                        compnt_ctx->compnt_list[i]->push_ctx = NULL;
 
                         compnt_ctx->compnt_list[i]->activated = FALSE;
                         cli_print(cli, "%s is deactivated", compnt_ctx->compnt_list[i]->name);
@@ -595,13 +581,7 @@ int component_start(cli_t *cli)
                 }
             // external?
             } else {
-                int j;
-                for (j=0; j<__NUM_PULL_THREADS; j++) {
-                    compnt_ctx->compnt_list[cluster]->push_sock[j] = 0;
-                    pthread_spin_init(&compnt_ctx->compnt_list[cluster]->push_lock[j], PTHREAD_PROCESS_PRIVATE);
-                }
-
-                compnt_ctx->compnt_list[cluster]->req_ctx = zmq_ctx_new();
+                compnt_ctx->compnt_list[cluster]->push_ctx = zmq_ctx_new();
 
                 cli_print(cli, "%s is ready to talk", compnt_ctx->compnt_list[cluster]->name);
             }
@@ -645,13 +625,7 @@ int component_start(cli_t *cli)
                     }
                 // external?
                 } else {
-                    int j;
-                    for (j=0; j<__NUM_PULL_THREADS; j++) {
-                        compnt_ctx->compnt_list[i]->push_sock[j] = 0;
-                        pthread_spin_init(&compnt_ctx->compnt_list[i]->push_lock[j], PTHREAD_PROCESS_PRIVATE);
-                    }
-
-                    compnt_ctx->compnt_list[i]->req_ctx = zmq_ctx_new();
+                    compnt_ctx->compnt_list[i]->push_ctx = zmq_ctx_new();
 
                     cli_print(cli, "%s is ready to talk", compnt_ctx->compnt_list[i]->name);
                 }
@@ -689,13 +663,7 @@ int component_start(cli_t *cli)
                 }
             // external?
             } else {
-                int j;
-                for (j=0; j<__NUM_PULL_THREADS; j++) {
-                    compnt_ctx->compnt_list[conn]->push_sock[j] = 0;
-                    pthread_spin_init(&compnt_ctx->compnt_list[conn]->push_lock[j], PTHREAD_PROCESS_PRIVATE);
-                }
-
-                compnt_ctx->compnt_list[conn]->req_ctx = zmq_ctx_new();
+                compnt_ctx->compnt_list[conn]->push_ctx = zmq_ctx_new();
 
                 cli_print(cli, "%s is ready to talk", compnt_ctx->compnt_list[conn]->name);
             }
@@ -751,15 +719,8 @@ int component_stop(cli_t *cli)
             }
         // external?
         } else {
-            int j;
-            for (j=0; j<__NUM_PULL_THREADS; j++) {
-                pthread_spin_destroy(&compnt_ctx->compnt_list[conn]->push_lock[j]);
-                close(compnt_ctx->compnt_list[conn]->push_sock[j]);
-                compnt_ctx->compnt_list[conn]->push_sock[j] = 0;
-            }
-
-            zmq_ctx_destroy(compnt_ctx->compnt_list[conn]->req_ctx);
-            compnt_ctx->compnt_list[conn]->req_ctx = NULL;
+            zmq_ctx_destroy(compnt_ctx->compnt_list[conn]->push_ctx);
+            compnt_ctx->compnt_list[conn]->push_ctx = NULL;
 
             compnt_ctx->compnt_list[conn]->activated = FALSE;
             cli_print(cli, "%s is deactivated", compnt_ctx->compnt_list[conn]->name);
@@ -790,15 +751,8 @@ int component_stop(cli_t *cli)
                     }
                 // external?
                 } else {
-                    int j;
-                    for (j=0; j<__NUM_PULL_THREADS; j++) {
-                        pthread_spin_destroy(&compnt_ctx->compnt_list[i]->push_lock[j]);
-                        close(compnt_ctx->compnt_list[i]->push_sock[j]);
-                        compnt_ctx->compnt_list[i]->push_sock[j] = 0;
-                    }
-
-                    zmq_ctx_destroy(compnt_ctx->compnt_list[i]->req_ctx);
-                    compnt_ctx->compnt_list[i]->req_ctx = NULL;
+                    zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_ctx);
+                    compnt_ctx->compnt_list[i]->push_ctx = NULL;
 
                     compnt_ctx->compnt_list[i]->activated = FALSE;
                     cli_print(cli, "%s is deactivated", compnt_ctx->compnt_list[i]->name);
@@ -820,15 +774,8 @@ int component_stop(cli_t *cli)
             }
         // external?
         } else {
-            int j;
-            for (j=0; j<__NUM_PULL_THREADS; j++) {
-                pthread_spin_destroy(&compnt_ctx->compnt_list[cluster]->push_lock[j]);
-                close(compnt_ctx->compnt_list[cluster]->push_sock[j]);
-                compnt_ctx->compnt_list[cluster]->push_sock[j] = 0;
-            }
-
-            zmq_ctx_destroy(compnt_ctx->compnt_list[cluster]->req_ctx);
-            compnt_ctx->compnt_list[cluster]->req_ctx = NULL;
+            zmq_ctx_destroy(compnt_ctx->compnt_list[cluster]->push_ctx);
+            compnt_ctx->compnt_list[cluster]->push_ctx = NULL;
 
             compnt_ctx->compnt_list[cluster]->activated = FALSE;
             cli_print(cli, "%s is deactivated", compnt_ctx->compnt_list[cluster]->name);
@@ -1285,7 +1232,7 @@ int component_cli(cli_t *cli, char **args)
  * \param ev_num The number of components for each event
  * \param ev_list The components listening to each event
  */
-static int clean_structs(int num_compnts, compnt_t **compnt_list, int *ev_num, compnt_t ***ev_list)
+static int clean_up_outdated_data(int num_compnts, compnt_t **compnt_list, int *ev_num, compnt_t ***ev_list)
 {
     if (compnt_list != NULL) {
         int i;
@@ -1361,7 +1308,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
     int *ev_num = (int *)MALLOC(sizeof(int) * __MAX_EVENTS);
     if (ev_num == NULL) {
         PERROR("malloc");
-        clean_structs(num_compnts, compnt_list, NULL, NULL);
+        clean_up_outdated_data(num_compnts, compnt_list, NULL, NULL);
         json_decref(json);
         return -1;
     } else {
@@ -1371,7 +1318,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
     compnt_t ***ev_list = (compnt_t ***)MALLOC(sizeof(compnt_t **) * __MAX_EVENTS);
     if (ev_list == NULL) {
         PERROR("malloc");
-        clean_structs(num_compnts, compnt_list, ev_num, NULL);
+        clean_up_outdated_data(num_compnts, compnt_list, ev_num, NULL);
         json_decref(json);
         return -1;
     } else {
@@ -1380,7 +1327,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
             ev_list[i] = (compnt_t **)MALLOC(sizeof(compnt_t *) * __MAX_COMPONENTS);
             if (ev_list[i] == NULL) {
                 PERROR("malloc");
-                clean_structs(num_compnts, compnt_list, ev_num, ev_list);
+                clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
                 json_decref(json);
                 return -1;
             } else {
@@ -1441,16 +1388,10 @@ int component_load(cli_t *cli, ctx_t *ctx)
             strcpy(status, json_string_value(j_status));
         }
 
-        char pull_addr[__CONF_WORD_LEN] = {0};
-        json_t *j_pull_addr = json_object_get(data, "pull_addr");
-        if (json_is_string(j_pull_addr)) {
-            strcpy(pull_addr, json_string_value(j_pull_addr));
-        }
-
-        char reply_addr[__CONF_WORD_LEN] = {0};
-        json_t *j_reply_addr = json_object_get(data, "reply_addr");
-        if (json_is_string(j_reply_addr)) {
-            strcpy(reply_addr, json_string_value(j_reply_addr));
+        char push_addr[__CONF_WORD_LEN] = {0};
+        json_t *j_push_addr = json_object_get(data, "push_addr");
+        if (json_is_string(j_push_addr)) {
+            strcpy(push_addr, json_string_value(j_push_addr));
         }
 
         // find the index of a component to link the corresponding functions
@@ -1467,7 +1408,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
         compnt_t *c = calloc(1, sizeof(compnt_t));
         if (!c) {
              PERROR("calloc");
-             clean_structs(num_compnts, compnt_list, ev_num, ev_list);
+             clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
              json_decref(json);
              return -1;
         }
@@ -1479,7 +1420,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
         if (strlen(name) == 0) {
             cli_print(cli, "No component name");
             FREE(c);
-            clean_structs(num_compnts, compnt_list, ev_num, ev_list);
+            clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
             json_decref(json);
             return -1;
         } else {
@@ -1489,9 +1430,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
             // set the actual ID
             c->component_id = hash_func((uint32_t *)&c->name, __HASHING_NAME_LENGTH);
 
-#ifdef __SHOW_COMPONENT_ID
             cli_print(cli, "     ID: %u", c->component_id);
-#endif /* __SHOW_COMPONENT_ID */
         }
 
         // set arguments
@@ -1538,22 +1477,12 @@ int component_load(cli_t *cli, ctx_t *ctx)
             c->cleanup = NULL;
             c->cli = NULL;
 
-            if (strlen(pull_addr) > 0) {
-                strcpy(c->pull_addr, pull_addr);
+            if (strlen(push_addr) > 0) {
+                strcpy(c->push_addr, push_addr);
             } else {
-                 cli_print(cli, "No pulling address");
+                 cli_print(cli, "No push address");
                  FREE(c);
-                 clean_structs(num_compnts, compnt_list, ev_num, ev_list);
-                 json_decref(json);
-                 return -1;
-            }
-
-            if (strlen(reply_addr) > 0) {
-                strcpy(c->reply_addr, reply_addr);
-            } else {
-                 cli_print(cli, "No replying address");
-                 FREE(c);
-                 clean_structs(num_compnts, compnt_list, ev_num, ev_list);
+                 clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
                  json_decref(json);
                  return -1;
             }
@@ -1575,7 +1504,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
                 c->role = COMPNT_SECURITY_V2;
             else if (strcmp(role, "admin") == 0)
                 c->role = COMPNT_ADMIN;
-            else
+            else // default
                 c->role = COMPNT_NETWORK;
         }
         cli_print(cli, "     Role: %s", role);
@@ -1620,10 +1549,15 @@ int component_load(cli_t *cli, ctx_t *ctx)
             for (j=0; j<json_array_size(events); j++) {
                 json_t *event = json_array_get(events, j);
 
-                if (event_type(json_string_value(event)) == EV_NUM_EVENTS) {
+                char in_name[__CONF_WORD_LEN] = {0};
+                char in_perm[__CONF_SHORT_LEN] = {0};
+
+                sscanf(json_string_value(event), "%[^,],%[^,]", in_name, in_perm);
+
+                if (event_type(in_name) == EV_NUM_EVENTS) {
                     cli_print(cli, "     Inbounds: wrong event name");
                     FREE(c);
-                    clean_structs(num_compnts, compnt_list, ev_num, ev_list);
+                    clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
                     json_decref(json);
                     return -1;
                 }
@@ -1633,13 +1567,32 @@ int component_load(cli_t *cli, ctx_t *ctx)
             for (j=0; j<json_array_size(events); j++) {
                 json_t *event = json_array_get(events, j);
 
-                if (event_type(json_string_value(event)) == EV_NONE) {
+                char in_name[__CONF_WORD_LEN] = {0};
+                char in_perm[__CONF_SHORT_LEN] = {0};
+                int in_perm_val = 0;
+
+                sscanf(json_string_value(event), "%[^,],%[^,]", in_name, in_perm);
+
+                int plen = (strlen(in_perm) > COMPNT_MAX_PERM) ? COMPNT_MAX_PERM : strlen(in_perm);
+                int n;
+                for (n=0; n<plen; n++) {
+                    if (in_perm[n] == 'r')
+                        in_perm_val |= COMPNT_READ;
+                    else if (in_perm[n] == 'w')
+                        in_perm_val |= COMPNT_WRITE;
+                    else if (perm[l] == 'x')
+                        in_perm_val |= COMPNT_EXECUTE;
+                }
+                if (in_perm_val == 0) in_perm_val |= COMPNT_READ;
+                else in_perm_val &= c->perm;
+
+                if (event_type(in_name) == EV_NONE) {
                     break;
-                } else if (event_type(json_string_value(event)) == EV_ALL_UPSTREAM) {
+                } else if (event_type(in_name) == EV_ALL_UPSTREAM) {
                     if (c->role < COMPNT_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(c);
-                        clean_structs(num_compnts, compnt_list, ev_num, ev_list);
+                        clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
                         json_decref(json);
                         return -1;
                     }
@@ -1649,16 +1602,17 @@ int component_load(cli_t *cli, ctx_t *ctx)
                         real_event_cnt++;
 
                         c->in_list[c->in_num] = k;
+                        c->in_perm[k] = in_perm_val;
                         c->in_num++;
 
                         ev_list[k][ev_num[k]] = c;
                         ev_num[k]++;
                     }
-                } else if (event_type(json_string_value(event)) == EV_ALL_DOWNSTREAM) {
+                } else if (event_type(in_name) == EV_ALL_DOWNSTREAM) {
                     if (c->role < COMPNT_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(c);
-                        clean_structs(num_compnts, compnt_list, ev_num, ev_list);
+                        clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
                         json_decref(json);
                         return -1;
                     }
@@ -1668,16 +1622,17 @@ int component_load(cli_t *cli, ctx_t *ctx)
                         real_event_cnt++;
 
                         c->in_list[c->in_num] = k;
+                        c->in_perm[k] = in_perm_val;
                         c->in_num++;
 
                         ev_list[k][ev_num[k]] = c;
                         ev_num[k]++;
                     }
-                } else if (event_type(json_string_value(event)) == EV_WRT_INTSTREAM) {
+                } else if (event_type(in_name) == EV_WRT_INTSTREAM) {
                     if (c->role < COMPNT_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(c);
-                        clean_structs(num_compnts, compnt_list, ev_num, ev_list);
+                        clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
                         json_decref(json);
                         return -1;
                     }
@@ -1687,16 +1642,17 @@ int component_load(cli_t *cli, ctx_t *ctx)
                         real_event_cnt++;
 
                         c->in_list[c->in_num] = k;
+                        c->in_perm[k] = in_perm_val;
                         c->in_num++;
 
                         ev_list[k][ev_num[k]] = c;
                         ev_num[k]++;
                     }
-                } else if (event_type(json_string_value(event)) == EV_ALL_INTSTREAM) {
+                } else if (event_type(in_name) == EV_ALL_INTSTREAM) {
                     if (c->role < COMPNT_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(c);
-                        clean_structs(num_compnts, compnt_list, ev_num, ev_list);
+                        clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
                         json_decref(json);
                         return -1;
                     }
@@ -1706,6 +1662,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
                         real_event_cnt++;
 
                         c->in_list[c->in_num] = k;
+                        c->in_perm[k] = in_perm_val;
                         c->in_num++;
 
                         ev_list[k][ev_num[k]] = c;
@@ -1714,11 +1671,12 @@ int component_load(cli_t *cli, ctx_t *ctx)
                 } else {
                     real_event_cnt++;
 
-                    c->in_list[c->in_num] = event_type(json_string_value(event));
+                    c->in_list[c->in_num] = event_type(in_name);
+                    c->in_perm[event_type(in_name)] = in_perm_val;
                     c->in_num++;
 
-                    ev_list[event_type(json_string_value(event))][ev_num[event_type(json_string_value(event))]] = c;
-                    ev_num[event_type(json_string_value(event))]++;
+                    ev_list[event_type(in_name)][ev_num[event_type(in_name)]] = c;
+                    ev_num[event_type(in_name)]++;
                 }
             }
 
@@ -1741,31 +1699,31 @@ int component_load(cli_t *cli, ctx_t *ctx)
                 if (event_type(json_string_value(out_event)) == EV_ALL_UPSTREAM) {
                     cli_print(cli, "     Outbounds: wrong event name");
                     FREE(c);
-                    clean_structs(num_compnts, compnt_list, ev_num, ev_list);
+                    clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
                     json_decref(json);
                     return -1;
                 } else if (event_type(json_string_value(out_event)) == EV_ALL_DOWNSTREAM) {
                     cli_print(cli, "     Outbounds: wrong event name");
                     FREE(c);
-                    clean_structs(num_compnts, compnt_list, ev_num, ev_list);
+                    clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
                     json_decref(json);
                     return -1;
                 } else if (event_type(json_string_value(out_event)) == EV_WRT_INTSTREAM) {
                     cli_print(cli, "     Outbounds: wrong event name");
                     FREE(c);
-                    clean_structs(num_compnts, compnt_list, ev_num, ev_list);
+                    clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
                     json_decref(json);
                     return -1;
                 } else if (event_type(json_string_value(out_event)) == EV_ALL_INTSTREAM) {
                     cli_print(cli, "     Outbounds: wrong event name");
                     FREE(c);
-                    clean_structs(num_compnts, compnt_list, ev_num, ev_list);
+                    clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
                     json_decref(json);
                     return -1;
                 } else if (event_type(json_string_value(out_event)) == EV_NUM_EVENTS) {
                     cli_print(cli, "     Outbounds: wrong event name");
                     FREE(c);
-                    clean_structs(num_compnts, compnt_list, ev_num, ev_list);
+                    clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
                     json_decref(json);
                     return -1;
                 }
@@ -1861,13 +1819,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
                     new->status = old->status;
                     new->activated = old->activated;
 
-                    int k;
-                    for (k=0; k<__NUM_PULL_THREADS; k++) {
-                        new->push_sock[k] = old->push_sock[k];
-                        new->push_lock[k] = old->push_lock[k];
-                    }
-
-                    new->req_ctx = old->req_ctx;
+                    new->push_ctx = old->push_ctx;
 
                     break;
                 }
@@ -1903,7 +1855,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
     compnt_ctx->ev_list = ev_list;
 
     // deallocate previous pointers
-    clean_structs(temp_num_compnts, temp_compnt_list, temp_ev_num, temp_ev_list);
+    clean_up_outdated_data(temp_num_compnts, temp_compnt_list, temp_ev_num, temp_ev_list);
 
     return 0;
 }

@@ -12,3 +12,4 @@
 #include "common.h"
 #include "event.h"
 
+#define STAT_MGMT_REQUEST_TIME 5

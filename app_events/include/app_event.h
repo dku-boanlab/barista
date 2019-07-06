@@ -55,6 +55,5 @@ typedef struct _app_event_out_t {
     };
 } app_event_out_t;
 
-int app_event_init(ctx_t *ctx);
-int destroy_av_workers(ctx_t *ctx);
-
+int init_app_event(ctx_t *ctx);
+int destroy_app_event(ctx_t *ctx);

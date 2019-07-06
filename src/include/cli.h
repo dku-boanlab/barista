@@ -13,4 +13,3 @@
 #include "context.h"
 
 int start_cli(ctx_t *ctx);
-

@@ -14,3 +14,5 @@
 #include "hash.h"
 #include "str.h"
 
+/** \brief The default application role file */
+#define DEFAULT_APP_ROLE_FILE "config/app_events.role"

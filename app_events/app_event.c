@@ -17,23 +17,25 @@
 
 #include "app_event.h"
 #include "application.h"
-#include "cli.h"
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief Global context structure */
+/** \brief The context of the Barista NOS */
 static ctx_t *av_ctx;
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief MQ context to pull app events */
+void *av_pull_ctx;
+
+/** \brief MQ socket to pull app events */
+void *av_pull_sock;
+
 /** \brief MQ context to reply app events */
 void *av_rep_ctx;
 
-/** \brief MQ socket to reply app events (application-side) */
-void *av_rep_app;
-
-/** \brief MQ socket to reply app events (worker-side) */
-void *av_rep_work;
+/** \brief MQ socket to reply app events */
+void *av_rep_sock;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -242,7 +244,7 @@ static void *meta_app_events(void *null)
  * \brief Function to initialize the app event handler
  * \param ctx The context of the Barista NOS
  */
-int app_event_init(ctx_t *ctx)
+int init_app_event(ctx_t *ctx)
 {
     av_ctx = ctx;
 
@@ -260,16 +262,15 @@ int app_event_init(ctx_t *ctx)
 
         // pull
 
-        char pull_type[__CONF_WORD_LEN];
-        char pull_addr[__CONF_WORD_LEN];
-        int pull_port;
+        av_pull_ctx = zmq_ctx_new();
+        av_pull_sock = zmq_socket(av_pull_ctx, ZMQ_PULL);
 
-        sscanf(EXT_APP_PULL_ADDR, "%[^:]://%[^:]:%d", pull_type, pull_addr, &pull_port);
+        if (zmq_bind(av_pull_sock, __EXT_APP_PULL_ADDR)) {
+            PERROR("zmq_bind");
+            return -1;
+        }
 
-        init_buffers();
-        create_epoll_env(pull_type, pull_addr, pull_port);
-
-        if (pthread_create(&thread, NULL, &socket_listen, NULL) < 0) {
+        if (pthread_create(&thread, NULL, &pull_app_events, NULL) < 0) {
             PERROR("pthread_create");
             return -1;
         }
@@ -277,29 +278,14 @@ int app_event_init(ctx_t *ctx)
         // reply
 
         av_rep_ctx = zmq_ctx_new();
-        av_rep_app = zmq_socket(av_rep_ctx, ZMQ_ROUTER);
+        av_rep_sock = zmq_socket(av_rep_ctx, ZMQ_REP);
 
-        if (zmq_bind(av_rep_app, EXT_APP_REPLY_ADDR)) {
+        if (zmq_bind(av_rep_sock, __EXT_APP_REPLY_ADDR)) {
             PERROR("zmq_bind");
             return -1;
         }
 
-        av_rep_work = zmq_socket(av_rep_ctx, ZMQ_DEALER);
-
-        if (zmq_bind(av_rep_work, "inproc://av_reply_workers")) {
-            PERROR("zmq_bind");
-            return -1;
-        }
-
-        int i;
-        for (i=0; i<__NUM_REP_THREADS; i++) {
-            if (pthread_create(&thread, NULL, &reply_app_events, NULL) < 0) {
-                PERROR("pthread_create");
-                return -1;
-            }
-        }
-
-        if (pthread_create(&thread, NULL, &reply_proxy, ctx) < 0) {
+        if (pthread_create(&thread, NULL, &reply_app_events, NULL) < 0) {
             PERROR("pthread_create");
             return -1;
         }
@@ -312,18 +298,16 @@ int app_event_init(ctx_t *ctx)
  * \brief Function to destroy an app event queue
  * \param ctx The context of the Barista NOS
  */
-int destroy_av_workers(ctx_t *ctx)
+int destroy_app_event(ctx_t *ctx)
 {
     ctx->av_on = FALSE;
 
     waitsec(1, 0);
 
-    destroy_epoll_env();
-    FREE(buffer);
+    zmq_close(av_pull_sock);
+    zmq_close(av_rep_sock);
 
-    zmq_close(av_rep_app);
-    zmq_close(av_rep_work);
-
+    zmq_ctx_destroy(av_pull_ctx);
     zmq_ctx_destroy(av_rep_ctx);
 
     return 0;

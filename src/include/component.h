@@ -78,14 +78,8 @@ struct _compnt_t {
     int priority; /**< Priority */
     int activated; /**< Activation */
 
-    void *req_ctx; /**< Context to request events */
-
-    uint32_t push_ptr; /**< Socket pointer to push events */
-    int push_sock[__NUM_PULL_THREADS]; /**< Socket to push events */
-    pthread_spinlock_t push_lock[__NUM_PULL_THREADS]; /**< Lock for push_sock */
-
-    char pull_addr[__CONF_WORD_LEN]; /**< Component-side pulling address */
-    char reply_addr[__CONF_WORD_LEN]; /**< Component-side replying address */
+    void *push_ctx; /**< Push context */
+    char push_addr[__CONF_WORD_LEN]; /**< Push address */
 
     compnt_main_f main; /**< The main function pointer */
     compnt_handler_f handler; /**< The handler function pointer */
@@ -94,6 +88,7 @@ struct _compnt_t {
 
     int in_num; /**< The number of inbound events */
     int in_list[__MAX_EVENTS]; /**< Inbound events */
+    int in_perm[__MAX_EVENTS]; /**< Inbound event permissions */
 
     int out_num; /**< The number of outbound events */
     int out_list[__MAX_EVENTS]; /**< Outbound events */
@@ -126,4 +121,3 @@ int component_show_policy(cli_t *, char *);
 int component_show(cli_t *, char *);
 int component_list(cli_t *);
 int component_cli(cli_t *, char **);
-

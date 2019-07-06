@@ -13,3 +13,6 @@
 #include "event.h"
 #include <sys/time.h>
 
+#define TRAFFIC_MGMT_MONITOR_TIME 1
+#define TRAFFIC_MGMT_HISTORY 86400
+#define DEFAULT_TRAFFIC_FILE "../log/traffic.log"

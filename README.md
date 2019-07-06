@@ -6,7 +6,7 @@
 
 # Configuration
 - The configuration of the Barista NOS: config.mk
-- The configurations of components and applications: bin/config/
+- The configurations of components and applications: bin/config
 - The internal configurations for developers: src/include/common.h
 
 # Test environment

@@ -11,13 +11,11 @@ static int ODP_FUNC(odp_t *odp, const ODP_TYPE *data)
 {
     int pass = TRUE; // assume that there is no matched policy
 
-    if (odp[0].flag == 0)
-        return FALSE; // there is no policy
+    if (odp[0].flag == 0) return FALSE; // there is no policy
 
     int i;
     for (i=0; i<__MAX_POLICIES; i++) {
-        if (odp[i].flag == 0) // No more ODP
-            break;
+        if (odp[i].flag == 0) break; // No more ODP
 
         int cnt = 0, match = 0;
 
@@ -26,8 +24,7 @@ static int ODP_FUNC(odp_t *odp, const ODP_TYPE *data)
 
             int j;
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
-                if (odp[i].dpid[j] == 0) // No more DPID
-                    break;
+                if (odp[i].dpid[j] == 0) break; // No more DPID
 
                 if (odp[i].dpid[j] == data->dpid) {
                     match++;
@@ -41,8 +38,7 @@ static int ODP_FUNC(odp_t *odp, const ODP_TYPE *data)
 
             int j;
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
-                if (odp[i].port[j] == 0) // No more port
-                    break;
+                if (odp[i].port[j] == 0) break; // No more port
 
                 if (odp[i].port[j] == data->port) {
                     match++;
@@ -63,8 +59,7 @@ static int ODP_FUNC(odp_t *odp, const ODP_TYPE *data)
 
             int j;
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
-                if (odp[i].vlan[j] == 0) // No more VLAN
-                    break;
+                if (odp[i].vlan[j] == 0) break; // No more VLAN
 
                 if (odp[i].vlan[j] == data->vlan_id) {
                     match++;
@@ -78,8 +73,7 @@ static int ODP_FUNC(odp_t *odp, const ODP_TYPE *data)
 
             int j;
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
-                if (odp[i].srcip[j] == 0) // No more src_ip
-                    break;
+                if (odp[i].srcip[j] == 0) break; // No more src_ip
 
                 if ((odp[i].srcip[j] & data->src_ip) == odp[i].srcip[j]) {
                     match++;
@@ -93,8 +87,7 @@ static int ODP_FUNC(odp_t *odp, const ODP_TYPE *data)
 
             int j;
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
-                if (odp[i].dstip[j] == 0) // No more dst_ip
-                    break;
+                if (odp[i].dstip[j] == 0) break; // No more dst_ip
 
                 if ((odp[i].dstip[j] & data->dst_ip) == odp[i].dstip[j]) {
                     match++;
@@ -108,8 +101,7 @@ static int ODP_FUNC(odp_t *odp, const ODP_TYPE *data)
 
             int j;
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
-                if (odp[i].sport[j] == 0) // No more sport
-                    break;
+                if (odp[i].sport[j] == 0) break; // No more sport
 
                 if (odp[i].sport[j] == data->src_port) {
                     match++;
@@ -123,8 +115,7 @@ static int ODP_FUNC(odp_t *odp, const ODP_TYPE *data)
 
             int j;
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
-                if (odp[i].dport[j] == 0) // No more dport
-                    break;
+                if (odp[i].dport[j] == 0) break; // No more dport
 
                 if (odp[i].dport[j] == data->dst_port) {
                     match++;
@@ -141,4 +132,3 @@ static int ODP_FUNC(odp_t *odp, const ODP_TYPE *data)
 
     return pass;
 }
-

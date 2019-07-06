@@ -40,7 +40,7 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief Global context structure */
+/** \brief The context of the Barista NOS */
 ctx_t *cli_ctx;
 
 /** \brief The pointer of the CLI context */

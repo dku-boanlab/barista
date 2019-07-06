@@ -15,6 +15,9 @@
 struct _ctx_t {
     int autostart; /**< Autostart */
 
+    // event handler
+    int ev_on; /**< The running flag of the event handler */
+
     // component
     int compnt_on; /**< Component flag */
     char conf_file[__CONF_WORD_LEN]; /**< Component configuration file */
@@ -30,8 +33,8 @@ struct _ctx_t {
     meta_event_t meta_event[__MAX_META_EVENTS]; /**< Meta events */
 #endif /* __ENABLE_META_EVENTS */
 
-    // event handler
-    int ev_on; /**< The running flag of the event handler */
+    // app event handler
+    int av_on; /**< The running flag of the application event handler */
 
     // application
     int app_on; /**< Application flag */
@@ -47,10 +50,6 @@ struct _ctx_t {
     int num_app_events[__MAX_APP_EVENTS]; /**< Counters for each app event */
     meta_event_t meta_app_event[__MAX_META_EVENTS]; /**< Meta app events */
 #endif /* __ENABLE_META_EVENTS */
-
-    // app event handler
-    int av_on; /**< The running flag of the application event handler */
 };
 
-int ctx_init(ctx_t *ctx);
-
+int init_ctx(ctx_t *ctx);

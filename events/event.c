@@ -17,23 +17,25 @@
 
 #include "event.h"
 #include "component.h"
-#include "cli.h"
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief Global context structure */
+/** \brief The context of the Barista NOS */
 static ctx_t *ev_ctx;
 
 /////////////////////////////////////////////////////////////////////
 
+/** \brief MQ context to pull events */
+void *ev_pull_ctx;
+
+/** \brief MQ socket to pull events */
+void *ev_pull_sock;
+
 /** \brief MQ context to reply events */
 void *ev_rep_ctx;
 
-/** \brief MQ socket to reply events (component-side) */
-void *ev_rep_comp;
-
-/** \brief MQ socket to reply events (worker-side)  */
-void *ev_rep_work;
+/** \brief MQ socket to reply events */
+void *ev_rep_sock;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -285,7 +287,7 @@ static void *meta_events(void *null)
  * \brief Function to initialize the event handler
  * \param ctx The context of the Barista NOS
  */
-int event_init(ctx_t *ctx)
+int init_event(ctx_t *ctx)
 {
     ev_ctx = ctx;
 
@@ -303,16 +305,15 @@ int event_init(ctx_t *ctx)
 
         // pull
 
-        char pull_type[__CONF_WORD_LEN];
-        char pull_addr[__CONF_WORD_LEN];
-        int pull_port;
+        ev_pull_ctx = zmq_ctx_new();
+        ev_pull_sock = zmq_socket(ev_pull_ctx, ZMQ_PULL);
 
-        sscanf(EXT_COMP_PULL_ADDR, "%[^:]://%[^:]:%d", pull_type, pull_addr, &pull_port);
+        if (zmq_bind(ev_pull_sock, __EXT_COMP_PULL_ADDR)) {
+            PERROR("zmq_bind");
+            return -1;
+        }
 
-        init_buffers();
-        create_epoll_env(pull_type, pull_addr, pull_port);
-
-        if (pthread_create(&thread, NULL, &socket_listen, NULL) < 0) {
+        if (pthread_create(&thread, NULL, &pull_events, NULL) < 0) {
             PERROR("pthread_create");
             return -1;
         }
@@ -320,29 +321,14 @@ int event_init(ctx_t *ctx)
         // reply
 
         ev_rep_ctx = zmq_ctx_new();
-        ev_rep_comp = zmq_socket(ev_rep_ctx, ZMQ_ROUTER);
+        ev_rep_sock = zmq_socket(ev_rep_ctx, ZMQ_REP);
 
-        if (zmq_bind(ev_rep_comp, EXT_COMP_REPLY_ADDR)) {
+        if (zmq_bind(ev_rep_sock, __EXT_COMP_REPLY_ADDR)) {
             PERROR("zmq_bind");
             return -1;
         }
 
-        ev_rep_work = zmq_socket(ev_rep_ctx, ZMQ_DEALER);
-
-        if (zmq_bind(ev_rep_work, "inproc://ev_reply_workers")) {
-            PERROR("zmq_bind");
-            return -1;
-        }
-
-        int i;
-        for (i=0; i<__NUM_REP_THREADS; i++) {
-            if (pthread_create(&thread, NULL, &reply_events, NULL) < 0) {
-                PERROR("pthread_create");
-                return -1;
-            }
-        }
-
-        if (pthread_create(&thread, NULL, &reply_proxy, ctx) < 0) {
+        if (pthread_create(&thread, NULL, &reply_events, NULL) < 0) {
             PERROR("pthread_create");
             return -1;
         }
@@ -355,18 +341,16 @@ int event_init(ctx_t *ctx)
  * \brief Function to destroy an event queue
  * \param ctx The context of the Barista NOS
  */
-int destroy_ev_workers(ctx_t *ctx)
+int destroy_event(ctx_t *ctx)
 {
     ctx->ev_on = FALSE;
 
     waitsec(1, 0);
 
-    destroy_epoll_env();
-    FREE(buffer);
+    zmq_close(ev_pull_sock);
+    zmq_close(ev_rep_sock);
 
-    zmq_close(ev_rep_comp);
-    zmq_close(ev_rep_work);
-
+    zmq_ctx_destroy(ev_pull_ctx);
     zmq_ctx_destroy(ev_rep_ctx);
 
     return 0;

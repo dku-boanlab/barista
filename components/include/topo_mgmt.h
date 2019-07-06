@@ -14,3 +14,4 @@
 #include "event.h"
 #include "lldp.h"
 
+#define TOPO_MGMT_REQUEST_TIME 5

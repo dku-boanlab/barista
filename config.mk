@@ -4,6 +4,12 @@ CONFIG= \
     __CLI_ALLOW_CONNECT=\"127.0.0.1\" \
     __CLI_PORT=8000 \
     \
+    __EXT_COMP_PULL_ADDR=\"tcp://127.0.0.1:5001\" \
+    __EXT_COMP_REPLY_ADDR=\"tcp://127.0.0.1:5002\" \
+    \
+    __EXT_APP_PULL_ADDR=\"tcp://127.0.0.1:6001\" \
+    __EXT_APP_REPLY_ADDR=\"tcp://127.0.0.1:6002\" \
+    \
     __MAX_COMPONENTS=20 \
     __MAX_EVENTS=80 \
     __MAX_EVENT_CHAINS=10 \
@@ -21,7 +27,6 @@ CONFIG= \
     __MAX_NUM_SWITCHES=128 \
     __MAX_NUM_PORTS=64 \
     \
-    #__ANALYZE_BARISTA \
     #__ENABLE_CBENCH \
     #\
     #__ENABLE_META_EVENTS \

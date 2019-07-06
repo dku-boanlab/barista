@@ -6,7 +6,7 @@
  * \ingroup util
  * @{
  *
- * \defgroup str String Functions
+ * \defgroup str Configuration File Processing Functions
  * \brief Functions to process configuration files
  * @{
  */

@@ -1,5 +1,4 @@
 #!/bin/bash
 
-# compile libcli
+# install libcli
 make && sudo make install && make clean
-

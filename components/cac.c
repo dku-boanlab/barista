@@ -81,7 +81,7 @@ static int config_load(char *conf_file)
     LOG_INFO(CAC_ID, "Component configuration file: %s", conf_file);
 
     if (access(conf_file, F_OK)) {
-        LOG_ERROR(CAC_ID, "No configuration file whose name is '%s'", conf_file);
+        LOG_ERROR(CAC_ID, "No configuration file (%s)", conf_file);
         return -1;
     }
 
@@ -90,10 +90,10 @@ static int config_load(char *conf_file)
 
     json = json_loads(conf, 0, &error);
     if (!json) {
-        LOG_ERROR(CAC_ID, "json_loads() error");
+        LOG_ERROR(CAC_ID, "json_loads()");
         return -1;
     } else if (!json_is_array(json)) {
-        LOG_ERROR(CAC_ID, "json_is_array() error");
+        LOG_ERROR(CAC_ID, "json_is_array()");
         json_decref(json);
         return -1;
     }
@@ -125,7 +125,7 @@ static int config_load(char *conf_file)
                 json_t *event = json_array_get(events, j);
 
                 if (ev_type(json_string_value(event)) == EV_NUM_EVENTS) {
-                    LOG_ERROR(CAC_ID, "Wrong event name: %s", json_string_value(event));
+                    LOG_ERROR(CAC_ID, "Wrong event name (%s)", json_string_value(event));
                     json_decref(json);
                     return -1;
                 }
@@ -170,7 +170,7 @@ static int config_load(char *conf_file)
                 json_t *out_event = json_array_get(out_events, j);
 
                 if (ev_type(json_string_value(out_event)) == EV_NUM_EVENTS) {
-                    LOG_ERROR(CAC_ID, "Wrong event name: %s", json_string_value(out_event));
+                    LOG_ERROR(CAC_ID, "Wrong event name (%s)", json_string_value(out_event));
                     json_decref(json);
                     return -1;
                 }
@@ -229,7 +229,7 @@ int cac_main(int *activated, int argc, char **argv)
 
     component = (component_t *)CALLOC(__MAX_COMPONENTS, sizeof(component_t));
     if (component == NULL) {
-        LOG_ERROR(CAC_ID, "calloc() error");
+        LOG_ERROR(CAC_ID, "calloc()");
         return -1;
     }
 

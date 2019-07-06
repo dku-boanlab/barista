@@ -21,7 +21,7 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief Global context structure */
+/** \brief The context of the Barista NOS */
 ctx_t *app_ctx;
 
 /////////////////////////////////////////////////////////////////////
@@ -161,9 +161,7 @@ int app_event_list(cli_t *cli)
         else if (strcmp(app_event_string[i], "AV_ALL_INTSTREAM") == 0)
             continue;
         else {
-            char buf[__CONF_STR_LEN];
-
-            cli_bufcls(buf);
+            char buf[__CONF_STR_LEN] = {0};
             cli_buffer(buf, "  %s: ", app_event_string[i]);
 
             int j;
@@ -191,9 +189,7 @@ int app_event_list(cli_t *cli)
  */
 static int application_print(cli_t *cli, app_t *a, int details)
 {
-    char buf[__CONF_STR_LEN];
-
-    cli_bufcls(buf);
+    char buf[__CONF_STR_LEN] = {0};
     cli_buffer(buf, "%2d: %s", a->id+1, a->name);
 
     if (details == FALSE) {
@@ -394,10 +390,9 @@ int application_disable(cli_t *cli, char *name)
 static void *app_thread_main(void *a_id)
 {
     int id = *(int *)a_id;
+    app_t *a = app_ctx->app_list[id];
 
     FREE(a_id);
-
-    app_t *a = app_ctx->app_list[id];
 
     if (a->main(&a->activated, a->argc, a->argv) < 0) {
         a->activated = FALSE;
@@ -455,13 +450,7 @@ int application_activate(cli_t *cli, char *name)
                         }
                     // external?
                     } else {
-                        int j;
-                        for (j=0; j<__NUM_PULL_THREADS; j++) {
-                            app_ctx->app_list[i]->push_sock[j] = 0;
-                            pthread_spin_init(&app_ctx->app_list[i]->push_lock[j], PTHREAD_PROCESS_PRIVATE);
-                        }
-
-                        app_ctx->app_list[i]->req_ctx = zmq_ctx_new();
+                        app_ctx->app_list[i]->push_ctx = zmq_ctx_new();
 
                         cli_print(cli, "%s is ready to talk", app_ctx->app_list[i]->name);
                     }
@@ -512,15 +501,8 @@ int application_deactivate(cli_t *cli, char *name)
                         }
                     // external?
                     } else {
-                        int j;
-                        for (j=0; j<__NUM_PULL_THREADS; j++) {
-                            pthread_spin_destroy(&app_ctx->app_list[i]->push_lock[j]);
-                            close(app_ctx->app_list[i]->push_sock[j]);
-                            app_ctx->app_list[i]->push_sock[j] = 0;
-                        }
-
-                        zmq_ctx_destroy(app_ctx->app_list[i]->req_ctx);
-                        app_ctx->app_list[i]->req_ctx = NULL;
+                        zmq_ctx_destroy(app_ctx->app_list[i]->push_ctx);
+                        app_ctx->app_list[i]->push_ctx = NULL;
 
                         app_ctx->app_list[i]->activated = FALSE;
                         cli_print(cli, "%s is deactivated", app_ctx->app_list[i]->name);
@@ -595,15 +577,8 @@ int application_start(cli_t *cli)
                 }
             // external?
             } else {
-                int j;
-                for (j=0; j<__NUM_PULL_THREADS; j++) {
-                    app_ctx->app_list[appint]->push_sock[j] = 0;
-                    pthread_spin_init(&app_ctx->app_list[appint]->push_lock[j], PTHREAD_PROCESS_PRIVATE);
-                }
-
-                app_ctx->app_list[appint]->req_ctx = zmq_ctx_new();
-
-                cli_print(cli, "%s is ready to talk", app_ctx->app_list[appint]->name);
+                cli_print(cli, "%s should be in the Barista NOS", app_ctx->app_list[appint]->name);
+                return -1;
             }
         }
     }
@@ -643,13 +618,7 @@ int application_start(cli_t *cli)
                     }
                 // external?
                 } else {
-                    int j;
-                    for (j=0; j<__NUM_PULL_THREADS; j++) {
-                        app_ctx->app_list[i]->push_sock[j] = 0;
-                        pthread_spin_init(&app_ctx->app_list[i]->push_lock[j], PTHREAD_PROCESS_PRIVATE);
-                    }
-
-                    app_ctx->app_list[i]->req_ctx = zmq_ctx_new();
+                    app_ctx->app_list[i]->push_ctx = zmq_ctx_new();
 
                     cli_print(cli, "%s is ready to talk", app_ctx->app_list[i]->name);
                 }
@@ -702,15 +671,8 @@ int application_stop(cli_t *cli)
                     }
                 // external?
                 } else {
-                    int j;
-                    for (j=0; j<__NUM_PULL_THREADS; j++) {
-                        pthread_spin_destroy(&app_ctx->app_list[i]->push_lock[j]);
-                        close(app_ctx->app_list[i]->push_sock[j]);
-                        app_ctx->app_list[i]->push_sock[j] = 0;
-                    }
-
-                    zmq_ctx_destroy(app_ctx->app_list[i]->req_ctx);
-                    app_ctx->app_list[i]->req_ctx = NULL;
+                    zmq_ctx_destroy(app_ctx->app_list[i]->push_ctx);
+                    app_ctx->app_list[i]->push_ctx = NULL;
 
                     app_ctx->app_list[i]->activated = FALSE;
                     cli_print(cli, "%s is deactivated", app_ctx->app_list[i]->name);
@@ -732,18 +694,8 @@ int application_stop(cli_t *cli)
             }
         // external?
         } else {
-            int j;
-            for (j=0; j<__NUM_PULL_THREADS; j++) {
-                pthread_spin_destroy(&app_ctx->app_list[appint]->push_lock[j]);
-                close(app_ctx->app_list[appint]->push_sock[j]);
-                app_ctx->app_list[appint]->push_sock[j] = 0;
-            }
-
-            zmq_ctx_destroy(app_ctx->app_list[appint]->req_ctx);
-            app_ctx->app_list[appint]->req_ctx = NULL;
-
-            app_ctx->app_list[appint]->activated = FALSE;
-            cli_print(cli, "%s is deactivated", app_ctx->app_list[appint]->name);
+            cli_print(cli, "%s should be in the Barista NOS", app_ctx->app_list[appint]->name);
+            return -1;
         }
     }
 
@@ -1189,13 +1141,13 @@ int application_cli(cli_t *cli, char **args)
 }
 
 /**
- * \brief Function to deallocate all configuration structures
+ * \brief Function to deallocate old configurations
  * \param num_apps The number of registered applications
  * \param app_list The list of the applications
  * \param av_num The number of applications for each app event
  * \param av_list The applications listening to each app event
  */
-static int clean_structs(int num_apps, app_t **app_list, int *av_num, app_t ***av_list)
+static int clean_up_outdated_data(int num_apps, app_t **app_list, int *av_num, app_t ***av_list)
 {
     if (app_list != NULL) {
         int i;
@@ -1271,7 +1223,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
     int *av_num = (int *)MALLOC(sizeof(int) * __MAX_APP_EVENTS);
     if (av_num == NULL) {
         PERROR("malloc");
-        clean_structs(n_apps, app_list, NULL, NULL);
+        clean_up_outdated_data(n_apps, app_list, NULL, NULL);
         json_decref(json);
         return -1;
     } else {
@@ -1281,7 +1233,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
     app_t ***av_list = (app_t ***)MALLOC(sizeof(app_t **) * __MAX_APP_EVENTS);
     if (av_list == NULL) {
         PERROR("malloc");
-        clean_structs(n_apps, app_list, av_num, NULL);
+        clean_up_outdated_data(n_apps, app_list, av_num, NULL);
         json_decref(json);
         return -1;
     } else {
@@ -1290,7 +1242,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
             av_list[i] = (app_t **)MALLOC(sizeof(app_t *) * __MAX_APPLICATIONS);
             if (av_list[i] == NULL) {
                 PERROR("malloc");
-                clean_structs(n_apps, app_list, av_num, av_list);
+                clean_up_outdated_data(n_apps, app_list, av_num, av_list);
                 json_decref(json);
                 return -1;
             } else {
@@ -1351,16 +1303,10 @@ int application_load(cli_t *cli, ctx_t *ctx)
             strcpy(status, json_string_value(j_status));
         }
 
-        char pull_addr[__CONF_WORD_LEN] = {0};
-        json_t *j_pull_addr = json_object_get(data, "pull_addr");
-        if (json_is_string(j_pull_addr)) {
-            strcpy(pull_addr, json_string_value(j_pull_addr));
-        }
-
-        char reply_addr[__CONF_WORD_LEN] = {0};
-        json_t *j_reply_addr = json_object_get(data, "reply_addr");
-        if (json_is_string(j_reply_addr)) {
-            strcpy(reply_addr, json_string_value(j_reply_addr));
+        char push_addr[__CONF_WORD_LEN] = {0};
+        json_t *j_push_addr = json_object_get(data, "push_addr");
+        if (json_is_string(j_push_addr)) {
+            strcpy(push_addr, json_string_value(j_push_addr));
         }
 
         // find the index of an application to link the corresponding functions
@@ -1377,7 +1323,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
         app_t *a = calloc(1, sizeof(app_t));
         if (!a) {
             PERROR("calloc");
-            clean_structs(n_apps, app_list, av_num, av_list);
+            clean_up_outdated_data(n_apps, app_list, av_num, av_list);
             json_decref(json);
             return -1;
         }
@@ -1389,7 +1335,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
         if (strlen(name) == 0) {
             cli_print(cli, "No application name");
             FREE(a);
-            clean_structs(n_apps, app_list, av_num, av_list);
+            clean_up_outdated_data(n_apps, app_list, av_num, av_list);
             json_decref(json);
             return -1;
         } else {
@@ -1399,9 +1345,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
             // set the actual ID
             a->app_id = hash_func((uint32_t *)&a->name, __HASHING_NAME_LENGTH);
 
-#ifdef __SHOW_COMPONENT_ID
             cli_print(cli, "     ID: %u", a->app_id);
-#endif /* __SHOW_COMPONENT_ID */
         }
 
         // set arguments
@@ -1448,22 +1392,12 @@ int application_load(cli_t *cli, ctx_t *ctx)
             a->cleanup = NULL;
             a->cli = NULL;
 
-            if (strlen(pull_addr) > 0) {
-                strcpy(a->pull_addr, pull_addr);
+            if (strlen(push_addr) > 0) {
+                strcpy(a->push_addr, push_addr);
             } else {
-                 cli_print(cli, "No pulling address");
+                 cli_print(cli, "No push address");
                  FREE(a);
-                 clean_structs(n_apps, app_list, av_num, av_list);
-                 json_decref(json);
-                 return -1;
-            }
-
-            if (strlen(reply_addr) > 0) {
-                strcpy(a->reply_addr, reply_addr);
-            } else {
-                 cli_print(cli, "No replying address");
-                 FREE(a);
-                 clean_structs(n_apps, app_list, av_num, av_list);
+                 clean_up_outdated_data(n_apps, app_list, av_num, av_list);
                  json_decref(json);
                  return -1;
             }
@@ -1483,7 +1417,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                 a->role = APP_SECURITY;
             else if (strcmp(role, "admin") == 0)
                 a->role = APP_ADMIN;
-            else
+            else // default
                 a->role = APP_NETWORK;
         }
 
@@ -1492,7 +1426,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
             if (strcmp(a->name, base[0]) != 0) {
                  cli_print(cli, "Unauthorized base application");
                  FREE(a);
-                 clean_structs(n_apps, app_list, av_num, av_list);
+                 clean_up_outdated_data(n_apps, app_list, av_num, av_list);
                  json_decref(json);
                  return -1;
             }
@@ -1540,10 +1474,15 @@ int application_load(cli_t *cli, ctx_t *ctx)
             for (j=0; j<json_array_size(events); j++) {
                 json_t *event = json_array_get(events, j);
 
-                if (app_event_type(json_string_value(event)) == AV_NUM_EVENTS) {
+                char in_name[__CONF_WORD_LEN] = {0};
+                char in_perm[__CONF_SHORT_LEN] = {0};
+
+                sscanf(json_string_value(event), "%[^,],%[^,]", in_name, in_perm);
+
+                if (app_event_type(in_name) == AV_NUM_EVENTS) {
                     cli_print(cli, "     Inbounds: wrong app event name");
                     FREE(a);
-                    clean_structs(n_apps, app_list, av_num, av_list);
+                    clean_up_outdated_data(n_apps, app_list, av_num, av_list);
                     json_decref(json);
                     return -1;
                 }
@@ -1553,13 +1492,32 @@ int application_load(cli_t *cli, ctx_t *ctx)
             for (j=0; j<json_array_size(events); j++) {
                 json_t *event = json_array_get(events, j);
 
-                if (app_event_type(json_string_value(event)) == AV_NONE) {
+                char in_name[__CONF_WORD_LEN] = {0};
+                char in_perm[__CONF_SHORT_LEN] = {0};
+                int in_perm_val = 0;
+
+                sscanf(json_string_value(event), "%[^,],%[^,]", in_name, in_perm);
+
+                int plen = (strlen(in_perm) > APP_MAX_PERM) ? APP_MAX_PERM : strlen(in_perm);
+                int n;
+                for (n=0; n<plen; n++) {
+                    if (in_perm[n] == 'r')
+                        in_perm_val |= APP_READ;
+                    else if (in_perm[n] == 'w')
+                        in_perm_val |= APP_WRITE;
+                    else if (perm[l] == 'x')
+                        in_perm_val |= APP_EXECUTE;
+                }
+                if (in_perm_val == 0) in_perm_val |= APP_READ;
+                else in_perm_val &= a->perm;
+
+                if (app_event_type(in_name) == AV_NONE) {
                     break;
-                } else if (app_event_type(json_string_value(event)) == AV_ALL_UPSTREAM) {
+                } else if (app_event_type(in_name) == AV_ALL_UPSTREAM) {
                     if (APP_BASE < a->role && a->role < APP_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(a);
-                        clean_structs(n_apps, app_list, av_num, av_list);
+                        clean_up_outdated_data(n_apps, app_list, av_num, av_list);
                         json_decref(json);
                         return -1;
                     }
@@ -1569,16 +1527,17 @@ int application_load(cli_t *cli, ctx_t *ctx)
                         real_event_cnt++;
 
                         a->in_list[a->in_num] = m;
+                        a->in_perm[m] = in_perm_val;
                         a->in_num++;
 
                         av_list[m][av_num[m]] = a;
 	                av_num[m]++;
                     }
-                } else if (app_event_type(json_string_value(event)) == AV_ALL_DOWNSTREAM) {
+                } else if (app_event_type(in_name) == AV_ALL_DOWNSTREAM) {
                     if (APP_BASE < a->role && a->role < APP_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(a);
-                        clean_structs(n_apps, app_list, av_num, av_list);
+                        clean_up_outdated_data(n_apps, app_list, av_num, av_list);
                         json_decref(json);
                         return -1;
                     }
@@ -1588,16 +1547,17 @@ int application_load(cli_t *cli, ctx_t *ctx)
                         real_event_cnt++;
 
                         a->in_list[a->in_num] = m;
+                        a->in_perm[m] = in_perm_val;
                         a->in_num++;
 
 			av_list[m][av_num[m]] = a;
 			av_num[m]++;
                     }
-                } else if (app_event_type(json_string_value(event)) == AV_WRT_INTSTREAM) {
+                } else if (app_event_type(in_name) == AV_WRT_INTSTREAM) {
                     if (APP_BASE < a->role && a->role < APP_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(a);
-                        clean_structs(n_apps, app_list, av_num, av_list);
+                        clean_up_outdated_data(n_apps, app_list, av_num, av_list);
                         json_decref(json);
                         return -1;
                     }
@@ -1607,16 +1567,17 @@ int application_load(cli_t *cli, ctx_t *ctx)
                         real_event_cnt++;
 
                         a->in_list[a->in_num] = m;
+                        a->in_perm[m] = in_perm_val;
                         a->in_num++;
 
                         av_list[m][av_num[m]] = a;
                         av_num[m]++;
                     }
-                } else if (app_event_type(json_string_value(event)) == AV_ALL_INTSTREAM) {
+                } else if (app_event_type(in_name) == AV_ALL_INTSTREAM) {
                     if (APP_BASE < a->role && a->role < APP_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
                         FREE(a);
-                        clean_structs(n_apps, app_list, av_num, av_list);
+                        clean_up_outdated_data(n_apps, app_list, av_num, av_list);
                         json_decref(json);
                         return -1;
                     }
@@ -1626,6 +1587,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                         real_event_cnt++;
 
                         a->in_list[a->in_num] = m;
+                        a->in_perm[m] = in_perm_val;
                         a->in_num++;
 
 			av_list[m][av_num[m]] = a;
@@ -1634,11 +1596,12 @@ int application_load(cli_t *cli, ctx_t *ctx)
                 } else {
                     real_event_cnt++;
 
-                    a->in_list[a->in_num] = app_event_type(json_string_value(event));
+                    a->in_list[a->in_num] = app_event_type(in_name);
+                    a->in_perm[app_event_type(in_name)] = in_perm_val;
                     a->in_num++;
 
-                    av_list[app_event_type(json_string_value(event))][av_num[app_event_type(json_string_value(event))]] = a;
-	            av_num[app_event_type(json_string_value(event))]++;
+                    av_list[app_event_type(in_name)][av_num[app_event_type(in_name)]] = a;
+	            av_num[app_event_type(in_name)]++;
                 }
             }
 
@@ -1661,7 +1624,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                 if (app_event_type(json_string_value(out_event)) == AV_NUM_EVENTS) {
                     cli_print(cli, "     Outbounds: wrong event name");
                     FREE(a);
-                    clean_structs(n_apps, app_list, av_num, av_list);
+                    clean_up_outdated_data(n_apps, app_list, av_num, av_list);
                     json_decref(json);
                     return -1;
                 }
@@ -1677,7 +1640,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                     if (APP_BASE < a->role && a->role < APP_SECURITY) {
                         cli_print(cli, "     Outbounds: lower-level role");
                         FREE(a);
-                        clean_structs(n_apps, app_list, av_num, av_list);
+                        clean_up_outdated_data(n_apps, app_list, av_num, av_list);
                         json_decref(json);
                         return -1;
                     }
@@ -1693,7 +1656,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                     if (APP_BASE < a->role && a->role < APP_SECURITY) {
                         cli_print(cli, "     Outbounds: lower-level role");
                         FREE(a);
-                        clean_structs(n_apps, app_list, av_num, av_list);
+                        clean_up_outdated_data(n_apps, app_list, av_num, av_list);
                         json_decref(json);
                         return -1;
                     }
@@ -1709,7 +1672,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                     if (APP_BASE < a->role && a->role < APP_SECURITY) {
                         cli_print(cli, "     Outbounds: lower-level role");
                         FREE(a);
-                        clean_structs(n_apps, app_list, av_num, av_list);
+                        clean_up_outdated_data(n_apps, app_list, av_num, av_list);
                         json_decref(json);
                         return -1;
                     }
@@ -1725,7 +1688,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                     if (APP_BASE < a->role && a->role < APP_SECURITY) {
                         cli_print(cli, "     Outbounds: lower-level role");
                         FREE(a);
-                        clean_structs(n_apps, app_list, av_num, av_list);
+                        clean_up_outdated_data(n_apps, app_list, av_num, av_list);
                         json_decref(json);
                         return -1;
                     }
@@ -1822,13 +1785,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                     new->status = old->status;
                     new->activated = old->activated;
 
-                    int k;
-                    for (k=0; k<__NUM_PULL_THREADS; k++) {
-                        new->push_sock[k] = old->push_sock[k];
-                        new->push_lock[k] = old->push_lock[k];
-                    }
-
-                    new->req_ctx = old->req_ctx;
+                    new->push_ctx = old->push_ctx;
 
                     break;
                 }
@@ -1864,7 +1821,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
     app_ctx->av_list = av_list;
 
     // deallocate previous pointers
-    clean_structs(temp_num_apps, temp_app_list, temp_av_num, temp_av_list);
+    clean_up_outdated_data(temp_num_apps, temp_app_list, temp_av_num, temp_av_list);
 
     return 0;
 }

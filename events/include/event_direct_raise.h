@@ -28,10 +28,6 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
     ev_ctx->num_events[type]++;
 #endif /* __ENABLE_META_EVENTS */
 
-#ifdef __ANALYZE_BARISTA
-    print_current_event(type);
-#endif /* __ANALYZE_BARISTA */
-
     compnt_t *one_by_one = NULL;
 
     int i;
@@ -53,84 +49,30 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
         if (ODP_FUNC(c->odp, data)) continue;
 #endif /* ODP_FUNC */
 
-        if (c->perm & COMPNT_WRITE) {
-            if (c->site == COMPNT_INTERNAL) { // internal site
 #ifdef __ENABLE_META_EVENTS
-                c->num_events[type]++;
+        c->num_events[type]++;
 #endif /* __ENABLE_META_EVENTS */
 
-#ifdef __ANALYZE_BARISTA
-                start_to_measure_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
+        if (c->in_perm[type] & COMPNT_WRITE) {
+            if (c->site == COMPNT_INTERNAL) { // internal site
                 int ret = c->handler(ev, &ev_out);
-#ifdef __ANALYZE_BARISTA
-                stop_measuring_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
-                if (ret && c->perm & COMPNT_EXECUTE) {
-                    break;
-                }
-
+                if (ret && c->in_perm[type] & COMPNT_EXECUTE) break;
                 ev_out.checksum = 0; // reset checksum
             } else { // external site
                 event_out_t *out = &ev_out;
-
-#ifdef __ENABLE_META_EVENTS
-                c->num_events[type]++;
-#endif /* __ENABLE_META_EVENTS */
-
-#ifdef __ANALYZE_BARISTA
-                start_to_measure_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
-                int ret = ev_send_ext_msg(c, id, type, len, data, out->data);
-#ifdef __ANALYZE_BARISTA
-                stop_measuring_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
-                if (ret && c->perm & COMPNT_EXECUTE) {
-                    break;
-                }
+                int ret = ev_send_msg(c, id, type, len, data, out->data);
+                if (ret && c->in_perm[type] & COMPNT_EXECUTE) break;
             }
         } else {
             if (c->site == COMPNT_INTERNAL) { // internal site
-#ifdef __ENABLE_META_EVENTS
-                c->num_events[type]++;
-#endif /* __ENABLE_META_EVENTS */
-
-#ifdef __ANALYZE_BARISTA
-                start_to_measure_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
                 int ret = c->handler(ev, NULL);
-#ifdef __ANALYZE_BARISTA
-                stop_measuring_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
-                if (ret && c->perm & COMPNT_EXECUTE) {
-                    break;
-                }
+                if (ret && c->in_perm[type] & COMPNT_EXECUTE) break;
             } else { // external site
                 event_out_t *out = &ev_out;
-
-#ifdef __ENABLE_META_EVENTS
-                c->num_events[type]++;
-#endif /* __ENABLE_META_EVENTS */
-
-                if (c->perm & COMPNT_EXECUTE) {
-#ifdef __ANALYZE_BARISTA
-                    start_to_measure_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
-                    int ret = ev_send_ext_msg(c, id, type, len, data, out->data);
-#ifdef __ANALYZE_BARISTA
-                    stop_measuring_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
-                    if (ret) {
-                        break;
-                    }
+                if (c->in_perm[type] & COMPNT_EXECUTE) {
+                    if(ev_send_msg(c, id, type, len, data, out->data)) break;
                 } else {
-#ifdef __ANALYZE_BARISTA
-                    start_to_measure_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
-                    ev_push_ext_msg(c, id, type, len, data);
-#ifdef __ANALYZE_BARISTA
-                    stop_measuring_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
+                    ev_push_msg(c, id, type, len, data);
                 }
             }
         }
@@ -138,82 +80,29 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
         if (one_by_one) {
             c = one_by_one;
 
-            if (c->perm & COMPNT_WRITE) {
-                if (c->site == COMPNT_INTERNAL) { // internal site
 #ifdef __ENABLE_META_EVENTS
-                    c->num_events[type]++;
+            c->num_events[type]++;
 #endif /* __ENABLE_META_EVENTS */
 
-#ifdef __ANALYZE_BARISTA
-                    start_to_measure_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
+            if (c->in_perm[type] & COMPNT_WRITE) {
+                if (c->site == COMPNT_INTERNAL) { // internal site
                     int ret = c->handler(ev, &ev_out);
-#ifdef __ANALYZE_BARISTA
-                    stop_measuring_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
-                    if (ret && c->perm & COMPNT_EXECUTE) {
-                        break;
-                    }
+                    if (ret && c->in_perm[type] & COMPNT_EXECUTE) break;
                 } else { // external site
                     event_out_t *out = &ev_out;
-
-#ifdef __ENABLE_META_EVENTS
-                    c->num_events[type]++;
-#endif /* __ENABLE_META_EVENTS */
-
-#ifdef __ANALYZE_BARISTA
-                    start_to_measure_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
-                    int ret = ev_send_ext_msg(c, id, type, len, data, out->data);
-#ifdef __ANALYZE_BARISTA
-                    stop_measuring_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
-                    if (ret && c->perm & COMPNT_EXECUTE) {
-                        break;
-                    }
+                    int ret = ev_send_msg(c, id, type, len, data, out->data);
+                    if (ret && c->in_perm[type] & COMPNT_EXECUTE) break;
                 }
             } else {
                 if (c->site == COMPNT_INTERNAL) { // internal site
-#ifdef __ENABLE_META_EVENTS
-                    c->num_events[type]++;
-#endif /* __ENABLE_META_EVENTS */
-
-#ifdef __ANALYZE_BARISTA
-                    start_to_measure_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
                     int ret = c->handler(ev, NULL);
-#ifdef __ANALYZE_BARISTA
-                    stop_measuring_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
-                    if (ret && c->perm & COMPNT_EXECUTE) {
-                        break;
-                    }
+                    if (ret && c->in_perm[type] & COMPNT_EXECUTE) break;
                 } else { // external site
                     event_out_t *out = &ev_out;
-
-#ifdef __ENABLE_META_EVENTS
-                    c->num_events[type]++;
-#endif /* __ENABLE_META_EVENTS */
-
-                    if (c->perm & COMPNT_EXECUTE) {
-#ifdef __ANALYZE_BARISTA
-                        start_to_measure_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
-                        int ret = ev_send_ext_msg(c, id, type, len, data, out->data);
-#ifdef __ANALYZE_BARISTA
-                        stop_measuring_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
-                        if (ret) {
-                            break;
-                        }
+                    if (c->in_perm[type] & COMPNT_EXECUTE) {
+                        if (ev_send_msg(c, id, type, len, data, out->data)) break;
                     } else {
-#ifdef __ANALYZE_BARISTA
-                        start_to_measure_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
-                        ev_push_ext_msg(c, id, type, len, data);
-#ifdef __ANALYZE_BARISTA
-                        stop_measuring_comp_time(c->name, type);
-#endif /* __ANALYZE_BARISTA */
+                        ev_push_msg(c, id, type, len, data);
                     }
                 }
             }
@@ -222,4 +111,3 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
     return 0;
 }
-

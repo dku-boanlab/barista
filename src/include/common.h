@@ -44,50 +44,10 @@
 #define __CONF_LSTR_LEN 2048
 #define __DEFAULT_TABLE_SIZE 65536
 
-/* ==== Component / Application ==== */
-
-#define BATCH_LOGS 1024
-#define LOG_UPDATE_TIME 1
-
-/** \brief The default log file */
-#define DEFAULT_LOG_FILE "../log/message.log"
-
-#define FLOW_MGMT_REQUEST_TIME 5
-#define TOPO_MGMT_REQUEST_TIME 5
-#define STAT_MGMT_REQUEST_TIME 5
-
-#define RESOURCE_MGMT_MONITOR_TIME 1
-#define RESOURCE_MGMT_HISTORY 86400
-
-/** \brief The default resource file */
-#define DEFAULT_RESOURCE_FILE "../log/resource.log"
-
-#define TRAFFIC_MGMT_MONITOR_TIME 1
-#define TRAFFIC_MGMT_HISTORY 86400
-
-/** \brief The default traffic file */
-#define DEFAULT_TRAFFIC_FILE "../log/traffic.log"
-
-#define CLUSTER_UPDATE_TIME_NS (1000*1000)
-#define CLUSTER_DELIMITER 2000
-
-/** \brief The default application role file */
-#define DEFAULT_APP_ROLE_FILE "config/app_events.role"
-
 /* ==== Barista NOS ==== */
 
-#define __SHOW_COMPONENT_ID
+/** \brief The number of characters to be used to generate IDs */
 #define __HASHING_NAME_LENGTH 8
-
-//#define EXT_COMP_PULL_ADDR "tcp://127.0.0.1:5001"
-#define EXT_COMP_PULL_ADDR "ipc://tmp/ext_comp_pull"
-//#define EXT_COMP_REPLY_ADDR "tcp://127.0.0.1:5002"
-#define EXT_COMP_REPLY_ADDR "ipc://tmp/ext_comp_reply"
-
-//#define EXT_APP_PULL_ADDR "tcp://127.0.0.1:6001"
-#define EXT_APP_PULL_ADDR "ipc://tmp/ext_app_pull"
-//#define EXT_APP_REPLY_ADDR "tcp://127.0.0.1:6002"
-#define EXT_APP_REPLY_ADDR "ipc://tmp/ext_app_reply"
 
 /** \brief The default component configuration file */
 #define DEFAULT_COMPNT_CONFIG_FILE "config/components.conf"
@@ -150,43 +110,11 @@
     waitsec(0, 1000); \
 }
 
-/** \brief Function to print a current event */
-#define print_current_app_event(type) \
-    //fprintf(stderr, "MEASURE_APP_LATENCY %u\n", type);
-
-/** \brief Function to measure the start time */
-#define start_to_measure_app_time(app_name, av_type) \
-    struct timespec start, end; \
-    fprintf(stderr, "MEASURE_APP_LATENCY_START %u %s\n", av_type, app_name); \
-    clock_gettime(CLOCK_REALTIME, &start);
-
-/** \brief Function to measure the end time */
-#define stop_measuring_app_time(app_name, av_type) \
-    clock_gettime(CLOCK_REALTIME, &end); \
-    fprintf(stderr, "MEASURE_APP_LATENCY_END %u %s %lu\n", av_type, app_name, \
-           ((end.tv_sec * 1000000000 + end.tv_nsec) - (start.tv_sec * 1000000000 + start.tv_nsec)));
-
-/** \brief Function to print a current event */
-#define print_current_event(type) \
-    //fprintf(stderr, "MEASURE_COMP_LATENCY %u\n", type);
-
-/** \brief Function to measure the start time */
-#define start_to_measure_comp_time(comp_name, ev_type) \
-    struct timespec start, end; \
-    fprintf(stderr, "MEASURE_COMP_LATENCY_START %u %s\n", ev_type, comp_name); \
-    clock_gettime(CLOCK_REALTIME, &start);
-
-/** \brief Function to measure the end time */
-#define stop_measuring_comp_time(comp_name, ev_type) \
-    clock_gettime(CLOCK_REALTIME, &end); \
-    fprintf(stderr, "MEASURE_COMP_LATENCY_END %u %s %lu\n", ev_type, comp_name, \
-           ((end.tv_sec * 1000000000 + end.tv_nsec) - (start.tv_sec * 1000000000 + start.tv_nsec)));
-
-/** \brief Allocate a space */
+/** \brief Functions to allocate a space */
 #define MALLOC(x) malloc(x)
 #define CALLOC(x, y) calloc(x, y)
 
-/** \brief Free a space if the space is valid */
+/** \brief Function to release a space if the space is valid */
 #define FREE(x) \
 { \
     if (x) { \
@@ -195,7 +123,7 @@
     } \
 }
 
-/** \brief Functions to change the byte orders of 64-bit fields */
+/** \brief Functions to change the byte orders of 64-bit values */
 /* @{ */
 #ifdef WORDS_BIGENDIAN
 #define htonll(x) (x)
@@ -220,15 +148,16 @@
 #define DEBUG(format, args...) ({ printf("%s: " format, __FUNCTION__, ##args); fflush(stdout); })
 #define PRINTF(format, args...) ({ printf("%s: " format, __FUNCTION__, ##args); fflush(stdout); })
 #define PRINT_EV(format, args...) ({ printf("%s: " format, __FUNCTION__, ##args); fflush(stdout); })
+#define PERROR(msg) fprintf(stdout, "\x1b[31m[%s:%d] %s: %s\x1b[0m\n", __FUNCTION__, __LINE__, (msg), strerror(errno))
 #else /* !__ENABLE_DEBUG */
 #define DEBUG(format, args...) (void)0
 #define PRINTF(format, args...) ({ printf(format, ##args); fflush(stdout); })
 #define PRINT_EV(format, args...) (void)0
-#endif /* !__ENABLE_DEBUG */
 #define PERROR(msg) fprintf(stdout, "\x1b[31m[%s:%d] %s: %s\x1b[0m\n", __FUNCTION__, __LINE__, (msg), strerror(errno))
+#endif /* !__ENABLE_DEBUG */
 /* @} */
 
-/** \brief Wrappers that trigger log events */
+/** \brief Wrappers for component-side logging */
 /* @{ */
 #define LOG_FATAL(id, format, args...) ev_log_fatal(id, format, ##args)
 #define LOG_ERROR(id, format, args...) ev_log_error(id, format, ##args)
@@ -237,7 +166,7 @@
 #define LOG_DEBUG(id, format, args...) ev_log_debug(id, format, ##args)
 /* @} */
 
-/** \brief Wrappers that trigger app log events */
+/** \brief Wrappers for application-side logging */
 /* @{ */
 #define ALOG_FATAL(id, format, args...) av_log_fatal(id, format, ##args)
 #define ALOG_ERROR(id, format, args...) av_log_error(id, format, ##args)
@@ -245,4 +174,3 @@
 #define ALOG_INFO(id, format, args...)  av_log_info(id, format, ##args)
 #define ALOG_DEBUG(id, format, args...) av_log_debug(id, format, ##args)
 /* @} */
-

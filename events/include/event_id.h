@@ -62,4 +62,3 @@ enum {
     EV_LOG_FATAL,
     EV_NUM_EVENTS,
 };
-

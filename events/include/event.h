@@ -61,9 +61,8 @@ typedef struct _event_out_t {
     };
 } event_out_t;
 
-int event_init(ctx_t *ctx);
-int destroy_ev_workers(ctx_t *ctx);
-
 /** \brief The cluster ID updated by cluster */
 int cluster_id;
 
+int init_event(ctx_t *ctx);
+int destroy_event(ctx_t *ctx);

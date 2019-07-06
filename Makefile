@@ -13,16 +13,9 @@ TMP_DIR = tmp
 
 CPPFLAGS = $(addprefix -I,$(shell find $(SRC_DIR) -type d))
 
-CFLAGS = -O2 -Wall -std=gnu99
-#CFLAGS = -g -ggdb -Wall -std=gnu99
-LDFLAGS = -lpthread -ljansson -lrt -lcli -lzmq -lsqlite3
-
-CLUSTER = no
-#CLUSTER = yes
-ifeq ($(CLUSTER), yes)
-	CFLAGS += -I/usr/include/mysql -D__ENABLE_CLUSTER
-	LDFLAGS += -L/usr/lib -lmysqlclient
-endif
+CFLAGS = -O2 -Wall -std=gnu99 -I/usr/include/mysql
+#CFLAGS = -g -ggdb -Wall -std=gnu99 -I/usr/include/mysql
+LDFLAGS = -lpthread -ljansson -lrt -lcli -lzmq -L/usr/lib -lmysqlclient
 
 include $(CONFIG_MK)
 CFLAGS += $(addprefix -D, $(CONFIG))
@@ -44,8 +37,6 @@ $(PROG): $(addprefix $(OBJ_DIR)/,$(OBJ))
 	mkdir -p $(@D)
 	$(CC) -o $@ $^ $(LDFLAGS)
 	mv $(PROG) $(BIN_DIR)
-	@cd ext_apps/l2_shortest; make; cd ../..
-	@cd ext_apps/l2_learning; make; cd ../..
 
 $(OBJ_DIR)/%.o: %.c
 	mkdir -p $(@D)
@@ -59,5 +50,3 @@ $(OBJ_DIR)/.%.dep: %.c $(CONFIG_MK)
 
 clean:
 	rm -rf $(BIN_DIR)/$(PROG) $(BIN_DIR)/core $(LOG_DIR)/* $(TMP_DIR)/* $(OBJ_DIR) $(INC_DIR) G*
-	@cd ext_apps/l2_shortest; make clean; cd ../..
-	@cd ext_apps/l2_learning; make clean; cd ../..

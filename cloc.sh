@@ -1,5 +1,4 @@
 #!/bin/bash
 
-# count the lines of code except docs and libs
-cloc --exclude-dir=docs,libs .
-
+# count the number of code
+cloc --exclude-dir=docs,libs,log,tmp .

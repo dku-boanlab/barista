@@ -42,4 +42,3 @@ enum {
     AV_LOG_FATAL,
     AV_NUM_EVENTS,
 };
-

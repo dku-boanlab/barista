@@ -77,14 +77,8 @@ struct _app_t {
     int priority; /**< Priority */
     int activated; /**< Activation */
 
-    void *req_ctx; /**< Context to request app events */
-
-    uint32_t push_ptr; /**< Socket pointer to push app events */
-    int push_sock[__NUM_PULL_THREADS]; /**< Socket to push app events */
-    pthread_spinlock_t push_lock[__NUM_PULL_THREADS]; /**< Lock for push_sock */
-
-    char pull_addr[__CONF_WORD_LEN]; /**< Application-side pulling address */
-    char reply_addr[__CONF_WORD_LEN]; /**< Application-side replying address */
+    void *push_ctx; /**< Push context */
+    char push_addr[__CONF_WORD_LEN]; /**< Push address */
 
     app_main_f main; /**< The main function pointer */
     app_handler_f handler; /**< The handler function pointer */
@@ -93,6 +87,7 @@ struct _app_t {
 
     int in_num; /**< The number of inbound app events */
     int in_list[__MAX_APP_EVENTS]; /**< Inbound app events */
+    int in_perm[__MAX_APP_EVENTS]; /**< Inbound app event permissions */
 
     int out_num; /**< The number of outbound app events */
     int out_list[__MAX_APP_EVENTS]; /**< Outbound app events */
@@ -125,4 +120,3 @@ int application_show_policy(cli_t *, char *);
 int application_show(cli_t *, char *);
 int application_list(cli_t *);
 int application_cli(cli_t *, char **);
-

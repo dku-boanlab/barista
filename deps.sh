@@ -1,5 +1,7 @@
 #!/bin/bash
 
+CURR=`pwd`
+
 # update repo list
 sudo apt-get update
 
@@ -9,25 +11,21 @@ sudo apt-get -y install build-essential
 # dependency => json
 sudo apt-get -y install libjansson4 libjansson-dev
 
-# dependency => sqlite3
-sudo apt-get -y install sqlite3 libsqlite3-dev
-
-# dependency => doxygen, flex, bison, cmake
-sudo apt-get -y install doxygen global flex bison cmake libav-tools
-
-# dependency => cloc
-sudo apt-get -y install cloc
-
 # dependency => libcli
-cd libs/libcli
+cd $CURR/libs/libcli
 ./compile.sh
 
 # dependency => zeromq
-cd ../zeromq
+cd $CURR/libs/zeromq
 ./compile.sh
 
-# dependency => LP solver
+# dependency => doxygen, flex, bison, cmake (optional)
+sudo apt-get -y install doxygen global flex bison cmake libav-tools
+
+# dependency => LP solver (optional)
 sudo apt-get -y install python-pip
 sudo pip install pulp
 sudo apt-get -y install glpk-utils coinor-cbc
 
+# dependency => cloc (optional)
+sudo apt-get -y install cloc

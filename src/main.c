@@ -194,13 +194,8 @@ int main(int argc, char **argv)
         }
     }
 
-    if (system("rm -f tmp/*") < 0) {
-        PERROR("system");
-        return -1;
-    }
-
     // initialize context
-    ctx_init(&ctx);
+    init_ctx(&ctx);
 
     // daemonize the Barista NOS
     if (daemon == TRUE)
@@ -217,10 +212,10 @@ int main(int argc, char **argv)
     strcpy(ctx.app_conf_file, app_conf_file);
 
     // initialize event handler
-    event_init(&ctx);
+    init_event(&ctx);
 
     // initialize app event handler
-    app_event_init(&ctx);
+    init_app_event(&ctx);
 
     // execute cli
     start_cli(&ctx);
