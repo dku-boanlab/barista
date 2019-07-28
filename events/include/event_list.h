@@ -13,7 +13,7 @@
 
 // upstream /////////////////////////////////////////////////////////
 
-void ev_ofp_msg_in(uint32_t id, const raw_msg_t *data);
+void ev_ofp_msg_in(uint32_t id, const msg_t *data);
 void ev_dp_receive_packet(uint32_t id, const pktin_t *data);
 void ev_dp_flow_expired(uint32_t id, const flow_t *data);
 void ev_dp_flow_deleted(uint32_t id, const flow_t *data);
@@ -26,13 +26,14 @@ void ev_dp_port_stats(uint32_t id, const port_t *data);
 
 // downstream ///////////////////////////////////////////////////////
 
-void ev_ofp_msg_out(uint32_t id, const raw_msg_t *data);
+void ev_ofp_msg_out(uint32_t id, const msg_t *data);
 void ev_dp_send_packet(uint32_t id, const pktout_t *data);
 void ev_dp_insert_flow(uint32_t id, const flow_t *data);
 void ev_dp_modify_flow(uint32_t id, const flow_t *data);
 void ev_dp_delete_flow(uint32_t id, const flow_t *data);
 void ev_dp_request_flow_stats(uint32_t id, const flow_t *data);
 void ev_dp_request_aggregate_stats(uint32_t id, const flow_t *data);
+void ev_dp_modify_port(uint32_t id, const port_t *data);
 void ev_dp_request_port_stats(uint32_t id, const port_t *data);
 
 // internal (request-response) //////////////////////////////////////
@@ -44,10 +45,10 @@ void ev_sw_get_xid(uint32_t id, switch_t *data);
 // internal (notification) //////////////////////////////////////////
 
 void ev_sw_new_conn(uint32_t id, const switch_t *data);
+void ev_sw_established_conn(uint32_t id, const switch_t *data);
 void ev_sw_expired_conn(uint32_t id, const switch_t *data);
 void ev_sw_connected(uint32_t id, const switch_t *data);
 void ev_sw_disconnected(uint32_t id, const switch_t *data);
-void ev_sw_update_config(uint32_t id, const switch_t *data);
 void ev_sw_update_desc(uint32_t id, const switch_t *data);
 void ev_host_added(uint32_t id, const host_t *data);
 void ev_host_deleted(uint32_t id, const host_t *data);

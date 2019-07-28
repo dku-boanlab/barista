@@ -55,8 +55,7 @@ enum {
 enum {
     COMPNT_READ = 4,
     COMPNT_WRITE = 2,
-    COMPNT_EXECUTE = 1,
-    COMPNT_MAX_PERM = 3
+    COMPNT_EXECUTE = 1
 };
 
 /** \brief The structure of a component */
@@ -81,6 +80,9 @@ struct _compnt_t {
     void *push_ctx; /**< Push context */
     char push_addr[__CONF_WORD_LEN]; /**< Push address */
 
+    void *req_ctx; /**< Request context */
+    char req_addr[__CONF_WORD_LEN]; /**< Request address */
+
     compnt_main_f main; /**< The main function pointer */
     compnt_handler_f handler; /**< The handler function pointer */
     compnt_cleanup_f cleanup; /**< The cleanup function pointer */
@@ -96,10 +98,7 @@ struct _compnt_t {
     int num_policies; /**< The number of policies */
     odp_t odp[__MAX_POLICIES]; /**< The list of operator-defined policies */
 
-#ifdef __ENABLE_META_EVENTS
     uint64_t num_events[__MAX_EVENTS]; /**< The number of triggered times */
-    double time_events[__MAX_EVENTS]; /** The cumulative latencies for each event */
-#endif /* __ENABLE_META_EVENTS */
 };
 
 // function for the base framework

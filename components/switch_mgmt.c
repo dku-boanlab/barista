@@ -22,21 +22,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-#include "switch_queue.h"
-
-/////////////////////////////////////////////////////////////////////
-
-/** \brief Switch table */
-switch_table_t switches;
-
-/** \brief Switch list */
-switch_t **switch_table;
-
-/** \brief The number of switches */
-int num_switches;
-
-/////////////////////////////////////////////////////////////////////
-
 /**
  * \brief The main function
  * \param activated The activation flag of this component
@@ -47,18 +32,22 @@ int switch_mgmt_main(int *activated, int argc, char **argv)
 {
     LOG_INFO(SWITCH_MGMT_ID, "Init - Switch management");
 
-    num_switches = 0;
-    memset(&switches, 0, sizeof(switch_table_t));
+    if (init_database(&switch_mgmt_db, "barista_mgmt")) {
+        LOG_ERROR(SWITCH_MGMT_ID, "Failed to connect to a switch_mgmt database");
+        return -1;
+    } else {
+        LOG_INFO(SWITCH_MGMT_ID, "Connected to a switch_mgmt database");
+    }
 
-    switch_table = (switch_t **)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(switch_t *));
+    reset_table(&switch_mgmt_db, "switch_mgmt", FALSE);
+
+    switch_table = (switch_t *)CALLOC(__MAX_NUM_SWITCHES, sizeof(switch_t));
     if (switch_table == NULL) {
-        LOG_ERROR(SWITCH_MGMT_ID, "calloc() error");
+        LOG_ERROR(SWITCH_MGMT_ID, "calloc() failed");
         return -1;
     }
 
-    pthread_rwlock_init(&switches.lock, NULL);
-
-    sw_q_init();
+    pthread_rwlock_init(&sw_lock, NULL);
 
     activate();
 
@@ -75,22 +64,15 @@ int switch_mgmt_cleanup(int *activated)
 
     deactivate();
 
-    pthread_rwlock_wrlock(&switches.lock);
-
-    switch_t *curr = switches.head;
-    while (curr != NULL) {
-        switch_t *tmp = curr;
-        curr = curr->next;
-        switch_table[tmp->fd] = NULL;
-        FREE(tmp);
-    }
-
-    pthread_rwlock_unlock(&switches.lock);
-    pthread_rwlock_destroy(&switches.lock);
-
+    pthread_rwlock_destroy(&sw_lock);
     FREE(switch_table);
 
-    sw_q_destroy();
+    if (destroy_database(&switch_mgmt_db)) {
+        LOG_ERROR(SWITCH_MGMT_ID, "Failed to disconnect a switch_mgmt database");
+        return -1;
+    } else {
+        LOG_INFO(SWITCH_MGMT_ID, "Disconnected from a switch_mgmt database");
+    }
 
     return 0;
 }
@@ -103,40 +85,35 @@ static int switch_listup(cli_t *cli)
 {
     int cnt = 0;
 
-    cli_print(cli, "<Switch List>");
-    cli_print(cli, "  The total number of switches: %d", num_switches);
+    cli_print(cli, "< Switch List >");
 
-    pthread_rwlock_rdlock(&switches.lock);
-
-    switch_t *curr = switches.head;
-
-    while (curr != NULL) {
-        cli_print(cli, "  Switch #%d", ++cnt);
-        cli_print(cli, "    Datapath ID: %lu (0x%lx)", curr->dpid, curr->dpid);
-        cli_print(cli, "    Location: %s", (curr->remote) ? "remote" : "local");
-        cli_print(cli, "    Number of tables: %u", curr->n_tables);
-        cli_print(cli, "    Number of buffers: %u", curr->n_buffers);
-        cli_print(cli, "    Capabilities: 0x%x", curr->capabilities);
-        cli_print(cli, "    Actions: 0x%x", curr->actions);
-        cli_print(cli, "    Manufacturer: %s", curr->mfr_desc);
-        cli_print(cli, "    Hardware: %s", curr->hw_desc);
-        cli_print(cli, "    Software: %s", curr->sw_desc);
-        cli_print(cli, "    Serial number: %s", curr->serial_num);
-        cli_print(cli, "    Datapath: %s", curr->dp_desc);
-        if (curr->pkt_count) {
-            cli_print(cli, "    # of packets: %lu", curr->pkt_count);
-            cli_print(cli, "    # of bytes: %lu", curr->byte_count);
-            cli_print(cli, "    # of flows: %u", curr->flow_count);
-        } else {
-            cli_print(cli, "    # of packets: 0");
-            cli_print(cli, "    # of bytes: 0");
-            cli_print(cli, "    # of flows: 0");
-        }
-
-        curr = curr->next;
+    if (select_data(&switch_mgmt_db, "switch_mgmt", 
+        "DPID, MFR_DESC, HW_DESC, SW_DESC, SERIAL_NUM, DP_DESC, PKT_COUNT, BYTE_COUNT, FLOW_COUNT", NULL, TRUE)) {
+        cli_print(cli, "Failed to read the list of switches");
+        return -1;
     }
 
-    pthread_rwlock_unlock(&switches.lock);
+    query_result_t *result = get_query_result(&switch_mgmt_db);
+    query_row_t row;
+
+    while ((row = fetch_query_row(result)) != NULL) {
+        cli_print(cli, "  Switch #%d", ++cnt);
+        cli_print(cli, "    Datapath ID: %s", row[0]);
+        cli_print(cli, "    Manufacturer: %s", row[1]);
+        cli_print(cli, "    Hardware: %s", row[2]);
+        cli_print(cli, "    Software: %s", row[3]);
+        cli_print(cli, "    Serial number: %s", row[4]);
+        cli_print(cli, "    Datapath: %s", row[5]);
+        cli_print(cli, "    Statistics:");
+        cli_print(cli, "      - # of packets: %s", row[6]);
+        cli_print(cli, "      - # of bytes: %s", row[7]);
+        cli_print(cli, "      - # of flows: %s", row[8]);
+    }
+
+    release_query_result(result);
+
+    if (!cnt)
+        cli_print(cli, "  No connected switch");
 
     return 0;
 }
@@ -151,44 +128,35 @@ static int switch_showup(cli_t *cli, char *dpid_str)
     int cnt = 0;
     uint64_t dpid = strtoull(dpid_str, NULL, 0);
 
-    cli_print(cli, "<Switch Information>");
+    cli_print(cli, "< Switch Information >");
 
-    pthread_rwlock_rdlock(&switches.lock);
+    char conditions[__CONF_STR_LEN];
+    sprintf(conditions, "DPID = %lu", dpid);
 
-    switch_t *curr = switches.head;
-
-    while (curr != NULL) {
-        if (curr->dpid == dpid) {
-            cli_print(cli, "    Datapath ID: %lu (0x%lx)", curr->dpid, curr->dpid);
-            cli_print(cli, "    Location: %s", (curr->remote) ? "remote" : "local");
-            cli_print(cli, "    Number of tables: %u", curr->n_tables);
-            cli_print(cli, "    Number of buffers: %u", curr->n_buffers);
-            cli_print(cli, "    Capabilities: 0x%x", curr->capabilities);
-            cli_print(cli, "    Actions: 0x%x", curr->actions);
-            cli_print(cli, "    Manufacturer: %s", curr->mfr_desc);
-            cli_print(cli, "    Hardware: %s", curr->hw_desc);
-            cli_print(cli, "    Software: %s", curr->sw_desc);
-            cli_print(cli, "    Serial number: %s", curr->serial_num);
-            cli_print(cli, "    Datapath: %s", curr->dp_desc);
-            if (curr->pkt_count) {
-                cli_print(cli, "    # of packets: %lu", curr->pkt_count);
-                cli_print(cli, "    # of bytes: %lu", curr->byte_count);
-                cli_print(cli, "    # of flows: %u", curr->flow_count);
-            } else {
-                cli_print(cli, "    # of packets: 0");
-                cli_print(cli, "    # of bytes: 0");
-                cli_print(cli, "    # of flows: 0");
-            }
-
-            cnt++;
-
-            break;
-        }
-
-        curr = curr->next;
+    if (select_data(&switch_mgmt_db, "switch_mgmt", 
+        "DPID, MFR_DESC, HW_DESC, SW_DESC, SERIAL_NUM, DP_DESC, PKT_COUNT, BYTE_COUNT, FLOW_COUNT", conditions, TRUE)) {
+        cli_print(cli, "Failed to read the list of switches");
+        return -1;
     }
 
-    pthread_rwlock_unlock(&switches.lock);
+    query_result_t *result = get_query_result(&switch_mgmt_db);
+    query_row_t row;
+
+    while ((row = fetch_query_row(result)) != NULL) {
+        cli_print(cli, "  Switch #%d", ++cnt);
+        cli_print(cli, "    Datapath ID: %s", row[0]);
+        cli_print(cli, "    Manufacturer: %s", row[1]);
+        cli_print(cli, "    Hardware: %s", row[2]);
+        cli_print(cli, "    Software: %s", row[3]);
+        cli_print(cli, "    Serial number: %s", row[4]);
+        cli_print(cli, "    Datapath: %s", row[5]);
+        cli_print(cli, "    Statistics:");
+        cli_print(cli, "      - # of packets: %s", row[6]);
+        cli_print(cli, "      - # of bytes: %s", row[7]);
+        cli_print(cli, "      - # of flows: %s", row[8]);
+    }
+
+    release_query_result(result);
 
     if (!cnt)
         cli_print(cli, "  No switch whose datapath ID is %lu", dpid);
@@ -211,7 +179,7 @@ int switch_mgmt_cli(cli_t *cli, char **args)
         return 0;
     }
 
-    cli_print(cli, "<Available Commands>");
+    cli_print(cli, "< Available Commands >");
     cli_print(cli, "  switch_mgmt list switches");
     cli_print(cli, "  switch_mgmt show [datapath ID]");
 
@@ -229,7 +197,50 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
     case EV_SW_NEW_CONN:
         PRINT_EV("EV_SW_NEW_CONN\n");
         {
-            LOG_DEBUG(SWITCH_MGMT_ID, "Accepted (FD=%d)", ev->sw->fd);
+            const switch_t *sw = ev->sw;
+
+            LOG_DEBUG(SWITCH_MGMT_ID, "Accepted (FD=%d)", sw->conn.fd);
+        }
+        break;
+    case EV_SW_ESTABLISHED_CONN:
+        PRINT_EV("EV_SW_ESTABLISHED_CONN\n");
+        {
+            const switch_t *sw = ev->sw;
+
+            pthread_rwlock_wrlock(&sw_lock);
+
+            int idx = sw->dpid % __MAX_NUM_SWITCHES;
+            do {
+                switch_t *curr = &switch_table[idx];
+
+                if (curr->dpid == sw->dpid) {
+                    LOG_WARN(SWITCH_MGMT_ID, "%lu already exists", sw->dpid);
+                    break;
+                } else if (curr->dpid == 0) {
+                    curr->dpid = sw->dpid;
+                    curr->conn.fd = sw->conn.fd;
+                    curr->conn.xid = sw->conn.xid;
+
+                    pthread_rwlock_unlock(&sw_lock);
+
+                    switch_t out = {0};
+                    out.dpid = sw->dpid;
+                    ev_sw_connected(SWITCH_MGMT_ID, &out);
+
+                    char values[__CONF_STR_LEN];
+                    sprintf(values, "%lu, 0, 0, 0", sw->dpid);
+
+                    if (insert_data(&switch_mgmt_db, "switch_mgmt", "DPID, PKT_COUNT, BYTE_COUNT, FLOW_COUNT", values)) {
+                        LOG_ERROR(SWITCH_MGMT_ID, "insert_data() failed");
+                    }
+
+                    LOG_INFO(SWITCH_MGMT_ID, "Connected (FD=%d, DPID=%lu)", sw->conn.fd, sw->dpid);
+
+                    break;
+                }
+
+                idx = (idx + 1) % __MAX_NUM_SWITCHES;
+            } while (idx != sw->dpid % __MAX_NUM_SWITCHES);
         }
         break;
     case EV_SW_EXPIRED_CONN:
@@ -237,132 +248,46 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const switch_t *sw = ev->sw;
 
-            pthread_rwlock_wrlock(&switches.lock);
+            pthread_rwlock_wrlock(&sw_lock);
 
-            if (switch_table[sw->fd] == NULL) {
-                pthread_rwlock_unlock(&switches.lock);
-                break;
-            }
+            int i, deleted = FALSE;
+            for (i=0; i<__MAX_NUM_SWITCHES; i++) {
+                if (switch_table[i].conn.fd == sw->conn.fd) {
+                    switch_t out = {0};
+                    out.dpid = switch_table[i].dpid;
+                    ev_sw_disconnected(SWITCH_MGMT_ID, &out);
 
-            switch_t *curr = switch_table[sw->fd];
-            switch_t *tmp = curr;
+                    char conditions[__CONF_STR_LEN];
+                    sprintf(conditions, "DPID = %lu", switch_table[i].dpid);
 
-            if (curr->prev != NULL && curr->next != NULL) {
-                curr->prev->next = curr->next;
-                curr->next->prev = curr->prev;
-            } else if (curr->prev == NULL && curr->next != NULL) {
-                switches.head = curr->next;
-                curr->next->prev = NULL;
-            } else if (curr->prev != NULL && curr->next == NULL) {
-                switches.tail = curr->prev;
-                curr->prev->next = NULL;
-            } else if (curr->prev == NULL && curr->next == NULL) {
-                switches.head = NULL;
-                switches.tail = NULL;
-            }
+                    if (delete_data(&switch_mgmt_db, "switch_mgmt", conditions)) {
+                        LOG_ERROR(SWITCH_MGMT_ID, "delete_data() failed");
+                    }
 
-            switch_table[sw->fd] = NULL;
+                    memset(&switch_table[i], 0, sizeof(switch_t));
 
-            pthread_rwlock_unlock(&switches.lock);
+                    LOG_INFO(SWITCH_MGMT_ID, "Disconnected (FD=%d, DPID=%lu)", sw->conn.fd, out.dpid);
 
-            if (tmp->dpid == 0) {
-                LOG_DEBUG(SWITCH_MGMT_ID, "Closed (FD=%d)", sw->fd);
-            } else {
-                num_switches--;
+                    deleted = TRUE;
 
-                switch_t out = {0};
-
-                out.dpid = tmp->dpid;
-                out.fd = sw->fd;
-
-                ev_sw_disconnected(SWITCH_MGMT_ID, &out);
-
-                LOG_INFO(SWITCH_MGMT_ID, "Disconnected (FD=%d, DPID=%lu)", sw->fd, tmp->dpid);
-
-                sw_enqueue(tmp);
-            }
-        }
-        break;
-    case EV_SW_UPDATE_CONFIG:
-        PRINT_EV("EV_SW_UPDATE_CONFIG\n");
-        {
-            const switch_t *sw = ev->sw;
-
-            pthread_rwlock_rdlock(&switches.lock);
-
-            int i, pass = FALSE;
-            for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-                if (switch_table[i] == NULL)
-                    continue;
-
-                if (switch_table[i]->dpid == sw->dpid) {
-                    pass = TRUE;
                     break;
                 }
             }
 
-            pthread_rwlock_unlock(&switches.lock);
+            pthread_rwlock_unlock(&sw_lock);
 
-            if (pass == FALSE) {
-                switch_t *new = sw_dequeue();
-                if (new == NULL) break;
-
-                new->dpid = sw->dpid;
-                new->fd = sw->fd;
-
-                new->xid = 0;
-                new->remote = sw->remote;
-
-                new->n_tables = sw->n_tables;
-                new->n_buffers = sw->n_buffers;
-                new->capabilities = sw->capabilities;
-                new->actions = sw->actions;
-
-                pthread_rwlock_wrlock(&switches.lock);
-
-                if (switches.head == NULL) {
-                    switches.head = new;
-                    switches.tail = new;
-                } else {
-                    new->prev = switches.tail;
-                    switches.tail->next = new;
-                    switches.tail = new;
-                }
-
-                switch_table[sw->fd] = new;
-                num_switches++;
-
-                pthread_rwlock_unlock(&switches.lock);
-
-                switch_t out = {0};
-
-                out.dpid = sw->dpid;
-                out.fd = sw->fd;
-
-                out.remote = sw->remote;
-
-                ev_sw_connected(SWITCH_MGMT_ID, &out);
-
-                LOG_INFO(SWITCH_MGMT_ID, "Connected (FD=%d, DPID=%lu)", sw->fd, sw->dpid);
-            }
+            if (!deleted)
+                LOG_DEBUG(SWITCH_MGMT_ID, "Closed (FD=%d)", sw->conn.fd);
         }
         break;
-    case EV_SW_UPDATE_DESC:
-        PRINT_EV("EV_SW_UPDATE_DESC\n");
+    case EV_SW_CONNECTED:
+        PRINT_EV("EV_SW_CONNECTED\n");
         {
             const switch_t *sw = ev->sw;
 
-            pthread_rwlock_wrlock(&switches.lock);
+            if (sw->remote == FALSE) break;
 
-            if (switch_table[sw->fd] != NULL) {
-                strncpy(switch_table[sw->fd]->mfr_desc, sw->mfr_desc, 256);
-                strncpy(switch_table[sw->fd]->hw_desc, sw->hw_desc, 256);
-                strncpy(switch_table[sw->fd]->sw_desc, sw->sw_desc, 256);
-                strncpy(switch_table[sw->fd]->serial_num, sw->serial_num, 32);
-                strncpy(switch_table[sw->fd]->dp_desc, sw->dp_desc, 256);
-            }
-
-            pthread_rwlock_unlock(&switches.lock);
+            LOG_INFO(SWITCH_MGMT_ID, "Connected (DPID=%lu)", sw->dpid);
         }
         break;
     case EV_SW_DISCONNECTED:
@@ -372,38 +297,45 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             if (sw->remote == FALSE) break;
 
-            pthread_rwlock_wrlock(&switches.lock);
+            LOG_INFO(SWITCH_MGMT_ID, "Disconnected (DPID=%lu)", sw->dpid);
+        }
+        break;
+    case EV_SW_UPDATE_DESC:
+        PRINT_EV("EV_SW_UPDATE_DESC\n");
+        {
+            const switch_t *sw = ev->sw;
 
-            if (switch_table[sw->fd] == NULL) {
-                pthread_rwlock_unlock(&switches.lock);
-                break;
-            }
+            pthread_rwlock_wrlock(&sw_lock);
 
-            switch_t *curr = switch_table[sw->fd];
-            switch_t *tmp = curr;
+            int idx = sw->dpid % __MAX_NUM_SWITCHES;
+            do {
+                switch_t *curr = &switch_table[idx];
 
-            if (curr->prev != NULL && curr->next != NULL) {
-                curr->prev->next = curr->next;
-                curr->next->prev = curr->prev;
-            } else if (curr->prev == NULL && curr->next != NULL) {
-                switches.head = curr->next;
-                curr->next->prev = NULL;
-            } else if (curr->prev != NULL && curr->next == NULL) {
-                switches.tail = curr->prev;
-                curr->prev->next = NULL;
-            } else if (curr->prev == NULL && curr->next == NULL) {
-                switches.head = NULL;
-                switches.tail = NULL;
-            }
+                if (curr->dpid == sw->dpid) {
+                    strncpy(curr->desc.mfr_desc, sw->desc.mfr_desc, 256);
+                    strncpy(curr->desc.hw_desc, sw->desc.hw_desc, 256);
+                    strncpy(curr->desc.sw_desc, sw->desc.sw_desc, 256);
+                    strncpy(curr->desc.serial_num, sw->desc.serial_num, 32);
+                    strncpy(curr->desc.dp_desc, sw->desc.dp_desc, 256);
 
-            switch_table[sw->fd] = NULL;
-            num_switches--;
+                    char changes[__CONF_STR_LEN];
+                    sprintf(changes, "MFR_DESC = '%s', HW_DESC = '%s', SW_DESC = '%s', SERIAL_NUM = '%s', DP_DESC = '%s'",
+                            sw->desc.mfr_desc, sw->desc.hw_desc, sw->desc.sw_desc, sw->desc.serial_num, sw->desc.dp_desc);
 
-            pthread_rwlock_unlock(&switches.lock);
+                    char conditions[__CONF_STR_LEN];
+                    sprintf(conditions, "DPID = %lu", sw->dpid);
 
-            LOG_INFO(SWITCH_MGMT_ID, "Disconnected (FD=%d, DPID=%lu)", sw->fd, tmp->dpid);
+                    if (update_data(&switch_mgmt_db, "switch_mgmt", changes, conditions)) {
+                        LOG_ERROR(SWITCH_MGMT_ID, "update_data() failed");
+                    }
 
-            sw_enqueue(tmp);
+                    break;
+                }
+
+                idx = (idx + 1) % __MAX_NUM_SWITCHES;
+            } while (idx != sw->dpid % __MAX_NUM_SWITCHES);
+
+            pthread_rwlock_unlock(&sw_lock);
         }
         break;
     case EV_DP_AGGREGATE_STATS:
@@ -411,25 +343,35 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const flow_t *flow = ev->flow;
 
-            pthread_rwlock_wrlock(&switches.lock);
+            pthread_rwlock_wrlock(&sw_lock);
 
-            switch_t *curr = switches.head;
-            while (curr != NULL) {
+            int idx = flow->dpid % __MAX_NUM_SWITCHES;
+            do {
+                switch_t *curr = &switch_table[idx];
+
                 if (curr->dpid == flow->dpid) {
-                    curr->pkt_count = flow->pkt_count - curr->old_pkt_count;
-                    curr->byte_count = flow->byte_count - curr->old_byte_count;
-                    curr->flow_count = flow->flow_count - curr->old_flow_count;
+                    curr->stat.pkt_count = flow->stat.pkt_count;
+                    curr->stat.byte_count = flow->stat.byte_count;
+                    curr->stat.flow_count = flow->stat.flow_count;
 
-                    curr->old_pkt_count = flow->pkt_count;
-                    curr->old_byte_count = flow->byte_count;
-                    curr->old_flow_count = flow->flow_count;
+                    char changes[__CONF_STR_LEN];
+                    sprintf(changes, "PKT_COUNT = %lu, BYTE_COUNT = %lu, FLOW_COUNT = %u",
+                            curr->stat.pkt_count, curr->stat.byte_count, curr->stat.flow_count);
+
+                    char conditions[__CONF_STR_LEN];
+                    sprintf(conditions, "DPID = %lu", flow->dpid);
+
+                    if (update_data(&switch_mgmt_db, "switch_mgmt", changes, conditions)) {
+                        LOG_ERROR(SWITCH_MGMT_ID, "update_data() failed");
+                    }
 
                     break;
                 }
-                curr = curr->next;
-            }
 
-            pthread_rwlock_unlock(&switches.lock);
+                idx = (idx + 1) % __MAX_NUM_SWITCHES;
+            } while (idx != flow->dpid % __MAX_NUM_SWITCHES);
+
+            pthread_rwlock_unlock(&sw_lock);
         }
         break;
     case EV_SW_GET_DPID:
@@ -437,22 +379,17 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             switch_t *sw = ev_out->sw_data;
 
-            pthread_rwlock_rdlock(&switches.lock);
+            pthread_rwlock_rdlock(&sw_lock);
 
-            if (switch_table[sw->fd] != NULL) {
-                sw->dpid = switch_table[sw->fd]->dpid;
-            } else {
-                switch_t *curr = switches.head;
-                while (curr != NULL) {
-                    if (curr->fd == sw->fd) {
-                        sw->dpid = curr->dpid;
-                        break;
-                    }
-                    curr = curr->next;
+            int i;
+            for (i=0; i<__MAX_NUM_SWITCHES; i++) {
+                if (switch_table[i].conn.fd == sw->conn.fd) {
+                    sw->dpid = switch_table[i].dpid;
+                    break;
                 }
             }
 
-            pthread_rwlock_unlock(&switches.lock);
+            pthread_rwlock_unlock(&sw_lock);
         }
         break;
     case EV_SW_GET_FD:
@@ -460,18 +397,21 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             switch_t *sw = ev_out->sw_data;
 
-            pthread_rwlock_rdlock(&switches.lock);
+            pthread_rwlock_rdlock(&sw_lock);
 
-            switch_t *curr = switches.head;
-            while (curr != NULL) {
+            int idx = sw->dpid % __MAX_NUM_SWITCHES;
+            do {
+                switch_t *curr = &switch_table[idx];
+
                 if (curr->dpid == sw->dpid) {
-                    sw->fd = curr->fd;
+                    sw->conn.fd = curr->conn.fd;
                     break;
                 }
-                curr = curr->next;
-            }
 
-            pthread_rwlock_unlock(&switches.lock);
+                idx = (idx + 1) % __MAX_NUM_SWITCHES;
+            } while (idx != sw->dpid % __MAX_NUM_SWITCHES);
+
+            pthread_rwlock_unlock(&sw_lock);
         }
         break;
     case EV_SW_GET_XID:
@@ -479,22 +419,31 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             switch_t *sw = ev_out->sw_data;
 
-            pthread_rwlock_rdlock(&switches.lock);
+            pthread_rwlock_rdlock(&sw_lock);
 
-            if (sw->fd) {
-                sw->xid = switch_table[sw->fd]->xid++;
-            } else {
-                switch_t *curr = switches.head;
-                while (curr != NULL) {
+            if (sw->dpid) {
+                int idx = sw->dpid % __MAX_NUM_SWITCHES;
+                do {
+                    switch_t *curr = &switch_table[idx];
+
                     if (curr->dpid == sw->dpid) {
-                        sw->xid = curr->xid++;
+                        sw->conn.xid = curr->conn.xid++;
                         break;
                     }
-                    curr = curr->next;
+
+                    idx = (idx + 1) % __MAX_NUM_SWITCHES;
+                } while (idx != sw->dpid % __MAX_NUM_SWITCHES);
+            } else if (sw->conn.fd) {
+                int i;
+                for (i=0; i<__MAX_NUM_SWITCHES; i++) {
+                    if (switch_table[i].conn.fd == sw->conn.fd) {
+                        sw->conn.xid = switch_table[i].conn.xid++;
+                        break;
+                    }
                 }
             }
 
-            pthread_rwlock_unlock(&switches.lock);
+            pthread_rwlock_unlock(&sw_lock);
         }
         break;
     default:

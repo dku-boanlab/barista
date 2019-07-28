@@ -23,26 +23,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The header of OpenFlow protocol */
-struct of_header {
-    uint8_t version;
-    uint8_t type;
-    uint16_t length;
-    uint32_t xid;
-};
-
-/////////////////////////////////////////////////////////////////////
-
-/** \brief The structure to keep the remaining part of a message */
-typedef struct _buffer_t {
-    int need; /**< The bytes that it needs to read */
-    int done; /**< The bytes that it has */
-    uint8_t temp[__MAX_RAW_DATA_LEN]; /**< Temporary data */
-} buffer_t;
-
-/** \brief Buffers for all possible sockets */
-buffer_t *buffer;
-
 /**
  * \brief Function to initialize all buffers
  * \return None
@@ -62,13 +42,16 @@ static void init_buffers(void)
  */
 static void clean_buffer(int sock)
 {
-    if (buffer)
-        memset(&buffer[sock], 0, sizeof(buffer_t));
+    if (buffer) {
+        buffer[sock].need = 0;
+        buffer[sock].done = 0;
+
+        memset(buffer[sock].head, 0, 4);
+
+        if (buffer[sock].data)
+            FREE(buffer[sock].data);
+    }
 }
-
-/////////////////////////////////////////////////////////////////////
-
-#include "epoll_env.h"
 
 /////////////////////////////////////////////////////////////////////
 
@@ -80,66 +63,74 @@ static void clean_buffer(int sock)
  */
 static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 {
-    // 4 = version + type + length
-
     buffer_t *b = &buffer[sock];
 
-    uint8_t *temp = b->temp;
     int need = b->need;
     int done = b->done;
+    uint8_t *head = b->head;
+    uint8_t *data = b->data;
 
     int buf_ptr = 0;
     while (bytes > 0) {
         if (0 < done && done < 4) {
-            if (done + bytes < 4) {
-                memmove(temp + done, rx_buf + buf_ptr, bytes);
+            if (done + bytes < 4) { // keep a partial message which is not enough to get the actual length in head (2-1)
+                memmove(head + done, rx_buf + buf_ptr, bytes);
 
                 done += bytes;
                 bytes = 0;
 
                 break;
-            } else {
-                memmove(temp + done, rx_buf + buf_ptr, (4 - done));
+            } else { // now, we know the actual length of a message (2-2)
+                memmove(head + done, rx_buf + buf_ptr, (4 - done));
 
                 bytes -= (4 - done);
                 buf_ptr += (4 - done);
 
-                need = ntohs(((struct of_header *)temp)->length) - 4;
+                struct ofp_header *ofph = (struct ofp_header *)head;
+                uint16_t len = ntohs(ofph->length);
+
+                data = (uint8_t *)CALLOC(len+1, sizeof(uint8_t));
+                memmove(data, head, 4);
+
+                need = len - 4;
                 done = 4;
             }
         }
 
-        if (need == 0) {
-            struct of_header *ofph = (struct of_header *)(rx_buf + buf_ptr);
-
-            if (bytes < 4) {
-                memmove(temp, rx_buf + buf_ptr, bytes);
+        if (need == 0) { // either not enough to know the actual size or full packet
+            if (bytes < 4) { // keep a partial message (less than 4 bytes) in head (1)
+                memmove(head, rx_buf + buf_ptr, bytes);
 
                 need = 0;
                 done = bytes;
 
                 bytes = 0;
-            } else {
+            } else { // >= 4
+                struct ofp_header *ofph = (struct ofp_header *)(rx_buf + buf_ptr);
                 uint16_t len = ntohs(ofph->length);
 
-                if (bytes < len) {
-                    memmove(temp, rx_buf + buf_ptr, bytes);
+                if (bytes < len) { // partial packet
+                    data = (uint8_t *)CALLOC(len+1, sizeof(uint8_t));
+                    memmove(data, rx_buf + buf_ptr, bytes);
 
                     need = len - bytes;
                     done = bytes;
 
                     bytes = 0;
-                } else {
-                    raw_msg_t msg;
+                } else { // full packet
+                    msg_t msg = {0};
 
                     msg.fd = sock;
-                    msg.length = ntohs(ofph->length);
+                    msg.length = len;
 
                     if (msg.length == 0) return -1;
 
-                    msg.data = (uint8_t *)(rx_buf + buf_ptr);
+                    msg.data = (uint8_t *)CALLOC(len+1, sizeof(uint8_t));
+                    memmove(msg.data, rx_buf + buf_ptr, len);
 
                     ev_ofp_msg_in(CONN_ID, &msg);
+
+                    FREE(msg.data);
 
                     bytes -= len;
                     buf_ptr += len;
@@ -148,29 +139,31 @@ static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
                     done = 0;
                 }
             }
-        } else {
-            struct of_header *ofph = (struct of_header *)temp;
+        } else { // append a subsequent message
+            struct ofp_header *ofph = (struct ofp_header *)data;
+            uint16_t len = ntohs(ofph->length);
 
-            if (need > bytes) {
-                memmove(temp + done, rx_buf + buf_ptr, bytes);
+            if (need > bytes) { // still not enough
+                memmove(data + done, rx_buf + buf_ptr, bytes);
 
                 need -= bytes;
                 done += bytes;
 
                 bytes = 0;
             } else {
-                raw_msg_t msg;
+                msg_t msg = {0};
 
                 msg.fd = sock;
-                msg.length = ntohs(ofph->length);
+                msg.length = len; 
 
                 if (msg.length == 0) return -1;
 
-                memmove(temp + done, rx_buf + buf_ptr, need);
-
-                msg.data = (uint8_t *)temp;
-
+                msg.data = data;
+                memmove(msg.data + done, rx_buf + buf_ptr, need);
+                
                 ev_ofp_msg_in(CONN_ID, &msg);
+
+                FREE(msg.data);
 
                 bytes -= need;
                 buf_ptr += need;
@@ -197,7 +190,7 @@ static int new_connection(int sock)
 {
     // new connection
     switch_t sw = {0};
-    sw.fd = sock;
+    sw.conn.fd = sock;
     ev_sw_new_conn(CONN_ID, &sw);
 
     clean_buffer(sock);
@@ -213,7 +206,7 @@ static int closed_connection(int sock)
 {
     // closed connection
     switch_t sw = {0};
-    sw.fd = sock;
+    sw.conn.fd = sock;
     ev_sw_expired_conn(CONN_ID, &sw);
 
     clean_buffer(sock);
@@ -234,6 +227,7 @@ int conn_main(int *activated, int argc, char **argv)
     LOG_INFO(CONN_ID, "Init - Packet I/O engine");
 
     init_buffers();
+
     create_epoll_env(INADDR_ANY, __DEFAULT_PORT);
 
     activate();
@@ -254,7 +248,11 @@ int conn_cleanup(int *activated)
     deactivate();
 
     destroy_epoll_env();
-    FREE(buffer);
+
+    int sock;
+    for (sock=0; sock<__DEFAULT_TABLE_SIZE; sock++) {
+        clean_buffer(sock);
+    }
 
     return 0;
 }
@@ -266,6 +264,8 @@ int conn_cleanup(int *activated)
  */
 int conn_cli(cli_t *cli, char **args)
 {
+    cli_print(cli, "No CLI support");
+
     return 0;
 }
 
@@ -280,7 +280,7 @@ int conn_handler(const event_t *ev, event_out_t *ev_out)
     case EV_OFP_MSG_OUT:
         PRINT_EV("EV_OFP_MSG_OUT\n");
         {
-            const raw_msg_t *msg = ev->raw_msg;
+            const msg_t *msg = ev->msg;
             int fd = msg->fd;
 
             if (fd == 0) break;

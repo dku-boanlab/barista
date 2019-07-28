@@ -12,7 +12,7 @@
 /////////////////////////////////////////////////////////////////////
 
 /** \biref The number of pre-allocated flow entries used in conflict */
-#define ARR_PRE_ALLOC 65536
+#define ARR_PRE_ALLOC 4096
 
 /** \brief The structure of a rule table */
 typedef struct _rule_table_t {
@@ -163,4 +163,3 @@ static int arr_q_destroy(void)
 }
 
 /////////////////////////////////////////////////////////////////////
-

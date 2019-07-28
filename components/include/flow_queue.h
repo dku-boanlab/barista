@@ -12,7 +12,7 @@
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The number of pre-allocated flow entries used in flow_mgmt */
-#define FLOW_PRE_ALLOC 65536
+#define FLOW_PRE_ALLOC 8192
 
 /** \brief The structure of a flow table */
 typedef struct _flow_table_t {
@@ -163,4 +163,3 @@ static int flow_q_destroy(void)
 }
 
 /////////////////////////////////////////////////////////////////////
-

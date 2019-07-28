@@ -28,7 +28,7 @@ ctx_t *compnt_ctx;
 
 /** \brief The event list to convert an event string to an event ID */
 const char event_string[__MAX_EVENTS][__CONF_WORD_LEN] = {
-#include "event_string.h"
+    #include "event_string.h"
 };
 
 /**
@@ -44,6 +44,7 @@ static int event_type(const char *event)
             return i;
         }
     }
+
     return EV_NUM_EVENTS;
 }
 
@@ -54,9 +55,8 @@ static int event_type(const char *event)
  */
 static int event_print(cli_t *cli, int id)
 {
-    char buf[__CONF_STR_LEN];
+    char buf[__CONF_STR_LEN] ={0};
 
-    cli_bufcls(buf);
     cli_buffer(buf, "  ");
 
     int i;
@@ -88,25 +88,25 @@ int event_show(cli_t *cli, char *name)
     if (strcmp(name, "EV_NONE") == 0) {
         return -1;
     } else if (strcmp(name, "EV_ALL_UPSTREAM") == 0) {
-        cli_print(cli, "<Event - EV_ALL_UPSTREAM>");
+        cli_print(cli, "< Event - EV_ALL_UPSTREAM >");
         int i;
         for (i=EV_NONE+1; i<EV_ALL_UPSTREAM; i++)
             event_print(cli, i);
         return 0;
     } else if (strcmp(name, "EV_ALL_DOWNSTREAM") == 0) {
-        cli_print(cli, "<Event - EV_ALL_DOWNSTREAM>");
+        cli_print(cli, "< Event - EV_ALL_DOWNSTREAM >");
         int i;
         for (i=EV_ALL_UPSTREAM+1; i<EV_ALL_DOWNSTREAM; i++)
             event_print(cli, i);
         return 0;
     } else if (strcmp(name, "EV_WRT_INTSTREAM") == 0) {
-        cli_print(cli, "<Event - EV_WRT_INTSTREAM");
+        cli_print(cli, "< Event - EV_WRT_INTSTREAM >");
         int i;
         for (i=EV_ALL_DOWNSTREAM+1; i<EV_WRT_INTSTREAM; i++)
             event_print(cli, i);
         return 0;
     } else if (strcmp(name, "EV_ALL_INTSTREAM") == 0) {
-        cli_print(cli, "<Event - EV_ALL_INTSTREAM>");
+        cli_print(cli, "< Event - EV_ALL_INTSTREAM >");
         int i;
         for (i=EV_WRT_INTSTREAM+1; i<EV_ALL_INTSTREAM; i++)
             event_print(cli, i);
@@ -115,7 +115,7 @@ int event_show(cli_t *cli, char *name)
         int i;
         for (i=0; i<EV_ALL_INTSTREAM; i++) {
             if (strcmp(name, event_string[i]) == 0) {
-                cli_print(cli, "<Event - %s>", name);
+                cli_print(cli, "< Event - %s >", name);
                 event_print(cli, i);
                 return 0;
             }
@@ -138,7 +138,7 @@ int event_list(cli_t *cli)
         return -1;
     }
 
-    cli_print(cli, "<Event List>");
+    cli_print(cli, "< Event List >");
 
     int i;
     for (i=0; i<EV_ALL_INTSTREAM; i++) {
@@ -153,18 +153,17 @@ int event_list(cli_t *cli)
         else if (strcmp(event_string[i], "EV_ALL_INTSTREAM") == 0)
             continue;
         else {
-            char buf[__CONF_STR_LEN];
+            char buf[__CONF_STR_LEN] = {0};
 
-            cli_bufcls(buf);
             cli_buffer(buf, "  %s: ", event_string[i]);
 
             int j;
             for (j=0; j<compnt_ctx->ev_num[i]; j++) {
-                compnt_t *c = compnt_ctx->ev_list[i][j];
-                if (c->status == COMPNT_ENABLED) {
-                    cli_buffer(buf, "%s ", c->name);
+                compnt_t *compnt = compnt_ctx->ev_list[i][j];
+                if (compnt->status == COMPNT_ENABLED) {
+                    cli_buffer(buf, "%s ", compnt->name);
                 } else {
-                    cli_buffer(buf, "(%s) ", c->name);
+                    cli_buffer(buf, "(%s) ", compnt->name);
                 }
             }
 
@@ -178,25 +177,24 @@ int event_list(cli_t *cli)
 /**
  * \brief Function to print the configuration of a component
  * \param cli CLI context
- * \param c Component context
+ * \param compnt Component context
  * \param details The flag to print the detailed description
  */
-static int component_print(cli_t *cli, compnt_t *c, int details)
+static int component_print(cli_t *cli, compnt_t *compnt, int details)
 {
-    char buf[__CONF_STR_LEN];
+    char buf[__CONF_STR_LEN] = {0};
 
-    cli_bufcls(buf);
-    cli_buffer(buf, "%2d: %s", c->id+1, c->name);
+    cli_buffer(buf, "%2d: %s", compnt->id+1, compnt->name);
 
     if (details == FALSE) {
         cli_buffer(buf, " (");
-        if (c->status == COMPNT_DISABLED)
+        if (compnt->status == COMPNT_DISABLED)
             cli_buffer(buf, "disabled");
-        else if (c->activated && (c->site == COMPNT_INTERNAL))
+        else if (compnt->activated && (compnt->site == COMPNT_INTERNAL))
             cli_buffer(buf, ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
-        else if (c->activated && (c->site == COMPNT_EXTERNAL))
+        else if (compnt->activated && (compnt->site == COMPNT_EXTERNAL))
             cli_buffer(buf, ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
-        else if (c->site == COMPNT_EXTERNAL)
+        else if (compnt->site == COMPNT_EXTERNAL)
             cli_buffer(buf, ANSI_COLOR_MAGENTA "ready to talk" ANSI_COLOR_RESET);
         else
             cli_buffer(buf, ANSI_COLOR_BLUE "enabled" ANSI_COLOR_RESET);
@@ -213,55 +211,55 @@ static int component_print(cli_t *cli, compnt_t *c, int details)
     cli_buffer(buf, "    Arguments: ");
 
     int i;
-    for (i=0; i<c->argc; i++)
-        cli_buffer(buf, "%s ", c->argv[i]);
+    for (i=0; i<compnt->argc; i++)
+        cli_buffer(buf, "%s ", compnt->argv[i]);
 
     cli_bufprt(cli, buf);
 
-    if (c->type == COMPNT_AUTO)
+    if (compnt->type == COMPNT_AUTO)
         cli_print(cli, "    Type: autonomous");
     else
         cli_print(cli, "    Type: general");
 
-    if (c->site == COMPNT_INTERNAL)
+    if (compnt->site == COMPNT_INTERNAL)
         cli_print(cli, "    Site: internal");
     else
         cli_print(cli, "    Site: external");
 
-    if (c->role == COMPNT_ADMIN)
+    if (compnt->role == COMPNT_ADMIN)
         cli_print(cli, "    Role: admin");
-    else if (c->role == COMPNT_SECURITY)
+    else if (compnt->role == COMPNT_SECURITY)
         cli_print(cli, "    Role: security");
-    else if (c->role == COMPNT_SECURITY_V2)
+    else if (compnt->role == COMPNT_SECURITY_V2)
         cli_print(cli, "    Role: security (v2)");
-    else if (c->role == COMPNT_MANAGEMENT)
+    else if (compnt->role == COMPNT_MANAGEMENT)
         cli_print(cli, "    Role: management");
-    else if (c->role == COMPNT_NETWORK)
+    else if (compnt->role == COMPNT_NETWORK)
         cli_print(cli, "    Role: network");
-    else if (c->role == COMPNT_BASE)
+    else if (compnt->role == COMPNT_BASE)
         cli_print(cli, "    Role: base");
 
     cli_bufcls(buf);
     cli_buffer(buf, "    Permission: ");
 
-    if (c->perm & COMPNT_READ) cli_buffer(buf, "r");
-    if (c->perm & COMPNT_WRITE) cli_buffer(buf, "w");
-    if (c->perm & COMPNT_EXECUTE) cli_buffer(buf, "x");
+    if (compnt->perm & COMPNT_READ) cli_buffer(buf, "r");
+    if (compnt->perm & COMPNT_WRITE) cli_buffer(buf, "w");
+    if (compnt->perm & COMPNT_EXECUTE) cli_buffer(buf, "x");
 
     cli_bufprt(cli, buf);
 
-    if (c->status == COMPNT_DISABLED)
+    if (compnt->status == COMPNT_DISABLED)
         cli_print(cli, "    Status: disabled");
-    else if (c->activated == TRUE)
+    else if (compnt->activated == TRUE)
         cli_print(cli, "    Status: " ANSI_COLOR_GREEN "activated" ANSI_COLOR_RESET);
-    else if (c->status == COMPNT_ENABLED)
+    else if (compnt->status == COMPNT_ENABLED)
         cli_print(cli, "    Status: " ANSI_COLOR_BLUE "enabled" ANSI_COLOR_RESET);
 
     cli_bufcls(buf);
     cli_buffer(buf, "    Inbounds: ");
 
-    for (i=0; i<c->in_num; i++) {
-        cli_buffer(buf, "%s(%d) ", event_string[c->in_list[i]], c->in_list[i]);
+    for (i=0; i<compnt->in_num; i++) {
+        cli_buffer(buf, "%s(%d) ", event_string[compnt->in_list[i]], compnt->in_list[i]);
     }
 
     cli_bufprt(cli, buf);
@@ -269,8 +267,8 @@ static int component_print(cli_t *cli, compnt_t *c, int details)
     cli_bufcls(buf);
     cli_buffer(buf, "    Outbounds: ");
 
-    for (i=0; i<c->out_num; i++) {
-        cli_buffer(buf, "%s(%d) ", event_string[c->out_list[i]], c->out_list[i]);
+    for (i=0; i<compnt->out_num; i++) {
+        cli_buffer(buf, "%s(%d) ", event_string[compnt->out_list[i]], compnt->out_list[i]);
     }
 
     cli_bufprt(cli, buf);
@@ -293,7 +291,7 @@ int component_show(cli_t *cli, char *name)
     int i;
     for (i=0; i<compnt_ctx->num_compnts; i++) {
         if (strcmp(compnt_ctx->compnt_list[i]->name, name) == 0) {
-            cli_print(cli, "<Component Information>");
+            cli_print(cli, "< Component Information >");
             component_print(cli, compnt_ctx->compnt_list[i], TRUE);
             return 0;
         }
@@ -315,7 +313,7 @@ int component_list(cli_t *cli)
         return -1;
     }
 
-    cli_print(cli, "<Component List>");
+    cli_print(cli, "< Component List >");
 
     int i;
     for (i=0; i<compnt_ctx->num_compnts; i++) {
@@ -387,18 +385,18 @@ int component_disable(cli_t *cli, char *name)
  * \brief The thread for an autonomous component
  * \param c_id Component ID
  */
-static void *thread_main(void *c_id)
+static void *thread_main(void *compnt_id)
 {
-    int id = *(int *)c_id;
-    compnt_t *c = compnt_ctx->compnt_list[id];
+    int id = *(int *)compnt_id;
+    compnt_t *compnt = compnt_ctx->compnt_list[id];
 
-    FREE(c_id);
+    FREE(compnt_id);
 
-    if (c->main(&c->activated, c->argc, c->argv) < 0) {
-        c->activated = FALSE;
+    if (compnt->main(&compnt->activated, compnt->argc, compnt->argv) < 0) {
+        compnt->activated = FALSE;
         return NULL;
     } else {
-        return c;
+        return compnt;
     }
 }
 
@@ -451,6 +449,7 @@ int component_activate(cli_t *cli, char *name)
                     // external?
                     } else {
                         compnt_ctx->compnt_list[i]->push_ctx = zmq_ctx_new();
+                        compnt_ctx->compnt_list[i]->req_ctx = zmq_ctx_new();
 
                         cli_print(cli, "%s is ready to talk", compnt_ctx->compnt_list[i]->name);
                     }
@@ -501,8 +500,13 @@ int component_deactivate(cli_t *cli, char *name)
                         }
                     // external?
                     } else {
-                        zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_ctx);
+                        if (compnt_ctx->compnt_list[i]->push_ctx)
+                            zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_ctx);
                         compnt_ctx->compnt_list[i]->push_ctx = NULL;
+
+                        if (compnt_ctx->compnt_list[i]->req_ctx)
+                            zmq_ctx_destroy(compnt_ctx->compnt_list[i]->req_ctx);
+                        compnt_ctx->compnt_list[i]->req_ctx = NULL;
 
                         compnt_ctx->compnt_list[i]->activated = FALSE;
                         cli_print(cli, "%s is deactivated", compnt_ctx->compnt_list[i]->name);
@@ -582,6 +586,7 @@ int component_start(cli_t *cli)
             // external?
             } else {
                 compnt_ctx->compnt_list[cluster]->push_ctx = zmq_ctx_new();
+                compnt_ctx->compnt_list[cluster]->req_ctx = zmq_ctx_new();
 
                 cli_print(cli, "%s is ready to talk", compnt_ctx->compnt_list[cluster]->name);
             }
@@ -590,7 +595,9 @@ int component_start(cli_t *cli)
 
     // activate others
     for (i=0; i<compnt_ctx->num_compnts; i++) {
-        if (strncmp(compnt_ctx->compnt_list[i]->name, "conn", 4) == 0)
+        if (strcmp(compnt_ctx->compnt_list[i]->name, "log") == 0)
+            continue;
+        else if (strncmp(compnt_ctx->compnt_list[i]->name, "conn", 4) == 0)
             continue;
         else if (strcmp(compnt_ctx->compnt_list[i]->name, "cluster") == 0)
             continue;
@@ -626,6 +633,7 @@ int component_start(cli_t *cli)
                 // external?
                 } else {
                     compnt_ctx->compnt_list[i]->push_ctx = zmq_ctx_new();
+                    compnt_ctx->compnt_list[i]->req_ctx = zmq_ctx_new();
 
                     cli_print(cli, "%s is ready to talk", compnt_ctx->compnt_list[i]->name);
                 }
@@ -664,6 +672,7 @@ int component_start(cli_t *cli)
             // external?
             } else {
                 compnt_ctx->compnt_list[conn]->push_ctx = zmq_ctx_new();
+                compnt_ctx->compnt_list[conn]->req_ctx = zmq_ctx_new();
 
                 cli_print(cli, "%s is ready to talk", compnt_ctx->compnt_list[conn]->name);
             }
@@ -671,6 +680,8 @@ int component_start(cli_t *cli)
     }
 
     compnt_ctx->compnt_on = TRUE;
+
+    waitsec(0, 1000 * 1000);
 
     return 0;
 }
@@ -719,8 +730,13 @@ int component_stop(cli_t *cli)
             }
         // external?
         } else {
-            zmq_ctx_destroy(compnt_ctx->compnt_list[conn]->push_ctx);
+            if (compnt_ctx->compnt_list[conn]->push_ctx)
+                zmq_ctx_destroy(compnt_ctx->compnt_list[conn]->push_ctx);
             compnt_ctx->compnt_list[conn]->push_ctx = NULL;
+
+            if (compnt_ctx->compnt_list[conn]->req_ctx)
+                zmq_ctx_destroy(compnt_ctx->compnt_list[conn]->req_ctx);
+            compnt_ctx->compnt_list[conn]->req_ctx = NULL;
 
             compnt_ctx->compnt_list[conn]->activated = FALSE;
             cli_print(cli, "%s is deactivated", compnt_ctx->compnt_list[conn]->name);
@@ -751,8 +767,13 @@ int component_stop(cli_t *cli)
                     }
                 // external?
                 } else {
-                    zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_ctx);
+                    if (compnt_ctx->compnt_list[i]->push_ctx)
+                        zmq_ctx_destroy(compnt_ctx->compnt_list[i]->push_ctx);
                     compnt_ctx->compnt_list[i]->push_ctx = NULL;
+
+                    if (compnt_ctx->compnt_list[i]->req_ctx)
+                        zmq_ctx_destroy(compnt_ctx->compnt_list[i]->req_ctx);
+                    compnt_ctx->compnt_list[i]->req_ctx = NULL;
 
                     compnt_ctx->compnt_list[i]->activated = FALSE;
                     cli_print(cli, "%s is deactivated", compnt_ctx->compnt_list[i]->name);
@@ -774,8 +795,13 @@ int component_stop(cli_t *cli)
             }
         // external?
         } else {
-            zmq_ctx_destroy(compnt_ctx->compnt_list[cluster]->push_ctx);
+            if (compnt_ctx->compnt_list[cluster]->push_ctx)
+                zmq_ctx_destroy(compnt_ctx->compnt_list[cluster]->push_ctx);
             compnt_ctx->compnt_list[cluster]->push_ctx = NULL;
+
+            if (compnt_ctx->compnt_list[cluster]->req_ctx)
+                zmq_ctx_destroy(compnt_ctx->compnt_list[cluster]->req_ctx);
+            compnt_ctx->compnt_list[cluster]->req_ctx = NULL;
 
             compnt_ctx->compnt_list[cluster]->activated = FALSE;
             cli_print(cli, "%s is deactivated", compnt_ctx->compnt_list[cluster]->name);
@@ -783,6 +809,8 @@ int component_stop(cli_t *cli)
     }
 
     compnt_ctx->compnt_on = FALSE;
+
+    waitsec(0, 1000 * 1000);
 
     return 0;
 }
@@ -800,17 +828,17 @@ int component_add_policy(cli_t *cli, char *name, char *odp)
         return -1;
     }
 
-    compnt_t *c = NULL;
+    compnt_t *compnt = NULL;
 
     int i;
     for (i=0; i<compnt_ctx->num_compnts; i++) {
         if (strcmp(compnt_ctx->compnt_list[i]->name, name) == 0) {
-            c = compnt_ctx->compnt_list[i];
+            compnt = compnt_ctx->compnt_list[i];
             break;
         }
     }
 
-    if (c == NULL) {
+    if (compnt == NULL) {
         cli_print(cli, "%s does not exist", name);
         return -1;
     }
@@ -819,7 +847,7 @@ int component_add_policy(cli_t *cli, char *name, char *odp)
     char parm[__NUM_OF_ODP_FIELDS][__CONF_WORD_LEN] = {{0}};
     char val[__NUM_OF_ODP_FIELDS][__CONF_WORD_LEN] = {{0}};
 
-    cli_print(cli, "Policy: %s, %s", c->name, odp);
+    cli_print(cli, "Policy: %s, %s", compnt->name, odp);
 
     char *token = strtok(odp, ";");
 
@@ -839,9 +867,9 @@ int component_add_policy(cli_t *cli, char *name, char *odp)
 
             while (v != NULL) {
                 if (idx < __MAX_POLICY_ENTRIES) {
-                    c->odp[c->num_policies].flag |= ODP_DPID;
-                    c->odp[c->num_policies].dpid[idx] = atoi(v);
-                    cli_print(cli, "\tDPID: %lu", c->odp[c->num_policies].dpid[idx]);
+                    compnt->odp[compnt->num_policies].flag |= ODP_DPID;
+                    compnt->odp[compnt->num_policies].dpid[idx] = atoi(v);
+                    cli_print(cli, "\tDPID: %lu", compnt->odp[compnt->num_policies].dpid[idx]);
                     idx++;
                 }
                 v = strtok(NULL, ",");
@@ -855,9 +883,9 @@ int component_add_policy(cli_t *cli, char *name, char *odp)
                     if (atoi(v) <= 0 || atoi(v) >= __MAX_NUM_PORTS) {
                         cli_print(cli, "\tPort: %s (wrong)", v);
                     } else {
-                        c->odp[c->num_policies].flag |= ODP_PORT;
-                        c->odp[c->num_policies].port[idx] = atoi(v);
-                        cli_print(cli, "\tPort: %u", c->odp[c->num_policies].port[idx]);
+                        compnt->odp[compnt->num_policies].flag |= ODP_PORT;
+                        compnt->odp[compnt->num_policies].port[idx] = atoi(v);
+                        cli_print(cli, "\tPort: %u", compnt->odp[compnt->num_policies].port[idx]);
                         idx++;
                     }
                 }
@@ -870,33 +898,33 @@ int component_add_policy(cli_t *cli, char *name, char *odp)
             while (v != NULL) {
                 if (idx < __MAX_POLICY_ENTRIES) {
                     if (strcmp(v, "arp") == 0) {
-                        c->odp[c->num_policies].flag |= ODP_PROTO;
-                        c->odp[c->num_policies].proto |= PROTO_ARP;
+                        compnt->odp[compnt->num_policies].flag |= ODP_PROTO;
+                        compnt->odp[compnt->num_policies].proto |= PROTO_ARP;
                         cli_print(cli, "\tProtocol: ARP");
                     } else if (strcmp(v, "lldp") == 0) {
-                        c->odp[c->num_policies].flag |= ODP_PROTO;
-                        c->odp[c->num_policies].proto |= PROTO_LLDP;
+                        compnt->odp[compnt->num_policies].flag |= ODP_PROTO;
+                        compnt->odp[compnt->num_policies].proto |= PROTO_LLDP;
                         cli_print(cli, "\tProtocol: LLDP");
                     } else if (strcmp(v, "dhcp") == 0) {
-                        c->odp[c->num_policies].flag |= ODP_PROTO;
-                        c->odp[c->num_policies].proto |= PROTO_DHCP;
+                        compnt->odp[compnt->num_policies].flag |= ODP_PROTO;
+                        compnt->odp[compnt->num_policies].proto |= PROTO_DHCP;
                         cli_print(cli, "\tProtocol: DHCP");
-                    } else if (strcmp(v, "ipv4") == 0) {
-                        c->odp[c->num_policies].flag |= ODP_PROTO;
-                        c->odp[c->num_policies].proto |= PROTO_IPV4;
-                        cli_print(cli, "\tProtocol: IPv4");
                     } else if (strcmp(v, "tcp") == 0) {
-                        c->odp[c->num_policies].flag |= ODP_PROTO;
-                        c->odp[c->num_policies].proto |= PROTO_TCP;
+                        compnt->odp[compnt->num_policies].flag |= ODP_PROTO;
+                        compnt->odp[compnt->num_policies].proto |= PROTO_TCP;
                         cli_print(cli, "\tProtocol: TCP");
                     } else if (strcmp(v, "udp") == 0) {
-                        c->odp[c->num_policies].flag |= ODP_PROTO;
-                        c->odp[c->num_policies].proto |= PROTO_UDP;
+                        compnt->odp[compnt->num_policies].flag |= ODP_PROTO;
+                        compnt->odp[compnt->num_policies].proto |= PROTO_UDP;
                         cli_print(cli, "\tProtocol: UDP");
                     } else if (strcmp(v, "icmp") == 0) {
-                        c->odp[c->num_policies].flag |= ODP_PROTO;
-                        c->odp[c->num_policies].proto |= PROTO_ICMP;
+                        compnt->odp[compnt->num_policies].flag |= ODP_PROTO;
+                        compnt->odp[compnt->num_policies].proto |= PROTO_ICMP;
                         cli_print(cli, "\tProtocol: ICMP");
+                    } else if (strcmp(v, "ipv4") == 0) {
+                        compnt->odp[compnt->num_policies].flag |= ODP_PROTO;
+                        compnt->odp[compnt->num_policies].proto |= PROTO_IPV4;
+                        cli_print(cli, "\tProtocol: IPv4");
                     } else {
                         cli_print(cli, "\tProtocol: %s (wrong)", v);
                     }
@@ -911,8 +939,8 @@ int component_add_policy(cli_t *cli, char *name, char *odp)
                 if (idx < __MAX_POLICY_ENTRIES) {
                     struct in_addr input;
                     if (inet_aton(v, &input)) {
-                        c->odp[c->num_policies].flag |= ODP_SRCIP;
-                        c->odp[c->num_policies].srcip[idx] = ip_addr_int(v);
+                        compnt->odp[compnt->num_policies].flag |= ODP_SRCIP;
+                        compnt->odp[compnt->num_policies].srcip[idx] = ip_addr_int(v);
                         cli_print(cli, "\tSource IP: %s", v);
                         idx++;
                     } else {
@@ -929,8 +957,8 @@ int component_add_policy(cli_t *cli, char *name, char *odp)
                 if (idx < __MAX_POLICY_ENTRIES) {
                     struct in_addr input;
                     if (inet_aton(v, &input)) {
-                        c->odp[c->num_policies].flag |= ODP_DSTIP;
-                        c->odp[c->num_policies].dstip[idx] = ip_addr_int(v);
+                        compnt->odp[compnt->num_policies].flag |= ODP_DSTIP;
+                        compnt->odp[compnt->num_policies].dstip[idx] = ip_addr_int(v);
                         cli_print(cli, "\tDestination IP: %s", v);
                         idx++;
                     } else {
@@ -949,8 +977,8 @@ int component_add_policy(cli_t *cli, char *name, char *odp)
                     if (port == 0 || port >= 65536) {
                         cli_print(cli, "\tSource port: %s (wrong)", v);
                     } else {
-                        c->odp[c->num_policies].flag |= ODP_SPORT;
-                        c->odp[c->num_policies].sport[idx] = port;
+                        compnt->odp[compnt->num_policies].flag |= ODP_SPORT;
+                        compnt->odp[compnt->num_policies].sport[idx] = port;
                         cli_print(cli, "\tSource port: %u", port);
                         idx++;
                     }
@@ -967,8 +995,8 @@ int component_add_policy(cli_t *cli, char *name, char *odp)
                     if (port == 0 || port >= 65536) {
                         cli_print(cli, "\tDestination port: %s (wrong)", v);
                     } else {
-                        c->odp[c->num_policies].flag |= ODP_DPORT;
-                        c->odp[c->num_policies].dport[idx] = port;
+                        compnt->odp[compnt->num_policies].flag |= ODP_DPORT;
+                        compnt->odp[compnt->num_policies].dport[idx] = port;
                         cli_print(cli, "\tDestination port: %u", port);
                         idx++;
                     }
@@ -980,7 +1008,7 @@ int component_add_policy(cli_t *cli, char *name, char *odp)
         }
     }
 
-    c->num_policies++;
+    compnt->num_policies++;
 
     return 0;
 }
@@ -998,42 +1026,40 @@ int component_del_policy(cli_t *cli, char *name, int idx)
         return -1;
     }
 
-    compnt_t *c = NULL;
+    compnt_t *compnt = NULL;
 
     int i;
     for (i=0; i<compnt_ctx->num_compnts; i++) {
         if (strcmp(compnt_ctx->compnt_list[i]->name, name) == 0) {
-            c = compnt_ctx->compnt_list[i];
+            compnt = compnt_ctx->compnt_list[i];
             break;
         }
     }
 
-    if (c == NULL) {
+    if (compnt == NULL) {
         cli_print(cli, "%s does not exist", name);
         return -1;
     }
 
-    if (c->num_policies < idx) {
-        if (c->num_policies == 0) {
-            cli_print(cli, "There is no policy in %s", c->name);
-            return -1;
-        } else {
-            cli_print(cli, "%s has only %u policies", c->name, c->num_policies);
-            return -1;
-        }
+    if (compnt->num_policies == 0) {
+        cli_print(cli, "There is no policy in %s", compnt->name);
+        return -1;
+    } else if (compnt->num_policies < idx) {
+        cli_print(cli, "%s has only %u policies", compnt->name, compnt->num_policies);
+        return -1;
     }
 
-    memset(&c->odp[idx-1], 0, sizeof(odp_t));
+    memset(&compnt->odp[idx-1], 0, sizeof(odp_t));
 
     for (i=idx; i<__MAX_POLICY_ENTRIES; i++) {
-        memmove(&c->odp[i-1], &c->odp[i], sizeof(odp_t));
+        memmove(&compnt->odp[i-1], &compnt->odp[i], sizeof(odp_t));
     }
 
-    memset(&c->odp[i-1], 0, sizeof(odp_t));
+    memset(&compnt->odp[i-1], 0, sizeof(odp_t));
 
-    c->num_policies--;
+    compnt->num_policies--;
 
-    cli_print(cli, "Deleted policy #%u in %s", idx, c->name);
+    cli_print(cli, "Deleted policy #%u in %s", idx, compnt->name);
 
     return 0;
 }
@@ -1050,148 +1076,137 @@ int component_show_policy(cli_t *cli, char *name)
         return -1;
     }
 
-    compnt_t *c = NULL;
+    compnt_t *compnt = NULL;
 
     int i;
     for (i=0; i<compnt_ctx->num_compnts; i++) {
         if (strcmp(compnt_ctx->compnt_list[i]->name, name) == 0) {
-            c = compnt_ctx->compnt_list[i];
+            compnt = compnt_ctx->compnt_list[i];
             break;
         }
     }
 
-    if (c == NULL) {
+    if (compnt == NULL) {
         cli_print(cli, "%s does not exist", name);
         return -1;
     }
 
-    cli_print(cli, "<Operator-Defined Policies for %s>", c->name);
+    cli_print(cli, "< Operator-Defined Policies for %s >", compnt->name);
 
-    for (i=0; i<c->num_policies; i++) {
+    for (i=0; i<compnt->num_policies; i++) {
         cli_print(cli, "  Policy #%02u:", i+1);
 
-        if (c->odp[i].dpid[0]) {
-            char buf[__CONF_STR_LEN];
+        if (compnt->odp[i].dpid[0]) {
+            char buf[__CONF_STR_LEN] = {0};
 
-            cli_bufcls(buf);
             cli_buffer(buf, "    Datapath ID: ");
 
             int j;
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
-                if (c->odp[i].dpid[j] == 0)
-                    break;
-                cli_buffer(buf, "%lu ", c->odp[i].dpid[j]);
+                if (compnt->odp[i].dpid[j] == 0) break;
+                cli_buffer(buf, "%lu ", compnt->odp[i].dpid[j]);
             }
 
             cli_bufprt(cli, buf);
         }
 
-        if (c->odp[i].port[0]) {
-            char buf[__CONF_STR_LEN];
+        if (compnt->odp[i].port[0]) {
+            char buf[__CONF_STR_LEN] = {0};
 
-            cli_bufcls(buf);
             cli_buffer(buf, "    Port: ");
 
             int j;
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
-                if (c->odp[i].port[j] == 0)
-                    break;
-                cli_buffer(buf, "%u ", c->odp[i].port[j]);
+                if (compnt->odp[i].port[j] == 0) break;
+                cli_buffer(buf, "%u ", compnt->odp[i].port[j]);
             }
 
             cli_bufprt(cli, buf);
         }
 
-        if (c->odp[i].proto) {
-            char buf[__CONF_STR_LEN];
+        if (compnt->odp[i].proto) {
+            char buf[__CONF_STR_LEN] = {0};
 
-            cli_bufcls(buf);
             cli_buffer(buf, "    Protocol: ");
 
-            if (c->odp[i].proto & PROTO_ARP)
+            if (compnt->odp[i].proto & PROTO_ARP)
                 cli_buffer(buf, "ARP ");
-            if (c->odp[i].proto & PROTO_LLDP)
+            if (compnt->odp[i].proto & PROTO_LLDP)
                 cli_buffer(buf, "LLDP ");
-            if (c->odp[i].proto & PROTO_DHCP)
+            if (compnt->odp[i].proto & PROTO_DHCP)
                 cli_buffer(buf, "DHCP ");
-            if (c->odp[i].proto & PROTO_IPV4)
-                cli_buffer(buf, "IPv4 ");
-            if (c->odp[i].proto & PROTO_TCP)
+            if (compnt->odp[i].proto & PROTO_TCP)
                 cli_buffer(buf, "TCP ");
-            if (c->odp[i].proto & PROTO_UDP)
+            if (compnt->odp[i].proto & PROTO_UDP)
                 cli_buffer(buf, "UDP ");
-            if (c->odp[i].proto & PROTO_ICMP)
+            if (compnt->odp[i].proto & PROTO_ICMP)
                 cli_buffer(buf, "ICMP ");
+            if (compnt->odp[i].proto & PROTO_IPV4)
+                cli_buffer(buf, "IPv4 ");
+            if (!compnt->odp[i].proto)
+                cli_buffer(buf, "ALL ");
 
             cli_bufprt(cli, buf);
         }
 
-        if (c->odp[i].srcip[0]) {
-            char buf[__CONF_STR_LEN];
+        if (compnt->odp[i].srcip[0]) {
+            char buf[__CONF_STR_LEN] ={0};
 
-            cli_bufcls(buf);
             cli_buffer(buf, "    Source IP: ");
 
             int j;
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
-                if (c->odp[i].srcip[j] == 0)
-                    break;
-                cli_buffer(buf, "%s ", ip_addr_str(c->odp[i].srcip[j]));
+                if (compnt->odp[i].srcip[j] == 0) break;
+                cli_buffer(buf, "%s ", ip_addr_str(compnt->odp[i].srcip[j]));
             }
 
             cli_bufprt(cli, buf);
         }
 
-        if (c->odp[i].dstip[0]) {
-            char buf[__CONF_STR_LEN];
+        if (compnt->odp[i].dstip[0]) {
+            char buf[__CONF_STR_LEN] = {0};
 
-            cli_bufcls(buf);
             cli_buffer(buf, "    Destination IP: ");
 
             int j;
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
-                if (c->odp[i].dstip[j] == 0)
-                    break;
-                cli_buffer(buf, "%s ", ip_addr_str(c->odp[i].dstip[j]));
+                if (compnt->odp[i].dstip[j] == 0) break;
+                cli_buffer(buf, "%s ", ip_addr_str(compnt->odp[i].dstip[j]));
             }
 
             cli_bufprt(cli, buf);
         }
 
-        if (c->odp[i].sport[0]) {
-            char buf[__CONF_STR_LEN];
+        if (compnt->odp[i].sport[0]) {
+            char buf[__CONF_STR_LEN] = {0};
 
-            cli_bufcls(buf);
             cli_buffer(buf, "    Source port: ");
 
             int j;
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
-                if (c->odp[i].sport[j] == 0)
-                    break;
-                cli_buffer(buf, "%u ", c->odp[i].sport[j]);
+                if (compnt->odp[i].sport[j] == 0) break;
+                cli_buffer(buf, "%u ", compnt->odp[i].sport[j]);
             }
 
             cli_bufprt(cli, buf);
         }
 
-        if (c->odp[i].dport[0]) {
-            char buf[__CONF_STR_LEN];
+        if (compnt->odp[i].dport[0]) {
+            char buf[__CONF_STR_LEN] = {0};
 
-            cli_bufcls(buf);
             cli_buffer(buf, "    Destination port: ");
 
             int j;
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
-                if (c->odp[i].dport[j] == 0)
-                    break;
-                cli_buffer(buf, "%u ", c->odp[i].dport[j]);
+                if (compnt->odp[i].dport[j] == 0) break;
+                cli_buffer(buf, "%u ", compnt->odp[i].dport[j]);
             }
 
             cli_bufprt(cli, buf);
         }
     }
 
-    if (!c->num_policies)
+    if (!compnt->num_policies)
         cli_print(cli, "  No policy");
 
     return 0;
@@ -1232,7 +1247,7 @@ int component_cli(cli_t *cli, char **args)
  * \param ev_num The number of components for each event
  * \param ev_list The components listening to each event
  */
-static int clean_up_outdated_data(int num_compnts, compnt_t **compnt_list, int *ev_num, compnt_t ***ev_list)
+static int clean_up_config(int num_compnts, compnt_t **compnt_list, int *ev_num, compnt_t ***ev_list)
 {
     if (compnt_list != NULL) {
         int i;
@@ -1308,7 +1323,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
     int *ev_num = (int *)MALLOC(sizeof(int) * __MAX_EVENTS);
     if (ev_num == NULL) {
         PERROR("malloc");
-        clean_up_outdated_data(num_compnts, compnt_list, NULL, NULL);
+        clean_up_config(num_compnts, compnt_list, NULL, NULL);
         json_decref(json);
         return -1;
     } else {
@@ -1318,7 +1333,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
     compnt_t ***ev_list = (compnt_t ***)MALLOC(sizeof(compnt_t **) * __MAX_EVENTS);
     if (ev_list == NULL) {
         PERROR("malloc");
-        clean_up_outdated_data(num_compnts, compnt_list, ev_num, NULL);
+        clean_up_config(num_compnts, compnt_list, ev_num, NULL);
         json_decref(json);
         return -1;
     } else {
@@ -1327,7 +1342,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
             ev_list[i] = (compnt_t **)MALLOC(sizeof(compnt_t *) * __MAX_COMPONENTS);
             if (ev_list[i] == NULL) {
                 PERROR("malloc");
-                clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
+                clean_up_config(num_compnts, compnt_list, ev_num, ev_list);
                 json_decref(json);
                 return -1;
             } else {
@@ -1394,6 +1409,12 @@ int component_load(cli_t *cli, ctx_t *ctx)
             strcpy(push_addr, json_string_value(j_push_addr));
         }
 
+        char req_addr[__CONF_WORD_LEN] = {0};
+        json_t *j_req_addr = json_object_get(data, "request_addr");
+        if (json_is_string(j_req_addr)) {
+            strcpy(req_addr, json_string_value(j_req_addr));
+        }
+
         // find the index of a component to link the corresponding functions
         const int num_components = sizeof(g_components) / sizeof(compnt_func_t);
         int k;
@@ -1405,84 +1426,93 @@ int component_load(cli_t *cli, ctx_t *ctx)
         }
 
         // allocate a new component structure
-        compnt_t *c = calloc(1, sizeof(compnt_t));
-        if (!c) {
+        compnt_t *compnt = calloc(1, sizeof(compnt_t));
+        if (!compnt) {
              PERROR("calloc");
-             clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
+             clean_up_config(num_compnts, compnt_list, ev_num, ev_list);
              json_decref(json);
              return -1;
         }
 
         // set an internal ID (simply for ordering)
-        c->id = num_compnts;
+        compnt->id = num_compnts;
 
         // set the component name
         if (strlen(name) == 0) {
             cli_print(cli, "No component name");
-            FREE(c);
-            clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
+            FREE(compnt);
+            clean_up_config(num_compnts, compnt_list, ev_num, ev_list);
             json_decref(json);
             return -1;
         } else {
-            strcpy(c->name, name);
-            cli_print(cli, "%3d: %s", c->id+1, name);
+            strcpy(compnt->name, name);
+            cli_print(cli, "%3d: %s", compnt->id+1, name);
 
             // set the actual ID
-            c->component_id = hash_func((uint32_t *)&c->name, __HASHING_NAME_LENGTH);
-
-            cli_print(cli, "     ID: %u", c->component_id);
+            compnt->component_id = hash_func((uint32_t *)&compnt->name, __HASHING_NAME_LENGTH);
+            cli_print(cli, "     ID: %u", compnt->component_id);
         }
 
         // set arguments
-        strcpy(c->args, args);
-        str2args(c->args, &c->argc, &c->argv[1], __CONF_ARGC);
-        c->argc++;
-        c->argv[0] = c->name;
-        if (strlen(c->args))
-            cli_print(cli, "     Arguments: %s", c->args);
+        strcpy(compnt->args, args);
+        str2args(compnt->args, &compnt->argc, &compnt->argv[1], __CONF_ARGC);
+        compnt->argc++;
+        compnt->argv[0] = compnt->name;
+        if (strlen(compnt->args))
+            cli_print(cli, "     Arguments: %s", compnt->args);
 
         // set a type
         if (strlen(type) == 0) {
-            c->type = COMPNT_GENERAL;
+            compnt->type = COMPNT_GENERAL;
         } else {
-            c->type = (strcmp(type, "autonomous") == 0) ? COMPNT_AUTO : COMPNT_GENERAL;
+            compnt->type = (strcmp(type, "autonomous") == 0) ? COMPNT_AUTO : COMPNT_GENERAL;
         }
         cli_print(cli, "     Type: %s", type);
 
         // set a site
         if (strlen(site) == 0) {
-            c->site = COMPNT_INTERNAL;
+            compnt->site = COMPNT_INTERNAL;
         } else {
             if (strcmp(site, "external") == 0)
-                c->site = COMPNT_EXTERNAL;
+                compnt->site = COMPNT_EXTERNAL;
             else
-                c->site = COMPNT_INTERNAL;
+                compnt->site = COMPNT_INTERNAL;
         }
         cli_print(cli, "     Site: %s", site);
 
         // set functions
-        if (c->site == COMPNT_INTERNAL) { // internal
+        if (compnt->site == COMPNT_INTERNAL) { // internal
             if (k == num_components) {
-                FREE(c);
+                FREE(compnt);
                 continue;
             }
 
-            c->main = g_components[k].main;
-            c->handler = g_components[k].handler;
-            c->cleanup = g_components[k].cleanup;
-            c->cli = g_components[k].cli;
+            compnt->main = g_components[k].main;
+            compnt->handler = g_components[k].handler;
+            compnt->cleanup = g_components[k].cleanup;
+            compnt->cli = g_components[k].cli;
         } else { // external
-            c->main = NULL;
-            c->handler = NULL;
-            c->cleanup = NULL;
-            c->cli = NULL;
+            compnt->main = NULL;
+            compnt->handler = NULL;
+            compnt->cleanup = NULL;
+            compnt->cli = NULL;
 
             if (strlen(push_addr) > 0) {
-                strcpy(c->push_addr, push_addr);
+                strcpy(compnt->push_addr, push_addr);
             } else {
                  cli_print(cli, "No push address");
-                 FREE(c);
-                 clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
+                 FREE(compnt);
+                 clean_up_config(num_compnts, compnt_list, ev_num, ev_list);
+                 json_decref(json);
+                 return -1;
+            }
+
+            if (strlen(req_addr) > 0) {
+                strcpy(compnt->req_addr, req_addr);
+            } else {
+                 cli_print(cli, "No request address");
+                 FREE(compnt);
+                 clean_up_config(num_compnts, compnt_list, ev_num, ev_list);
                  json_decref(json);
                  return -1;
             }
@@ -1490,52 +1520,53 @@ int component_load(cli_t *cli, ctx_t *ctx)
 
         // set a role
         if (strlen(role) == 0) {
-            c->role = COMPNT_NETWORK;
+            compnt->role = COMPNT_NETWORK;
         } else {
             if (strcmp(role, "base") == 0)
-                c->role = COMPNT_BASE;
+                compnt->role = COMPNT_BASE;
             else if (strcmp(role, "network") == 0)
-                c->role = COMPNT_NETWORK;
+                compnt->role = COMPNT_NETWORK;
             else if (strcmp(role, "management") == 0)
-                c->role = COMPNT_MANAGEMENT;
+                compnt->role = COMPNT_MANAGEMENT;
             else if (strcmp(role, "security") == 0)
-                c->role = COMPNT_SECURITY;
+                compnt->role = COMPNT_SECURITY;
             else if (strcmp(role, "security_v2") == 0)
-                c->role = COMPNT_SECURITY_V2;
+                compnt->role = COMPNT_SECURITY_V2;
             else if (strcmp(role, "admin") == 0)
-                c->role = COMPNT_ADMIN;
+                compnt->role = COMPNT_ADMIN;
             else // default
-                c->role = COMPNT_NETWORK;
+                compnt->role = COMPNT_NETWORK;
         }
         cli_print(cli, "     Role: %s", role);
 
         // set permissions
-        int size = (strlen(perm) > COMPNT_MAX_PERM) ? COMPNT_MAX_PERM : strlen(perm);
+        int size = (strlen(perm) > 3) ? 3 : strlen(perm);
         int l;
         for (l=0; l<size; l++) {
             if (perm[l] == 'r') {
-                c->perm |= COMPNT_READ;
+                compnt->perm |= COMPNT_READ;
             } else if (perm[l] == 'w') {
-                c->perm |= COMPNT_WRITE;
+                compnt->perm |= COMPNT_WRITE;
             } else if (perm[l] == 'x') {
-                c->perm |= COMPNT_EXECUTE;
+                compnt->perm |= COMPNT_EXECUTE;
             }
         }
-        if (c->perm == 0) c->perm |= COMPNT_READ;
+        if (compnt->perm == 0) compnt->perm |= COMPNT_READ;
         cli_print(cli, "     Permission: %s", perm);
 
         // set priority
         if (strlen(priority) == 0)
-            c->priority = 0;
+            compnt->priority = 0;
         else
-            c->priority = atoi(priority);
-        cli_print(cli, "    Priority: %s", priority);
+            compnt->priority = atoi(priority);
+        if (strlen(priority))
+            cli_print(cli, "     Priority: %s", priority);
 
         // set a status
         if (strlen(status) == 0) {
-            c->status = COMPNT_DISABLED;
+            compnt->status = COMPNT_DISABLED;
         } else {
-            c->status = (strcmp(status, "enabled") == 0) ? COMPNT_ENABLED : COMPNT_DISABLED;
+            compnt->status = (strcmp(status, "enabled") == 0) ? COMPNT_ENABLED : COMPNT_DISABLED;
         }
         cli_print(cli, "     Status: %s", status);
 
@@ -1556,8 +1587,8 @@ int component_load(cli_t *cli, ctx_t *ctx)
 
                 if (event_type(in_name) == EV_NUM_EVENTS) {
                     cli_print(cli, "     Inbounds: wrong event name");
-                    FREE(c);
-                    clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
+                    FREE(compnt);
+                    clean_up_config(num_compnts, compnt_list, ev_num, ev_list);
                     json_decref(json);
                     return -1;
                 }
@@ -1573,7 +1604,8 @@ int component_load(cli_t *cli, ctx_t *ctx)
 
                 sscanf(json_string_value(event), "%[^,],%[^,]", in_name, in_perm);
 
-                int plen = (strlen(in_perm) > COMPNT_MAX_PERM) ? COMPNT_MAX_PERM : strlen(in_perm);
+                int plen = (strlen(in_perm) > 3) ? 3 : strlen(in_perm);
+
                 int n;
                 for (n=0; n<plen; n++) {
                     if (in_perm[n] == 'r')
@@ -1583,16 +1615,17 @@ int component_load(cli_t *cli, ctx_t *ctx)
                     else if (perm[l] == 'x')
                         in_perm_val |= COMPNT_EXECUTE;
                 }
+
                 if (in_perm_val == 0) in_perm_val |= COMPNT_READ;
-                else in_perm_val &= c->perm;
+                else in_perm_val &= compnt->perm;
 
                 if (event_type(in_name) == EV_NONE) {
                     break;
                 } else if (event_type(in_name) == EV_ALL_UPSTREAM) {
-                    if (c->role < COMPNT_SECURITY) {
+                    if (compnt->role < COMPNT_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
-                        FREE(c);
-                        clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
+                        FREE(compnt);
+                        clean_up_config(num_compnts, compnt_list, ev_num, ev_list);
                         json_decref(json);
                         return -1;
                     }
@@ -1601,18 +1634,18 @@ int component_load(cli_t *cli, ctx_t *ctx)
                     for (k=EV_NONE+1; k<EV_ALL_UPSTREAM; k++) {
                         real_event_cnt++;
 
-                        c->in_list[c->in_num] = k;
-                        c->in_perm[k] = in_perm_val;
-                        c->in_num++;
+                        compnt->in_list[compnt->in_num] = k;
+                        compnt->in_perm[k] = in_perm_val;
+                        compnt->in_num++;
 
-                        ev_list[k][ev_num[k]] = c;
+                        ev_list[k][ev_num[k]] = compnt;
                         ev_num[k]++;
                     }
                 } else if (event_type(in_name) == EV_ALL_DOWNSTREAM) {
-                    if (c->role < COMPNT_SECURITY) {
+                    if (compnt->role < COMPNT_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
-                        FREE(c);
-                        clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
+                        FREE(compnt);
+                        clean_up_config(num_compnts, compnt_list, ev_num, ev_list);
                         json_decref(json);
                         return -1;
                     }
@@ -1621,18 +1654,18 @@ int component_load(cli_t *cli, ctx_t *ctx)
                     for (k=EV_ALL_UPSTREAM+1; k<EV_ALL_DOWNSTREAM; k++) {
                         real_event_cnt++;
 
-                        c->in_list[c->in_num] = k;
-                        c->in_perm[k] = in_perm_val;
-                        c->in_num++;
+                        compnt->in_list[compnt->in_num] = k;
+                        compnt->in_perm[k] = in_perm_val;
+                        compnt->in_num++;
 
-                        ev_list[k][ev_num[k]] = c;
+                        ev_list[k][ev_num[k]] = compnt;
                         ev_num[k]++;
                     }
                 } else if (event_type(in_name) == EV_WRT_INTSTREAM) {
-                    if (c->role < COMPNT_SECURITY) {
+                    if (compnt->role < COMPNT_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
-                        FREE(c);
-                        clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
+                        FREE(compnt);
+                        clean_up_config(num_compnts, compnt_list, ev_num, ev_list);
                         json_decref(json);
                         return -1;
                     }
@@ -1641,18 +1674,18 @@ int component_load(cli_t *cli, ctx_t *ctx)
                     for (k=EV_ALL_DOWNSTREAM+1; k<EV_WRT_INTSTREAM; k++) {
                         real_event_cnt++;
 
-                        c->in_list[c->in_num] = k;
-                        c->in_perm[k] = in_perm_val;
-                        c->in_num++;
+                        compnt->in_list[compnt->in_num] = k;
+                        compnt->in_perm[k] = in_perm_val;
+                        compnt->in_num++;
 
-                        ev_list[k][ev_num[k]] = c;
+                        ev_list[k][ev_num[k]] = compnt;
                         ev_num[k]++;
                     }
                 } else if (event_type(in_name) == EV_ALL_INTSTREAM) {
-                    if (c->role < COMPNT_SECURITY) {
+                    if (compnt->role < COMPNT_SECURITY) {
                         cli_print(cli, "     Inbounds: lower-level role");
-                        FREE(c);
-                        clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
+                        FREE(compnt);
+                        clean_up_config(num_compnts, compnt_list, ev_num, ev_list);
                         json_decref(json);
                         return -1;
                     }
@@ -1661,28 +1694,28 @@ int component_load(cli_t *cli, ctx_t *ctx)
                     for (k=EV_WRT_INTSTREAM+1; k<EV_ALL_INTSTREAM; k++) {
                         real_event_cnt++;
 
-                        c->in_list[c->in_num] = k;
-                        c->in_perm[k] = in_perm_val;
-                        c->in_num++;
+                        compnt->in_list[compnt->in_num] = k;
+                        compnt->in_perm[k] = in_perm_val;
+                        compnt->in_num++;
 
-                        ev_list[k][ev_num[k]] = c;
+                        ev_list[k][ev_num[k]] = compnt;
                         ev_num[k]++;
                     }
                 } else {
                     real_event_cnt++;
 
-                    c->in_list[c->in_num] = event_type(in_name);
-                    c->in_perm[event_type(in_name)] = in_perm_val;
-                    c->in_num++;
+                    compnt->in_list[compnt->in_num] = event_type(in_name);
+                    compnt->in_perm[event_type(in_name)] = in_perm_val;
+                    compnt->in_num++;
 
-                    ev_list[event_type(in_name)][ev_num[event_type(in_name)]] = c;
+                    ev_list[event_type(in_name)][ev_num[event_type(in_name)]] = compnt;
                     ev_num[event_type(in_name)]++;
                 }
             }
 
             if (real_event_cnt == 0) cli_print(cli, "     Inbounds: no event");
             else if (real_event_cnt == 1) cli_print(cli, "     Inbounds: 1 event");
-            else cli_print(cli, "     Inbounds: %d events", c->in_num);
+            else cli_print(cli, "     Inbounds: %d events", compnt->in_num);
         }
 
         real_event_cnt = 0;
@@ -1698,32 +1731,32 @@ int component_load(cli_t *cli, ctx_t *ctx)
 
                 if (event_type(json_string_value(out_event)) == EV_ALL_UPSTREAM) {
                     cli_print(cli, "     Outbounds: wrong event name");
-                    FREE(c);
-                    clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
+                    FREE(compnt);
+                    clean_up_config(num_compnts, compnt_list, ev_num, ev_list);
                     json_decref(json);
                     return -1;
                 } else if (event_type(json_string_value(out_event)) == EV_ALL_DOWNSTREAM) {
                     cli_print(cli, "     Outbounds: wrong event name");
-                    FREE(c);
-                    clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
+                    FREE(compnt);
+                    clean_up_config(num_compnts, compnt_list, ev_num, ev_list);
                     json_decref(json);
                     return -1;
                 } else if (event_type(json_string_value(out_event)) == EV_WRT_INTSTREAM) {
                     cli_print(cli, "     Outbounds: wrong event name");
-                    FREE(c);
-                    clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
+                    FREE(compnt);
+                    clean_up_config(num_compnts, compnt_list, ev_num, ev_list);
                     json_decref(json);
                     return -1;
                 } else if (event_type(json_string_value(out_event)) == EV_ALL_INTSTREAM) {
                     cli_print(cli, "     Outbounds: wrong event name");
-                    FREE(c);
-                    clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
+                    FREE(compnt);
+                    clean_up_config(num_compnts, compnt_list, ev_num, ev_list);
                     json_decref(json);
                     return -1;
                 } else if (event_type(json_string_value(out_event)) == EV_NUM_EVENTS) {
                     cli_print(cli, "     Outbounds: wrong event name");
-                    FREE(c);
-                    clean_up_outdated_data(num_compnts, compnt_list, ev_num, ev_list);
+                    FREE(compnt);
+                    clean_up_config(num_compnts, compnt_list, ev_num, ev_list);
                     json_decref(json);
                     return -1;
                 }
@@ -1738,16 +1771,16 @@ int component_load(cli_t *cli, ctx_t *ctx)
 
                 real_event_cnt++;
 
-                c->out_list[c->out_num] = event_type(json_string_value(out_event));
-                c->out_num++;
+                compnt->out_list[compnt->out_num] = event_type(json_string_value(out_event));
+                compnt->out_num++;
             }
 
             if (real_event_cnt == 0) cli_print(cli, "     Outbounds: no event");
             else if (real_event_cnt == 1) cli_print(cli, "     Outbounds: 1 event");
-            else cli_print(cli, "     Outbounds: %d events", c->out_num);
+            else cli_print(cli, "     Outbounds: %d events", compnt->out_num);
         }
 
-        compnt_list[num_compnts] = c;
+        compnt_list[num_compnts] = compnt;
         num_compnts++;
     }
 
@@ -1820,6 +1853,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
                     new->activated = old->activated;
 
                     new->push_ctx = old->push_ctx;
+                    new->req_ctx = old->req_ctx;
 
                     break;
                 }
@@ -1855,7 +1889,7 @@ int component_load(cli_t *cli, ctx_t *ctx)
     compnt_ctx->ev_list = ev_list;
 
     // deallocate previous pointers
-    clean_up_outdated_data(temp_num_compnts, temp_compnt_list, temp_ev_num, temp_ev_list);
+    clean_up_config(temp_num_compnts, temp_compnt_list, temp_ev_num, temp_ev_list);
 
     return 0;
 }

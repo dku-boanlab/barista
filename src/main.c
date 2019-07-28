@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 NSSLab, KAIST
+ * Copyright 2015-2019 NSSLab, KAIST
  */
 
 /**
@@ -17,16 +17,11 @@
 
 #include "common.h"
 #include "context.h"
+#include "storage.h"
 #include "cli.h"
 
 #include "event.h"
 #include "app_event.h"
-
-#include <fcntl.h>
-#include <signal.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
 
 /////////////////////////////////////////////////////////////////////
 
@@ -90,6 +85,8 @@ static void daemonize(void)
  */
 static void print_logo(void)
 {
+    return;
+
     char tiny_log[] = {
     " Barista\n"
     };
@@ -138,8 +135,8 @@ static void print_usage(char *name)
 {
     PRINTF("Usage:\n");
     PRINTF("\t%s\n", name);
-    PRINTF("\t\t-c [config file]\n");
-    PRINTF("\t\t-a [app config file]\n");
+    PRINTF("\t\t-c [component config file]\n");
+    PRINTF("\t\t-a [application config file]\n");
     PRINTF("\t\t-b (no value, run with base components)\n");
     PRINTF("\t\t-r (no value, run in auto-start mode)\n");
     PRINTF("\t\t-d (no value, run in daemon mode)\n");
@@ -155,37 +152,37 @@ static void print_usage(char *name)
 int main(int argc, char **argv)
 {
     int opt;
-    int autostart = FALSE;
-    int daemon = FALSE;
-
-    char conf_file[__CONF_WORD_LEN] = DEFAULT_COMPNT_CONFIG_FILE;
-    char app_conf_file[__CONF_WORD_LEN] = DEFAULT_APP_CONFIG_FILE;
 
     print_logo();
+
+    // initialize context
+    init_ctx(&ctx);
 
     if (argc >= 2) {
         while ((opt = getopt(argc, argv, "c:a:brd")) != -1) {
             switch (opt) {
             case 'c':
-                memset(conf_file, 0, __CONF_WORD_LEN);
-                strcpy(conf_file, optarg);
+                // component config file
+                strcpy(ctx.conf_file, optarg);
                 break;
             case 'a':
-                memset(app_conf_file, 0, __CONF_WORD_LEN);
-                strcpy(app_conf_file, optarg);
+                // application config file
+                strcpy(ctx.app_conf_file, optarg);
                 break;
             case 'b':
-                memset(conf_file, 0, __CONF_WORD_LEN);
-                strcpy(conf_file, BASE_COMPNT_CONFIG_FILE);
+                // base component config file
+                strcpy(ctx.conf_file, BASE_COMPNT_CONFIG_FILE);
 
-                memset(app_conf_file, 0, __CONF_WORD_LEN);
-                strcpy(app_conf_file, BASE_APP_CONFIG_FILE);
+                // base application config file
+                strcpy(ctx.app_conf_file, BASE_APP_CONFIG_FILE);
                 break;
             case 'r':
-                autostart = TRUE;
+                // set autostart
+                ctx.autostart = TRUE;
                 break;
             case 'd':
-                daemon = TRUE;
+                // daemonize the Barista NOS
+                daemonize();
                 break;
             default:
                 print_usage(argv[0]);
@@ -194,22 +191,16 @@ int main(int argc, char **argv)
         }
     }
 
-    // initialize context
-    init_ctx(&ctx);
+    // default component config file
+    if (ctx.conf_file[0] == '\0')
+        strcpy(ctx.conf_file, DEFAULT_COMPNT_CONFIG_FILE);
 
-    // daemonize the Barista NOS
-    if (daemon == TRUE)
-        daemonize();
+    // default application config file
+    if (ctx.app_conf_file[0] == '\0')
+        strcpy(ctx.app_conf_file, DEFAULT_APP_CONFIG_FILE);
 
-    // set autostart
-    if (autostart == TRUE)
-        ctx.autostart = TRUE;
-
-    // store the conf file in the context
-    strcpy(ctx.conf_file, conf_file);
-
-    // store the app conf file in the context
-    strcpy(ctx.app_conf_file, app_conf_file);
+    // initialize storage
+    init_storage(&ctx);
 
     // initialize event handler
     init_event(&ctx);

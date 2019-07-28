@@ -22,14 +22,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief Switch list */
-uint64_t *switch_list;
-
-/** \brief Lock for list updates */
-pthread_rwlock_t stat_lock;
-
-/////////////////////////////////////////////////////////////////////
-
 /**
  * \brief Function to request aggregate stats
  * \param dpid Datapath ID
@@ -73,27 +65,21 @@ int stat_mgmt_main(int *activated, int argc, char **argv)
 {
     LOG_INFO(STAT_MGMT_ID, "Init - Statistics management");
 
-    switch_list = (uint64_t *)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(uint64_t));
+    switch_list = (uint64_t *)CALLOC(__MAX_NUM_SWITCHES, sizeof(uint64_t));
     if (switch_list == NULL) {
-        LOG_ERROR(STAT_MGMT_ID, "calloc() error");
+        LOG_ERROR(STAT_MGMT_ID, "calloc() failed");
         return -1;
     }
 
     pthread_rwlock_init(&stat_lock, NULL);
 
-    LOG_INFO(STAT_MGMT_ID, "Statistics request period: %d sec", STAT_MGMT_REQUEST_TIME);
-
     activate();
-
-#ifdef __ANALYSIS_BARISTA
-    return 0;
-#endif /* __ANALYSIS_BARISTA */
 
     while (*activated) {
         pthread_rwlock_rdlock(&stat_lock);
 
         int i;
-        for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
+        for (i=0; i<__MAX_NUM_SWITCHES; i++) {
             if (switch_list[i]) {
                 // aggregate stats
                 aggregate_stats_request(switch_list[i]);
@@ -105,8 +91,8 @@ int stat_mgmt_main(int *activated, int argc, char **argv)
 
         pthread_rwlock_unlock(&stat_lock);
 
-        for (i=0; i<STAT_MGMT_REQUEST_TIME; i++) {
-            if (!*activated) break;
+        for (i=0; i<__STAT_MGMT_REQUEST_TIME; i++) {
+            if (*activated == FALSE) break;
             else waitsec(1, 0);
         }
     }
@@ -137,6 +123,8 @@ int stat_mgmt_cleanup(int *activated)
  */
 int stat_mgmt_cli(cli_t *cli, char **args)
 {
+    cli_print(cli, "No CLI support");
+
     return 0;
 }
 
@@ -151,14 +139,16 @@ int stat_mgmt_handler(const event_t *ev, event_out_t *ev_out)
     case EV_SW_CONNECTED:
         PRINT_EV("EV_SW_CONNECTED\n");
         {
-            if (ev->sw->remote == TRUE) break;
+            const switch_t *sw = ev->sw;
+
+            if (sw->remote == TRUE) break;
 
             pthread_rwlock_wrlock(&stat_lock);
 
             int i;
-            for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
+            for (i=0; i<__MAX_NUM_SWITCHES; i++) {
                 if (switch_list[i] == 0) {
-                    switch_list[i] = ev->sw->dpid;
+                    switch_list[i] = sw->dpid;
                     break;
                 }
             }
@@ -169,13 +159,15 @@ int stat_mgmt_handler(const event_t *ev, event_out_t *ev_out)
     case EV_SW_DISCONNECTED:
         PRINT_EV("EV_SW_DISCONNECTED\n");
         {
-            if (ev->sw->remote == TRUE) break;
+            const switch_t *sw = ev->sw;
+
+            if (sw->remote == TRUE) break;
 
             pthread_rwlock_wrlock(&stat_lock);
 
             int i;
-            for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-                if (switch_list[i] == ev->sw->dpid) {
+            for (i=0; i<__MAX_NUM_SWITCHES; i++) {
+                if (switch_list[i] == sw->dpid) {
                     switch_list[i] = 0;
                     break;
                 }

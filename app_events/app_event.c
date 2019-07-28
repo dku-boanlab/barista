@@ -114,7 +114,7 @@ void av_link_deleted(uint32_t id, const port_t *data) { port_av_raise(id, AV_LIN
 /** \brief AV_FLOW_ADDED */
 void av_flow_added(uint32_t id, const flow_t *data) { flow_av_raise(id, AV_FLOW_ADDED, sizeof(flow_t), data); }
 /** \brief AV_FLOW_MODIFIED */
-void av_flow_modified(uint32_t id, const flow_t *data) { flow_av_raise(id, AV_FLOW_ADDED, sizeof(flow_t), data); }
+void av_flow_modified(uint32_t id, const flow_t *data) { flow_av_raise(id, AV_FLOW_MODIFIED, sizeof(flow_t), data); }
 /** \brief AV_FLOW_DELETED */
 void av_flow_deleted(uint32_t id, const flow_t *data) { flow_av_raise(id, AV_FLOW_DELETED, sizeof(flow_t), data); }
 
@@ -178,7 +178,6 @@ void av_log_fatal(uint32_t id, char *format, ...) {
 
 /////////////////////////////////////////////////////////////////////
 
-#ifdef __ENABLE_META_EVENTS
 /**
  * \brief Function to process meta app events
  * \param null NULL
@@ -188,7 +187,7 @@ static void *meta_app_events(void *null)
     int *num_events = av_ctx->num_app_events;
     meta_event_t *meta = av_ctx->meta_app_event;
 
-    while (av_on) {
+    while (av_ctx->av_on) {
         int av_id;
         for (av_id=0; av_id<__MAX_APP_EVENTS; av_id++) {
             int num_event = num_events[av_id];
@@ -236,7 +235,6 @@ static void *meta_app_events(void *null)
 
     return NULL;
 }
-#endif /* __ENABLE_META_EVENTS */
 
 /////////////////////////////////////////////////////////////////////
 
@@ -251,14 +249,14 @@ int init_app_event(ctx_t *ctx)
     if (av_ctx->av_on == FALSE) {
         pthread_t thread;
 
-#ifdef __ENABLE_META_EVENTS
+        av_ctx->av_on = TRUE;
+
+        // meta app event
+
         if (pthread_create(&thread, NULL, &meta_app_events, NULL) < 0) {
             PERROR("pthread_create");
             return -1;
         }
-#endif /* __ENABLE_META_EVENTS */
-
-        av_ctx->av_on = TRUE;
 
         // pull
 
@@ -269,6 +267,9 @@ int init_app_event(ctx_t *ctx)
             PERROR("zmq_bind");
             return -1;
         }
+
+        int timeout = 1000;
+        zmq_setsockopt(av_pull_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
 
         if (pthread_create(&thread, NULL, &pull_app_events, NULL) < 0) {
             PERROR("pthread_create");
@@ -285,11 +286,15 @@ int init_app_event(ctx_t *ctx)
             return -1;
         }
 
+        zmq_setsockopt(av_rep_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+
         if (pthread_create(&thread, NULL, &reply_app_events, NULL) < 0) {
             PERROR("pthread_create");
             return -1;
         }
     }
+
+    DEBUG("app_event_handler is initialized\n");
 
     return 0;
 }
@@ -309,6 +314,8 @@ int destroy_app_event(ctx_t *ctx)
 
     zmq_ctx_destroy(av_pull_ctx);
     zmq_ctx_destroy(av_rep_ctx);
+
+    DEBUG("app_event_handler is destroyed\n");
 
     return 0;
 }

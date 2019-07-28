@@ -9,11 +9,10 @@
 
 static int ODP_FUNC(odp_t *odp, const ODP_TYPE *data)
 {
-    int pass = TRUE; // assume that there is no matched policy
+    int i, j, pass = TRUE; // assume that there is no matched policy
 
     if (odp[0].flag == 0) return FALSE; // there is no policy
 
-    int i;
     for (i=0; i<__MAX_POLICIES; i++) {
         if (odp[i].flag == 0) break; // No more ODP
 
@@ -22,7 +21,6 @@ static int ODP_FUNC(odp_t *odp, const ODP_TYPE *data)
         if (odp[i].flag & ODP_DPID) {
             cnt++;
 
-            int j;
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
                 if (odp[i].dpid[j] == 0) break; // No more DPID
 
@@ -36,7 +34,6 @@ static int ODP_FUNC(odp_t *odp, const ODP_TYPE *data)
         if (odp[i].flag & ODP_PORT) {
             cnt++;
 
-            int j;
             for (j=0; j<__MAX_POLICY_ENTRIES; j++) {
                 if (odp[i].port[j] == 0) break; // No more port
 

@@ -13,8 +13,8 @@ TMP_DIR = tmp
 
 CPPFLAGS = $(addprefix -I,$(shell find $(SRC_DIR) -type d))
 
-CFLAGS = -O2 -Wall -std=gnu99 -I/usr/include/mysql
-#CFLAGS = -g -ggdb -Wall -std=gnu99 -I/usr/include/mysql
+#CFLAGS = -O2 -Wall -std=gnu99 -I/usr/include/mysql
+CFLAGS = -g -ggdb -Wall -std=gnu99 -I/usr/include/mysql
 LDFLAGS = -lpthread -ljansson -lrt -lcli -lzmq -L/usr/lib -lmysqlclient
 
 include $(CONFIG_MK)

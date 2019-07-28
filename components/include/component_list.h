@@ -62,10 +62,10 @@ DECLARE_HANDLER_FUNC(stat_mgmt_handler);
 DECLARE_CLEANUP_FUNC(stat_mgmt_cleanup);
 DECLARE_CLI_FUNC(stat_mgmt_cli);
 
-DECLARE_MAIN_FUNC(traffic_mgmt_main);
-DECLARE_HANDLER_FUNC(traffic_mgmt_handler);
-DECLARE_CLEANUP_FUNC(traffic_mgmt_cleanup);
-DECLARE_CLI_FUNC(traffic_mgmt_cli);
+DECLARE_MAIN_FUNC(channel_mgmt_main);
+DECLARE_HANDLER_FUNC(channel_mgmt_handler);
+DECLARE_CLEANUP_FUNC(channel_mgmt_cleanup);
+DECLARE_CLI_FUNC(channel_mgmt_cli);
 
 DECLARE_MAIN_FUNC(resource_mgmt_main);
 DECLARE_HANDLER_FUNC(resource_mgmt_handler);
@@ -102,11 +102,6 @@ DECLARE_HANDLER_FUNC(conflict_handler);
 DECLARE_CLEANUP_FUNC(conflict_cleanup);
 DECLARE_CLI_FUNC(conflict_cli);
 
-DECLARE_MAIN_FUNC(flow_cache_main);
-DECLARE_HANDLER_FUNC(flow_cache_handler);
-DECLARE_CLEANUP_FUNC(flow_cache_cleanup);
-DECLARE_CLI_FUNC(flow_cache_cli);
-
 /** \brief The function pointer of a component */
 struct _compnt_func_t {
     char *name; /**< Component name */
@@ -123,7 +118,7 @@ struct _compnt_func_t {
     {"topo_mgmt", topo_mgmt_main, topo_mgmt_handler, topo_mgmt_cleanup, topo_mgmt_cli},
     {"flow_mgmt", flow_mgmt_main, flow_mgmt_handler, flow_mgmt_cleanup, flow_mgmt_cli},
     {"stat_mgmt", stat_mgmt_main, stat_mgmt_handler, stat_mgmt_cleanup, stat_mgmt_cli},
-    {"traffic_mgmt", traffic_mgmt_main, traffic_mgmt_handler, traffic_mgmt_cleanup, traffic_mgmt_cli},
+    {"channel_mgmt", channel_mgmt_main, channel_mgmt_handler, channel_mgmt_cleanup, channel_mgmt_cli},
     {"resource_mgmt", resource_mgmt_main, resource_mgmt_handler, resource_mgmt_cleanup, resource_mgmt_cli},
     {"apphdlr", apphdlr_main, apphdlr_handler, apphdlr_cleanup, apphdlr_cli},
     {"cluster", cluster_main, cluster_handler, cluster_cleanup, cluster_cli},
@@ -131,6 +126,5 @@ struct _compnt_func_t {
     {"dit", dit_main, dit_handler, dit_cleanup, dit_cli},
     {"ofp10_veri", ofp10_veri_main, ofp10_veri_handler, ofp10_veri_cleanup, ofp10_veri_cli},
     {"conflict", conflict_main, conflict_handler, conflict_cleanup, conflict_cli},
-    {"flow_cache", flow_cache_main, flow_cache_handler, flow_cache_cleanup, flow_cache_cli},
 }; /**< The list of function pointers */
 

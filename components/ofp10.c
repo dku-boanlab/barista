@@ -22,46 +22,26 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The structure of Ethernet header with VLAN fields */
-struct ether_vlan_header {
-    uint8_t ether_dhost[ETH_ALEN];
-    uint8_t ether_short[ETH_ALEN];
-    uint16_t tpid;
-    uint16_t tci;
-    uint16_t ether_type;
-} __attribute__((packed));
-
-/** \brief The structure of ARP header */
-struct arphdr {
-    __be16        ar_hrd;
-    __be16        ar_pro;
-    unsigned char ar_hln;
-    unsigned char ar_pln;
-    __be16        ar_op;
-
-    uint8_t arp_sha[ETH_ALEN];
-    uint8_t arp_spa[4];
-    uint8_t arp_tha[ETH_ALEN];
-    uint8_t arp_tpa[4];
-};
-
-#define DHCP_SVR_PORT 67
-#define DHCP_CLI_PORT 68
-
-/////////////////////////////////////////////////////////////////////
-
-static uint32_t get_xid(uint32_t fd)
+static uint32_t get_xid(uint64_t dpid)
 {
     switch_t sw = {0};
-    sw.fd = fd;
+    sw.dpid = dpid;
     ev_sw_get_xid(OFP_ID, &sw);
-    return sw.xid;
+    return sw.conn.xid;
+}
+
+static uint32_t get_xid_w_fd(uint32_t fd)
+{
+    switch_t sw = {0};
+    sw.conn.fd = fd;
+    ev_sw_get_xid(OFP_ID, &sw);
+    return sw.conn.xid;
 }
 
 static uint64_t get_dpid(uint32_t fd)
 {
     switch_t sw = {0};
-    sw.fd = fd;
+    sw.conn.fd = fd;
     ev_sw_get_dpid(OFP_ID, &sw);
     return sw.dpid;
 }
@@ -71,7 +51,7 @@ static uint32_t get_fd(uint64_t dpid)
     switch_t sw = {0};
     sw.dpid = dpid;
     ev_sw_get_fd(OFP_ID, &sw);
-    return sw.fd;
+    return sw.conn.fd;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -80,10 +60,10 @@ static uint32_t get_fd(uint64_t dpid)
  * \brief Function to generate HELLO messages
  * \param msg HELLO message
  */
-static int ofp10_hello(const raw_msg_t *msg)
+static int ofp10_hello(const msg_t *msg)
 {
-    raw_msg_t out;
-    uint8_t pkt[__MAX_PKT_SIZE];
+    msg_t out;
+    uint8_t pkt[__MAX_MSG_SIZE] = {0};
 
     out.fd = msg->fd;
     out.length = sizeof(struct ofp_header);
@@ -95,7 +75,7 @@ static int ofp10_hello(const raw_msg_t *msg)
     of_output->version = OFP_VERSION;
     of_output->type = OFPT_HELLO;
     of_output->length = htons(sizeof(struct ofp_header));
-    of_output->xid = of_input->xid;
+    of_output->xid = of_input->xid; // no change, as it is
 
     ev_ofp_msg_out(OFP_ID, &out);
 
@@ -106,7 +86,7 @@ static int ofp10_hello(const raw_msg_t *msg)
  * \brief Function to handle ERROR messages
  * \param msg ERROR message
  */
-static int ofp10_error(const raw_msg_t *msg)
+static int ofp10_error(const msg_t *msg)
 {
     struct ofp_error_msg *err = (struct ofp_error_msg *)msg->data;
 
@@ -237,10 +217,10 @@ static int ofp10_error(const raw_msg_t *msg)
  * \brief Function to handle ECHO messages
  * \param msg ECHO message
  */
-static int ofp10_echo_reply(const raw_msg_t *msg)
+static int ofp10_echo_reply(const msg_t *msg)
 {
-    raw_msg_t out;
-    uint8_t pkt[__MAX_PKT_SIZE];
+    msg_t out;
+    uint8_t pkt[__MAX_MSG_SIZE] = {0};
 
     out.fd = msg->fd;
     out.length = sizeof(struct ofp_header);
@@ -252,7 +232,7 @@ static int ofp10_echo_reply(const raw_msg_t *msg)
     of_output->version = OFP_VERSION;
     of_output->type = OFPT_ECHO_REPLY;
     of_output->length = htons(sizeof(struct ofp_header));
-    of_output->xid = of_input->xid;
+    of_output->xid = of_input->xid; // no change, as it is
 
     ev_ofp_msg_out(OFP_ID, &out);
 
@@ -263,10 +243,10 @@ static int ofp10_echo_reply(const raw_msg_t *msg)
  * \brief Function to generate FEATURES_REQUEST messages
  * \param msg OF message
  */
-static int ofp10_features_request(const raw_msg_t *msg)
+static int ofp10_features_request(const msg_t *msg)
 {
-    raw_msg_t out;
-    uint8_t pkt[__MAX_PKT_SIZE];
+    msg_t out;
+    uint8_t pkt[__MAX_MSG_SIZE] = {0};
 
     out.fd = msg->fd;
     out.length = sizeof(struct ofp_header);
@@ -278,7 +258,7 @@ static int ofp10_features_request(const raw_msg_t *msg)
     of_output->version = OFP_VERSION;
     of_output->type = OFPT_FEATURES_REQUEST;
     of_output->length = htons(sizeof(struct ofp_header));
-    of_output->xid = ntohl(htonl(of_input->xid)+1);
+    of_output->xid = htonl(ntohl(of_input->xid) + 1); // right after hello
 
     ev_ofp_msg_out(OFP_ID, &out);
 
@@ -289,7 +269,7 @@ static int ofp10_features_request(const raw_msg_t *msg)
  * \brief Function to process FEATURES_REPLY messages (only for sw_mgmt)
  * \param msg FEATURE_REPLY message
  */
-static int ofp10_features_reply(const raw_msg_t *msg)
+static int ofp10_features_reply(const msg_t *msg)
 {
     struct ofp_switch_features *reply = (struct ofp_switch_features *)msg->data;
 
@@ -297,16 +277,33 @@ static int ofp10_features_reply(const raw_msg_t *msg)
 
     sw.dpid = ntohll(reply->datapath_id);
 
-    sw.fd = msg->fd;
-    sw.xid = ntohl(reply->header.xid) + 1;
+    sw.conn.fd = msg->fd;
+    sw.conn.xid = ntohl(reply->header.xid) + 1;
 
-    sw.n_buffers = ntohl(reply->n_buffers);
-    sw.n_tables = reply->n_tables;
+    ev_sw_established_conn(OFP_ID, &sw);
 
-    sw.capabilities = ntohl(reply->capabilities);
-    sw.actions = ntohl(reply->actions);
+    int num_ports = (ntohs(reply->header.length) - sizeof(struct ofp_switch_features)) / sizeof(struct ofp_phy_port);
+    struct ofp_phy_port *ports = reply->ports;
 
-    ev_sw_update_config(OFP_ID, &sw);
+    int i;
+    for (i=0; i<num_ports; i++) {
+        port_t port = {0};
+
+        port.dpid = sw.dpid;
+        port.port = ntohs(ports[i].port_no);
+
+        strcpy(port.info.name, ports[i].name);
+        memmove(port.info.hw_addr, ports[i].hw_addr, ETH_ALEN);
+
+        port.info.config = ntohl(ports[i].config);
+        port.info.state = ntohl(ports[i].state);
+        port.info.curr = ntohl(ports[i].curr);
+        port.info.advertized = ntohl(ports[i].advertised);
+        port.info.supported = ntohl(ports[i].supported);
+        port.info.peer = ntohl(ports[i].peer);
+
+        ev_dp_port_added(OFP_ID, &port);
+    }
 
     return 0;
 }
@@ -317,7 +314,7 @@ static int ofp10_features_reply(const raw_msg_t *msg)
  * \brief Function to process PACKET_IN messages
  * \param msg PACKET_IN message
  */
-static int ofp10_packet_in(const raw_msg_t *msg)
+static int ofp10_packet_in(const msg_t *msg)
 {
     struct ofp_packet_in *in = (struct ofp_packet_in *)msg->data;
 
@@ -342,58 +339,57 @@ static int ofp10_packet_in(const raw_msg_t *msg)
 
     int base = sizeof(struct ether_header);
 
+    memmove(pktin.pkt_info.src_mac, eth_header->ether_shost, ETH_ALEN);
+    memmove(pktin.pkt_info.dst_mac, eth_header->ether_dhost, ETH_ALEN);
+
     if (ether_type == 0x8100) { // VLAN
         struct ether_vlan_header *eth_vlan_header = (struct ether_vlan_header *)data;
 
         base = sizeof(struct ether_vlan_header);
         ether_type = ntohs(eth_vlan_header->ether_type);
 
-        pktin.proto |= PROTO_VLAN;
+        pktin.pkt_info.proto |= PROTO_VLAN;
 
-        pktin.vlan_id = ntohs(eth_vlan_header->tci) & 0xfff;
-        pktin.vlan_pcp = ntohs(eth_vlan_header->tci) >> 13;
+        pktin.pkt_info.vlan_id = ntohs(eth_vlan_header->tci) & 0xfff;
+        pktin.pkt_info.vlan_pcp = ntohs(eth_vlan_header->tci) >> 13;
     }
-
-    memmove(pktin.src_mac, eth_header->ether_shost, ETH_ALEN);
-    memmove(pktin.dst_mac, eth_header->ether_dhost, ETH_ALEN);
 
     if (ether_type == 0x0800) { // IPv4
         struct iphdr *ip_header = (struct iphdr *)(data + base);
         int header_len = (ip_header->ihl * 4);
 
-        pktin.proto |= PROTO_IPV4;
-        pktin.ip_tos = ip_header->tos;
+        pktin.pkt_info.proto |= PROTO_IPV4;
+        pktin.pkt_info.ip_tos = ip_header->tos;
 
-        pktin.src_ip = ntohl(ip_header->saddr);
-        pktin.dst_ip = ntohl(ip_header->daddr);
+        pktin.pkt_info.src_ip = ntohl(ip_header->saddr);
+        pktin.pkt_info.dst_ip = ntohl(ip_header->daddr);
 
         if (ip_header->protocol == IPPROTO_ICMP) {
             struct icmphdr *icmp_header = (struct icmphdr *)((uint8_t *)ip_header + header_len);
 
-            pktin.proto |= PROTO_ICMP;
+            pktin.pkt_info.proto |= PROTO_ICMP;
 
-            pktin.type = ntohs(icmp_header->type);
-            pktin.code = ntohs(icmp_header->code);
+            pktin.pkt_info.icmp_type = icmp_header->type;
+            pktin.pkt_info.icmp_code = icmp_header->code;
         } else if (ip_header->protocol == IPPROTO_TCP) {
             struct tcphdr *tcp_header = (struct tcphdr *)((uint8_t *)ip_header + header_len);
 
-            pktin.proto |= PROTO_TCP;
+            pktin.pkt_info.proto |= PROTO_TCP;
 
-            pktin.src_port = ntohs(tcp_header->source);
-            pktin.dst_port = ntohs(tcp_header->dest);
+            pktin.pkt_info.src_port = ntohs(tcp_header->source);
+            pktin.pkt_info.dst_port = ntohs(tcp_header->dest);
         } else if (ip_header->protocol == IPPROTO_UDP) {
             struct tcphdr *tcp_header = (struct tcphdr *)((uint8_t *)ip_header + header_len);
 
-            pktin.proto |= PROTO_UDP;
+            pktin.pkt_info.proto |= PROTO_UDP;
 
-            pktin.src_port = ntohs(tcp_header->source);
-            pktin.dst_port = ntohs(tcp_header->dest);
+            pktin.pkt_info.src_port = ntohs(tcp_header->source);
+            pktin.pkt_info.dst_port = ntohs(tcp_header->dest);
 
-            if (pktin.dst_port == DHCP_SVR_PORT || pktin.dst_port == DHCP_CLI_PORT) {
-                pktin.proto |= PROTO_DHCP;
+            if ((pktin.pkt_info.src_port == 67 && pktin.pkt_info.dst_port == 68) ||
+                (pktin.pkt_info.src_port == 68 && pktin.pkt_info.dst_port == 67)) {
+                pktin.pkt_info.proto |= PROTO_DHCP;
             }
-        } else { // IPv4
-            // no pktin.src_port, pktin.dst_port
         }
     } else if (ether_type == 0x0806) { // ARP
         struct arphdr *arp_header = (struct arphdr *)(data + base);
@@ -401,23 +397,16 @@ static int ofp10_packet_in(const raw_msg_t *msg)
         uint32_t *src_ip = (uint32_t *)arp_header->arp_spa;
         uint32_t *dst_ip = (uint32_t *)arp_header->arp_tpa;
 
-        pktin.proto |= PROTO_ARP;
+        pktin.pkt_info.proto |= PROTO_ARP;
 
-        pktin.src_ip = ntohl(*src_ip);
-        pktin.dst_ip = ntohl(*dst_ip);
+        pktin.pkt_info.src_ip = ntohl(*src_ip);
+        pktin.pkt_info.dst_ip = ntohl(*dst_ip);
 
-        pktin.opcode = ntohs(arp_header->ar_op);
-
-        // no pktin.dst_port
+        pktin.pkt_info.opcode = ntohs(arp_header->ar_op);
     } else if (ether_type == 0x88cc) { // LLDP
-        pktin.proto |= PROTO_LLDP;
-
-        // no pktin.src_ip, pktin.dst_ip
-        // no pktin.src_port, pktin.dst_port
+        pktin.pkt_info.proto |= PROTO_LLDP;
     } else {
-        pktin.proto |= PROTO_UNKNOWN;
-
-        return -1;
+        pktin.pkt_info.proto |= PROTO_UNKNOWN;
     }
 
     ev_dp_receive_packet(OFP_ID, &pktin);
@@ -425,11 +414,80 @@ static int ofp10_packet_in(const raw_msg_t *msg)
     return 0;
 }
 
+/////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Function to get the packet information from match fields
+ * \param info Packet structure
+ * \param match OFP match structure
+ */
+static int ofp10_get_match_fields(pkt_info_t *info, struct ofp_match *match)
+{
+    if (match->dl_vlan) {
+        info->proto |= PROTO_VLAN;
+
+        info->vlan_id = ntohs(match->dl_vlan);
+        info->vlan_pcp = match->dl_vlan_pcp;
+    }
+
+    switch (ntohs(match->dl_type)) {
+    case 0x0800: // IPv4
+        info->proto |= PROTO_IPV4;
+        info->ip_tos = match->nw_tos;
+
+        switch (match->nw_proto) {
+        case IPPROTO_TCP:
+            info->proto |= PROTO_TCP;
+            break;
+        case IPPROTO_UDP:
+            info->proto |= PROTO_UDP;
+
+            if ((ntohs(match->tp_src) == 67 && ntohs(match->tp_dst) == 68) || 
+                (ntohs(match->tp_src) == 68 && ntohs(match->tp_dst) == 67)) {
+                info->proto |= PROTO_DHCP;
+            }
+
+            break;
+        case IPPROTO_ICMP:
+            info->proto |= PROTO_ICMP;
+            break;
+        default:
+            break;
+        }
+
+        break;
+    case 0x0806: // ARP
+        info->proto |= PROTO_ARP;
+        break;
+    case 0x08cc: // LLDP
+        info->proto |= PROTO_LLDP;
+        break;
+    default: // Unknown
+        info->proto |= PROTO_UNKNOWN;
+        break;
+    }
+
+    memmove(info->src_mac, match->dl_src, ETH_ALEN);
+    memmove(info->dst_mac, match->dl_dst, ETH_ALEN);
+
+    info->src_ip = ntohl(match->nw_src);
+    info->dst_ip = ntohl(match->nw_dst);
+
+    info->src_port = ntohs(match->tp_src);
+    info->dst_port = ntohs(match->tp_dst);
+
+    info->wildcards = ntohl(match->wildcards);
+
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////
+
 /**
  * \brief Function to process FLOW_REMOVED messages
  * \param msg FLOW_REMOVED message
  */
-static int ofp10_flow_removed(const raw_msg_t *msg)
+static int ofp10_flow_removed(const msg_t *msg)
 {
     struct ofp_flow_removed *removed = (struct ofp_flow_removed *)msg->data;
 
@@ -438,79 +496,22 @@ static int ofp10_flow_removed(const raw_msg_t *msg)
     flow.dpid = get_dpid(msg->fd);
     flow.port = ntohs(removed->match.in_port);
 
-    flow.xid = ntohl(removed->header.xid);
-    flow.cookie = ntohll(removed->cookie);
-    flow.priority = ntohs(removed->priority);
+    flow.info.xid = ntohl(removed->header.xid);
 
-    flow.idle_timeout = ntohs(removed->idle_timeout);
+    flow.meta.cookie = ntohll(removed->cookie);
+    flow.meta.idle_timeout = ntohs(removed->idle_timeout);
+    flow.meta.priority = ntohs(removed->priority);
+    flow.meta.reason = removed->reason;
 
-    flow.reason = removed->reason;
+    ofp10_get_match_fields(&flow.pkt_info, &removed->match);
 
-    // begin of match
+    flow.stat.duration_sec = ntohl(removed->duration_sec);
+    flow.stat.duration_nsec = ntohl(removed->duration_nsec);
 
-    flow.wildcards = ntohl(removed->match.wildcards);
+    flow.stat.pkt_count = ntohll(removed->packet_count);
+    flow.stat.byte_count = ntohll(removed->byte_count);
 
-    if (removed->match.dl_vlan) {
-        flow.proto |= PROTO_VLAN;
-
-        flow.vlan_id = ntohs(removed->match.dl_vlan);
-        flow.vlan_pcp = removed->match.dl_vlan_pcp;
-    }
-
-    switch (ntohs(removed->match.dl_type)) {
-    case 0x0800: // IPv4
-        flow.proto |= PROTO_IPV4;
-        flow.ip_tos = removed->match.nw_tos;
-
-        switch (removed->match.nw_proto) {
-        case IPPROTO_TCP:
-            flow.proto |= PROTO_TCP;
-            break;
-        case IPPROTO_UDP:
-            flow.proto |= PROTO_UDP;
-
-            if (ntohs(removed->match.tp_dst) == DHCP_SVR_PORT || ntohs(removed->match.tp_dst) == DHCP_CLI_PORT) {
-                flow.proto |= PROTO_DHCP;
-            }
-
-            break;
-        case IPPROTO_ICMP:
-            flow.proto |= PROTO_ICMP;
-            break;
-        default:
-            break;
-        }
-
-        break;
-    case 0x0806: // ARP
-        flow.proto |= PROTO_ARP;
-        break;
-    case 0x08cc: // LLDP
-        flow.proto |= PROTO_LLDP;
-        break;
-    default: // Unknown
-        flow.proto |= PROTO_UNKNOWN;
-        break;
-    }
-
-    memmove(flow.src_mac, removed->match.dl_src, ETH_ALEN);
-    memmove(flow.dst_mac, removed->match.dl_dst, ETH_ALEN);
-
-    flow.src_ip = ntohl(removed->match.nw_src);
-    flow.dst_ip = ntohl(removed->match.nw_dst);
-
-    flow.src_port = ntohs(removed->match.tp_src);
-    flow.dst_port = ntohs(removed->match.tp_dst);
-
-    // end of match
-
-    flow.duration_sec = ntohl(removed->duration_sec);
-    flow.duration_nsec = ntohl(removed->duration_nsec);
-
-    flow.pkt_count = ntohll(removed->packet_count);
-    flow.byte_count = ntohll(removed->byte_count);
-
-    switch (removed->reason) {
+    switch (flow.meta.reason) {
     case OFPRR_IDLE_TIMEOUT:
     case OFPRR_HARD_TIMEOUT:
         ev_dp_flow_expired(OFP_ID, &flow);
@@ -529,7 +530,7 @@ static int ofp10_flow_removed(const raw_msg_t *msg)
  * \brief Function to process PORT_STATUS messages
  * \param msg PORT_STATUS message
  */
-static int ofp10_port_status(const raw_msg_t *msg)
+static int ofp10_port_status(const msg_t *msg)
 {
     struct ofp_port_status *status = (struct ofp_port_status *)msg->data;
     struct ofp_phy_port *desc = (struct ofp_phy_port *)&status->desc;
@@ -539,26 +540,25 @@ static int ofp10_port_status(const raw_msg_t *msg)
     port.dpid = get_dpid(msg->fd);
     port.port = ntohs(desc->port_no);
 
-    memmove(port.hw_addr, desc->hw_addr, ETH_ALEN);
+    strcpy(port.info.name, desc->name);
+    memmove(port.info.hw_addr, desc->hw_addr, ETH_ALEN);
 
-    port.config = ntohl(desc->config);
-    port.state = ntohl(desc->state);
-
-    port.curr = ntohl(desc->curr);
-    port.advertised = ntohl(desc->advertised);
-    port.supported = ntohl(desc->supported);
-    port.peer = ntohl(desc->peer);
+    port.info.config = ntohl(desc->config);
+    port.info.state = ntohl(desc->state);
+    port.info.curr = ntohl(desc->curr);
+    port.info.advertized = ntohl(desc->advertised);
+    port.info.supported = ntohl(desc->supported);
+    port.info.peer = ntohl(desc->peer);
 
     switch (status->reason) {
     case OFPPR_ADD:
         ev_dp_port_added(OFP_ID, &port);
         break;
     case OFPPR_MODIFY:
-        if (port.config & OFPPC_PORT_DOWN || port.state & OFPPS_LINK_DOWN) {
+        if (port.info.config & OFPPC_PORT_DOWN || port.info.state & OFPPS_LINK_DOWN)
             ev_dp_port_deleted(OFP_ID, &port);
-        } else {
+        else
             ev_dp_port_modified(OFP_ID, &port);
-        }
         break;
     case OFPPR_DELETE:
         ev_dp_port_deleted(OFP_ID, &port);
@@ -574,7 +574,7 @@ static int ofp10_port_status(const raw_msg_t *msg)
  * \brief Function to process STATS_REPLY messages
  * \param msg STATS_REPLY message
  */
-static int ofp10_stats_reply(const raw_msg_t *msg)
+static int ofp10_stats_reply(const msg_t *msg)
 {
     struct ofp_stats_reply *reply = (struct ofp_stats_reply *)msg->data;
 
@@ -584,14 +584,14 @@ static int ofp10_stats_reply(const raw_msg_t *msg)
             struct ofp_desc_stats *desc = (struct ofp_desc_stats *)reply->body;
 
             switch_t sw = {0};
-            sw.fd = msg->fd;
-            ev_sw_get_dpid(OFP_ID, &sw);
 
-            strncpy(sw.mfr_desc, desc->mfr_desc, 256);
-            strncpy(sw.hw_desc, desc->hw_desc, 256);
-            strncpy(sw.sw_desc, desc->sw_desc, 256);
-            strncpy(sw.serial_num, desc->serial_num, 32);
-            strncpy(sw.dp_desc, desc->dp_desc, 256);
+            sw.dpid = get_dpid(msg->fd);
+
+            strncpy(sw.desc.mfr_desc, desc->mfr_desc, 256);
+            strncpy(sw.desc.hw_desc, desc->hw_desc, 256);
+            strncpy(sw.desc.sw_desc, desc->sw_desc, 256);
+            strncpy(sw.desc.serial_num, desc->serial_num, 32);
+            strncpy(sw.desc.dp_desc, desc->dp_desc, 256);
 
             ev_sw_update_desc(OFP_ID, &sw);
         }
@@ -605,74 +605,18 @@ static int ofp10_stats_reply(const raw_msg_t *msg)
             flow.dpid = get_dpid(msg->fd);
             flow.port = ntohs(stats->match.in_port);
 
-            flow.cookie = ntohll(stats->cookie);
-            flow.priority = ntohs(stats->priority);
+            flow.meta.cookie = ntohll(stats->cookie);
+            flow.meta.idle_timeout = ntohs(stats->idle_timeout);
+            flow.meta.hard_timeout = ntohs(stats->hard_timeout);
+            flow.meta.priority = ntohs(stats->priority);
 
-            flow.idle_timeout = ntohs(stats->idle_timeout);
-            flow.hard_timeout = ntohs(stats->hard_timeout);
+            ofp10_get_match_fields(&flow.pkt_info, &stats->match);
 
-            // begin of match
+            flow.stat.duration_sec = ntohl(stats->duration_sec);
+            flow.stat.duration_nsec = ntohl(stats->duration_nsec);
 
-            flow.wildcards = ntohl(stats->match.wildcards);
-
-            if (stats->match.dl_vlan) {
-                flow.proto |= PROTO_VLAN;
-                flow.vlan_id = ntohs(stats->match.dl_vlan);
-                flow.vlan_pcp = stats->match.dl_vlan_pcp;
-            }
-
-            switch (ntohs(stats->match.dl_type)) {
-            case 0x0800: // IPv4
-                flow.proto |= PROTO_IPV4;
-                flow.ip_tos = stats->match.nw_tos;
-
-                switch (stats->match.nw_proto) {
-                case IPPROTO_TCP:
-                    flow.proto |= PROTO_TCP;
-                    break;
-                case IPPROTO_UDP:
-                    flow.proto |= PROTO_UDP;
-
-                    if (ntohs(stats->match.tp_dst) == DHCP_SVR_PORT || ntohs(stats->match.tp_dst) == DHCP_CLI_PORT) {
-                        flow.proto |= PROTO_DHCP;
-                    }
-
-                    break;
-                case IPPROTO_ICMP:
-                    flow.proto |= PROTO_ICMP;
-                    break;
-                default:
-                    break;
-                }
-
-                break;
-            case 0x0806: // ARP
-                flow.proto |= PROTO_ARP;
-                break;
-            case 0x08cc: // LLDP
-                flow.proto |= PROTO_LLDP;
-                break;
-            default: // Unknown
-                flow.proto |= PROTO_UNKNOWN;
-                break;
-            }
-
-            memmove(flow.src_mac, stats->match.dl_src, ETH_ALEN);
-            memmove(flow.dst_mac, stats->match.dl_dst, ETH_ALEN);
-
-            flow.src_ip = ntohl(stats->match.nw_src);
-            flow.dst_ip = ntohl(stats->match.nw_dst);
-
-            flow.src_port = ntohs(stats->match.tp_src);
-            flow.dst_port = ntohs(stats->match.tp_dst);
-
-            // end of match
-
-            flow.duration_sec = ntohl(stats->duration_sec);
-            flow.duration_nsec = ntohl(stats->duration_nsec);
-
-            flow.pkt_count = ntohll(stats->packet_count);
-            flow.byte_count = ntohll(stats->byte_count);
+            flow.stat.pkt_count = ntohll(stats->packet_count);
+            flow.stat.byte_count = ntohll(stats->byte_count);
 
             ev_dp_flow_stats(OFP_ID, &flow);
         }
@@ -685,11 +629,16 @@ static int ofp10_stats_reply(const raw_msg_t *msg)
 
             flow.dpid = get_dpid(msg->fd);
 
-            flow.pkt_count = ntohll(stats->packet_count);
-            flow.byte_count = ntohll(stats->byte_count);
-            flow.flow_count = ntohl(stats->flow_count);
+            flow.stat.pkt_count = ntohll(stats->packet_count);
+            flow.stat.byte_count = ntohll(stats->byte_count);
+            flow.stat.flow_count = ntohl(stats->flow_count);
 
             ev_dp_aggregate_stats(OFP_ID, &flow);
+        }
+        break;
+    case OFPST_TABLE:
+        {
+            // no implementation
         }
         break;
     case OFPST_PORT:
@@ -702,21 +651,25 @@ static int ofp10_stats_reply(const raw_msg_t *msg)
 
             int i;
             for (i=0; i<entries; i++) {
-                if (ntohs(stats[i].port_no) > __MAX_NUM_PORTS)
-                    continue;
+                if (ntohs(stats[i].port_no) > __MAX_NUM_PORTS) continue;
 
                 port_t port = {0};
 
                 port.dpid = dpid;
                 port.port = ntohs(stats[i].port_no);
 
-                port.rx_packets = ntohll(stats[i].rx_packets);
-                port.rx_bytes = ntohll(stats[i].rx_bytes);
-                port.tx_packets = ntohll(stats[i].tx_packets);
-                port.tx_bytes = ntohll(stats[i].tx_bytes);
+                port.stat.rx_packets = ntohll(stats[i].rx_packets);
+                port.stat.rx_bytes = ntohll(stats[i].rx_bytes);
+                port.stat.tx_packets = ntohll(stats[i].tx_packets);
+                port.stat.tx_bytes = ntohll(stats[i].tx_bytes);
 
                 ev_dp_port_stats(OFP_ID, &port);
             }
+        }
+        break;
+    case OFPST_QUEUE:
+        {
+            // no implementation
         }
         break;
     default:
@@ -726,136 +679,157 @@ static int ofp10_stats_reply(const raw_msg_t *msg)
     return 0;
 }
 
-static int ofp10_build_actions(int num_actions, const action_t *action, uint8_t *pkt, int *size)
+/////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Function to build a set of actions
+ * \param num_actions The number of actions
+ * \param action Action list
+ * \param pkt Packet pointer
+ * \return The total size of actions
+ */
+static int ofp10_build_actions(int num_actions, const action_t *action, uint8_t *pkt)
 {
+    int size = 0;
+
     int i;
     for (i=0; i<num_actions; i++) {
         switch (action[i].type) {
-        case ACTION_DISCARD:
+        case ACTION_DROP:
             {
                 // nothing to do
             }
             break;
         case ACTION_OUTPUT:
             {
-                struct ofp_action_output *output = (struct ofp_action_output *)(pkt + *size);
+                struct ofp_action_output *output = (struct ofp_action_output *)(pkt + size);
 
                 output->type = htons(OFPAT_OUTPUT);
                 output->len = htons(sizeof(struct ofp_action_output));
                 output->port = htons(action[i].port);
-
                 output->max_len = 0;
 
-                *size += sizeof(struct ofp_action_output);
+                size += sizeof(struct ofp_action_output);
             }
             break;
         case ACTION_SET_VLAN_VID:
             {
-                struct ofp_action_vlan_vid *vid = (struct ofp_action_vlan_vid *)(pkt + *size);
+                struct ofp_action_vlan_vid *vid = (struct ofp_action_vlan_vid *)(pkt + size);
 
                 vid->type = htons(OFPAT_SET_VLAN_VID);
                 vid->len = htons(sizeof(struct ofp_action_vlan_vid));
                 vid->vlan_vid = htons(action[i].vlan_id);
 
-                *size += sizeof(struct ofp_action_vlan_vid);
+                size += sizeof(struct ofp_action_vlan_vid);
             }
             break;
         case ACTION_SET_VLAN_PCP:
             {
-                struct ofp_action_vlan_pcp *pcp = (struct ofp_action_vlan_pcp *)(pkt + *size);
+                struct ofp_action_vlan_pcp *pcp = (struct ofp_action_vlan_pcp *)(pkt + size);
 
                 pcp->type = htons(OFPAT_SET_VLAN_PCP);
                 pcp->len = htons(sizeof(struct ofp_action_vlan_pcp));
                 pcp->vlan_pcp = action[i].vlan_pcp;
 
-                *size += sizeof(struct ofp_action_vlan_pcp);
+                size += sizeof(struct ofp_action_vlan_pcp);
             }
             break;
         case ACTION_STRIP_VLAN:
             {
-                struct ofp_action_header *act = (struct ofp_action_header *)(pkt + *size);
+                struct ofp_action_header *act = (struct ofp_action_header *)(pkt + size);
 
                 act->type = htons(OFPAT_STRIP_VLAN);
                 act->len = htons(sizeof(struct ofp_action_header));
 
-                *size += sizeof(struct ofp_action_header);
+                size += sizeof(struct ofp_action_header);
             }
             break;
         case ACTION_SET_SRC_MAC:
             {
-                struct ofp_action_dl_addr *mac = (struct ofp_action_dl_addr *)(pkt + *size);
+                struct ofp_action_dl_addr *mac = (struct ofp_action_dl_addr *)(pkt + size);
 
                 mac->type = htons(OFPAT_SET_DL_SRC);
                 mac->len = htons(sizeof(struct ofp_action_dl_addr));
                 memmove(mac->dl_addr, action[i].mac_addr, ETH_ALEN);
 
-                *size += sizeof(struct ofp_action_dl_addr);
+                size += sizeof(struct ofp_action_dl_addr);
             }
             break;
         case ACTION_SET_DST_MAC:
             {
-                struct ofp_action_dl_addr *mac = (struct ofp_action_dl_addr *)(pkt + *size);
+                struct ofp_action_dl_addr *mac = (struct ofp_action_dl_addr *)(pkt + size);
 
                 mac->type = htons(OFPAT_SET_DL_DST);
                 mac->len = htons(sizeof(struct ofp_action_dl_addr));
                 memmove(mac->dl_addr, action[i].mac_addr, ETH_ALEN);
 
-                *size += sizeof(struct ofp_action_dl_addr);
+                size += sizeof(struct ofp_action_dl_addr);
             }
             break;
         case ACTION_SET_SRC_IP:
             {
-                struct ofp_action_nw_addr *ip = (struct ofp_action_nw_addr *)(pkt + *size);
+                struct ofp_action_nw_addr *ip = (struct ofp_action_nw_addr *)(pkt + size);
 
                 ip->type = htons(OFPAT_SET_NW_SRC);
                 ip->len = htons(sizeof(struct ofp_action_nw_addr));
-                ip->nw_addr = action[i].ip_addr;
+                ip->nw_addr = htonl(action[i].ip_addr);
 
-                *size += sizeof(struct ofp_action_nw_addr);
+                size += sizeof(struct ofp_action_nw_addr);
             }
             break;
         case ACTION_SET_DST_IP:
             {
-                struct ofp_action_nw_addr *ip = (struct ofp_action_nw_addr *)(pkt + *size);
+                struct ofp_action_nw_addr *ip = (struct ofp_action_nw_addr *)(pkt + size);
 
                 ip->type = htons(OFPAT_SET_NW_DST);
                 ip->len = htons(sizeof(struct ofp_action_nw_addr));
-                ip->nw_addr = action[i].ip_addr;
+                ip->nw_addr = htonl(action[i].ip_addr);
 
-                *size += sizeof(struct ofp_action_nw_addr);
+                size += sizeof(struct ofp_action_nw_addr);
             }
             break;
         case ACTION_SET_IP_TOS:
             {
-                struct ofp_action_nw_tos *tos = (struct ofp_action_nw_tos *)(pkt + *size);
+                struct ofp_action_nw_tos *tos = (struct ofp_action_nw_tos *)(pkt + size);
 
                 tos->type = htons(OFPAT_SET_NW_TOS);
                 tos->len = htons(sizeof(struct ofp_action_nw_tos));
                 tos->nw_tos = action[i].ip_tos;
 
-                *size += sizeof(struct ofp_action_nw_tos);
+                size += sizeof(struct ofp_action_nw_tos);
             }
             break;
         case ACTION_SET_SRC_PORT:
             {
-                struct ofp_action_tp_port *port = (struct ofp_action_tp_port *)(pkt + *size);
+                struct ofp_action_tp_port *port = (struct ofp_action_tp_port *)(pkt + size);
 
                 port->type = htons(OFPAT_SET_TP_SRC);
                 port->len = htons(sizeof(struct ofp_action_tp_port));
                 port->tp_port = htons(action[i].port);
 
-                *size += sizeof(struct ofp_action_tp_port);
+                size += sizeof(struct ofp_action_tp_port);
             }
             break;
         case ACTION_SET_DST_PORT:
             {
-                struct ofp_action_tp_port *port = (struct ofp_action_tp_port *)(pkt + *size);
+                struct ofp_action_tp_port *port = (struct ofp_action_tp_port *)(pkt + size);
 
                 port->type = htons(OFPAT_SET_TP_DST);
                 port->len = htons(sizeof(struct ofp_action_tp_port));
                 port->tp_port = htons(action[i].port);
 
-                *size += sizeof(struct ofp_action_tp_port);
+                size += sizeof(struct ofp_action_tp_port);
+            }
+            break;
+        case ACTION_VENDOR:
+            {
+                struct ofp_action_vendor_header *vendor = (struct ofp_action_vendor_header *)(pkt + size);
+
+                vendor->type = htons(OFPAT_VENDOR);
+                vendor->len = htons(sizeof(struct ofp_action_vendor_header));
+                vendor->vendor = htonl(action[i].vendor);
+
+                size += sizeof(struct ofp_action_vendor_header);
             }
             break;
         default:
@@ -863,8 +837,10 @@ static int ofp10_build_actions(int num_actions, const action_t *action, uint8_t 
         }
     }
 
-    return 0;
+    return size;
 }
+
+/////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Function to process PACKET_OUT messages
@@ -872,30 +848,44 @@ static int ofp10_build_actions(int num_actions, const action_t *action, uint8_t 
  */
 static int ofp10_packet_out(const pktout_t *pktout)
 {
-    uint8_t pkt[__MAX_PKT_SIZE];
+    msg_t msg;
+    uint8_t pkt[__MAX_MSG_SIZE] = {0};
+
     struct ofp_packet_out *out = (struct ofp_packet_out *)pkt;
 
     int size = sizeof(struct ofp_packet_out);
 
     out->header.version = OFP_VERSION;
     out->header.type = OFPT_PACKET_OUT;
-    out->header.xid = htonl(pktout->xid);
 
-    out->buffer_id = htonl(pktout->buffer_id);
-    out->in_port = htons(pktout->port);
+    if (pktout->xid)
+        out->header.xid = htonl(pktout->xid);
+    else
+        out->header.xid = htonl(get_xid(pktout->dpid));
 
-    ofp10_build_actions(pktout->num_actions, pktout->action, pkt, &size);
+    if (pktout->buffer_id)
+        out->buffer_id = htonl(pktout->buffer_id);
+    else
+        out->buffer_id = -1;
 
-    out->actions_len = htons(size - sizeof(struct ofp_packet_out));
+    if (pktout->port < __MAX_NUM_PORTS || pktout->port >= PORT_IN_PORT)
+        out->in_port = htons(pktout->port);
+    else {
+        LOG_WARN(OFP_ID, "Received ofp_packet_out with wrong port (%u)", pktout->port);
+        return -1;
+    }
+
+    int actions_len = ofp10_build_actions(pktout->num_actions, pktout->action, pkt + sizeof(struct ofp_packet_out));
+    out->actions_len = htons(actions_len);
+
+    size += actions_len;
 
     if (pktout->buffer_id == (uint32_t)-1 && pktout->total_len > 0) {
-        memmove(pkt + size, pktout->data, MIN(pktout->total_len, __MAX_PKT_SIZE - size));
-        size += MIN(pktout->total_len, __MAX_PKT_SIZE - size);
+        memmove(pkt + size, pktout->data, MIN(pktout->total_len, __MAX_PKT_SIZE));
+        size += MIN(pktout->total_len, __MAX_PKT_SIZE);
     }
 
     out->header.length = htons(size);
-
-    raw_msg_t msg;
 
     msg.fd = get_fd(pktout->dpid);
     msg.length = size;
@@ -906,6 +896,62 @@ static int ofp10_packet_out(const pktout_t *pktout)
     return 0;
 }
 
+/////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Function to set match fields
+ * \param in_port Input port
+ * \param info Packet structure
+ * \param match OFP match structure
+ */
+static int ofp10_set_match_fields(uint32_t in_port, const pkt_info_t *info, struct ofp_match *match)
+{
+    match->wildcards = htonl(info->wildcards);
+    match->in_port = htons(in_port);
+
+    memmove(match->dl_src, info->src_mac, ETH_ALEN);
+    memmove(match->dl_dst, info->dst_mac, ETH_ALEN);
+
+    if (info->vlan_id > 0 && info->vlan_id < VLAN_NONE) {
+        match->dl_vlan = htons(info->vlan_id);
+        match->dl_vlan_pcp = info->vlan_pcp;
+    } else {
+        match->dl_vlan = htons(OFP_VLAN_NONE);
+    }
+
+    if (info->proto & PROTO_LLDP) { // LLDP
+        match->dl_type = htons(0x88cc);
+    } else if (info->proto & PROTO_ARP) { // ARP
+        match->dl_type = htons(0x0806);
+        match->nw_proto = htons(info->opcode);
+
+        match->nw_src = htonl(info->src_ip);
+        match->nw_dst = htonl(info->dst_ip);
+    } else if (info->proto & (PROTO_IPV4 | PROTO_TCP | PROTO_UDP | PROTO_ICMP | PROTO_DHCP)) { // IPv4
+        match->dl_type = htons(0x0800);
+        match->nw_tos = info->ip_tos;
+
+        match->nw_src = htonl(info->src_ip);
+        match->nw_dst = htonl(info->dst_ip);
+
+        if (info->proto & (PROTO_TCP | PROTO_UDP | PROTO_ICMP | PROTO_DHCP)) { // TCP,UDP,ICMP
+            if (info->proto & PROTO_TCP)
+                match->nw_proto = IPPROTO_TCP;
+            else if (info->proto & PROTO_UDP || info->proto & PROTO_DHCP)
+                match->nw_proto = IPPROTO_UDP;
+            else if (info->proto & PROTO_ICMP)
+                match->nw_proto = IPPROTO_ICMP;
+
+            match->tp_src = htons(info->src_port);
+            match->tp_dst = htons(info->dst_port);
+        }
+    }
+
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////
+
 /**
  * \brief Function to process FLOW_MOD messages
  * \param flow FLOW message
@@ -913,17 +959,27 @@ static int ofp10_packet_out(const pktout_t *pktout)
  */
 static int ofp10_flow_mod(const flow_t *flow, int command)
 {
-    uint8_t pkt[__MAX_PKT_SIZE];
+    msg_t msg;
+    uint8_t pkt[__MAX_MSG_SIZE] = {0};
+
     struct ofp_flow_mod *mod = (struct ofp_flow_mod *)pkt;
 
     int size = sizeof(struct ofp_flow_mod);
 
     mod->header.version = OFP_VERSION;
     mod->header.type = OFPT_FLOW_MOD;
-    mod->header.xid = htonl(flow->xid);
 
-    mod->buffer_id = htonl(flow->buffer_id);
-    mod->cookie = htonl(flow->cookie);
+    if (flow->info.xid)
+        mod->header.xid = htonl(flow->info.xid);
+    else
+        mod->header.xid = htonl(get_xid(flow->dpid));
+
+    if (flow->info.buffer_id)
+        mod->buffer_id = htonl(flow->info.buffer_id);
+    else
+        mod->buffer_id = -1;
+
+    mod->cookie = htonl(flow->meta.cookie);
 
     if (command == FLOW_ADD)
         mod->command = htons(OFPFC_ADD);
@@ -932,67 +988,24 @@ static int ofp10_flow_mod(const flow_t *flow, int command)
     else if (command == FLOW_DELETE)
         mod->command = htons(OFPFC_DELETE);
 
-    mod->idle_timeout = htons(flow->idle_timeout);
-    mod->hard_timeout = htons(flow->hard_timeout);
+    mod->idle_timeout = htons(flow->meta.idle_timeout);
+    mod->hard_timeout = htons(flow->meta.hard_timeout);
 
-    if (flow->priority == 0)
+    if (flow->meta.priority == 0)
         mod->priority = htons(0x8000); // default priority
     else
-        mod->priority = htons(flow->priority);
+        mod->priority = htons(flow->meta.priority);
 
     mod->out_port = htons(OFPP_NONE);
-    mod->flags = htons(flow->flags);
+    mod->flags = htons(flow->meta.flags | FLFG_SEND_REMOVED);
 
-    // begin of match
+    ofp10_set_match_fields(flow->port, &flow->pkt_info, &mod->match);
 
-    mod->match.wildcards = htonl(flow->wildcards);
-    mod->match.in_port = htons(flow->port);
+    int actions_len = ofp10_build_actions(flow->num_actions, flow->action, pkt + sizeof(struct ofp_flow_mod));
 
-    memmove(mod->match.dl_src, flow->src_mac, ETH_ALEN);
-    memmove(mod->match.dl_dst, flow->dst_mac, ETH_ALEN);
-
-    if (flow->vlan_id) {
-        mod->match.dl_vlan = htons(flow->vlan_id);
-        mod->match.dl_vlan_pcp = flow->vlan_pcp;
-    } else {
-        mod->match.dl_vlan = htons(OFP_VLAN_NONE);
-    }
-
-    if (flow->proto & PROTO_LLDP) { // LLDP
-        mod->match.dl_type = htons(0x88cc);
-    } else if (flow->proto & PROTO_ARP) { // ARP
-        mod->match.dl_type = htons(0x0806);
-        mod->match.nw_proto = htons(flow->opcode);
-
-        mod->match.nw_src = htonl(flow->src_ip);
-        mod->match.nw_dst = htonl(flow->dst_ip);
-    } else if (flow->proto & (PROTO_IPV4 | PROTO_TCP | PROTO_UDP | PROTO_ICMP | PROTO_DHCP)) { // IPv4
-        mod->match.dl_type = htons(0x0800);
-        mod->match.nw_tos = flow->ip_tos;
-
-        mod->match.nw_src = htonl(flow->src_ip);
-        mod->match.nw_dst = htonl(flow->dst_ip);
-
-        if (flow->proto & (PROTO_TCP | PROTO_UDP | PROTO_ICMP | PROTO_DHCP)) { // TCP,UDP,ICMP
-            if (flow->proto & PROTO_TCP)
-                mod->match.nw_proto = IPPROTO_TCP;
-            else if (flow->proto & PROTO_UDP || flow->proto & PROTO_DHCP)
-                mod->match.nw_proto = IPPROTO_UDP;
-            else if (flow->proto & PROTO_ICMP)
-                mod->match.nw_proto = IPPROTO_ICMP;
-
-            mod->match.tp_src = htons(flow->src_port);
-            mod->match.tp_dst = htons(flow->dst_port);
-        }
-    }
-
-    // end of match
-
-    ofp10_build_actions(flow->num_actions, flow->action, pkt, &size);
+    size += actions_len;
 
     mod->header.length = htons(size);
-
-    raw_msg_t msg;
 
     msg.fd = get_fd(flow->dpid);
     msg.length = size;
@@ -1009,8 +1022,8 @@ static int ofp10_flow_mod(const flow_t *flow, int command)
  */
 static int ofp10_stats_desc_request(uint32_t fd)
 {
-    raw_msg_t out;
-    uint8_t pkt[__MAX_PKT_SIZE];
+    msg_t out;
+    uint8_t pkt[__MAX_MSG_SIZE] = {0};
 
     struct ofp_stats_request *request = (struct ofp_stats_request *)pkt;
     int size = sizeof(struct ofp_stats_request);
@@ -1022,7 +1035,7 @@ static int ofp10_stats_desc_request(uint32_t fd)
     request->header.version = OFP_VERSION;
     request->header.type = OFPT_STATS_REQUEST;
     request->header.length = htons(sizeof(struct ofp_stats_request));
-    request->header.xid = htonl(get_xid(fd));
+    request->header.xid = htonl(get_xid_w_fd(fd));
 
     request->type = htons(OFPST_DESC);
     request->flags = htons(0);
@@ -1038,14 +1051,14 @@ static int ofp10_stats_desc_request(uint32_t fd)
  */
 static int ofp10_flow_stats(const flow_t *flow)
 {
-    raw_msg_t out;
-    uint8_t pkt[__MAX_PKT_SIZE];
+    msg_t out;
+    uint8_t pkt[__MAX_MSG_SIZE] = {0};
 
     struct ofp_stats_request *request = (struct ofp_stats_request *)pkt;
     int size = sizeof(struct ofp_stats_request) + sizeof(struct ofp_flow_stats_request);
 
     uint32_t fd = get_fd(flow->dpid);
-    uint32_t xid = get_xid(fd);
+    uint32_t xid = get_xid(flow->dpid);
 
     out.fd = fd;
     out.length = size;
@@ -1060,46 +1073,7 @@ static int ofp10_flow_stats(const flow_t *flow)
 
     struct ofp_flow_stats_request *stat = (struct ofp_flow_stats_request *)(pkt + sizeof(struct ofp_stats_request));
 
-    // begin of match
-
-    stat->match.wildcards = htonl(flow->wildcards);
-    stat->match.in_port = htons(flow->port);
-
-    memmove(stat->match.dl_src, flow->src_mac, ETH_ALEN);
-    memmove(stat->match.dl_dst, flow->dst_mac, ETH_ALEN);
-
-    stat->match.dl_vlan = htons(flow->vlan_id);
-    stat->match.dl_vlan_pcp = flow->vlan_pcp;
-
-    if (flow->proto & PROTO_LLDP) { // LLDP
-        stat->match.dl_type = htons(0x88cc);
-    } else if (flow->proto & PROTO_ARP) { // ARP
-        stat->match.dl_type = htons(0x0806);
-        stat->match.nw_proto = htons(flow->opcode);
-
-        stat->match.nw_src = htonl(flow->src_ip);
-        stat->match.nw_dst = htonl(flow->dst_ip);
-    } else if (flow->proto & (PROTO_IPV4 | PROTO_TCP | PROTO_UDP | PROTO_ICMP | PROTO_DHCP)) { // IPv4
-        stat->match.dl_type = htons(0x0800);
-        stat->match.nw_tos = flow->ip_tos;
-
-        stat->match.nw_src = htonl(flow->src_ip);
-        stat->match.nw_dst = htonl(flow->dst_ip);
-
-        if (flow->proto & (PROTO_TCP | PROTO_UDP | PROTO_ICMP | PROTO_DHCP)) { // TCP,UDP,ICMP
-            if (flow->proto & PROTO_TCP)
-                stat->match.nw_proto = IPPROTO_TCP;
-            else if (flow->proto & PROTO_UDP || flow->proto & PROTO_DHCP)
-                stat->match.nw_proto = IPPROTO_UDP;
-            else if (flow->proto & PROTO_ICMP)
-                stat->match.nw_proto = IPPROTO_ICMP;
-
-            stat->match.tp_src = htons(flow->src_port);
-            stat->match.tp_dst = htons(flow->dst_port);
-        }
-    }
-
-    // end of match
+    ofp10_set_match_fields(flow->port, &flow->pkt_info, &stat->match);
 
     stat->table_id = 0xff;
     stat->out_port = htons(OFPP_NONE);
@@ -1115,14 +1089,14 @@ static int ofp10_flow_stats(const flow_t *flow)
  */
 static int ofp10_aggregate_stats(const flow_t *flow)
 {
-    raw_msg_t out;
-    uint8_t pkt[__MAX_PKT_SIZE];
+    msg_t out;
+    uint8_t pkt[__MAX_MSG_SIZE] = {0};
 
     struct ofp_stats_request *request = (struct ofp_stats_request *)pkt;
     int size = sizeof(struct ofp_stats_request) + sizeof(struct ofp_flow_stats_request);
 
     uint32_t fd = get_fd(flow->dpid);
-    uint32_t xid = get_xid(fd);
+    uint32_t xid = get_xid(flow->dpid);
 
     out.fd = fd;
     out.length = size;
@@ -1152,28 +1126,36 @@ static int ofp10_aggregate_stats(const flow_t *flow)
 }
 
 /**
+ * \brief Function to update the configuration of a physical port
+ * \param port PORT message
+ */
+static int ofp10_port_mod(const port_t *port)
+{
+    // no implementation
+
+    return 0;
+}
+
+/**
  * \brief Function to process STATS_REQUEST (port) messages
  * \param port PORT message
  */
 static int ofp10_port_stats(const port_t *port)
 {
-    raw_msg_t out;
-    uint8_t pkt[__MAX_PKT_SIZE];
+    msg_t out;
+    uint8_t pkt[__MAX_MSG_SIZE] = {0};
 
     struct ofp_stats_request *request = (struct ofp_stats_request *)pkt;
     int size = sizeof(struct ofp_stats_request) + sizeof(struct ofp_port_stats_request);
 
-    uint32_t fd = get_fd(port->dpid);
-    uint32_t xid = get_xid(fd);
-
-    out.fd = fd;
+    out.fd = get_fd(port->dpid);
     out.length = size;
     out.data = pkt;
 
     request->header.version = OFP_VERSION;
     request->header.type = OFPT_STATS_REQUEST;
     request->header.length = ntohs(size);
-    request->header.xid = htonl(xid);
+    request->header.xid = htonl(get_xid(port->dpid));
 
     request->type = htons(OFPST_PORT);
 
@@ -1181,8 +1163,11 @@ static int ofp10_port_stats(const port_t *port)
 
     if (port->port == PORT_NONE)
         stat->port_no = htons(OFPP_NONE);
-    else {
+    else if (port->port < __MAX_NUM_PORTS) {
         stat->port_no = htons(port->port);
+    } else {
+        LOG_WARN(OFP_ID, "Received ofp_port_stats_request with wrong port (%u)", port->port);
+        return -1;
     }
 
     ev_ofp_msg_out(OFP_ID, &out);
@@ -1196,7 +1181,7 @@ static int ofp10_port_stats(const port_t *port)
  * \brief OpenFlow 1.0 engine
  * \param msg OpenFlow message
  */
-static int ofp10_engine(const raw_msg_t *msg)
+static int ofp10_engine(const msg_t *msg)
 {
     struct ofp_header *ofph = (struct ofp_header *)msg->data;
 
@@ -1216,7 +1201,7 @@ static int ofp10_engine(const raw_msg_t *msg)
         break;
     case OFPT_ECHO_REPLY:
         DEBUG("OFPT_ECHO_REPLY\n");
-        // nothing
+        // nothing to do
         break;
     case OFPT_VENDOR:
         DEBUG("OFPT_VENDOR\n");
@@ -1233,15 +1218,15 @@ static int ofp10_engine(const raw_msg_t *msg)
         break;
     case OFPT_GET_CONFIG_REQUEST:
         DEBUG("OFPT_GET_CONFIG_REQUEST\n");
-        // no way (and no implementation)
+        // no way
         break;
     case OFPT_GET_CONFIG_REPLY:
         DEBUG("OFPT_GET_CONFIG_REPLY\n");
-        // nothing (and no implementation)
+        // no implementation
         break;
     case OFPT_SET_CONFIG:
         DEBUG("OFPT_SET_CONFIG\n");
-        // no way (and no implementation)
+        // no implementation
         break;
     case OFPT_PACKET_IN:
         DEBUG("OFPT_PACKET_IN\n");
@@ -1281,15 +1266,15 @@ static int ofp10_engine(const raw_msg_t *msg)
         break;
     case OFPT_BARRIER_REPLY:
         DEBUG("OFPT_BARRIER_REPLY\n");
-        // nothing (and no implementation)
+        // nothing to do
         break;
     case OFPT_QUEUE_GET_CONFIG_REQUEST:
         DEBUG("OFPT_QUEUE_GET_CONFIG_REQUEST\n");
-        // no way (and no implementation)
+        // no way
         break;
     case OFPT_QUEUE_GET_CONFIG_REPLY:
         DEBUG("OFPT_QUEUE_GET_CONFIG_REPLY\n");
-        // nothing (and no implementation)
+        // no implementation
         break;
     default:
         DEBUG("UNKNOWN\n");
@@ -1350,7 +1335,7 @@ int ofp10_handler(const event_t *ev, event_out_t *ev_out)
     case EV_OFP_MSG_IN:
         PRINT_EV("EV_OFP_MSG_IN\n");
         {
-            const raw_msg_t *msg = ev->raw_msg;
+            const msg_t *msg = ev->msg;
             ofp10_engine(msg);
         }
         break;
@@ -1394,6 +1379,13 @@ int ofp10_handler(const event_t *ev, event_out_t *ev_out)
         {
             const flow_t *flow = ev->flow;
             ofp10_aggregate_stats(flow);
+        }
+        break;
+    case EV_DP_MODIFY_PORT:
+        PRINT_EV("EV_DP_MODIFY_PORT\n");
+        {
+            const port_t *port = ev->port;
+            ofp10_port_mod(port);
         }
         break;
     case EV_DP_REQUEST_PORT_STATS:

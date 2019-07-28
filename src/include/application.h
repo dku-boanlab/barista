@@ -54,8 +54,7 @@ enum {
 enum {
     APP_READ = 4,
     APP_WRITE = 2,
-    APP_EXECUTE = 1,
-    APP_MAX_PERM = 3
+    APP_EXECUTE = 1
 };
 
 /** \brief The structure of an application */
@@ -80,6 +79,9 @@ struct _app_t {
     void *push_ctx; /**< Push context */
     char push_addr[__CONF_WORD_LEN]; /**< Push address */
 
+    void *req_ctx; /**< Request context */
+    char req_addr[__CONF_WORD_LEN]; /**< Request address */
+
     app_main_f main; /**< The main function pointer */
     app_handler_f handler; /**< The handler function pointer */
     app_cleanup_f cleanup; /**< The cleanup function pointer */
@@ -95,10 +97,7 @@ struct _app_t {
     int num_policies; /**< The number of policies */
     odp_t odp[__MAX_POLICIES]; /**< The list of operator-defined policies */
 
-#ifdef __ENABLE_META_EVENTS
     uint64_t num_app_events[__MAX_APP_EVENTS]; /**< The number of triggered times */
-    double time_events[__MAX_APP_EVENTS]; /** The cumulative latencies for each event */
-#endif /* __ENABLE_META_EVENTS */
 };
 
 // function for the base framework

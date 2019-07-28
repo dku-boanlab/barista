@@ -20,7 +20,6 @@ typedef struct _app_event_t {
     const uint32_t id; /**< Application ID */
     const uint16_t type; /**< App event type */
     const uint16_t length; /**< Data length */
-    const uint32_t checksum; /**< Checksum */
 
     // body
     union {
@@ -33,6 +32,8 @@ typedef struct _app_event_t {
         const pktout_t   *pktout; /**< The pointer of a pktout */
 
         const char       *log; /**< The pointer of a log */
+
+        const uint8_t    *data; /**< The pointer of data */
     };
 } app_event_t;
 
@@ -42,7 +43,6 @@ typedef struct _app_event_out_t {
     uint32_t id; /**< Application ID */
     uint16_t type; /**< App event type */
     uint16_t length; /**< Data length */
-    uint32_t checksum; /**< Checksum */
 
     // body
     union {

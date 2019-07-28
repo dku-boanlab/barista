@@ -11,10 +11,24 @@
 
 #include "common.h"
 #include "event.h"
-#include <signal.h>
-#include <sys/time.h>
-#include <sys/sysinfo.h>
+#include "database.h"
 
-#define RESOURCE_MGMT_MONITOR_TIME 1
-#define RESOURCE_MGMT_HISTORY 86400
-#define DEFAULT_RESOURCE_FILE "../log/resource.log"
+/////////////////////////////////////////////////////////////////////
+
+/** \brief The database connector for resource_mgmt */
+database_t resource_mgmt_db;
+
+/////////////////////////////////////////////////////////////////////
+
+/** \brief Resource usage */
+resource_t resource;
+
+/** \brief Command to get CPU and memory usages */
+char cmd[] = "ps -p $(pgrep -x barista) -o %cpu,%mem 2> /dev/null | tail -n 1";
+
+/////////////////////////////////////////////////////////////////////
+
+/** \brief The monitoring time (second) per resource usage */
+#define __RESOURCE_MGMT_MONITOR_TIME 10
+
+/////////////////////////////////////////////////////////////////////

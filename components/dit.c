@@ -57,6 +57,8 @@ int dit_cleanup(int *activated)
  */
 int dit_cli(cli_t *cli, char **args)
 {
+    cli_print(cli, "No CLI support");
+
     return 0;
 }
 
@@ -67,16 +69,14 @@ int dit_cli(cli_t *cli, char **args)
  */
 int dit_handler(const event_t *ev, event_out_t *ev_out)
 {
-    uint32_t old_checksum = ev_out->checksum;
-    uint32_t checksum = hash_func((uint32_t *)ev->msg, ev->length / sizeof(uint32_t));
+    uint32_t checksum = hash_func((uint32_t *)ev->data, ev->length / sizeof(uint32_t));
 
-    if (old_checksum == 0) {
-        // generate checksum
+    if (ev_out->checksum == 0) {
         ev_out->checksum = checksum;
     } else {
-        // check checksum
-        if (old_checksum != checksum) {
-            LOG_WARN(DIT_ID, "Malformed internal message (old: %x, curr: %x)", old_checksum, checksum);
+        if (ev_out->checksum != checksum) {
+            LOG_WARN(DIT_ID, "Modified internal message (ev->id: %u, ev->type: %u, old: %x, curr: %x)", 
+                     ev->id, ev->type, ev_out->checksum, checksum);
             return -1;
         }
     }

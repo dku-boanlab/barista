@@ -22,33 +22,8 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The default component configuration file */
-char compnt_file[__CONF_WORD_LEN] = DEFAULT_COMPNT_CONFIG_FILE;
-
-/////////////////////////////////////////////////////////////////////
-
-/** \brief The structure of a component */
-typedef struct _component_t {
-    uint32_t id; /**< Component ID */
-    char name[__CONF_WORD_LEN]; /**< Component name for logging */
-
-    int in_num; /**< The number of inbound events */
-    int in_list[__MAX_EVENTS]; /**< The list of inbound events */
-
-    int out_num; /**< The number of outbound events */
-    int out_list[__MAX_EVENTS]; /**< The list of outbound events */
-} component_t;
-
-/** \brief Component list */
-component_t *component;
-
-/** \brief The number of components */
-int num_components;
-
-/////////////////////////////////////////////////////////////////////
-
 /** \brief The event list to convert an event string to an event ID */
-const char ev_str[EV_NUM_EVENTS+1][__CONF_WORD_LEN] = {
+const char ev_string[EV_NUM_EVENTS+1][__CONF_WORD_LEN] = {
     #include "event_string.h"
 };
 
@@ -61,7 +36,7 @@ static int ev_type(const char *event)
 {
     int i;
     for (i=0; i<EV_NUM_EVENTS+1; i++) {
-        if (strcmp(event, ev_str[i]) == 0)
+        if (strcmp(event, ev_string[i]) == 0)
             return i;
     }
     return EV_NUM_EVENTS;
@@ -90,10 +65,10 @@ static int config_load(char *conf_file)
 
     json = json_loads(conf, 0, &error);
     if (!json) {
-        LOG_ERROR(CAC_ID, "json_loads()");
+        LOG_ERROR(CAC_ID, "json_loads() failed");
         return -1;
     } else if (!json_is_array(json)) {
-        LOG_ERROR(CAC_ID, "json_is_array()");
+        LOG_ERROR(CAC_ID, "json_is_array() failed");
         json_decref(json);
         return -1;
     }
@@ -114,8 +89,9 @@ static int config_load(char *conf_file)
             json_decref(json);
             return -1;
         } else {
-            strcpy(component[num_components].name, name);
-            component[num_components].id = hash_func((uint32_t *)&component[num_components].name, __HASHING_NAME_LENGTH);
+            strcpy(compnt_to_event[compnt_to_event_cnt].name, name);
+            compnt_to_event[compnt_to_event_cnt].id = 
+                hash_func((uint32_t *)&compnt_to_event[compnt_to_event_cnt].name, __HASHING_NAME_LENGTH);
         }
 
         // set inbound events
@@ -124,8 +100,13 @@ static int config_load(char *conf_file)
             for (j=0; j<json_array_size(events); j++) {
                 json_t *event = json_array_get(events, j);
 
-                if (ev_type(json_string_value(event)) == EV_NUM_EVENTS) {
-                    LOG_ERROR(CAC_ID, "Wrong event name (%s)", json_string_value(event));
+                char in_name[__CONF_WORD_LEN] = {0};
+                char in_perm[__CONF_SHORT_LEN] = {0};
+
+                sscanf(json_string_value(event), "%[^,],%[^,]", in_name, in_perm);
+
+                if (ev_type(in_name) == EV_NUM_EVENTS) {
+                    LOG_ERROR(CAC_ID, "Wrong event name (%s)", in_name);
                     json_decref(json);
                     return -1;
                 }
@@ -134,31 +115,36 @@ static int config_load(char *conf_file)
             for (j=0; j<json_array_size(events); j++) {
                 json_t *event = json_array_get(events, j);
 
-                if (ev_type(json_string_value(event)) == EV_NONE) {
+                char in_name[__CONF_WORD_LEN] = {0};
+                char in_perm[__CONF_SHORT_LEN] = {0};
+
+                sscanf(json_string_value(event), "%[^,],%[^,]", in_name, in_perm);
+
+                if (ev_type(in_name) == EV_NONE) {
                     break;
-                } else if (ev_type(json_string_value(event)) == EV_ALL_UPSTREAM) {
+                } else if (ev_type(in_name) == EV_ALL_UPSTREAM) {
                     for (k=EV_NONE+1; k<EV_ALL_UPSTREAM; k++) {
-                        component[num_components].in_list[component[num_components].in_num] = k;
-                        component[num_components].in_num++;
+                        compnt_to_event[compnt_to_event_cnt].in_list[compnt_to_event[compnt_to_event_cnt].in_num] = k;
+                        compnt_to_event[compnt_to_event_cnt].in_num++;
                     }
-                } else if (ev_type(json_string_value(event)) == EV_ALL_DOWNSTREAM) {
+                } else if (ev_type(in_name) == EV_ALL_DOWNSTREAM) {
                     for (k=EV_ALL_UPSTREAM+1; k<EV_ALL_DOWNSTREAM; k++) {
-                        component[num_components].in_list[component[num_components].in_num] = k;
-                        component[num_components].in_num++;
+                        compnt_to_event[compnt_to_event_cnt].in_list[compnt_to_event[compnt_to_event_cnt].in_num] = k;
+                        compnt_to_event[compnt_to_event_cnt].in_num++;
                     }
-                } else if (ev_type(json_string_value(event)) == EV_WRT_INTSTREAM) {
+                } else if (ev_type(in_name) == EV_WRT_INTSTREAM) {
                     for (k=EV_ALL_DOWNSTREAM+1; k<EV_WRT_INTSTREAM; k++) {
-                        component[num_components].in_list[component[num_components].in_num] = k;
-                        component[num_components].in_num++;
+                        compnt_to_event[compnt_to_event_cnt].in_list[compnt_to_event[compnt_to_event_cnt].in_num] = k;
+                        compnt_to_event[compnt_to_event_cnt].in_num++;
                     }
-                } else if (ev_type(json_string_value(event)) == EV_ALL_INTSTREAM) {
+                } else if (ev_type(in_name) == EV_ALL_INTSTREAM) {
                     for (k=EV_WRT_INTSTREAM+1; k<EV_ALL_INTSTREAM; k++) {
-                        component[num_components].in_list[component[num_components].in_num] = k;
-                        component[num_components].in_num++;
+                        compnt_to_event[compnt_to_event_cnt].in_list[compnt_to_event[compnt_to_event_cnt].in_num] = k;
+                        compnt_to_event[compnt_to_event_cnt].in_num++;
                     }
                 } else {
-                    component[num_components].in_list[component[num_components].in_num] = ev_type(json_string_value(event));
-                    component[num_components].in_num++;
+                    compnt_to_event[compnt_to_event_cnt].in_list[compnt_to_event[compnt_to_event_cnt].in_num] = ev_type(in_name);
+                    compnt_to_event[compnt_to_event_cnt].in_num++;
                 }
             }
         }
@@ -179,12 +165,13 @@ static int config_load(char *conf_file)
             for (j=0; j<json_array_size(out_events); j++) {
                 json_t *out_event = json_array_get(out_events, j);
 
-                component[num_components].out_list[component[num_components].out_num] = ev_type(json_string_value(out_event));
-                component[num_components].out_num++;
+                compnt_to_event[compnt_to_event_cnt].out_list[compnt_to_event[compnt_to_event_cnt].out_num] = 
+                    ev_type(json_string_value(out_event));
+                compnt_to_event[compnt_to_event_cnt].out_num++;
             }
         }
 
-        num_components++;
+        compnt_to_event_cnt++;
     }
 
     json_decref(json);
@@ -201,12 +188,12 @@ static int config_load(char *conf_file)
  */
 static int verify_component_event(uint32_t id, int type)
 {
-    int i, j;
-    for (i=0; i<num_components; i++) {
-        if (component[i].id == id) {
-            for (j=0; j<component[i].out_num; j++)
-                if (component[i].out_list[j] == type)
-                    return 0;
+    int i;
+    for (i=0; i<compnt_to_event_cnt; i++) {
+        if (compnt_to_event[i].id == id) {
+            int j;
+            for (j=0; j<compnt_to_event[i].out_num; j++)
+                if (compnt_to_event[i].out_list[j] == type) return 0;
             return 1;
         }
     }
@@ -225,16 +212,15 @@ int cac_main(int *activated, int argc, char **argv)
 {
     LOG_INFO(CAC_ID, "Init - Component access control");
 
-    num_components = 0;
-
-    component = (component_t *)CALLOC(__MAX_COMPONENTS, sizeof(component_t));
-    if (component == NULL) {
-        LOG_ERROR(CAC_ID, "calloc()");
+    compnt_to_event_cnt = 0;
+    compnt_to_event = (compnt_to_event_t *)CALLOC(__MAX_COMPONENTS, sizeof(compnt_to_event_t));
+    if (compnt_to_event == NULL) {
+        LOG_ERROR(CAC_ID, "calloc() failed");
         return -1;
     }
 
-    if (config_load(compnt_file) < 0) {
-        FREE(component);
+    if (config_load(DEFAULT_COMPNT_CONFIG_FILE) < 0) {
+        FREE(compnt_to_event);
         return -1;
     }
 
@@ -253,7 +239,7 @@ int cac_cleanup(int *activated)
 
     deactivate();
 
-    FREE(component);
+    FREE(compnt_to_event);
 
     return 0;
 }
@@ -265,6 +251,8 @@ int cac_cleanup(int *activated)
  */
 int cac_cli(cli_t *cli, char **args)
 {
+    cli_print(cli, "No CLI support");
+
     return 0;
 }
 
@@ -278,13 +266,13 @@ int cac_handler(const event_t *ev, event_out_t *ev_out)
     int res = verify_component_event(ev->id, ev->type);
 
     if (res < 0) {
-        LOG_WARN(CAC_ID, "Wrong component ID (caller: %u, event: %s)", ev->id, ev_str[ev->type]);
+        LOG_WARN(CAC_ID, "Wrong component ID (caller: %u, event: %s)", ev->id, ev_string[ev->type]);
         return -1;
     } else if (res > 0) {
         int i;
-        for (i=0; i<num_components; i++) {
-            if (component[i].id == ev->id) {
-                LOG_WARN(CAC_ID, "Unexcepted access (caller: %s, event: %s)", component[i].name, ev_str[ev->type]);
+        for (i=0; i<compnt_to_event_cnt; i++) {
+            if (compnt_to_event[i].id == ev->id) {
+                LOG_WARN(CAC_ID, "Unexcepted access (caller: %s, event: %s)", compnt_to_event[i].name, ev_string[ev->type]);
                 break;
             }
         }

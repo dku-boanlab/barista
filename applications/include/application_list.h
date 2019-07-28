@@ -42,11 +42,6 @@ DECLARE_HANDLER_FUNC(rbac_handler);
 DECLARE_CLEANUP_FUNC(rbac_cleanup);
 DECLARE_CLI_FUNC(rbac_cli);
 
-DECLARE_MAIN_FUNC(flow_push_main);
-DECLARE_HANDLER_FUNC(flow_push_handler);
-DECLARE_CLEANUP_FUNC(flow_push_cleanup);
-DECLARE_CLI_FUNC(flow_push_cli);
-
 /** \brief The function pointer of an application */
 struct _app_func_t {
     char *name; /**< Application name */
@@ -57,8 +52,5 @@ struct _app_func_t {
 } g_applications[] = {
     {"appint", appint_main, appint_handler, appint_cleanup, appint_cli},
     {"l2_learning", l2_learning_main, l2_learning_handler, l2_learning_cleanup, l2_learning_cli},
-    {"l2_shortest", l2_shortest_main, l2_shortest_handler, l2_shortest_cleanup, l2_shortest_cli},
     {"rbac", rbac_main, rbac_handler, rbac_cleanup, rbac_cli},
-    {"flow_push", flow_push_main, flow_push_handler, flow_push_cleanup, flow_push_cli},
 }; /**< The list of function pointers */
-

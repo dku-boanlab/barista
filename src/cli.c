@@ -23,10 +23,7 @@
 #include "application.h"
 #include "app_event.h"
 
-#include <signal.h>
-#include <strings.h>
-#include <sys/types.h>
-#include <sys/socket.h>
+#include "storage.h"
 
 #ifdef __GNUC__
 # define UNUSED(d) d __attribute__ ((unused))
@@ -36,7 +33,8 @@
 
 /////////////////////////////////////////////////////////////////////
 
-#include "cli_password.h"
+/** \brief The secret file of the CLI interface */
+#define SECRET_CLI_FILE "secret/cli_password.txt"
 
 /////////////////////////////////////////////////////////////////////
 
@@ -54,19 +52,21 @@ void (*sigint_func)(int);
 /** \brief Function to handle the SIGINT signal */
 void sigint_handler(int sig)
 {
-    PRINTF("Got a SIGINT signal\n");
-
-    component_stop(NULL);
-
-    waitsec(0, 1000 * 1000);
-
     application_stop(NULL);
-
-    waitsec(0, 1000 * 1000);
+    component_stop(NULL);
 
     component_deactivate(NULL, "log");
 
+    destroy_storage(cli_ctx);
+
+    destroy_app_event(cli_ctx);
+    destroy_event(cli_ctx);
+
+    waitsec(1, 0);
+
     cli_done(cli);
+
+    PRINTF("Barista is terminated!\n");
 
     exit(0);
 }
@@ -77,19 +77,21 @@ void (*sigkill_func)(int);
 /** \brief Function to handle the SIGKILL signal */
 void sigkill_handler(int sig)
 {
-    PRINTF("Got a SIGKILL signal\n");
-
-    component_stop(NULL);
-
-    waitsec(0, 1000 * 1000);
-
     application_stop(NULL);
-
-    waitsec(0, 1000 * 1000);
+    component_stop(NULL);
 
     component_deactivate(NULL, "log");
 
+    destroy_storage(cli_ctx);
+
+    destroy_app_event(cli_ctx);
+    destroy_event(cli_ctx);
+
+    waitsec(1, 0);
+
     cli_done(cli);
+
+    PRINTF("Barista is terminated!\n");
 
     exit(0);
 }
@@ -100,21 +102,70 @@ void (*sigterm_func)(int);
  /** \brief Function to handle the SIGTERM signal */
 void sigterm_handler(int sig)
 {
-    PRINTF("Got a SIGTERM signal\n");
-
-    component_stop(NULL);
-
-    waitsec(0, 1000 * 1000);
-
     application_stop(NULL);
-
-    waitsec(0, 1000 * 1000);
+    component_stop(NULL);
 
     component_deactivate(NULL, "log");
 
+    destroy_storage(cli_ctx);
+
+    destroy_app_event(cli_ctx);
+    destroy_event(cli_ctx);
+
+    waitsec(1, 0);
+
     cli_done(cli);
 
+    PRINTF("Barista is terminated!\n");
+
     exit(0);
+}
+
+/////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Function to load operator-defined policy file
+ * \param cli CLI context
+ */
+int load_odp(struct cli_def *cli)
+{
+    int num_odps = 0;
+
+    FILE *fp = fopen(DEFAULT_ODP_FILE, "r");
+    if (fp != NULL) {
+        char buf[__CONF_STR_LEN] = {0};
+
+        if (cli)
+            cli_print(cli, "Operator-defined policy file: %s", DEFAULT_ODP_FILE);
+        else
+            PRINTF("Operator-defined policy file: %s\n", DEFAULT_ODP_FILE);
+
+        while (fgets(buf, __CONF_STR_LEN-1, fp) != NULL) {
+            if (buf[0] == '#') continue;
+
+            int cnt = 0;
+            char *args[__CONF_ARGC + 1] = {0};
+
+            str2args(buf, &cnt, args, __CONF_ARGC);
+
+            if (cnt != 3) continue;
+
+            if (strcmp(args[0], "component") == 0) {
+                component_add_policy(cli, args[1], args[2]);
+            } else if (strcmp(args[0], "application") == 0) {
+                application_add_policy(cli, args[1], args[2]);
+            }
+
+            num_odps++;
+        }
+
+        fclose(fp);
+    }
+
+    if (!num_odps)
+        return -1;
+
+    return 0;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -147,31 +198,7 @@ static int cli_load(struct cli_def *cli, UNUSED(const char *command), char *argv
     }
 
     // automatically load operator-defined policies
-    FILE *fp = fopen(DEFAULT_ODP_FILE, "r");
-    if (fp != NULL) {
-        char buf[__CONF_STR_LEN] = {0};
-
-        cli_print(cli, "Operator-defined policy file: %s", DEFAULT_ODP_FILE);
-
-        while (fgets(buf, __CONF_STR_LEN-1, fp) != NULL) {
-            if (buf[0] == '#') continue;
-
-            int cnt = 0;
-            char *args[__CONF_ARGC + 1] = {0};
-
-            str2args(buf, &cnt, args, __CONF_ARGC);
-
-            if (cnt != 3) continue;
-
-            if (strcmp(args[0], "component") == 0) {
-                component_add_policy(cli, args[1], args[2]);
-            } else if (strcmp(args[0], "application") == 0) {
-                application_add_policy(cli, args[1], args[2]);
-            }
-        }
-
-        fclose(fp);
-    } else {
+    if (load_odp(cli)) {
         cli_print(cli, "No operator-defined policy");
     }
 
@@ -192,14 +219,12 @@ static int cli_start(struct cli_def *cli, UNUSED(const char *command), char *arg
         return CLI_ERROR;
     }
 
-    waitsec(0, 1000 * 1000);
-
     if (application_start(cli)) {
         cli_print(cli, "Failed to start applications");
         return CLI_ERROR;
     }
 
-    cli_print(cli, "\nBarista is excuted!");
+    cli_print(cli, "Barista is excuted!");
 
     return CLI_OK;
 }
@@ -218,14 +243,12 @@ static int cli_stop(struct cli_def *cli, UNUSED(const char *command), char *argv
         return CLI_ERROR;
     }
 
-    waitsec(0, 1000 * 1000);
-
     if (application_stop(cli)) {
         cli_print(cli, "Failed to stop applications");
         return CLI_ERROR;
     }
 
-    cli_print(cli, "\nBarista is terminated!");
+    cli_print(cli, "Barista is stopped!");
 
     return CLI_OK;
 }
@@ -246,7 +269,6 @@ static int cli_set_enable_component(struct cli_def *cli, UNUSED(const char *comm
             return CLI_ERROR;
         }
     }
-
     return CLI_OK;
 }
 
@@ -266,7 +288,6 @@ static int cli_set_enable_application(struct cli_def *cli, UNUSED(const char *co
             return CLI_ERROR;
         }
     }
-
     return CLI_OK;
 }
 
@@ -286,7 +307,6 @@ static int cli_set_disable_component(struct cli_def *cli, UNUSED(const char *com
             return CLI_ERROR;
         }
     }
-
     return CLI_OK;
 }
 
@@ -306,7 +326,6 @@ static int cli_set_disable_application(struct cli_def *cli, UNUSED(const char *c
             return CLI_ERROR;
         }
     }
-
     return CLI_OK;
 }
 
@@ -326,7 +345,6 @@ static int cli_set_activate_component(struct cli_def *cli, UNUSED(const char *co
             return CLI_ERROR;
         }
     }
-
     return CLI_OK;
 }
 
@@ -346,7 +364,6 @@ static int cli_set_activate_application(struct cli_def *cli, UNUSED(const char *
             return CLI_ERROR;
         }
     }
-
     return CLI_OK;
 }
 
@@ -366,7 +383,6 @@ static int cli_set_deactivate_component(struct cli_def *cli, UNUSED(const char *
             return CLI_ERROR;
         }
     }
-
     return CLI_OK;
 }
 
@@ -386,7 +402,6 @@ static int cli_set_deactivate_application(struct cli_def *cli, UNUSED(const char
             return CLI_ERROR;
         }
     }
-
     return CLI_OK;
 }
 
@@ -405,7 +420,6 @@ static int cli_policy_add_component(struct cli_def *cli, UNUSED(const char *comm
         else
             return CLI_OK;
     }
-
     return CLI_ERROR;
 }
 
@@ -424,7 +438,6 @@ static int cli_policy_add_application(struct cli_def *cli, UNUSED(const char *co
         else
             return CLI_OK;
     }
-
     return CLI_ERROR;
 }
 
@@ -443,7 +456,6 @@ static int cli_policy_del_component(struct cli_def *cli, UNUSED(const char *comm
         else
             return CLI_OK;
     }
-
     return CLI_ERROR;
 }
 
@@ -462,7 +474,6 @@ static int cli_policy_del_application(struct cli_def *cli, UNUSED(const char *co
         else
             return CLI_OK;
     }
-
     return CLI_ERROR;
 }
 
@@ -482,7 +493,6 @@ static int cli_show_event(struct cli_def *cli, UNUSED(const char *command), char
             return CLI_ERROR;
         }
     }
-
     return CLI_OK;
 }
 
@@ -502,7 +512,6 @@ static int cli_show_app_event(struct cli_def *cli, UNUSED(const char *command), 
             return CLI_ERROR;
         }
     }
-
     return CLI_OK;
 }
 
@@ -522,7 +531,6 @@ static int cli_show_component(struct cli_def *cli, UNUSED(const char *command), 
             return CLI_ERROR;
         }
     }
-
     return CLI_OK;
 }
 
@@ -542,7 +550,6 @@ static int cli_show_application(struct cli_def *cli, UNUSED(const char *command)
             return CLI_ERROR;
         }
     }
-
     return CLI_OK;
 }
 
@@ -561,7 +568,6 @@ static int cli_policy_show_component(struct cli_def *cli, UNUSED(const char *com
         else
             return CLI_OK;
     }
-
     return CLI_ERROR;
 }
 
@@ -580,158 +586,7 @@ static int cli_policy_show_application(struct cli_def *cli, UNUSED(const char *c
         else
             return CLI_OK;
     }
-
     return CLI_ERROR;
-}
-
-/**
- * \brief Function to print a switch
- * \param cli CLI context
- * \param command Command
- * \param argv Arguments
- * \param argc The number of arguments
- */
-static int cli_show_switch(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
-{
-    char cmd[__CONF_WORD_LEN] = {0};
-
-    if (argc == 1) {
-        sprintf(cmd, "switch_mgmt show %s", argv[0]);
-
-        int cnt = 0;
-        char *args[__CONF_ARGC + 1] = {0};
-
-        str2args(cmd, &cnt, args, __CONF_ARGC);
-
-        component_cli(cli, &args[0]);
-    }
-
-    return CLI_OK;
-}
-
-/**
- * \brief Function to print all hosts connected to a switch
- * \param cli CLI context
- * \param command Command
- * \param argv Arguments
- * \param argc The number of arguments
- */
-static int cli_show_host_switch(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
-{
-    char cmd[__CONF_WORD_LEN] = {0};
-
-    if (argc == 1) {
-        sprintf(cmd, "host_mgmt show switch %s", argv[0]);
-
-        int cnt = 0;
-        char *args[__CONF_ARGC + 1] = {0};
-
-        str2args(cmd, &cnt, args, __CONF_ARGC);
-
-        component_cli(cli, &args[0]);
-    }
-
-    return CLI_OK;
-}
-
-/**
- * \brief Function to print a host containing an IP address
- * \param cli CLI context
- * \param command Command
- * \param argv Arguments
- * \param argc The number of arguments
- */
-static int cli_show_host_ip(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
-{
-    char cmd[__CONF_WORD_LEN] = {0};
-
-    if (argc == 1) {
-        sprintf(cmd, "host_mgmt show ip %s", argv[0]);
-
-        int cnt = 0;
-        char *args[__CONF_ARGC + 1] = {0};
-
-        str2args(cmd, &cnt, args, __CONF_ARGC);
-
-        component_cli(cli, &args[0]);
-    }
-
-    return CLI_OK;
-}
-
-/**
- * \brief Function to print a host containing a MAC address
- * \param cli CLI context
- * \param command Command
- * \param argv Arguments
- * \param argc The number of arguments
- */
-static int cli_show_host_mac(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
-{
-    char cmd[__CONF_WORD_LEN] = {0};
-
-    if (argc == 1) {
-        sprintf(cmd, "host_mgmt show mac %s", argv[0]);
-
-        int cnt = 0;
-        char *args[__CONF_ARGC + 1] = {0};
-
-        str2args(cmd, &cnt, args, __CONF_ARGC);
-
-        component_cli(cli, &args[0]);
-    }
-
-    return CLI_OK;
-}
-
-/**
- * \brief Function to print links connected to a switch
- * \param cli CLI context
- * \param command Command
- * \param argv Arguments
- * \param argc The number of arguments
- */
-static int cli_show_link(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
-{
-    char cmd[__CONF_WORD_LEN] = {0};
-
-    if (argc == 1) {
-        sprintf(cmd, "topo_mgmt show %s", argv[0]);
-
-        int cnt = 0;
-        char *args[__CONF_ARGC + 1] = {0};
-
-        str2args(cmd, &cnt, args, __CONF_ARGC);
-
-        component_cli(cli, &args[0]);
-    }
-
-    return CLI_OK;
-}
-
-/**
- * \brief Function to print flows in a switch
- * \param cli CLI context
- * \param command Command
- * \param argv Arguments
- * \param argc The number of arguments
- */
-static int cli_show_flow_switch(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
-{
-    char cmd[__CONF_WORD_LEN] = {0};
-
-    if (argc == 1) {
-        sprintf(cmd, "flow_mgmt show %s", argv[0]);
-
-        int cnt = 0;
-        char *args[__CONF_ARGC + 1] = {0};
-
-        str2args(cmd, &cnt, args, __CONF_ARGC);
-
-        component_cli(cli, &args[0]);
-    }
-
-    return CLI_OK;
 }
 
 /**
@@ -791,148 +646,6 @@ static int cli_list_applications(struct cli_def *cli, UNUSED(const char *command
 }
 
 /**
- * \brief Function to print all switches
- * \param cli CLI context
- * \param command Command
- * \param argv Arguments
- * \param argc The number of arguments
- */
-static int cli_list_switches(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
-{
-    char cmd[__CONF_WORD_LEN] = {0};
-
-    sprintf(cmd, "switch_mgmt list switches");
-
-    int cnt = 0;
-    char *args[__CONF_ARGC + 1] = {0};
-
-    str2args(cmd, &cnt, args, __CONF_ARGC);
-
-    component_cli(cli, &args[0]);
-
-    return CLI_OK;
-}
-
-/**
- * \brief Function to print all hosts
- * \param cli CLI context
- * \param command Command
- * \param argv Arguments
- * \param argc The number of arguments
- */
-static int cli_list_hosts(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
-{
-    char cmd[__CONF_WORD_LEN] = {0};
-
-    sprintf(cmd, "host_mgmt list hosts");
-
-    int cnt = 0;
-    char *args[__CONF_ARGC + 1] = {0};
-
-    str2args(cmd, &cnt, args, __CONF_ARGC);
-
-    component_cli(cli, &args[0]);
-
-    return CLI_OK;
-}
-
-/**
- * \brief Function to print all links
- * \param cli CLI context
- * \param command Command
- * \param argv Arguments
- * \param argc The number of arguments
- */
-static int cli_list_links(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
-{
-    char cmd[__CONF_WORD_LEN] = {0};
-
-    sprintf(cmd, "topo_mgmt list links");
-
-    int cnt = 0;
-    char *args[__CONF_ARGC + 1] = {0};
-
-    str2args(cmd, &cnt, args, __CONF_ARGC);
-
-    component_cli(cli, &args[0]);
-
-    return CLI_OK;
-}
-
-/**
- * \brief Function to print all flows
- * \param cli CLI context
- * \param command Command
- * \param argv Arguments
- * \param argc The number of arguments
- */
-static int cli_list_flows(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
-{
-    char cmd[__CONF_WORD_LEN] = {0};
-
-    sprintf(cmd, "flow_mgmt list flows");
-
-    int cnt = 0;
-    char *args[__CONF_ARGC + 1] = {0};
-
-    str2args(cmd, &cnt, args, __CONF_ARGC);
-
-    component_cli(cli, &args[0]);
-
-    return CLI_OK;
-}
-
-/**
- * \brief Function to print the resource usage of the Barista NOS
- * \param cli CLI context
- * \param command Command
- * \param argv Arguments
- * \param argc The number of arguments
- */
-static int cli_stat_resource(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
-{
-    char cmd[__CONF_WORD_LEN] = {0};
-
-    if (argc == 1) {
-        sprintf(cmd, "resource_mgmt stat %s", argv[0]);
-
-        int cnt = 0;
-        char *args[__CONF_ARGC + 1] = {0};
-
-        str2args(cmd, &cnt, args, __CONF_ARGC);
-
-        component_cli(cli, &args[0]);
-    }
-
-    return CLI_OK;
-}
-
-/**
- * \brief Function to print the traffic statistics of control channels
- * \param cli CLI context
- * \param command Command
- * \param argv Arguments
- * \param argc The number of arguments
- */
-static int cli_stat_traffic(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
-{
-    char cmd[__CONF_WORD_LEN] = {0};
-
-    if (argc == 1) {
-        sprintf(cmd, "traffic_mgmt stat %s", argv[0]);
-
-        int cnt = 0;
-        char *args[__CONF_ARGC + 1] = {0};
-
-        str2args(cmd, &cnt, args, __CONF_ARGC);
-
-        component_cli(cli, &args[0]);
-    }
-
-    return CLI_OK;
-}
-
-/**
  * \brief Function to deliver a command to a component
  * \param cli CLI context
  * \param command Command
@@ -947,7 +660,6 @@ static int cli_component(struct cli_def *cli, UNUSED(const char *command), char 
         else
             return CLI_OK;
     }
-
     return CLI_ERROR;
 }
 
@@ -966,7 +678,6 @@ static int cli_application(struct cli_def *cli, UNUSED(const char *command), cha
         else
             return CLI_OK;
     }
-
     return CLI_ERROR;
 }
 
@@ -979,39 +690,18 @@ static int cli_application(struct cli_def *cli, UNUSED(const char *command), cha
  */
 static int cli_log(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
-    int line = 20;
+    char cmd[__CONF_WORD_LEN] = {0};
 
     if (argc == 1) {
-        line = atoi(argv[0]);
-    } else if (argc > 1) {
-        return CLI_OK;
+        sprintf(cmd, "log %s", argv[0]);
+
+        int cnt = 0;
+        char *args[__CONF_ARGC + 1] = {0};
+
+        str2args(cmd, &cnt, args, __CONF_ARGC);
+
+        component_cli(cli, &args[0]);
     }
-
-    FILE *log = fopen("../log/message.log", "r");
-    if (log == NULL) {
-        PERROR("fopen");
-        return CLI_OK;
-    }
-
-    fseek(log, 0, SEEK_END);
-
-    int cnt = 0;
-    long int pos = ftell(log);
-    while (pos) {
-        fseek(log, --pos, SEEK_SET);
-        if (fgetc(log) == '\n') {
-            if (cnt++ == line)
-                break;
-        }
-    }
-
-    char buf[__CONF_STR_LEN] = {0};
-    while (fgets(buf, sizeof(buf), log) != NULL) {
-        buf[strlen(buf)-1] = '\0';
-        cli_print(cli, "%s", buf);
-    }
-
-    fclose(log);
 
     return CLI_OK;
 }
@@ -1026,18 +716,22 @@ static int cli_log(struct cli_def *cli, UNUSED(const char *command), char *argv[
 static int cli_exit(struct cli_def *cli, UNUSED(const char *command), char *argv[], int argc)
 {
     component_stop(cli);
-
-    waitsec(0, 1000 * 1000);
-
     application_stop(cli);
-
-    waitsec(0, 1000 * 1000);
-
-    cli_print(cli, " ");
 
     component_deactivate(cli, "log");
 
-    cli_print(cli, "\nReady to be terminated");
+    cli_print(cli, "Barista is terminated!");
+
+    destroy_storage(cli_ctx);
+
+    destroy_app_event(cli_ctx);
+    destroy_event(cli_ctx);
+
+    waitsec(1, 0);
+
+    cli_done(cli);
+
+    exit(0);
 
     return CLI_OK;
 }
@@ -1049,11 +743,26 @@ static int cli_exit(struct cli_def *cli, UNUSED(const char *command), char *argv
  */
 static int check_auth(const char *username, const char *password)
 {
-    if (strcasecmp(username, USERID) != 0)
+    FILE *fp = fopen(SECRET_CLI_FILE, "r");
+    if (fp != NULL) {
+        char buf[__CONF_STR_LEN] = {0};
+
+        while (fgets(buf, __CONF_STR_LEN-1, fp) != NULL) {
+            if (buf[0] == '#') continue;
+
+            char userid[__CONF_WORD_LEN];
+            char userpw[__CONF_WORD_LEN];
+
+            sscanf(buf, "%s %s", userid, userpw);
+
+            if (strcasecmp(username, userid) == 0 && strcasecmp(password, userpw) == 0)
+                return CLI_OK;
+        }
+
         return CLI_ERROR;
-    if (strcasecmp(password, USERPW) != 0)
-        return CLI_ERROR;
-    return CLI_OK;
+    }
+
+    return CLI_ERROR;
 }
 
 /**
@@ -1071,7 +780,26 @@ static int regular_callback(struct cli_def *cli)
  */
 static int check_enable(const char *password)
 {
-    return !strcasecmp(password, ADMINPW);
+    FILE *fp = fopen(SECRET_CLI_FILE, "r");
+    if (fp != NULL) {
+        char buf[__CONF_STR_LEN] = {0};
+
+        while (fgets(buf, __CONF_STR_LEN-1, fp) != NULL) {
+            if (buf[0] == '#') continue;
+
+            char userid[__CONF_WORD_LEN];
+            char userpw[__CONF_WORD_LEN];
+
+            sscanf(buf, "%s %s", userid, userpw);
+
+            if (strcasecmp("admin", userid) == 0 && strcasecmp(password, userpw) == 0)
+                return TRUE;
+        }
+
+        return FALSE;
+    }
+
+    return FALSE;
 }
 
 /**
@@ -1113,19 +841,16 @@ int start_cli(ctx_t *ctx)
     cli_ctx = ctx;
 
     struct cli_command *c, *cc;
-    int cli_sock, acc_sock;
-    struct sockaddr_in addr;
-    int on = 1;
 
     signal(SIGCHLD, SIG_IGN);
 
     cli = cli_init();
-    cli_set_banner(cli, "Barista Console");
+    cli_set_banner(cli, "Barista Console v2");
     cli_set_hostname(cli, "Barista");
     cli_telnet_protocol(cli, 1);
     cli_regular(cli, regular_callback);
     cli_regular_interval(cli, 5);
-    cli_set_idle_timeout_callback(cli, 600, idle_timeout);
+    cli_set_idle_timeout_callback(cli, 300, idle_timeout);
 
     cli_register_command(cli, NULL, "load", cli_load, PRIVILEGE_PRIVILEGED, MODE_EXEC, "Load configurations");
 
@@ -1168,39 +893,25 @@ int start_cli(ctx_t *ctx)
     cli_register_command(cli, c, "component", cli_show_component, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[Component Name], Show the configuration of a component");
     cli_register_command(cli, c, "application", cli_show_application, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[Application Name], Show the configuration of an application");
 
-    cli_register_command(cli, c, "switch", cli_show_switch, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[Datapath ID], Show the information of a switch");
-
-    cc = cli_register_command(cli, c, "host", NULL, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, NULL);
-    cli_register_command(cli, cc, "switch", cli_show_host_switch, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[Datapath ID], Show all hosts in a switch");
-    cli_register_command(cli, cc, "ip", cli_show_host_ip, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[IP address], Show a host that has a specific IP address");
-    cli_register_command(cli, cc, "mac", cli_show_host_mac, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[MAC address], Show a host that has a specific MAC address");
-
-    cli_register_command(cli, c, "link", cli_show_link, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[Datapath ID], Show all links of a switch");
-    cli_register_command(cli, c, "flow", cli_show_flow_switch, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[Datapath ID], Show flow rules in a switch");
-
     c = cli_register_command(cli, NULL, "list", NULL, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, NULL);
     cli_register_command(cli, c, "events", cli_list_events, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "List up all events for components");
     cli_register_command(cli, c, "app_events", cli_list_app_events, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "List up all events for applications");
     cli_register_command(cli, c, "components", cli_list_components, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "List up all components");
     cli_register_command(cli, c, "applications", cli_list_applications, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "List up all applications");
 
-    cli_register_command(cli, c, "switches", cli_list_switches, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "List up all switches");
-    cli_register_command(cli, c, "hosts", cli_list_hosts, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "List up all hosts");
-    cli_register_command(cli, c, "links", cli_list_links, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "List up all links");
-    cli_register_command(cli, c, "flows", cli_list_flows, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "List up all flow rules");
-
-    c = cli_register_command(cli, NULL, "stat", NULL, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, NULL);
-    cli_register_command(cli, c, "resource", cli_stat_resource, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[Time(sec)], Show the resource usage for the last n seconds");
-    cli_register_command(cli, c, "traffic", cli_stat_traffic, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[Time(sec)], Show the traffic statistics for the last n seconds");
-
     cli_register_command(cli, NULL, "component", cli_component, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[Component Name] [Arguments...], Run a command in a component");
     cli_register_command(cli, NULL, "application", cli_application, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[Application Name] [Arguments...], Run a command in an application");
 
-    cli_register_command(cli, NULL, "log", cli_log, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[# of lines], Print out log messages");
+    cli_register_command(cli, NULL, "log", cli_log, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, "[# of lines], Print out log messages (default: 20)");
     cli_register_command(cli, NULL, "exit", cli_exit, PRIVILEGE_PRIVILEGED, MODE_EXEC, "Terminate the Barista NOS");
 
     cli_set_auth_callback(cli, check_auth);
     cli_set_enable_callback(cli, check_enable);
+
+    int cli_sock, acc_sock;
+    struct sockaddr_in addr;
+    int num_conn = __CLI_MAX_CONNECTIONS;
+    int on = 1;
 
     if ((cli_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("socket");
@@ -1211,7 +922,7 @@ int start_cli(ctx_t *ctx)
 
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = inet_addr(__CLI_ALLOW_CONNECT);
+    addr.sin_addr.s_addr = inet_addr(__CLI_HOST);
     addr.sin_port = htons(__CLI_PORT);
 
     if (bind(cli_sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
@@ -1219,54 +930,48 @@ int start_cli(ctx_t *ctx)
         return -1;
     }
 
-    if (listen(cli_sock, 10) < 0) {
+    if (listen(cli_sock, num_conn) < 0) {
         perror("listen");
         return -1;
     }
 
     if (ctx->autostart) {
-        component_load(NULL, cli_ctx);
-        application_load(NULL, cli_ctx);
+        // load components
+        if (component_load(NULL, cli_ctx)) {
+            PRINTF("Failed to load component configurations\n");
+            return -1;
+        }
 
-        waitsec(0, 1000 * 1000);
+        // load applications
+        if (application_load(NULL, cli_ctx)) {
+            PRINTF("Failed to load application configurations\n");
+            return -1;
+        }
 
-        component_activate(NULL, "log");
+        // activate log
+        if (component_activate(NULL, "log")) {
+            PRINTF("Failed to activate the log component\n");
+            return -1;
+        }
 
-        waitsec(0, 1000 * 1000);
+        waitsec(1, 0);
 
-        component_start(NULL);
+        // start components
+        if (component_start(cli)) {
+            PRINTF("Failed to start components\n");
+            return -1;
+        }
 
-        waitsec(0, 1000 * 1000);
-
-        application_start(NULL);
+        // start applications
+        if (application_start(cli)) {
+            PRINTF("Failed to start applications\n");
+            return -1;
+        }
 
         // automatically load operator-defined policies
-        FILE *fp = fopen(DEFAULT_ODP_FILE, "r");
-        if (fp != NULL) {
-            char buf[__CONF_STR_LEN] = {0};
-
-            PRINTF("Operator-defined policy file: %s\n", DEFAULT_ODP_FILE);
-
-            while (fgets(buf, __CONF_STR_LEN-1, fp) != NULL) {
-                if (buf[0] == '#') continue;
-
-                int cnt = 0;
-                char *args[__CONF_ARGC + 1] = {0};
-
-                str2args(buf, &cnt, args, __CONF_ARGC);
-
-                if (cnt != 3) continue;
-
-                if (strcmp(args[0], "component") == 0) {
-                    component_add_policy(NULL, args[1], args[2]);
-                } else if (strcmp(args[0], "application") == 0) {
-                    application_add_policy(NULL, args[1], args[2]);
-                }
-            }
-
-            fclose(fp);
-        } else {
+        if (load_odp(NULL)) {
             PRINTF("No operator-defined policy\n");
+            return -1;
         }
     }
 

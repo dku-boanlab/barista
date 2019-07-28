@@ -22,21 +22,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-#include "flow_queue.h"
-
-/////////////////////////////////////////////////////////////////////
-
-/** \brief Flow tables */
-flow_table_t *flow_table;
-
-/** \brief The number of flows */
-int num_flows;
-
-/** \brief Key for table lookup */
-#define FLOW_KEY(a) (a->dpid % __DEFAULT_TABLE_SIZE)
-
-/////////////////////////////////////////////////////////////////////
-
 /**
  * \brief Function to add a flow
  * \param list Flow table mapped to a datapath ID
@@ -71,25 +56,10 @@ static int add_flow(flow_table_t *list, const flow_t *flow)
         new->remote = flow->remote;
         new->insert_time = time(NULL);
 
-        new->idle_timeout = flow->idle_timeout;
-        new->hard_timeout = flow->hard_timeout;
+        new->meta.idle_timeout = flow->meta.idle_timeout;
+        new->meta.hard_timeout = flow->meta.hard_timeout;
 
-        new->wildcards = flow->wildcards;
-
-        new->vlan_id = flow->vlan_id;
-        new->vlan_pcp = flow->vlan_pcp;
-
-        new->proto = flow->proto;
-        new->ip_tos = flow->ip_tos;
-
-        memmove(new->src_mac, flow->src_mac, ETH_ALEN);
-        memmove(new->dst_mac, flow->dst_mac, ETH_ALEN);
-
-        new->src_ip = flow->src_ip;
-        new->dst_ip = flow->dst_ip;
-
-        new->src_port = flow->src_port;
-        new->dst_port = flow->dst_port;
+        memmove(&new->match, &flow->match, sizeof(pkt_info_t));
 
         new->num_actions = flow->num_actions;
         memmove(new->action, flow->action, sizeof(action_t) * new->num_actions);
@@ -147,25 +117,10 @@ static int modify_flow(flow_table_t *list, const flow_t *flow)
         curr->remote = flow->remote;
         curr->insert_time = time(NULL);
 
-        curr->idle_timeout = flow->idle_timeout;
-        curr->hard_timeout = flow->hard_timeout;
+        curr->meta.idle_timeout = flow->meta.idle_timeout;
+        curr->meta.hard_timeout = flow->meta.hard_timeout;
 
-        curr->wildcards = flow->wildcards;
-
-        curr->vlan_id = flow->vlan_id;
-        curr->vlan_pcp = flow->vlan_pcp;
-
-        curr->proto = flow->proto;
-        curr->ip_tos = flow->ip_tos;
-
-        memmove(curr->src_mac, flow->src_mac, ETH_ALEN);
-        memmove(curr->dst_mac, flow->dst_mac, ETH_ALEN);
-
-        curr->src_ip = flow->src_ip;
-        curr->dst_ip = flow->dst_ip;
-
-        curr->src_port = flow->src_port;
-        curr->dst_port = flow->dst_port;
+        memmove(&curr->match, &flow->match, sizeof(pkt_info_t));
 
         curr->num_actions = flow->num_actions;
         memmove(curr->action, flow->action, sizeof(action_t) * curr->num_actions);
@@ -324,8 +279,8 @@ static int update_flow(flow_table_t *list, const flow_t *flow)
     flow_t *curr = list->head;
     while (curr != NULL) {
         if (FLOW_COMPARE(curr, flow)) {
-            curr->pkt_count += flow->pkt_count;
-            curr->byte_count += flow->byte_count;
+            curr->stat.pkt_count += flow->stat.pkt_count;
+            curr->stat.byte_count += flow->stat.byte_count;
 
             break;
         }
@@ -362,7 +317,7 @@ void *timeout_thread(void *arg)
 
             flow_t *curr = flow_table[i].head;
             while (curr != NULL) {
-                if ((current_time - curr->insert_time) > curr->hard_timeout + 10) {
+                if ((current_time - curr->insert_time) > curr->meta.hard_timeout + 10) {
                     if (tmp_list.head == NULL) {
                         tmp_list.head = curr;
                         tmp_list.tail = curr;
@@ -431,10 +386,9 @@ int flow_mgmt_main(int *activated, int argc, char **argv)
     flow_mgmt_on = TRUE;
 
     num_flows = 0;
-
     flow_table = (flow_table_t *)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(flow_table_t));
     if (flow_table == NULL) {
-        LOG_ERROR(FLOW_MGMT_ID, "calloc() error");
+        LOG_ERROR(FLOW_MGMT_ID, "calloc() failed");
         return -1;
     }
 
@@ -447,7 +401,7 @@ int flow_mgmt_main(int *activated, int argc, char **argv)
 
     pthread_t thread;
     if (pthread_create(&thread, NULL, timeout_thread, NULL) < 0) {
-        LOG_ERROR(FLOW_MGMT_ID, "pthread_create() error");
+        LOG_ERROR(FLOW_MGMT_ID, "pthread_create() failed");
     }
 
     activate();
@@ -509,67 +463,67 @@ static int flow_listup(cli_t *cli)
         while (curr != NULL) {
             char proto[__CONF_SHORT_LEN];
 
-            if (curr->proto & PROTO_TCP)
-                strcpy(proto, "TCP");
-            else if (curr->proto & PROTO_DHCP)
-                strcpy(proto, "DHCP");
-            else if (curr->proto & PROTO_UDP)
-                strcpy(proto, "UDP");
-            else if (curr->proto & PROTO_ICMP)
-                strcpy(proto, "ICMP");
-            else if (curr->proto & PROTO_IPV4)
-                strcpy(proto, "IPv4");
-            else if (curr->proto & PROTO_ARP)
+            if (curr->match.proto & PROTO_ARP)
                 strcpy(proto, "ARP");
-            else if (curr->proto & PROTO_LLDP)
+            else if (curr->match.proto & PROTO_LLDP)
                 strcpy(proto, "LLDP");
+            else if (curr->match.proto & PROTO_DHCP)
+                strcpy(proto, "DHCP");
+            if (curr->match.proto & PROTO_TCP)
+                strcpy(proto, "TCP");
+            else if (curr->match.proto & PROTO_UDP)
+                strcpy(proto, "UDP");
+            else if (curr->match.proto & PROTO_ICMP)
+                strcpy(proto, "ICMP");
+            else if (curr->match.proto & PROTO_IPV4)
+                strcpy(proto, "IPv4");
             else
                 strcpy(proto, "Unknown");
 
-            if (curr->proto & PROTO_ICMP) {
+            if (curr->match.proto & PROTO_ICMP) {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
                                "    src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
                                "    vlan: %u, vlan_pcp: %u, %s, src_ip: %s, dst_ip: %s, icmp_type: %u, icmp_code: %u\n"
                                "    # of actions: %d, pkt_count: %lu, byte_count: %lu", 
                           ++cnt, (curr->remote == TRUE) ? "Remote" : "Local", 
-                          curr->dpid, curr->idle_timeout, curr->hard_timeout, curr->port, 
-                          curr->src_mac[0], curr->src_mac[1], curr->src_mac[2], curr->src_mac[3], curr->src_mac[4], curr->src_mac[5], 
-                          curr->dst_mac[0], curr->dst_mac[1], curr->dst_mac[2], curr->dst_mac[3], curr->dst_mac[4], curr->dst_mac[5], 
-                          curr->vlan_id, curr->vlan_pcp, proto, ip_addr_str(curr->src_ip), ip_addr_str(curr->dst_ip),
-                          curr->type, curr->code, curr->num_actions, curr->pkt_count, curr->byte_count);
-            } else if (curr->proto & PROTO_TCP || curr->proto & PROTO_UDP || curr->proto & PROTO_DHCP) {
+                          curr->dpid, curr->meta.idle_timeout, curr->meta.hard_timeout, curr->port, 
+                          curr->match.src_mac[0], curr->match.src_mac[1], curr->match.src_mac[2], curr->match.src_mac[3], curr->match.src_mac[4], curr->match.src_mac[5], 
+                          curr->match.dst_mac[0], curr->match.dst_mac[1], curr->match.dst_mac[2], curr->match.dst_mac[3], curr->match.dst_mac[4], curr->match.dst_mac[5], 
+                          curr->match.vlan_id, curr->match.vlan_pcp, proto, ip_addr_str(curr->match.src_ip), ip_addr_str(curr->match.dst_ip),
+                          curr->match.icmp_type, curr->match.icmp_code, curr->num_actions, curr->stat.pkt_count, curr->stat.byte_count);
+            } else if (curr->match.proto & PROTO_TCP || curr->match.proto & PROTO_UDP || curr->match.proto & PROTO_DHCP) {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
                                "    src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
                                "    vlan: %u, vlan_pcp: %u, %s, src_ip: %s, dst_ip: %s, src_port: %u, dst_port: %u\n"
                                "    # of actions: %d, pkt_count: %lu, byte_count: %lu", 
                           ++cnt, (curr->remote == TRUE) ? "Remote" : "Local", 
-                          curr->dpid, curr->idle_timeout, curr->hard_timeout, curr->port, 
-                          curr->src_mac[0], curr->src_mac[1], curr->src_mac[2], curr->src_mac[3], curr->src_mac[4], curr->src_mac[5], 
-                          curr->dst_mac[0], curr->dst_mac[1], curr->dst_mac[2], curr->dst_mac[3], curr->dst_mac[4], curr->dst_mac[5], 
-                          curr->vlan_id, curr->vlan_pcp, proto, ip_addr_str(curr->src_ip), ip_addr_str(curr->dst_ip),
-                          curr->src_port, curr->dst_port, curr->num_actions, curr->pkt_count, curr->byte_count);
-            } else if (curr->proto & PROTO_IPV4) {
+                          curr->dpid, curr->meta.idle_timeout, curr->meta.hard_timeout, curr->port, 
+                          curr->match.src_mac[0], curr->match.src_mac[1], curr->match.src_mac[2], curr->match.src_mac[3], curr->match.src_mac[4], curr->match.src_mac[5], 
+                          curr->match.dst_mac[0], curr->match.dst_mac[1], curr->match.dst_mac[2], curr->match.dst_mac[3], curr->match.dst_mac[4], curr->match.dst_mac[5], 
+                          curr->match.vlan_id, curr->match.vlan_pcp, proto, ip_addr_str(curr->match.src_ip), ip_addr_str(curr->match.dst_ip),
+                          curr->match.src_port, curr->match.dst_port, curr->num_actions, curr->stat.pkt_count, curr->stat.byte_count);
+            } else if (curr->match.proto & PROTO_IPV4) {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
                           "     src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
                           "     vlan: %u, vlan_pcp: %u, %s, src_ip: %s, dst_ip: %s\n"
                           "     # of actions: %d, pkt_count: %lu, byte_count: %lu", 
                           ++cnt, (curr->remote == TRUE) ? "Remote" : "Local",
-                          curr->dpid, curr->idle_timeout, curr->hard_timeout, curr->port, 
-                          curr->src_mac[0], curr->src_mac[1], curr->src_mac[2], curr->src_mac[3], curr->src_mac[4], curr->src_mac[5], 
-                          curr->dst_mac[0], curr->dst_mac[1], curr->dst_mac[2], curr->dst_mac[3], curr->dst_mac[4], curr->dst_mac[5], 
-                          curr->vlan_id, curr->vlan_pcp, proto, ip_addr_str(curr->src_ip), ip_addr_str(curr->dst_ip),
-                          curr->num_actions, curr->pkt_count, curr->byte_count);
+                          curr->dpid, curr->meta.idle_timeout, curr->meta.hard_timeout, curr->port, 
+                          curr->match.src_mac[0], curr->match.src_mac[1], curr->match.src_mac[2], curr->match.src_mac[3], curr->match.src_mac[4], curr->match.src_mac[5], 
+                          curr->match.dst_mac[0], curr->match.dst_mac[1], curr->match.dst_mac[2], curr->match.dst_mac[3], curr->match.dst_mac[4], curr->match.dst_mac[5], 
+                          curr->match.vlan_id, curr->match.vlan_pcp, proto, ip_addr_str(curr->match.src_ip), ip_addr_str(curr->match.dst_ip),
+                          curr->num_actions, curr->stat.pkt_count, curr->stat.byte_count);
             } else {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
                                "     src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
                                "     vlan: %u, vlan_pcp: %u, %s\n"
                                "     # of actions: %d, pkt_count: %lu, byte_count: %lu",
                           ++cnt, (curr->remote == TRUE) ? "Remote" : "Local",
-                          curr->dpid, curr->idle_timeout, curr->hard_timeout, curr->port,
-                          curr->src_mac[0], curr->src_mac[1], curr->src_mac[2], curr->src_mac[3], curr->src_mac[4], curr->src_mac[5],
-                          curr->dst_mac[0], curr->dst_mac[1], curr->dst_mac[2], curr->dst_mac[3], curr->dst_mac[4], curr->dst_mac[5],
-                          curr->vlan_id, curr->vlan_pcp, proto,
-                          curr->num_actions, curr->pkt_count, curr->byte_count);
+                          curr->dpid, curr->meta.idle_timeout, curr->meta.hard_timeout, curr->port,
+                          curr->match.src_mac[0], curr->match.src_mac[1], curr->match.src_mac[2], curr->match.src_mac[3], curr->match.src_mac[4], curr->match.src_mac[5],
+                          curr->match.dst_mac[0], curr->match.dst_mac[1], curr->match.dst_mac[2], curr->match.dst_mac[3], curr->match.dst_mac[4], curr->match.dst_mac[5],
+                          curr->match.vlan_id, curr->match.vlan_pcp, proto,
+                          curr->num_actions, curr->stat.pkt_count, curr->stat.byte_count);
             }
 
             curr = curr->next;
@@ -605,67 +559,68 @@ static int flow_showup(cli_t *cli, char *dpid_str)
             }
 
             char proto[__CONF_SHORT_LEN];
-            if (curr->proto & PROTO_TCP)
-                strcpy(proto, "TCP");
-            else if (curr->proto & PROTO_DHCP)
-                strcpy(proto, "DHCP");
-            else if (curr->proto & PROTO_UDP)
-                strcpy(proto, "UDP");
-            else if (curr->proto & PROTO_ICMP)
-                strcpy(proto, "ICMP");
-            else if (curr->proto & PROTO_IPV4)
-                strcpy(proto, "IPv4");
-            else if (curr->proto & PROTO_ARP)
+
+            if (curr->match.proto & PROTO_ARP)
                 strcpy(proto, "ARP");
-            else if (curr->proto & PROTO_LLDP)
+            else if (curr->match.proto & PROTO_LLDP)
                 strcpy(proto, "LLDP");
+            else if (curr->match.proto & PROTO_DHCP)
+                strcpy(proto, "DHCP");
+            if (curr->match.proto & PROTO_TCP)
+                strcpy(proto, "TCP");
+            else if (curr->match.proto & PROTO_UDP)
+                strcpy(proto, "UDP");
+            else if (curr->match.proto & PROTO_ICMP)
+                strcpy(proto, "ICMP");
+            else if (curr->match.proto & PROTO_IPV4)
+                strcpy(proto, "IPv4");
             else
                 strcpy(proto, "Unknown");
 
-            if (curr->proto & PROTO_ICMP) {
+            if (curr->match.proto & PROTO_ICMP) {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
                                "    src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
                                "    vlan: %u, vlan_pcp: %u, %s, src_ip: %s, dst_ip: %s, icmp_type: %u, icmp_code: %u\n"
                                "    # of actions: %d, pkt_count: %lu, byte_count: %lu",
                           ++cnt, (curr->remote == TRUE) ? "Remote" : "Local",
-                          curr->dpid, curr->idle_timeout, curr->hard_timeout, curr->port,
-                          curr->src_mac[0], curr->src_mac[1], curr->src_mac[2], curr->src_mac[3], curr->src_mac[4], curr->src_mac[5],
-                          curr->dst_mac[0], curr->dst_mac[1], curr->dst_mac[2], curr->dst_mac[3], curr->dst_mac[4], curr->dst_mac[5],
-                          curr->vlan_id, curr->vlan_pcp, proto, ip_addr_str(curr->src_ip), ip_addr_str(curr->dst_ip),
-                          curr->type, curr->code, curr->num_actions, curr->pkt_count, curr->byte_count);
-            } else if (curr->proto & PROTO_TCP || curr->proto & PROTO_UDP || curr->proto & PROTO_DHCP) {
+                          curr->dpid, curr->meta.idle_timeout, curr->meta.hard_timeout, curr->port,
+                          curr->match.src_mac[0], curr->match.src_mac[1], curr->match.src_mac[2], curr->match.src_mac[3], curr->match.src_mac[4], curr->match.src_mac[5],
+                          curr->match.dst_mac[0], curr->match.dst_mac[1], curr->match.dst_mac[2], curr->match.dst_mac[3], curr->match.dst_mac[4], curr->match.dst_mac[5],
+                          curr->match.vlan_id, curr->match.vlan_pcp, proto, ip_addr_str(curr->match.src_ip), ip_addr_str(curr->match.dst_ip),
+                          curr->match.icmp_type, curr->match.icmp_code, curr->num_actions, curr->stat.pkt_count, curr->stat.byte_count);
+            } else if (curr->match.proto & PROTO_TCP || curr->match.proto & PROTO_UDP || curr->match.proto & PROTO_DHCP) {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
                                "    src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
                                "    vlan: %u, vlan_pcp: %u, %s, src_ip: %s, dst_ip: %s, src_port: %u, dst_port: %u\n"
                                "    # of actions: %d, pkt_count: %lu, byte_count: %lu",
                           ++cnt, (curr->remote == TRUE) ? "Remote" : "Local",
-                          curr->dpid, curr->idle_timeout, curr->hard_timeout, curr->port,
-                          curr->src_mac[0], curr->src_mac[1], curr->src_mac[2], curr->src_mac[3], curr->src_mac[4], curr->src_mac[5],
-                          curr->dst_mac[0], curr->dst_mac[1], curr->dst_mac[2], curr->dst_mac[3], curr->dst_mac[4], curr->dst_mac[5],
-                          curr->vlan_id, curr->vlan_pcp, proto, ip_addr_str(curr->src_ip), ip_addr_str(curr->dst_ip),
-                          curr->src_port, curr->dst_port, curr->num_actions, curr->pkt_count, curr->byte_count);
-            } else if (curr->proto & PROTO_IPV4) {
+                          curr->dpid, curr->meta.idle_timeout, curr->meta.hard_timeout, curr->port,
+                          curr->match.src_mac[0], curr->match.src_mac[1], curr->match.src_mac[2], curr->match.src_mac[3], curr->match.src_mac[4], curr->match.src_mac[5],
+                          curr->match.dst_mac[0], curr->match.dst_mac[1], curr->match.dst_mac[2], curr->match.dst_mac[3], curr->match.dst_mac[4], curr->match.dst_mac[5],
+                          curr->match.vlan_id, curr->match.vlan_pcp, proto, ip_addr_str(curr->match.src_ip), ip_addr_str(curr->match.dst_ip),
+                          curr->match.src_port, curr->match.dst_port, curr->num_actions, curr->stat.pkt_count, curr->stat.byte_count);
+            } else if (curr->match.proto & PROTO_IPV4) {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
-                               "     src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
-                               "     vlan: %u, vlan_pcp: %u, %s, src_ip: %s, dst_ip: %s\n"
-                               "     # of actions: %d, pkt_count: %lu, byte_count: %lu",
-                          ++cnt, (curr->remote == TRUE) ? "Remote" : "Local", 
-                          curr->dpid, curr->idle_timeout, curr->hard_timeout, curr->port,
-                          curr->src_mac[0], curr->src_mac[1], curr->src_mac[2], curr->src_mac[3], curr->src_mac[4], curr->src_mac[5],
-                          curr->dst_mac[0], curr->dst_mac[1], curr->dst_mac[2], curr->dst_mac[3], curr->dst_mac[4], curr->dst_mac[5],
-                          curr->vlan_id, curr->vlan_pcp, proto, ip_addr_str(curr->src_ip), ip_addr_str(curr->dst_ip),
-                          curr->num_actions, curr->pkt_count, curr->byte_count);
+                          "     src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
+                          "     vlan: %u, vlan_pcp: %u, %s, src_ip: %s, dst_ip: %s\n"
+                          "     # of actions: %d, pkt_count: %lu, byte_count: %lu",
+                          ++cnt, (curr->remote == TRUE) ? "Remote" : "Local",
+                          curr->dpid, curr->meta.idle_timeout, curr->meta.hard_timeout, curr->port,
+                          curr->match.src_mac[0], curr->match.src_mac[1], curr->match.src_mac[2], curr->match.src_mac[3], curr->match.src_mac[4], curr->match.src_mac[5],
+                          curr->match.dst_mac[0], curr->match.dst_mac[1], curr->match.dst_mac[2], curr->match.dst_mac[3], curr->match.dst_mac[4], curr->match.dst_mac[5],
+                          curr->match.vlan_id, curr->match.vlan_pcp, proto, ip_addr_str(curr->match.src_ip), ip_addr_str(curr->match.dst_ip),
+                          curr->num_actions, curr->stat.pkt_count, curr->stat.byte_count);
             } else {
                 cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
                                "     src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
                                "     vlan: %u, vlan_pcp: %u, %s\n"
                                "     # of actions: %d, pkt_count: %lu, byte_count: %lu",
                           ++cnt, (curr->remote == TRUE) ? "Remote" : "Local",
-                          curr->dpid, curr->idle_timeout, curr->hard_timeout, curr->port,
-                          curr->src_mac[0], curr->src_mac[1], curr->src_mac[2], curr->src_mac[3], curr->src_mac[4], curr->src_mac[5],
-                          curr->dst_mac[0], curr->dst_mac[1], curr->dst_mac[2], curr->dst_mac[3], curr->dst_mac[4], curr->dst_mac[5],
-                          curr->vlan_id, curr->vlan_pcp, proto,
-                          curr->num_actions, curr->pkt_count, curr->byte_count);
+                          curr->dpid, curr->meta.idle_timeout, curr->meta.hard_timeout, curr->port,
+                          curr->match.src_mac[0], curr->match.src_mac[1], curr->match.src_mac[2], curr->match.src_mac[3], curr->match.src_mac[4], curr->match.src_mac[5],
+                          curr->match.dst_mac[0], curr->match.dst_mac[1], curr->match.dst_mac[2], curr->match.dst_mac[3], curr->match.dst_mac[4], curr->match.dst_mac[5],
+                          curr->match.vlan_id, curr->match.vlan_pcp, proto,
+                          curr->num_actions, curr->stat.pkt_count, curr->stat.byte_count);
             }
 
             curr = curr->next;

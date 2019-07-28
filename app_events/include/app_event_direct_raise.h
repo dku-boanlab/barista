@@ -9,6 +9,8 @@
 
 static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *data)
 {
+    int ret = 0;
+
     int av_num = av_ctx->av_num[type];
     app_t **av_list = av_ctx->av_list[type];
 
@@ -23,48 +25,42 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
     av->FUNC_DATA = data;
 
-#ifdef __ENABLE_META_EVENTS
     av_ctx->num_app_events[type]++;
-#endif /* __ENABLE_META_EVENTS */
 
     int i;
     for (i=0; i<av_num; i++) {
-        app_t *a = av_list[i];
+        app_t *app = av_list[i];
 
-        if (!a) continue;
-        else if (!a->activated) continue; // not activated yet
+        if (!app) continue;
+        else if (!app->activated) continue; // not activated yet
 
 #ifdef ODP_FUNC
-        if (ODP_FUNC(a->odp, data)) continue;
+        if (ODP_FUNC(app->odp, data)) continue;
 #endif /* ODP_FUNC */
 
-#ifdef __ENABLE_META_EVENTS
-        a->num_app_events[type]++;
-#endif /* __ENABLE_META_EVENTS */
+        app->num_app_events[type]++;
 
-        if (a->in_perm[type] & APP_WRITE) {
-            if (a->site == APP_INTERNAL) { // internal site
-                int ret = a->handler(av, &av_out);
-                if (ret && a->in_perm[type] & APP_EXECUTE) break;
+        if (app->in_perm[type] & APP_WRITE) {
+            if (app->site == APP_INTERNAL) { // internal site
+                ret = app->handler(av, &av_out);
             } else { // external site
-                app_event_out_t *out = &av_out;
-                int ret = av_send_msg(a, id, type, len, data, out->data);
-                if (ret && a->in_perm[type] & APP_EXECUTE) break;
+                ret = av_send_msg(app, id, type, len, data, av_out.data);
             }
+            if (ret && app->in_perm[type] & APP_EXECUTE) break;
         } else {
-            if (a->site == APP_INTERNAL) { // internal site
-                int ret = a->handler(av, NULL);
-                if (ret && a->in_perm[type] & APP_EXECUTE) break;
+            if (app->site == APP_INTERNAL) { // internal site
+                ret = app->handler(av, NULL);
+                if (ret && app->in_perm[type] & APP_EXECUTE) break;
             } else { // external site
-                app_event_out_t *out = &av_out;
-                if (a->in_perm[type] & APP_EXECUTE) {
-                    if (av_send_msg(a, id, type, len, data, out->data)) break;
+                if (app->in_perm[type] & APP_EXECUTE) {
+                    ret = av_send_msg(app, id, type, len, data, NULL);
+                    if (ret) break;
                 } else {
-                    av_push_msg(a, id, type, len, data);
+                    ret = av_push_msg(app, id, type, len, data);
                 }
             }
         }
     }
 
-    return 0;
+    return ret;
 }

@@ -134,7 +134,6 @@ enum ofp_type {
     /* Queue Configuration messages. */
     OFPT_QUEUE_GET_CONFIG_REQUEST,  /* Controller/switch message */
     OFPT_QUEUE_GET_CONFIG_REPLY     /* Controller/switch message */
-
 };
 
 /* Header on all OpenFlow packets. */

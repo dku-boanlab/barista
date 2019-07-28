@@ -24,7 +24,6 @@ typedef struct _event_t {
 
     // body
     union {
-        const raw_msg_t  *raw_msg; /**< The pointer of a raw message */
         const msg_t      *msg; /**< The pointer of a message */
 
         const switch_t   *sw; /**< The pointer of a switch */
@@ -39,6 +38,8 @@ typedef struct _event_t {
         const resource_t *resource; /**< The pointer of a resource stat */
 
         const char       *log; /**< The pointer of a log */
+
+        const uint8_t    *data; /**< The pointer of data */
     };
 } event_t;
 
@@ -60,9 +61,6 @@ typedef struct _event_out_t {
         uint8_t          *data; /**< The pointer of data */
     };
 } event_out_t;
-
-/** \brief The cluster ID updated by cluster */
-int cluster_id;
 
 int init_event(ctx_t *ctx);
 int destroy_event(ctx_t *ctx);

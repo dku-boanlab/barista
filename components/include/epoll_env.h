@@ -16,7 +16,7 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The running flag for listening connections */
+/** \brief The running flag to keep listening connections */
 int listening;
 
 /////////////////////////////////////////////////////////////////////
@@ -290,17 +290,15 @@ FETCH_ONE_FD:
  */
 static void init_workers(void)
 {
+    pthread_t thread;
+
     init_queue();
 
     pthread_mutex_init(&queue_mutex, NULL);
     pthread_cond_init(&queue_cond, NULL);
 
-    int i;
-    pthread_t thread;
-    for (i=0; i<__NUM_PULL_THREADS; i++) {
-        if (pthread_create(&thread, NULL, &do_tasks, NULL) < 0) {
-            PERROR("pthread_create");
-        }
+    if (pthread_create(&thread, NULL, &do_tasks, NULL) < 0) {
+        PERROR("pthread_create");
     }
 }
 
@@ -325,6 +323,7 @@ static int nonblocking_mode(const int fd)
     }
 
     flags |= O_NONBLOCK;
+
     if (fcntl(fd, F_SETFL, flags) < 0) {
         if (errno != EAGAIN) {
             PERROR("fcntl");
@@ -478,13 +477,10 @@ static int destroy_epoll_env(void)
 
     waitsec(1, 0);
 
-    int i;
-    for (i=0; i<__NUM_PULL_THREADS; i++) {
-        pthread_mutex_lock(&queue_mutex);
-        push_back(0);
-        pthread_mutex_unlock(&queue_mutex);
-        pthread_cond_signal(&queue_cond);
-    }
+    pthread_mutex_lock(&queue_mutex);
+    push_back(0);
+    pthread_mutex_unlock(&queue_mutex);
+    pthread_cond_signal(&queue_cond);
 
     pthread_cond_destroy(&queue_cond);
     pthread_mutex_destroy(&queue_mutex);
@@ -495,4 +491,3 @@ static int destroy_epoll_env(void)
 }
 
 /////////////////////////////////////////////////////////////////////
-

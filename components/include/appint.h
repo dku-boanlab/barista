@@ -34,7 +34,7 @@
  */
 int appint_main(int *activated, int argc, char **argv)
 {
-    LOG_INFO(APPHDLR_ID, "<%010u> Init - Application interface", APPINT_ID);
+    ALOG_INFO(APPINT_ID, "Init - Application interface");
 
     activate();
 
@@ -47,7 +47,7 @@ int appint_main(int *activated, int argc, char **argv)
  */
 int appint_cleanup(int *activated)
 {
-    LOG_INFO(APPHDLR_ID, "<%010u> Clean up - Application interface", APPINT_ID);
+    ALOG_INFO(APPINT_ID, "Clean up - Application interface");
 
     deactivate();
 
@@ -107,31 +107,31 @@ int appint_handler(const app_event_t *av, app_event_out_t *av_out)
     case AV_LOG_DEBUG:
         PRINT_EV("AV_LOG_DEBUG\n");
         {
-            LOG_DEBUG(APPHDLR_ID, "<%010u> %s", av->id, av->log);
+            LOG_DEBUG(APPHDLR_ID, "%s", av->log);
         }
         break;
     case AV_LOG_INFO:
         PRINT_EV("AV_LOG_INFO\n");
         {
-            LOG_INFO(APPHDLR_ID, "<%010u> %s", av->id, av->log);
+            LOG_INFO(APPHDLR_ID, "%s", av->log);
         }
         break;
     case AV_LOG_WARN:
         PRINT_EV("AV_LOG_WARN\n");
         {
-            LOG_WARN(APPHDLR_ID, "<%010u> %s", av->id, av->log);
+            LOG_WARN(APPHDLR_ID, "%s", av->log);
         }
         break;
     case AV_LOG_ERROR:
         PRINT_EV("AV_LOG_ERROR\n");
         {
-            LOG_ERROR(APPHDLR_ID, "<%010u> %s", av->id, av->log);
+            LOG_ERROR(APPHDLR_ID, "%s", av->log);
         }
         break;
     case AV_LOG_FATAL:
         PRINT_EV("AV_LOG_FATAL\n");
         {
-            LOG_FATAL(APPHDLR_ID, "<%010u> %s", av->id, av->log);
+            LOG_FATAL(APPHDLR_ID, "%s", av->log);
         }
         break;
 

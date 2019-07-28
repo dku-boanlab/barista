@@ -12,13 +12,22 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <string.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <string.h>
+#include <strings.h>
 #include <pthread.h>
 #include <ctype.h>
 #include <errno.h>
 #include <time.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <sys/time.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <sys/sysinfo.h>
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -31,6 +40,7 @@
 
 #include <jansson.h>
 #include "libcli.h"
+#include <mysql.h>
 #include <zmq.h>
 
 #include "type.h"
@@ -41,10 +51,37 @@
 #define __CONF_SHORT_LEN 16
 #define __CONF_WORD_LEN 256
 #define __CONF_STR_LEN 1024
-#define __CONF_LSTR_LEN 2048
+#define __CONF_LONG_STR_LEN 2048
 #define __DEFAULT_TABLE_SIZE 65536
 
 /* ==== Barista NOS ==== */
+
+/** \brief The default CLI access address */
+#define __CLI_HOST "127.0.0.1"
+
+/** \brief The default CLI port */
+#define __CLI_PORT 8000
+
+/** \brief The maximum number of CLI connections */
+#define __CLI_MAX_CONNECTIONS 10
+
+/** \brief The default database access address */
+#define __DB_HOST "127.0.0.1"
+
+/** \brief The default database port */
+#define __DB_PORT 3306
+
+/** \brief The default pulling address for external events */
+#define __EXT_COMP_PULL_ADDR "tcp://127.0.0.1:5001"
+
+/** \brief The default replying address for external events */
+#define __EXT_COMP_REPLY_ADDR "tcp://127.0.0.1:5002"
+
+/** \brief The default pulling address for external app events */
+#define __EXT_APP_PULL_ADDR "tcp://127.0.0.1:6001"
+
+/** \brief The default replying address for external app events */
+#define __EXT_APP_REPLY_ADDR "tcp://127.0.0.1:6002"
 
 /** \brief The number of characters to be used to generate IDs */
 #define __HASHING_NAME_LENGTH 8
@@ -61,8 +98,13 @@
 /** \brief The default application configuration file */
 #define BASE_APP_CONFIG_FILE "config/applications.base"
 
+/** \brief The default application role file */
+#define DEFAULT_APP_ROLE_FILE "config/app_events.role"
+
 /** \brief The default operator-defined policy file */
 #define DEFAULT_ODP_FILE "config/operator-defined.policy"
+
+/* ==== Wrappers ==== */
 
 /** \brief Font color */
 /* @{ */
@@ -147,14 +189,21 @@
 #ifdef __ENABLE_DEBUG
 #define DEBUG(format, args...) ({ printf("%s: " format, __FUNCTION__, ##args); fflush(stdout); })
 #define PRINTF(format, args...) ({ printf("%s: " format, __FUNCTION__, ##args); fflush(stdout); })
-#define PRINT_EV(format, args...) ({ printf("%s: " format, __FUNCTION__, ##args); fflush(stdout); })
 #define PERROR(msg) fprintf(stdout, "\x1b[31m[%s:%d] %s: %s\x1b[0m\n", __FUNCTION__, __LINE__, (msg), strerror(errno))
 #else /* !__ENABLE_DEBUG */
 #define DEBUG(format, args...) (void)0
 #define PRINTF(format, args...) ({ printf(format, ##args); fflush(stdout); })
-#define PRINT_EV(format, args...) (void)0
 #define PERROR(msg) fprintf(stdout, "\x1b[31m[%s:%d] %s: %s\x1b[0m\n", __FUNCTION__, __LINE__, (msg), strerror(errno))
 #endif /* !__ENABLE_DEBUG */
+/* @} */
+
+/** \brief Function for event messages */
+/* @{ */
+#ifdef __ENABLE_EVENT_DEBUG
+#define PRINT_EV(format, args...) ({ printf("%s: " format, __FUNCTION__, ##args); fflush(stdout); })
+#else /* !__ENABLE_EVENT_DEBUG */
+#define PRINT_EV(format, args...) (void)0
+#endif /* !__ENABLE_EVENT_DEBUG */
 /* @} */
 
 /** \brief Wrappers for component-side logging */

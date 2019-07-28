@@ -11,9 +11,9 @@ BIN_DIR = ../../bin
 
 CPPFLAGS = $(addprefix -I,$(shell find $(SRC_DIR) -type d))
 
-CFLAGS   = -O2 -Wall -std=gnu99 -D__DISABLE_CLI
-#CFLAGS   = -g -ggdb -Wall -std=gnu99 -D__DISABLE_CLI
-LDFLAGS  = -lpthread -ljansson -lzmq -lsqlite3
+CFLAGS   = -O2 -Wall -std=gnu99 -I/usr/include/mysql
+#CFLAGS   = -g -ggdb -Wall -std=gnu99 -I/usr/include/mysql
+LDFLAGS  = -lpthread -ljansson -lzmq -L/usr/lib -lmysqlclient -L/usr/lib64/mysql
 
 include $(CONFIG_MK)
 CFLAGS += $(addprefix -D, $(CONFIG))

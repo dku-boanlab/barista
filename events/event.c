@@ -50,8 +50,8 @@ static int sw_rw_raise(uint32_t id, uint16_t type, uint16_t len, switch_t *data)
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief Raw message related trigger function (const) */
-static int raw_ev_raise(uint32_t id, uint16_t type, uint16_t len, const raw_msg_t *data);
+/** \brief Message related trigger function (const) */
+static int msg_ev_raise(uint32_t id, uint16_t type, uint16_t len, const msg_t *data);
 /** \brief Switch related trigger function (const) */
 static int sw_ev_raise(uint32_t id, uint16_t type, uint16_t len, const switch_t *data);
 /** \brief Port related trigger function (const) */
@@ -78,7 +78,7 @@ static int log_ev_raise(uint32_t id, uint16_t type, uint16_t len, const char *da
 // Upstream events //////////////////////////////////////////////////
 
 /** \brief EV_OFP_MSG_IN */
-void ev_ofp_msg_in(uint32_t id, const raw_msg_t *data) { raw_ev_raise(id, EV_OFP_MSG_IN, sizeof(raw_msg_t), (const raw_msg_t *)data); }
+void ev_ofp_msg_in(uint32_t id, const msg_t *data) { msg_ev_raise(id, EV_OFP_MSG_IN, sizeof(msg_t), data); }
 /** \brief EV_DP_RECEIVE_PACKET */
 void ev_dp_receive_packet(uint32_t id, const pktin_t *data) { pktin_ev_raise(id, EV_DP_RECEIVE_PACKET, sizeof(pktin_t), data); }
 /** \brief EV_DP_FLOW_EXPIRED */
@@ -101,7 +101,7 @@ void ev_dp_port_stats(uint32_t id, const port_t *data) { port_ev_raise(id, EV_DP
 // Downstream events ////////////////////////////////////////////////
 
 /** \brief EV_OFP_MSG_OUT */
-void ev_ofp_msg_out(uint32_t id, const raw_msg_t *data) { raw_ev_raise(id, EV_OFP_MSG_OUT, sizeof(raw_msg_t), (const raw_msg_t *)data); }
+void ev_ofp_msg_out(uint32_t id, const msg_t *data) { msg_ev_raise(id, EV_OFP_MSG_OUT, sizeof(msg_t), data); }
 /** \brief EV_DP_SEND_PACKET */
 void ev_dp_send_packet(uint32_t id, const pktout_t *data) { pktout_ev_raise(id, EV_DP_SEND_PACKET, sizeof(pktout_t), data); }
 /** \brief EV_DP_INSERT_FLOW */
@@ -114,6 +114,8 @@ void ev_dp_delete_flow(uint32_t id, const flow_t *data) { flow_ev_raise(id, EV_D
 void ev_dp_request_flow_stats(uint32_t id, const flow_t *data) { flow_ev_raise(id, EV_DP_REQUEST_FLOW_STATS, sizeof(flow_t), data); }
 /** \brief EV_DP_REQUEST_AGGREGATE_STATS */
 void ev_dp_request_aggregate_stats(uint32_t id, const flow_t *data) { flow_ev_raise(id, EV_DP_REQUEST_AGGREGATE_STATS, sizeof(flow_t), data); }
+/** \brief EV_DP_MODIFY_PORT */
+void ev_dp_modify_port(uint32_t id, const port_t *data) { port_ev_raise(id, EV_DP_MODIFY_PORT, sizeof(port_t), data); }
 /** \brief EV_DP_REQUEST_PORT_STATS */
 void ev_dp_request_port_stats(uint32_t id, const port_t *data) { port_ev_raise(id, EV_DP_REQUEST_PORT_STATS, sizeof(port_t), data); }
 
@@ -129,37 +131,37 @@ void ev_sw_get_xid(uint32_t id, switch_t *data) { sw_rw_raise(id, EV_SW_GET_XID,
 // Internal events (notification) ///////////////////////////////////
 
 /** \brief EV_SW_NEW_CONN */
-void ev_sw_new_conn(uint32_t id, const switch_t *data) { sw_ev_raise(id, EV_SW_NEW_CONN, sizeof(switch_t), (const switch_t *)data); }
+void ev_sw_new_conn(uint32_t id, const switch_t *data) { sw_ev_raise(id, EV_SW_NEW_CONN, sizeof(switch_t), data); }
+/** \brief EV_SW_ESTABLISHED_CONN */
+void ev_sw_established_conn(uint32_t id, const switch_t *data) { sw_ev_raise(id, EV_SW_ESTABLISHED_CONN, sizeof(switch_t), data); }
 /** \brief EV_SW_EXPIRED_CONN */
-void ev_sw_expired_conn(uint32_t id, const switch_t *data) { sw_ev_raise(id, EV_SW_EXPIRED_CONN, sizeof(switch_t), (const switch_t *)data); }
+void ev_sw_expired_conn(uint32_t id, const switch_t *data) { sw_ev_raise(id, EV_SW_EXPIRED_CONN, sizeof(switch_t), data); }
 /** \brief EV_SW_CONNECTED */
-void ev_sw_connected(uint32_t id, const switch_t *data) { sw_ev_raise(id, EV_SW_CONNECTED, sizeof(switch_t), (const switch_t *)data); }
+void ev_sw_connected(uint32_t id, const switch_t *data) { sw_ev_raise(id, EV_SW_CONNECTED, sizeof(switch_t), data); }
 /** \brief EV_SW_DISCONNECTED */
-void ev_sw_disconnected(uint32_t id, const switch_t *data) { sw_ev_raise(id, EV_SW_DISCONNECTED, sizeof(switch_t), (const switch_t *)data); }
-/** \brief EV_SW_UPDATE_CONFIG */
-void ev_sw_update_config(uint32_t id, const switch_t *data) { sw_ev_raise(id, EV_SW_UPDATE_CONFIG, sizeof(switch_t), (const switch_t *)data); }
+void ev_sw_disconnected(uint32_t id, const switch_t *data) { sw_ev_raise(id, EV_SW_DISCONNECTED, sizeof(switch_t), data); }
 /** \brief EV_SW_UPDATE_DESC */
-void ev_sw_update_desc(uint32_t id, const switch_t *data) { sw_ev_raise(id, EV_SW_UPDATE_DESC, sizeof(switch_t), (const switch_t *)data); }
+void ev_sw_update_desc(uint32_t id, const switch_t *data) { sw_ev_raise(id, EV_SW_UPDATE_DESC, sizeof(switch_t), data); }
 /** \brief EV_HOST_ADDED */
-void ev_host_added(uint32_t id, const host_t *data) { host_ev_raise(id, EV_HOST_ADDED, sizeof(host_t), (const host_t *)data); }
+void ev_host_added(uint32_t id, const host_t *data) { host_ev_raise(id, EV_HOST_ADDED, sizeof(host_t), data); }
 /** \brief EV_HOST_DELETED */
-void ev_host_deleted(uint32_t id, const host_t *data) { host_ev_raise(id, EV_HOST_DELETED, sizeof(host_t), (const host_t *)data); }
+void ev_host_deleted(uint32_t id, const host_t *data) { host_ev_raise(id, EV_HOST_DELETED, sizeof(host_t), data); }
 /** \brief EV_LINK_ADDED */
-void ev_link_added(uint32_t id, const port_t *data) { port_ev_raise(id, EV_LINK_ADDED, sizeof(port_t), (const port_t *)data); }
+void ev_link_added(uint32_t id, const port_t *data) { port_ev_raise(id, EV_LINK_ADDED, sizeof(port_t), data); }
 /** \brief EV_LINK_DELETED */
-void ev_link_deleted(uint32_t id, const port_t *data) { port_ev_raise(id, EV_LINK_DELETED, sizeof(port_t), (const port_t *)data); }
+void ev_link_deleted(uint32_t id, const port_t *data) { port_ev_raise(id, EV_LINK_DELETED, sizeof(port_t), data); }
 /** \brief EV_FLOW_ADDED */
-void ev_flow_added(uint32_t id, const flow_t *data) { flow_ev_raise(id, EV_FLOW_ADDED, sizeof(flow_t), (const flow_t *)data); }
+void ev_flow_added(uint32_t id, const flow_t *data) { flow_ev_raise(id, EV_FLOW_ADDED, sizeof(flow_t), data); }
 /** \brief EV_FLOW_MODIFIED */
-void ev_flow_modified(uint32_t id, const flow_t *data) { flow_ev_raise(id, EV_FLOW_MODIFIED, sizeof(flow_t), (const flow_t *)data); }
+void ev_flow_modified(uint32_t id, const flow_t *data) { flow_ev_raise(id, EV_FLOW_MODIFIED, sizeof(flow_t), data); }
 /** \brief EV_FLOW_DELETED */
-void ev_flow_deleted(uint32_t id, const flow_t *data) { flow_ev_raise(id, EV_FLOW_DELETED, sizeof(flow_t), (const flow_t *)data); }
+void ev_flow_deleted(uint32_t id, const flow_t *data) { flow_ev_raise(id, EV_FLOW_DELETED, sizeof(flow_t), data); }
 /** \brief EV_RS_UPDATE_USAGE */
-void ev_rs_update_usage(uint32_t id, const resource_t *data) { rs_ev_raise(id, EV_RS_UPDATE_USAGE, sizeof(resource_t), (const resource_t *)data); }
+void ev_rs_update_usage(uint32_t id, const resource_t *data) { rs_ev_raise(id, EV_RS_UPDATE_USAGE, sizeof(resource_t), data); }
 /** \brief EV_TR_UPDATE_STATS */
-void ev_tr_update_stats(uint32_t id, const traffic_t *data) { tr_ev_raise(id, EV_TR_UPDATE_STATS, sizeof(traffic_t), (const traffic_t *)data); }
+void ev_tr_update_stats(uint32_t id, const traffic_t *data) { tr_ev_raise(id, EV_TR_UPDATE_STATS, sizeof(traffic_t), data); }
 /** \brief EV_LOG_UPDATE_MSGS */
-void ev_log_update_msgs(uint32_t id, const char *data) { log_ev_raise(id, EV_LOG_UPDATE_MSGS, strlen((const char *)data), (const char *)data); }
+void ev_log_update_msgs(uint32_t id, const char *data) { log_ev_raise(id, EV_LOG_UPDATE_MSGS, strlen(data), data); }
 
 // Log events ///////////////////////////////////////////////////////
 
@@ -221,7 +223,6 @@ void ev_log_fatal(uint32_t id, char *format, ...) {
 
 /////////////////////////////////////////////////////////////////////
 
-#ifdef __ENABLE_META_EVENTS
 /**
  * \brief Function to process meta events
  * \param null NULL
@@ -231,7 +232,7 @@ static void *meta_events(void *null)
     int *num_events = ev_ctx->num_events;
     meta_event_t *meta = ev_ctx->meta_event;
 
-    while (1) {
+    while (ev_ctx->ev_on) {
         int ev_id;
         for (ev_id=0; ev_id<__MAX_EVENTS; ev_id++) {
             int num_event = num_events[ev_id];
@@ -279,7 +280,6 @@ static void *meta_events(void *null)
 
     return NULL;
 }
-#endif /* __ENABLE_META_EVENTS */
 
 /////////////////////////////////////////////////////////////////////
 
@@ -294,14 +294,14 @@ int init_event(ctx_t *ctx)
     if (ev_ctx->ev_on == FALSE) {
         pthread_t thread;
 
-#ifdef __EANBLE_META_EVENTS
+        ev_ctx->ev_on = TRUE;
+
+        // meta event
+
         if (pthread_create(&thread, NULL, &meta_events, NULL) < 0) {
             PERROR("pthread_create");
             return -1;
         }
-#endif /* __ENABLE_META_EVENTS */
-
-        ev_ctx->ev_on = TRUE;
 
         // pull
 
@@ -312,6 +312,9 @@ int init_event(ctx_t *ctx)
             PERROR("zmq_bind");
             return -1;
         }
+
+        int timeout = 1000;
+        zmq_setsockopt(ev_pull_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
 
         if (pthread_create(&thread, NULL, &pull_events, NULL) < 0) {
             PERROR("pthread_create");
@@ -328,11 +331,15 @@ int init_event(ctx_t *ctx)
             return -1;
         }
 
+        zmq_setsockopt(ev_rep_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+
         if (pthread_create(&thread, NULL, &reply_events, NULL) < 0) {
             PERROR("pthread_create");
             return -1;
         }
     }
+
+    DEBUG("event_handler is initialized\n");
 
     return 0;
 }
@@ -352,6 +359,8 @@ int destroy_event(ctx_t *ctx)
 
     zmq_ctx_destroy(ev_pull_ctx);
     zmq_ctx_destroy(ev_rep_ctx);
+
+    DEBUG("event_handler is destroyed\n");
 
     return 0;
 }
@@ -428,9 +437,9 @@ int destroy_event(ctx_t *ctx)
 //#undef FUNC_TYPE
 //#undef FUNC_DATA
 
-#define FUNC_NAME raw_ev_raise
-#define FUNC_TYPE raw_msg_t
-#define FUNC_DATA raw_msg
+#define FUNC_NAME msg_ev_raise
+#define FUNC_TYPE msg_t
+#define FUNC_DATA msg
 #include "event_direct_raise.h"
 #undef FUNC_NAME
 #undef FUNC_TYPE

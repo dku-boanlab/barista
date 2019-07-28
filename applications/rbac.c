@@ -22,46 +22,8 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The available roles for an application */
-enum {
-    APP_BASE,
-    APP_NETWORK,
-    APP_MANAGEMENT,
-    APP_SECURITY,
-    APP_ADMIN,
-    NUM_APP_ROLES,
-};
-
-/////////////////////////////////////////////////////////////////////
-
-/** \brief The structure to map application IDs and roles */
-typedef struct _app2role_t {
-    int id; /**< Application ID */
-    int role; /**< Application role */
-    char name[__CONF_WORD_LEN]; /**< Application name */
-} app2role_t;
-
-/** \brief The number of applications */
-int app_to_role_cnt;
-
-/** \brief The mapping table of applications and their roles */
-app2role_t *app_to_role;
-
-/////////////////////////////////////////////////////////////////////
-
-/** \brief The structure to map app roles and events */
-typedef struct _role2ev_t {
-    char name[__CONF_WORD_LEN]; /**< Role */
-    uint8_t event[__MAX_APP_EVENTS]; /**< Events grouped by the role */
-} role2ev_t;
-
-/** \brief The mapping table of roles and their events */
-role2ev_t *role_to_event;
-
-/////////////////////////////////////////////////////////////////////
-
 /** \brief The app event list to convert an app event string to an app event ID */
-const char app_ev_list[AV_NUM_EVENTS+1][__CONF_WORD_LEN] = {
+const char av_string[AV_NUM_EVENTS+1][__CONF_WORD_LEN] = {
     #include "app_event_string.h"
 };
 
@@ -70,11 +32,11 @@ const char app_ev_list[AV_NUM_EVENTS+1][__CONF_WORD_LEN] = {
  * \param event App event string
  * \return App event ID
  */
-static int app_event_type(const char *event)
+static int av_type(const char *event)
 {
     int i;
     for (i=0; i<AV_NUM_EVENTS+1; i++) {
-        if (strcmp(event, app_ev_list[i]) == 0)
+        if (strcmp(event, av_string[i]) == 0)
             return i;
     }
     return AV_NUM_EVENTS;
@@ -103,10 +65,10 @@ static int load_app_roles(char *conf_file)
 
     json = json_loads(conf, 0, &error);
     if (!json) {
-        ALOG_ERROR(RBAC_ID, "json_loads() error");
+        ALOG_ERROR(RBAC_ID, "json_loads() failed");
         return -1;
     } else if (!json_is_array(json)) {
-        ALOG_ERROR(RBAC_ID, "json_is_array() error");
+        ALOG_ERROR(RBAC_ID, "json_is_array() failed");
         json_decref(json);
         return -1;
     }
@@ -150,7 +112,7 @@ static int load_app_roles(char *conf_file)
             else if (strcmp(role, "admin") == 0)
                 app_to_role[app_to_role_cnt].role = APP_ADMIN;
             else {
-                ALOG_ERROR(RBAC_ID, "Non-existent role type: %s", role);
+                ALOG_ERROR(RBAC_ID, "Wrong role type: %s", role);
                 json_decref(json);
                 return -1;
             }
@@ -185,15 +147,15 @@ static int load_events_for_roles(char *role_file)
 
     json = json_loads(role, 0, &error);
     if (!json) {
-        ALOG_ERROR(RBAC_ID, "json_loads() error");
+        ALOG_ERROR(RBAC_ID, "json_loads() failed");
         return -1;
     } else if (!json_is_array(json)) {
-        ALOG_ERROR(RBAC_ID, "json_is_array() error");
+        ALOG_ERROR(RBAC_ID, "json_is_array() failed");
         json_decref(json);
         return -1;
     }
 
-    int i;
+    int i, j;
     for (i=0; i<json_array_size(json); i++) {
         json_t *data = json_array_get(json, i);
 
@@ -218,7 +180,7 @@ static int load_events_for_roles(char *role_file)
             else if (strcmp(name, "admin") == 0)
                 role = APP_ADMIN;
             else {
-                ALOG_ERROR(RBAC_ID, "Non-existent role type: %s", role);
+                ALOG_ERROR(RBAC_ID, "Wrong role type: %s", role);
                 json_decref(json);
                 return -1;
             }
@@ -229,11 +191,9 @@ static int load_events_for_roles(char *role_file)
         // set inbound events
         json_t *events = json_object_get(data, "events");
         if (json_is_array(events)) {
-            int j;
             for (j=0; j<json_array_size(events); j++) {
                 json_t *event = json_array_get(events, j);
-
-                if (app_event_type(json_string_value(event)) == AV_NUM_EVENTS) {
+                if (av_type(json_string_value(event)) == AV_NUM_EVENTS) {
                     ALOG_ERROR(RBAC_ID, "Wrong app event name: %s", json_string_value(event));
                     json_decref(json);
                     return -1;
@@ -242,8 +202,7 @@ static int load_events_for_roles(char *role_file)
 
             for (j=0; j<json_array_size(events); j++) {
                 json_t *event = json_array_get(events, j);
-
-                role_to_event[role].event[app_event_type(json_string_value(event))] = 1;
+                role_to_event[role].event[av_type(json_string_value(event))] = 1;
             }
         }
     }
@@ -263,17 +222,16 @@ static int load_events_for_roles(char *role_file)
 static int verify_app_role(uint32_t id, uint16_t type)
 {
     int i;
-    for (i=0; i<app_to_role_cnt; i++) {
-        if (app_to_role[i].role == APP_BASE) // skip base
-            return -1;
 
-        if (app_to_role[i].id == id && role_to_event[app_to_role[i].role].event[type] == 1) // found the matched app
-            return 1;
-        else
-            return 0;
+    for (i=0; i<app_to_role_cnt; i++) {
+        if (app_to_role[i].id == id) {
+            if (app_to_role[i].role == APP_BASE) return 0;
+            else if (role_to_event[app_to_role[i].role].event[type] == TRUE) return 0;
+            else return -1;
+        }
     }
 
-    return 0;
+    return -1;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -289,16 +247,15 @@ int rbac_main(int *activated, int argc, char **argv)
     ALOG_INFO(RBAC_ID, "Init - Role-based access control");
 
     app_to_role_cnt = 0;
-
-    app_to_role = (app2role_t *)CALLOC(__MAX_APPLICATIONS, sizeof(app2role_t));
+    app_to_role = (app_to_role_t *)CALLOC(__MAX_APPLICATIONS, sizeof(app_to_role_t));
     if (app_to_role == NULL) {
-        ALOG_ERROR(RBAC_ID, "calloc() error");
+        ALOG_ERROR(RBAC_ID, "calloc() failed");
         return -1;
     }
 
-    role_to_event = (role2ev_t *)CALLOC(NUM_APP_ROLES, sizeof(role2ev_t));
+    role_to_event = (role_to_event_t *)CALLOC(__NUM_APP_ROLES, sizeof(role_to_event_t));
     if (role_to_event == NULL) {
-        ALOG_ERROR(RBAC_ID, "calloc() error");
+        ALOG_ERROR(RBAC_ID, "calloc() failed");
         return -1;
     }
 
@@ -344,6 +301,8 @@ int rbac_cleanup(int *activated)
  */
 int rbac_cli(cli_t *cli, char **args)
 {
+    cli_print(cli, "No CLI support");
+
     return 0;
 }
 
@@ -354,20 +313,23 @@ int rbac_cli(cli_t *cli, char **args)
  */
 int rbac_handler(const app_event_t *av, app_event_out_t *av_out)
 {
-    if (verify_app_role(av->id, av->type)) {
-        return 0;
-    }
+    int res = verify_app_role(av->id, av->type);
 
-    int i;
-    for (i=0; i<app_to_role_cnt; i++) {
-        if (app_to_role[i].id == av->id) {
-            ALOG_WARN(RBAC_ID, "Unauthorized access (app: %s (%u), type: %s)", 
-                      app_to_role[i].name, av->id, app_ev_list[av->type]);
-            break;
+    if (res < 0) {
+        ALOG_WARN(RBAC_ID, "Wrong application ID (caller: %u, event: %s)", av->id, av_string[av->type]);
+        return -1;
+    } else if (res > 0) {
+        int i;
+        for (i=0; i<app_to_role_cnt; i++) {
+            if (app_to_role[i].id == av->id) {
+                ALOG_WARN(RBAC_ID, "Unauthorized access (app: %s (%u), type: %s)", (strlen(app_to_role[i].name) > 0) ? app_to_role[i].name : "unknown", av->id, av_string[av->type]);
+                break;
+            }
         }
+        return -1;
     }
 
-    return -1;
+    return 0;
 }
 
 /**

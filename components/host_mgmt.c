@@ -22,119 +22,36 @@
 
 /////////////////////////////////////////////////////////////////////
 
-#include "host_queue.h"
-
-/////////////////////////////////////////////////////////////////////
-
-/** \brief Host tables */
-host_table_t *host_table;
-
-/** \brief The number of hosts */
-int num_hosts;
-
-/////////////////////////////////////////////////////////////////////
-
-/**
- * \brief Function to clean up host entries
- * \param idx The index of a host table
- * \param tmp_list The list of host entries to be removed
- * \param remote The origin of hosts in terms of management
- */
-static int clean_up_tmp_list(int idx, host_table_t *tmp_list, int remote)
+int get_host_entry(host_t *entry)
 {
-    // locked
+    char conditions[__CONF_STR_LEN];
+    sprintf(conditions, "IP = %u and MAC = %lu", entry->ip, entry->mac);
 
-    host_t *curr = tmp_list->head;
+    if (select_data(&host_mgmt_db, "host_mgmt", "DPID, PORT", conditions, TRUE)) return -1;
 
-    while (curr != NULL) {
-        host_t *tmp = curr;
+    query_result_t *result = get_query_result(&host_mgmt_db);
+    query_row_t row;
 
-        curr = curr->r_next;
+    if ((row = fetch_query_row(result)) != NULL) {
+        entry->dpid = strtoul(row[0], NULL, 0);
+        entry->port = strtoul(row[1], NULL, 0);
 
-        if (tmp->prev != NULL && tmp->next != NULL) {
-            tmp->prev->next = tmp->next;
-            tmp->next->prev = tmp->prev;
-        } else if (tmp->prev == NULL && tmp->next != NULL) {
-            host_table[idx].head = tmp->next;
-            tmp->next->prev = NULL;
-        } else if (tmp->prev != NULL && tmp->next == NULL) {
-            host_table[idx].tail = tmp->prev;
-            tmp->prev->next = NULL;
-        } else if (tmp->prev == NULL && tmp->next == NULL) {
-            host_table[idx].head = NULL;
-            host_table[idx].tail = NULL;
-        }
+        release_query_result(result);
 
-        host_t out = {0};
-
-        out.dpid = tmp->dpid;
-        out.port = tmp->port;
-
-        out.mac = tmp->mac;
-        out.ip = tmp->ip;
-
-        if (remote == FALSE) {
-            ev_host_deleted(HOST_MGMT_ID, &out);
-        }
-
-        uint8_t macaddr[6];
-        int2mac(out.mac, macaddr);
-
-        LOG_INFO(HOST_MGMT_ID, "Deleted a device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
-                 out.dpid, ip_addr_str(out.ip),
-                 macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], out.port);
-
-        host_enqueue(tmp);
+        return 0;
     }
 
-    return 0;
+    release_query_result(result);
+
+    return -1;
 }
 
-/////////////////////////////////////////////////////////////////////
-
-/**
- * \brief Function to look up a host (locked)
- * \param list Host table mapped to a MAC address
- * \param ip IP address
- * \param mac MAC address
- * \return 0: new, 1: exist, 2: MAC conflict, 3: IP conflict
- */
-static int check_host(host_table_t *list, uint32_t ip, uint64_t mac)
+int insert_host_entry(host_t *entry)
 {
-    // locked
+    char values[__CONF_STR_LEN];
+    sprintf(values, "%lu, %u, %lu, %u", entry->dpid, entry->port, entry->mac, entry->ip);
 
-    host_t *curr = NULL; 
-
-    for (curr = list->head; curr != NULL; curr = curr->next) {
-        if (curr->ip == ip && curr->mac == mac) {
-            return 1;
-        } else if (curr->ip == ip && curr->mac != mac) {
-            uint8_t orig[ETH_ALEN], in[ETH_ALEN];
-
-            int2mac(curr->mac, orig);
-            int2mac(mac, in);
-
-            LOG_WARN(HOST_MGMT_ID, "Wrong MAC address (IP: %s, original MAC: %02x:%02x:%02x:%02x:%02x:%02x, "
-                                   "incoming MAC: %02x:%02x:%02x:%02x:%02x:%02x)",
-                                   ip_addr_str(curr->ip), orig[0], orig[1], orig[2], orig[3], orig[4], orig[5],
-                                   in[0], in[1], in[2], in[3], in[4], in[5]);
-
-            return 2;
-        } else if (curr->mac == mac && curr->ip != ip) {
-            uint8_t m[ETH_ALEN];
-
-            int2mac(curr->mac, m);
-
-            if (strcmp(ip_addr_str(curr->ip), ip_addr_str(ip)) != 0) {
-                LOG_WARN(HOST_MGMT_ID, "Wrong IP address (MAC: %02x:%02x:%02x:%02x:%02x:%02x, original IP: %s, incoming IP: %s)", 
-                                       m[0], m[1], m[2], m[3], m[4], m[5], ip_addr_str(curr->ip), ip_addr_str(ip));
-            } else {
-                curr->ip = ip;
-            }
-
-            return 3;
-        }
-    }
+    if (insert_data(&host_mgmt_db, "host_mgmt", "DPID, PORT, MAC, IP", values)) return -1;
 
     return 0;
 }
@@ -147,47 +64,66 @@ static int check_host(host_table_t *list, uint32_t ip, uint64_t mac)
  */
 static int add_new_host(const pktin_t *pktin)
 {
-    uint64_t mac = mac2int(pktin->src_mac);
-    uint32_t mkey = hash_func((uint32_t *)&mac, 2) % __DEFAULT_TABLE_SIZE;
+    host_key_t hkey = {0};
 
-    pthread_rwlock_rdlock(&host_table[mkey].lock);
-    int ret = check_host(&host_table[mkey], pktin->src_ip, mac);
-    pthread_rwlock_unlock(&host_table[mkey].lock);
+    hkey.ip = pktin->pkt_info.src_ip;
+    hkey.mac = mac2int(pktin->pkt_info.src_mac);
 
-    if (ret == 0) {
-        host_t *new = host_dequeue();
-        if (new == NULL) return -1;
+    uint32_t key = hash_func((uint32_t *)&hkey, 4) % NUM_HOST_ENTRIES;
 
-        new->dpid = pktin->dpid;
-        new->port = pktin->port;
+    if (host_cache[key].ip != hkey.ip && host_cache[key].mac != hkey.mac) {
+        host_t src;
 
-        new->ip = pktin->src_ip;
-        new->mac = mac;
+        src.ip = hkey.ip;
+        src.mac = hkey.mac;
 
-        pthread_rwlock_wrlock(&host_table[mkey].lock);
+        memset(&host_cache[key], 0, sizeof(host_t));
 
-        if (host_table[mkey].head == NULL) {
-            host_table[mkey].head = new;
-            host_table[mkey].tail = new;
-        } else {
-            new->prev = host_table[mkey].tail;
-            host_table[mkey].tail->next = new;
-            host_table[mkey].tail = new;
+        if (get_host_entry(&src)) { // new
+            host_cache[key].dpid = pktin->dpid;
+            host_cache[key].port = pktin->port;
+            host_cache[key].ip = hkey.ip;
+            host_cache[key].mac = hkey.mac;
+
+            insert_host_entry(&host_cache[key]);
+
+            ev_host_added(HOST_MGMT_ID, &host_cache[key]);
+
+            LOG_INFO(HOST_MGMT_ID, "Detected a new device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
+                     pktin->dpid, ip_addr_str(pktin->pkt_info.src_ip),
+                     pktin->pkt_info.src_mac[0], pktin->pkt_info.src_mac[1], pktin->pkt_info.src_mac[2], 
+                     pktin->pkt_info.src_mac[3], pktin->pkt_info.src_mac[4], pktin->pkt_info.src_mac[5], pktin->port);
+
+            return 0;
         }
 
-        num_hosts++;
+        host_cache[key].dpid = src.dpid;
+        host_cache[key].port = src.port;
+        host_cache[key].ip = hkey.ip;
+        host_cache[key].mac = hkey.mac;
 
-        pthread_rwlock_unlock(&host_table[mkey].lock);
+        return 0;
+    } else if (host_cache[key].ip != hkey.ip && host_cache[key].mac == hkey.mac) {
+        uint8_t m[ETH_ALEN];
+        int2mac(hkey.mac, m);
 
-        ev_host_added(HOST_MGMT_ID, new);
+        LOG_WARN(HOST_MGMT_ID, "Different IP address (MAC: %02x:%02x:%02x:%02x:%02x:%02x, old IP: %s, new IP: %s)",
+                 m[0], m[1], m[2], m[3], m[4], m[5], ip_addr_str(host_cache[key].ip), ip_addr_str(hkey.ip));
 
-        LOG_INFO(HOST_MGMT_ID, "Detected a new device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
-                 pktin->dpid, ip_addr_str(pktin->src_ip),
-                 pktin->src_mac[0], pktin->src_mac[1], pktin->src_mac[2], pktin->src_mac[3], pktin->src_mac[4], pktin->src_mac[5],
-                 pktin->port);
+        return -1;
+    } else if (host_cache[key].ip == hkey.ip && host_cache[key].mac != hkey.mac) {
+        uint8_t o[ETH_ALEN], i[ETH_ALEN];
+        int2mac(host_cache[key].mac, o);
+        int2mac(hkey.mac, i);
+
+        LOG_WARN(HOST_MGMT_ID, 
+                 "Different MAC address (IP: %s, old MAC: %02x:%02x:%02x:%02x:%02x:%02x, new MAC: %02x:%02x:%02x:%02x:%02x:%02x)",
+                 ip_addr_str(hkey.ip), o[0], o[1], o[2], o[3], o[4], o[5], i[0], i[1], i[2], i[3], i[4], i[5]);
+
+        return -1;
     }
 
-    return ret;
+    return 0;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -202,20 +138,20 @@ int host_mgmt_main(int *activated, int argc, char **argv)
 {
     LOG_INFO(HOST_MGMT_ID, "Init - Host management");
 
-    num_hosts = 0;
+    if (init_database(&host_mgmt_db, "barista_mgmt")) {
+        LOG_ERROR(HOST_MGMT_ID, "Failed to connect a host_mgmt database");
+        return -1;
+    } else {
+        LOG_INFO(HOST_MGMT_ID, "Connected to a host_mgmt database");
+    }
 
-    host_table = (host_table_t *)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(host_table_t));
-    if (host_table == NULL) {
-        LOG_ERROR(HOST_MGMT_ID, "calloc() error");
+    reset_table(&host_mgmt_db, "host_mgmt", FALSE);
+
+    host_cache = (host_t *)CALLOC(NUM_HOST_ENTRIES, sizeof(host_t));
+    if (host_cache == NULL) {
+        LOG_ERROR(HOST_MGMT_ID, "calloc() failed");
         return -1;
     }
-
-    int i;
-    for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-        pthread_rwlock_init(&host_table[i].lock, NULL);
-    }
-
-    host_q_init();
 
     activate();
 
@@ -232,24 +168,14 @@ int host_mgmt_cleanup(int *activated)
 
     deactivate();
 
-    int i;
-    for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-        pthread_rwlock_wrlock(&host_table[i].lock);
+    FREE(host_cache);
 
-        host_t *curr = host_table[i].head;
-        while (curr != NULL) {
-            host_t *tmp = curr;
-            curr = curr->next;
-            FREE(tmp);
-        }
-
-        pthread_rwlock_unlock(&host_table[i].lock);
-        pthread_rwlock_destroy(&host_table[i].lock);
+    if (destroy_database(&host_mgmt_db)) {
+        LOG_ERROR(HOST_MGMT_ID, "Failed to disconnect a host_mgmt database");
+        return -1;
+    } else {
+        LOG_INFO(HOST_MGMT_ID, "Disconnected from a host_mgmt database");
     }
-
-    host_q_destroy();
-
-    FREE(host_table);
 
     return 0;
 }
@@ -260,25 +186,34 @@ int host_mgmt_cleanup(int *activated)
  */
 static int host_listup(cli_t *cli)
 {
-    cli_print(cli, "<Host List>");
-    cli_print(cli, "  The total number of hosts: %d", num_hosts);
+    cli_print(cli, "< Host List >");
 
-    int i, cnt = 0;
-    for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-        pthread_rwlock_rdlock(&host_table[i].lock);
-
-        host_t *curr = NULL;
-        for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
-            uint8_t macaddr[ETH_ALEN];
-            int2mac(curr->mac, macaddr);
-
-            cli_print(cli, "  Host #%d\n    DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u", 
-                      ++cnt, curr->dpid, ip_addr_str(curr->ip),
-                      macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], curr->port);
-        }
-
-        pthread_rwlock_unlock(&host_table[i].lock);
+    if (select_data(&host_mgmt_db, "host_mgmt", "DPID, PORT, IP, MAC", NULL, TRUE)) {
+        cli_print(cli, "  Failed to execute a query");
+        return -1;
     }
+
+    query_result_t *result = get_query_result(&host_mgmt_db);
+    query_row_t row;
+    int cnt = 0;
+
+    while ((row = fetch_query_row(result)) != NULL) {
+        uint64_t dpid = strtoull(row[0], NULL, 0);
+        uint32_t port = strtoul(row[1], NULL, 0);
+        uint32_t ip = strtoul(row[2], NULL, 0);
+        uint64_t mac = strtoull(row[3], NULL, 0);
+
+        uint8_t macaddr[ETH_ALEN];
+        int2mac(mac, macaddr);
+
+        cli_print(cli, "  Host #%d - DPID: %lu, IP: %s, MAC: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u",
+                  ++cnt, dpid, ip_addr_str(ip), macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], port);
+    }
+
+    release_query_result(result);
+
+    if (!cnt)
+        cli_print(cli, "  No connected host");
 
     return 0;
 }
@@ -292,26 +227,33 @@ static int host_showup_switch(cli_t *cli, const char *dpid_str)
 {
     uint64_t dpid = strtoull(dpid_str, NULL, 0);
 
-    cli_print(cli, "<Host List [%lu]>", dpid);
+    cli_print(cli, "< Hosts connected to Switch [%lu] >", dpid);
 
-    int i, cnt = 0;
-    for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-        pthread_rwlock_rdlock(&host_table[i].lock);
+    char conditions[__CONF_STR_LEN];
+    sprintf(conditions, "DPID = %lu", dpid);
 
-        host_t *curr = NULL;
-        for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
-            if (curr->dpid == dpid) {
-                uint8_t mac[ETH_ALEN];
-                int2mac(curr->mac, mac);
-
-                cli_print(cli, "  Host #%d\n    DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u",
-                          ++cnt, curr->dpid, ip_addr_str(curr->ip),
-                          mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], curr->port);
-            }
-        }
-
-        pthread_rwlock_unlock(&host_table[i].lock);
+    if (select_data(&host_mgmt_db, "host_mgmt", "PORT, IP, MAC", conditions, TRUE)) {
+        cli_print(cli, "  Failed to execute a query");
+        return -1;
     }
+
+    query_result_t *result = get_query_result(&host_mgmt_db);
+    query_row_t row;
+    int cnt = 0;
+
+    while ((row = fetch_query_row(result)) != NULL) {
+        uint32_t port = strtoul(row[0], NULL, 0);
+        uint32_t ip = strtoul(row[1], NULL, 0);
+        uint64_t mac = strtoull(row[2], NULL, 0);
+
+        uint8_t macaddr[ETH_ALEN];
+        int2mac(mac, macaddr);
+
+        cli_print(cli, "  Host #%d - DPID: %lu, IP: %s, MAC: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u",
+                  ++cnt, dpid, ip_addr_str(ip), macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], port);
+    }
+
+    release_query_result(result);
 
     if (!cnt)
         cli_print(cli, "  No connected host");
@@ -326,27 +268,35 @@ static int host_showup_switch(cli_t *cli, const char *dpid_str)
  */
 static int host_showup_ip(cli_t *cli, const char *ipaddr)
 {
-    int i, cnt = 0;
+    uint32_t ip = ip_addr_int(ipaddr);
 
-    cli_print(cli, "<Host [%s]>", ipaddr);
+    cli_print(cli, "< Host [%s] >", ipaddr);
 
-    for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-        pthread_rwlock_rdlock(&host_table[i].lock);
+    char conditions[__CONF_STR_LEN];
+    sprintf(conditions, "IP = %u", ip);
 
-        host_t *curr = NULL;
-        for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
-            if (curr->ip == ip_addr_int(ipaddr)) {
-                uint8_t macaddr[ETH_ALEN];
-                int2mac(curr->mac, macaddr);
-
-                cli_print(cli, "  Host #%d\n    DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u",
-                          ++cnt, curr->dpid, ipaddr,
-                          macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], curr->port);
-            }
-        }
-
-        pthread_rwlock_unlock(&host_table[i].lock);
+    if (select_data(&host_mgmt_db, "host_mgmt", "DPID, PORT, MAC", conditions, TRUE)) {
+        cli_print(cli, "  Failed to execute a query");
+        return -1;
     }
+
+    query_result_t *result = get_query_result(&host_mgmt_db);
+    query_row_t row;
+    int cnt = 0;
+
+    while ((row = fetch_query_row(result)) != NULL) {
+        uint64_t dpid = strtoull(row[0], NULL, 0);
+        uint32_t port = strtoul(row[1], NULL, 0);
+        uint64_t mac = strtoull(row[2], NULL, 0);
+
+        uint8_t macaddr[ETH_ALEN];
+        int2mac(mac, macaddr);
+
+        cli_print(cli, "  Host #%d - DPID: %lu, IP: %s, MAC: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u",
+                  ++cnt, dpid, ipaddr, macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], port);
+    }
+
+    release_query_result(result);
 
     if (!cnt)
         cli_print(cli, "  No connected host");
@@ -366,22 +316,30 @@ static int host_showup_mac(cli_t *cli, const char *macaddr)
 
     uint64_t macval = mac2int(mac);
 
-    cli_print(cli, "<Host [%s]>", macaddr);
+    cli_print(cli, "< Host [%s] >", macaddr);
 
-    int i, cnt = 0;
-    for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-        pthread_rwlock_rdlock(&host_table[i].lock);
+    char conditions[__CONF_STR_LEN];
+    sprintf(conditions, "MAC = %lu", macval);
 
-        host_t *curr = NULL;
-        for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
-            if (curr->mac == macval) {
-                cli_print(cli, "  Host #%d\n    DPID: %lu, IP: %s, Mac: %s, Port: %u",
-                          ++cnt, curr->dpid, ip_addr_str(curr->ip), macaddr, curr->port);
-            }
-        }
-
-        pthread_rwlock_unlock(&host_table[i].lock);
+    if (select_data(&host_mgmt_db, "host_mgmt", "DPID, PORT, IP", conditions, TRUE)) {
+        cli_print(cli, "  Failed to execute a query");
+        return -1;
     }
+
+    query_result_t *result = get_query_result(&host_mgmt_db);
+    query_row_t row;
+    int cnt = 0;
+
+    while ((row = fetch_query_row(result)) != NULL) {
+        uint64_t dpid = strtoull(row[0], NULL, 0);
+        uint32_t port = strtoul(row[1], NULL, 0);
+        uint32_t ip = strtoul(row[2], NULL, 0);
+
+        cli_print(cli, "  Host #%d - DPID: %lu, IP: %s, MAC: %s, Port: %u",
+                  ++cnt, dpid, ip_addr_str(ip), macaddr, port);
+    }
+
+    release_query_result(result);
 
     if (!cnt)
         cli_print(cli, "  No connected host");
@@ -412,7 +370,7 @@ int host_mgmt_cli(cli_t *cli, char **args)
         }
     }
 
-    cli_print(cli, "<Available Commands>");
+    cli_print(cli, "< Available Commands >");
     cli_print(cli, "  host_mgmt list hosts");
     cli_print(cli, "  host_mgmt show switch [DPID]");
     cli_print(cli, "  host_mgmt show ip [IP address]");
@@ -434,41 +392,8 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const pktin_t *pktin = ev->pktin;
 
-            add_new_host(pktin);
-        }
-        break;
-    case EV_DP_PORT_ADDED:
-        PRINT_EV("EV_DP_PORT_ADDED\n");
-        {
-            const port_t *port = ev->port;
-
-            int i;
-            for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-                host_table_t tmp_list = {0};
-
-                pthread_rwlock_wrlock(&host_table[i].lock);
-
-                host_t *curr = NULL;
-                for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
-                    if (curr->dpid == port->dpid && curr->port == port->port) {
-                        if (tmp_list.head == NULL) {
-                            tmp_list.head = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        } else {
-                            tmp_list.tail->r_next = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        }
-
-                        num_hosts--;
-                    }
-                }
-
-                clean_up_tmp_list(i, &tmp_list, FALSE);
-
-                pthread_rwlock_unlock(&host_table[i].lock);
-            }
+            if (add_new_host(pktin))
+                return -1;
         }
         break;
     case EV_DP_PORT_DELETED:
@@ -476,66 +401,43 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const port_t *port = ev->port;
 
-            int i;
-            for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-                host_table_t tmp_list = {0};
+            char conditions[__CONF_STR_LEN];
+            sprintf(conditions, "DPID = %lu and PORT = %u", port->dpid, port->port);
 
-                pthread_rwlock_wrlock(&host_table[i].lock);
+            if (select_data(&host_mgmt_db, "host_mgmt", "IP, MAC", conditions, FALSE)) return -1;
 
-                host_t *curr = NULL;
-                for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
-                    if (curr->dpid == port->dpid && curr->port == port->port) {
-                        if (tmp_list.head == NULL) {
-                            tmp_list.head = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        } else {
-                            tmp_list.tail->r_next = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        }
+            query_result_t *result = get_query_result(&host_mgmt_db);
+            query_row_t row;
 
-                        num_hosts--;
-                    }
-                }
+            while ((row = fetch_query_row(result)) != NULL) {
+                host_t out = {0};
 
-                clean_up_tmp_list(i, &tmp_list, FALSE);
+                out.dpid = port->dpid;
+                out.port = port->port;
 
-                pthread_rwlock_unlock(&host_table[i].lock);
+                out.ip = strtoul(row[0], NULL, 0);
+                out.mac = strtoull(row[1], NULL, 0);
+
+                ev_host_deleted(HOST_MGMT_ID, &out);
+
+                uint8_t macaddr[6];
+                int2mac(out.mac, macaddr);
+
+                LOG_INFO(HOST_MGMT_ID, "Deleted a device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
+                         out.dpid, ip_addr_str(out.ip),
+                         macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], out.port);
             }
-        }
-        break;
-    case EV_SW_CONNECTED:
-        PRINT_EV("EV_SW_CONNECTED\n");
-        {
-            const switch_t *sw = ev->sw;
+
+            release_query_result(result);
+
+            delete_data(&host_mgmt_db, "host_mgmt", conditions);
 
             int i;
-            for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-                host_table_t tmp_list = {0};
-
-                pthread_rwlock_wrlock(&host_table[i].lock);
-
-                host_t *curr = NULL;
-                for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
-                    if (curr->dpid == sw->dpid) {
-                        if (tmp_list.head == NULL) {
-                            tmp_list.head = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        } else {
-                            tmp_list.tail->r_next = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        }
-
-                        num_hosts--;
-                    }
+            for (i=0; i<NUM_HOST_ENTRIES; i++) {
+                if (host_cache[i].dpid == port->dpid && host_cache[i].port == port->port) {
+                    memset(&host_cache[i], 0, sizeof(host_t));
+                    break;
                 }
-
-                clean_up_tmp_list(i, &tmp_list, sw->remote);
-
-                pthread_rwlock_unlock(&host_table[i].lock);
             }
         }
         break;
@@ -544,32 +446,42 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const switch_t *sw = ev->sw;
 
+            char conditions[__CONF_STR_LEN];
+            sprintf(conditions, "DPID = %lu", sw->dpid);
+
+            if (select_data(&host_mgmt_db, "host_mgmt", "PORT, IP, MAC", conditions, FALSE)) return -1;
+
+            query_result_t *result = get_query_result(&host_mgmt_db);
+            query_row_t row;
+
+            while ((row = fetch_query_row(result)) != NULL) {
+                host_t out = {0};
+
+                out.dpid = sw->dpid;
+                out.port = strtoul(row[0], NULL, 0);
+
+                out.ip = strtoul(row[1], NULL, 0);
+                out.mac = strtoull(row[2], NULL, 0);
+
+                ev_host_deleted(HOST_MGMT_ID, &out);
+
+                uint8_t macaddr[6];
+                int2mac(out.mac, macaddr);
+
+                LOG_INFO(HOST_MGMT_ID, "Deleted a device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
+                         out.dpid, ip_addr_str(out.ip),
+                         macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], out.port);
+            }
+
+            release_query_result(result);
+
+            delete_data(&host_mgmt_db, "host_mgmt", conditions);
+
             int i;
-            for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-                host_table_t tmp_list = {0};
-
-                pthread_rwlock_wrlock(&host_table[i].lock);
-
-                host_t *curr = NULL;
-                for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
-                    if (curr->dpid == sw->dpid) {
-                        if (tmp_list.head == NULL) {
-                            tmp_list.head = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        } else {
-                            tmp_list.tail->r_next = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        }
-
-                        num_hosts--;
-                    }
+            for (i=0; i<NUM_HOST_ENTRIES; i++) {
+                if (host_cache[i].dpid == sw->dpid) {
+                    memset(&host_cache[i], 0, sizeof(host_t));
                 }
-
-                clean_up_tmp_list(i, &tmp_list, sw->remote);
-
-                pthread_rwlock_unlock(&host_table[i].lock);
             }
         }
         break;
@@ -580,48 +492,13 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             if (host->remote == FALSE) break;
 
-            uint32_t mkey = hash_func((uint32_t *)&host->mac, 2) % __DEFAULT_TABLE_SIZE;
+            uint8_t macaddr[6];
+            int2mac(host->mac, macaddr);
 
-            pthread_rwlock_rdlock(&host_table[mkey].lock);
-            int res = check_host(&host_table[mkey], host->ip, host->mac);
-            pthread_rwlock_unlock(&host_table[mkey].lock);
+            LOG_INFO(HOST_MGMT_ID, "Detected a new device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
+                     host->dpid, ip_addr_str(host->ip), 
+                     macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], host->port);
 
-            if (res == 0) {
-                host_t *new = host_dequeue();
-                if (new == NULL) break;
-
-                new->dpid = host->dpid;
-                new->port = host->port;
-
-                new->remote = host->remote;
-
-                new->ip = host->ip;
-                new->mac = host->mac;
-
-                new->prev = new->next = NULL;
-
-                pthread_rwlock_wrlock(&host_table[mkey].lock);
-
-                if (host_table[mkey].head == NULL) {
-                    host_table[mkey].head = new;
-                    host_table[mkey].tail = new;
-                } else {
-                    new->prev = host_table[mkey].tail;
-                    host_table[mkey].tail->next = new;
-                    host_table[mkey].tail = new;
-                }
-
-                num_hosts++;
-
-                pthread_rwlock_unlock(&host_table[mkey].lock);
-
-                uint8_t macaddr[ETH_ALEN];
-                int2mac(new->mac, macaddr);
-
-                LOG_INFO(HOST_MGMT_ID, "Detected a new device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
-                         new->dpid, ip_addr_str(new->ip),
-                         macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], new->port);
-            }
         }
         break;
     case EV_HOST_DELETED:
@@ -631,34 +508,12 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             if (host->remote == FALSE) break;
 
-            int i;
-            for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-                host_table_t tmp_list = {0};
+            uint8_t macaddr[6];
+            int2mac(host->mac, macaddr);
 
-                pthread_rwlock_wrlock(&host_table[i].lock);
-
-                host_t *curr = NULL;
-                for (curr = host_table[i].head; curr != NULL; curr = curr->next) {
-                    if (curr->dpid == host->dpid && curr->port == host->port 
-                        && curr->ip == host->ip && curr->mac == host->mac) {
-                        if (tmp_list.head == NULL) {
-                            tmp_list.head = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        } else {
-                            tmp_list.tail->r_next = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        }
-
-                        num_hosts--;
-                    }
-                }
-
-                clean_up_tmp_list(i, &tmp_list, TRUE);
-
-                pthread_rwlock_unlock(&host_table[i].lock);
-            }
+            LOG_INFO(HOST_MGMT_ID, "Deleted a device (DPID: %lu, IP: %s, Mac: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u)",
+                     host->dpid, ip_addr_str(host->ip), 
+                     macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], host->port);
         }
         break;
     default:

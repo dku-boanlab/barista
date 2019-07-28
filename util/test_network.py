@@ -10,7 +10,7 @@ from mininet.node import IVSSwitch
 from mininet.cli import CLI
 from subprocess import call
 
-def myNetwork():
+def testNetwork():
     net = Mininet( topo=None, build=False, ipBase='10.0.0.0/8')
 
     info( '*** Adding controller\n' )
@@ -77,4 +77,4 @@ def myNetwork():
 
 if __name__ == '__main__':
     setLogLevel( 'info' )
-    myNetwork()
+    testNetwork()

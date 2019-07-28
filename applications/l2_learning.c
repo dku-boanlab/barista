@@ -22,10 +22,6 @@
 
 /////////////////////////////////////////////////////////////////////
 
-#include "mac_queue.h"
-
-/////////////////////////////////////////////////////////////////////
-
 /**
  * \brief Function to conduct an output action into the data plane
  * \param pktin Pktin message
@@ -57,9 +53,9 @@ static int insert_flow(const pktin_t *pktin, uint16_t port)
 
     FLOW_INIT(out, pktin);
 
-    out.idle_timeout = DEFAULT_IDLE_TIMEOUT;
-    out.hard_timeout = DEFAULT_HARD_TIMEOUT;
-    out.priority = DEFAULT_PRIORITY;
+    out.meta.idle_timeout = DEFAULT_IDLE_TIMEOUT;
+    out.meta.hard_timeout = DEFAULT_HARD_TIMEOUT;
+    out.meta.priority = DEFAULT_PRIORITY;
 
     out.num_actions = 1;
     out.action[0].type = ACTION_OUTPUT;
@@ -72,89 +68,113 @@ static int insert_flow(const pktin_t *pktin, uint16_t port)
 
 /////////////////////////////////////////////////////////////////////
 
+int get_mac_entry(mac_entry_t *entry)
+{
+    char conditions[__CONF_STR_LEN];
+    sprintf(conditions, "DPID = %lu and MAC = %lu", entry->dpid, entry->mac);
+
+    if (select_data(&l2_learning_db, "forwarding_table", "PORT, IP", conditions, TRUE)) return -1;
+
+    query_result_t *result = get_query_result(&l2_learning_db);
+    query_row_t row;
+
+    if ((row = fetch_query_row(result)) != NULL) {
+        entry->port = strtoul(row[0], NULL, 0);
+        entry->ip = strtoul(row[1], NULL, 0);
+
+        release_query_result(result);
+
+        return 0;
+    }
+
+    release_query_result(result);
+
+    return -1;
+}
+
+int insert_mac_entry(mac_entry_t *entry)
+{
+    char values[__CONF_STR_LEN];
+    sprintf(values, "%lu, %u, %lu, %u", entry->dpid, entry->port, entry->mac, entry->ip);
+
+    if (insert_data(&l2_learning_db, "forwarding_table", "DPID, PORT, MAC, IP", values)) return -1;
+
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////
+
 /**
  * \brief Function to handle pktin messages
  * \param pktin Pktin message
  */
 static int l2_learning(const pktin_t *pktin)
 {
-    uint64_t mac = mac2int(pktin->src_mac);
-    uint32_t mkey = hash_func((uint32_t *)&mac, 2) % MAC_HASH_SIZE;
+    mac_key_t mkey;
 
-    pthread_rwlock_rdlock(&mac_table[mkey].lock);
+    // source check
 
-    // 1. check source MAC
-    mac_entry_t *curr = mac_table[mkey].head;
-    while (curr != NULL) {
-        if (curr->dpid == pktin->dpid && curr->mac == mac)
-            break;
-        curr = curr->next;
+    mkey.dpid = pktin->dpid;
+    mkey.mac = mac2int(pktin->pkt_info.src_mac);
+
+    uint32_t key = hash_func((uint32_t *)&mkey, 4) % NUM_MAC_ENTRIES;
+
+    if (mac_cache[key].dpid != mkey.dpid && mac_cache[key].mac != mkey.mac) { // not in cache
+        mac_entry_t src;
+
+        src.dpid = mkey.dpid;
+        src.mac = mkey.mac;
+
+        if (get_mac_entry(&src)) { // not found in database
+            mac_cache[key].dpid = mkey.dpid;
+            mac_cache[key].port = pktin->port;
+            mac_cache[key].ip = pktin->pkt_info.src_ip;
+            mac_cache[key].mac = mkey.mac;
+
+            insert_mac_entry(&mac_cache[key]);
+        } else { // found in database
+            mac_cache[key].dpid = mkey.dpid;
+            mac_cache[key].port = src.port;
+            mac_cache[key].ip = src.ip;
+            mac_cache[key].mac = mkey.mac;
+        }
     }
 
-    pthread_rwlock_unlock(&mac_table[mkey].lock);
+    // destination check
 
-    // 2. if new MAC, add it in the mac table
-    if (curr == NULL) {
-        curr = mac_dequeue();
-        if (curr == NULL) return -1;
+    mkey.mac = mac2int(pktin->pkt_info.dst_mac);
 
-        curr->dpid = pktin->dpid;
-        curr->port = pktin->port;
+    if (mkey.mac == __BROADCAST_MAC) { // broadcast
+        send_packet(pktin, PORT_FLOOD);
+        return 0;
+    }
 
-        curr->ip = pktin->src_ip;
-        curr->mac = mac;
+    key = hash_func((uint32_t *)&mkey, 4) % NUM_MAC_ENTRIES;
 
-        pthread_rwlock_wrlock(&mac_table[mkey].lock);
+    if (mac_cache[key].dpid != mkey.dpid && mac_cache[key].mac != mkey.mac) { // not in cache
+        mac_entry_t dest;
 
-        if (mac_table[mkey].head == NULL) {
-            mac_table[mkey].head = curr;
-            mac_table[mkey].tail = curr;
+        dest.dpid = mkey.dpid;
+        dest.mac = mkey.mac;
+
+        if (get_mac_entry(&dest)) { // not found in database
+            send_packet(pktin, PORT_FLOOD);
+            return 0;
         } else {
-            curr->prev = mac_table[mkey].tail;
-            mac_table[mkey].tail->next = curr;
-            mac_table[mkey].tail = curr;
+            mac_cache[key].dpid = mkey.dpid;
+            mac_cache[key].port = dest.port;
+            mac_cache[key].ip = dest.ip;
+            mac_cache[key].mac = mkey.mac;
         }
-
-        pthread_rwlock_unlock(&mac_table[mkey].lock);
     }
 
-    // 3. get destination MAC
-    mac = mac2int(pktin->dst_mac);
-    mkey = hash_func((uint32_t *)&mac, 2) % MAC_HASH_SIZE;
+    // forwarding
 
-    // 4. if dst mac == broadcast, flood it
-    if (mac == __BROADCAST_MAC) {
-        send_packet(pktin, PORT_FLOOD);
-        return 0;
+    if (pktin->pkt_info.proto & PROTO_IPV4) { // IPv4
+        insert_flow(pktin, mac_cache[key].port);
+    } else { // Otherwise
+        send_packet(pktin, mac_cache[key].port);
     }
-
-    uint16_t port = 0;
-
-    pthread_rwlock_rdlock(&mac_table[mkey].lock);
-
-    // 5. look up where to forward
-    curr = mac_table[mkey].head;
-    while (curr != NULL) {
-        if (curr->dpid == pktin->dpid && curr->mac == mac) {
-            port = curr->port;
-            break;
-        }
-        curr = curr->next;
-    }
-
-    pthread_rwlock_unlock(&mac_table[mkey].lock);
-
-    // 6. if unknown destination, flood it
-    if (port == 0) {
-        send_packet(pktin, PORT_FLOOD);
-        return 0;
-    }
-
-    // 7. send it to where it should go
-    if (pktin->proto & PROTO_IPV4) // IPv4
-        insert_flow(pktin, port);
-    else if (pktin->proto & PROTO_ARP) // ARP
-        send_packet(pktin, port);
 
     return 0;
 }
@@ -171,7 +191,20 @@ int l2_learning_main(int *activated, int argc, char **argv)
 {
     ALOG_INFO(L2_LEARNING_ID, "Init - L2 learning");
 
-    mac_init();
+    if (init_database(&l2_learning_db, "l2_learning")) {
+        ALOG_ERROR(L2_LEARNING_ID, "Failed to connect a l2_learning database");
+        return -1;
+    } else {
+        ALOG_INFO(L2_LEARNING_ID, "Connected to a l2_learning database");
+    }
+
+    reset_table(&l2_learning_db, "forwarding_table", FALSE);
+
+    mac_cache = (mac_entry_t *)CALLOC(NUM_MAC_ENTRIES, sizeof(mac_entry_t));
+    if (mac_cache == NULL) {
+        ALOG_ERROR(L2_LEARNING_ID, "calloc() failed");
+        return -1;
+    }
 
     activate();
 
@@ -188,7 +221,14 @@ int l2_learning_cleanup(int *activated)
 
     deactivate();
 
-    mac_destroy();
+    FREE(mac_cache);
+
+    if (destroy_database(&l2_learning_db)) {
+        ALOG_ERROR(L2_LEARNING_ID, "Failed to disconnect a l2_learning database");
+        return -1;
+    } else {
+        ALOG_INFO(L2_LEARNING_ID, "Disconnected from a l2_learning database");
+    }
 
     return 0;
 }
@@ -199,25 +239,31 @@ int l2_learning_cleanup(int *activated)
  */
 static int list_all_entries(cli_t *cli)
 {
-    cli_print(cli, "<MAC Tables>");
+    cli_print(cli, "< MAC Tables >");
 
-    int i, cnt = 0;
-    for (i=0; i<MAC_HASH_SIZE; i++) {
-        pthread_rwlock_rdlock(&mac_table[i].lock);
-
-        mac_entry_t *curr = NULL;
-        for (curr = mac_table[i].head; curr != NULL; curr = curr->next, cnt++) {
-            uint8_t mac[ETH_ALEN];
-            int2mac(curr->mac, mac);
-
-            char macaddr[__CONF_WORD_LEN];
-            mac2str(mac, macaddr);
-
-            cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, ip_addr_str(curr->ip), curr->port);
-        }
-
-        pthread_rwlock_unlock(&mac_table[i].lock);
+    if (select_data(&l2_learning_db, "forwarding_table", "DPID, PORT, IP, MAC", NULL, TRUE)) {
+        cli_print(cli, "  Failed to execute a query");
+        return -1;
     }
+
+    query_result_t *result = get_query_result(&l2_learning_db);
+    query_row_t row;
+    int cnt = 0;
+
+    while ((row = fetch_query_row(result)) != NULL) {
+        uint64_t dpid = strtoull(row[0], NULL, 0);
+        uint32_t port = strtoul(row[1], NULL, 0);
+        uint32_t ip = strtoul(row[2], NULL, 0);
+        uint64_t mac = strtoull(row[3], NULL, 0);
+
+        uint8_t macaddr[ETH_ALEN];
+        int2mac(mac, macaddr);
+
+        cli_print(cli, "  Host #%4d - DPID: %lu, IP: %s, MAC: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u",
+                  ++cnt, dpid, ip_addr_str(ip), macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], port);
+    }
+
+    release_query_result(result);
 
     if (!cnt)
         cli_print(cli, "  No entry");
@@ -234,29 +280,33 @@ static int show_entry_switch(cli_t *cli, char *dpid_str)
 {
     uint64_t dpid = strtoull(dpid_str, NULL, 0);
 
-    cli_print(cli, "<MAC Table for Switch [%lu]>", dpid);
+    cli_print(cli, "< MAC Table for Switch [%lu] >", dpid);
 
-    int i, cnt = 0;
-    for (i=0; i<MAC_HASH_SIZE; i++) {
-        pthread_rwlock_rdlock(&mac_table[i].lock);
+    char conditions[__CONF_STR_LEN];
+    sprintf(conditions, "DPID = %lu", dpid);
 
-        mac_entry_t *curr = NULL;
-        for (curr = mac_table[i].head; curr != NULL; curr = curr->next) {
-            if (curr->dpid == dpid) {
-                uint8_t mac[ETH_ALEN];
-                int2mac(curr->mac, mac);
-
-                char macaddr[__CONF_WORD_LEN] = {0};
-                mac2str(mac, macaddr);
-
-                cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, ip_addr_str(curr->ip), curr->port);
-
-                cnt++;
-            }
-        }
-
-        pthread_rwlock_unlock(&mac_table[i].lock);
+    if (select_data(&l2_learning_db, "forwarding_table", "PORT, IP, MAC", conditions, TRUE)) {
+        cli_print(cli, "  Failed to execute a query");
+        return -1;
     }
+
+    query_result_t *result = get_query_result(&l2_learning_db);
+    query_row_t row;
+    int cnt = 0;
+
+    while ((row = fetch_query_row(result)) != NULL) {
+        uint32_t port = strtoul(row[0], NULL, 0);
+        uint32_t ip = strtoul(row[1], NULL, 0);
+        uint64_t mac = strtoull(row[2], NULL, 0);
+
+        uint8_t macaddr[ETH_ALEN];
+        int2mac(mac, macaddr);
+
+        cli_print(cli, "  Host #%4d - DPID: %lu, IP: %s, MAC: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u",
+                  ++cnt, dpid, ip_addr_str(ip), macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], port);
+    }
+
+    release_query_result(result);
 
     if (!cnt)
         cli_print(cli, "  No entry");
@@ -273,26 +323,33 @@ static int show_entry_mac(cli_t *cli, const char *macaddr)
 {
     uint8_t mac[ETH_ALEN];
     str2mac(macaddr, mac);
- 
+
     uint64_t macval = mac2int(mac);
 
-    cli_print(cli, "<MAC Entry [%s]>", macaddr);
+    cli_print(cli, "< MAC Entry [%s] >", macaddr);
 
-    int i, cnt = 0;
-    for (i=0; i<MAC_HASH_SIZE; i++) {
-        pthread_rwlock_rdlock(&mac_table[i].lock);
+    char conditions[__CONF_STR_LEN];
+    sprintf(conditions, "MAC = %lu", macval);
 
-        mac_entry_t *curr = NULL;
-        for (curr = mac_table[i].head; curr != NULL; curr = curr->next) {
-            if (curr->mac == macval) {
-                cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, ip_addr_str(curr->ip), curr->port);
-
-                cnt++;
-            }
-        }
-
-        pthread_rwlock_unlock(&mac_table[i].lock);
+    if (select_data(&l2_learning_db, "forwarding_table", "DPID, PORT, IP", conditions, TRUE)) {
+        cli_print(cli, "  Failed to execute a query");
+        return -1;
     }
+
+    query_result_t *result = get_query_result(&l2_learning_db);
+    query_row_t row;
+    int cnt = 0;
+
+    while ((row = fetch_query_row(result)) != NULL) {
+        uint64_t dpid = strtoull(row[0], NULL, 0);
+        uint32_t port = strtoul(row[1], NULL, 0);
+        uint32_t ip = strtoul(row[2], NULL, 0);
+
+        cli_print(cli, "  Host #%4d - DPID: %lu, IP: %s, MAC: %s, Port: %u",
+                  ++cnt, dpid, ip_addr_str(ip), macaddr, port);
+    }
+
+    release_query_result(result);
 
     if (!cnt)
         cli_print(cli, "  No entry");
@@ -309,29 +366,33 @@ static int show_entry_ip(cli_t *cli, const char *ipaddr)
 {
     uint32_t ip = ip_addr_int(ipaddr);
 
-    cli_print(cli, "<MAC Entry [%s]>", ipaddr);
+    cli_print(cli, "< MAC Entry [%s] >", ipaddr);
 
-    int i, cnt = 0;
-    for (i=0; i<MAC_HASH_SIZE; i++) {
-        pthread_rwlock_rdlock(&mac_table[i].lock);
+    char conditions[__CONF_STR_LEN];
+    sprintf(conditions, "IP = %u", ip);
 
-        mac_entry_t *curr = NULL;
-        for (curr = mac_table[i].head; curr != NULL; curr = curr->next) {
-            if (curr->ip == ip) {
-                uint8_t mac[ETH_ALEN];
-                int2mac(curr->mac, mac);
-
-                char macaddr[__CONF_WORD_LEN] = {0};
-                mac2str(mac, macaddr);
-
-                cli_print(cli, "  %lu: %s (%s), %u", curr->dpid, macaddr, ipaddr, curr->port);
-
-                cnt++;
-            }
-        }
-
-        pthread_rwlock_unlock(&mac_table[i].lock);
+    if (select_data(&l2_learning_db, "forwarding_table", "DPID, PORT, MAC", conditions, TRUE)) {
+        cli_print(cli, "  Failed to execute a query");
+        return -1;
     }
+
+    query_result_t *result = get_query_result(&l2_learning_db);
+    query_row_t row;
+    int cnt = 0;
+
+    while ((row = fetch_query_row(result)) != NULL) {
+        uint64_t dpid = strtoull(row[0], NULL, 0);
+        uint32_t port = strtoul(row[1], NULL, 0);
+        uint64_t mac = strtoull(row[2], NULL, 0);
+
+        uint8_t macaddr[ETH_ALEN];
+        int2mac(mac, macaddr);
+
+        cli_print(cli, "  Host #%4d - DPID: %lu, IP: %s, MAC: %02x:%02x:%02x:%02x:%02x:%02x, Port: %u",
+                  ++cnt, dpid, ipaddr, macaddr[0], macaddr[1], macaddr[2], macaddr[3], macaddr[4], macaddr[5], port);
+    }
+
+    release_query_result(result);
 
     if (!cnt)
         cli_print(cli, "  No entry");
@@ -364,7 +425,7 @@ int l2_learning_cli(cli_t *cli, char **args)
         }
     }
 
-    cli_print(cli, "<Available Commands>");
+    cli_print(cli, "< Available Commands >");
     cli_print(cli, "  l2_learning list tables");
     cli_print(cli, "  l2_learning show switch [DPID]");
     cli_print(cli, "  l2_learning show mac [MAC address]");
@@ -394,30 +455,19 @@ int l2_learning_handler(const app_event_t *av, app_event_out_t *av_out)
         {
             const port_t *port = av->port;
 
+            if (port->remote == FALSE) {
+                char conditions[__CONF_STR_LEN];
+                sprintf(conditions, "DPID = %lu and PORT = %u", port->dpid, port->port);
+
+                delete_data(&l2_learning_db, "forwarding_table", conditions);
+            }
+
             int i;
-            for (i=0; i<MAC_HASH_SIZE; i++) {
-                mac_table_t tmp_list = {0};
-
-                pthread_rwlock_wrlock(&mac_table[i].lock);
-
-                mac_entry_t *curr = NULL;
-                for (curr = mac_table[i].head; curr != NULL; curr = curr->next) {
-                    if (curr->dpid == port->dpid && curr->port == port->port) {
-                        if (tmp_list.head == NULL) {
-                            tmp_list.head = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        } else {
-                            tmp_list.tail->r_next = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        }
-                    }
+            for (i=0; i<NUM_MAC_ENTRIES; i++) {
+                if (mac_cache[i].dpid == port->dpid && mac_cache[i].port == port->port) {
+                    memset(&mac_cache[i], 0, sizeof(mac_entry_t));
+                    break;
                 }
-
-                clean_up_tmp_list(i, &tmp_list);
-
-                pthread_rwlock_unlock(&mac_table[i].lock);
             }
         }
         break;
@@ -426,30 +476,19 @@ int l2_learning_handler(const app_event_t *av, app_event_out_t *av_out)
         {
             const port_t *port = av->port;
 
+            if (port->remote == FALSE) {
+                char conditions[__CONF_STR_LEN];
+                sprintf(conditions, "DPID = %lu and PORT = %u", port->dpid, port->port);
+
+                delete_data(&l2_learning_db, "forwarding_table", conditions);
+            }
+
             int i;
-            for (i=0; i<MAC_HASH_SIZE; i++) {
-                mac_table_t tmp_list = {0};
-
-                pthread_rwlock_wrlock(&mac_table[i].lock);
-
-                mac_entry_t *curr = NULL;
-                for (curr = mac_table[i].head; curr != NULL; curr = curr->next) {
-                    if (curr->dpid == port->dpid && curr->port == port->port) {
-                        if (tmp_list.head == NULL) {
-                            tmp_list.head = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        } else {
-                            tmp_list.tail->r_next = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        }
-                    }
+            for (i=0; i<NUM_MAC_ENTRIES; i++) {
+                if (mac_cache[i].dpid == port->dpid && mac_cache[i].port == port->port) {
+                    memset(&mac_cache[i], 0, sizeof(mac_entry_t));
+                    break;
                 }
-
-                clean_up_tmp_list(i, &tmp_list);
-
-                pthread_rwlock_unlock(&mac_table[i].lock);
             }
         }
         break;
@@ -458,30 +497,18 @@ int l2_learning_handler(const app_event_t *av, app_event_out_t *av_out)
         {
             const switch_t *sw = av->sw;
 
+            if (sw->remote == FALSE) {
+                char conditions[__CONF_STR_LEN];
+                sprintf(conditions, "DPID = %lu", sw->dpid);
+
+                delete_data(&l2_learning_db, "forwarding_table", conditions);
+            }
+
             int i;
-            for (i=0; i<MAC_HASH_SIZE; i++) {
-                mac_table_t tmp_list = {0};
-
-                pthread_rwlock_wrlock(&mac_table[i].lock);
-
-                mac_entry_t *curr = NULL;
-                for (curr = mac_table[i].head; curr != NULL; curr = curr->next) {
-                    if (curr->dpid == sw->dpid) {
-                        if (tmp_list.head == NULL) {
-                            tmp_list.head = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        } else {
-                            tmp_list.tail->r_next = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        }
-                    }
+            for (i=0; i<NUM_MAC_ENTRIES; i++) {
+                if (mac_cache[i].dpid == sw->dpid) {
+                    memset(&mac_cache[i], 0, sizeof(mac_entry_t));
                 }
-
-                clean_up_tmp_list(i, &tmp_list);
-
-                pthread_rwlock_unlock(&mac_table[i].lock);
             }
         }
         break;
@@ -490,30 +517,18 @@ int l2_learning_handler(const app_event_t *av, app_event_out_t *av_out)
         {
             const switch_t *sw = av->sw;
 
+            if (sw->remote == FALSE) {
+                char conditions[__CONF_STR_LEN];
+                sprintf(conditions, "DPID = %lu", sw->dpid);
+
+                delete_data(&l2_learning_db, "forwarding_table", conditions);
+            }
+
             int i;
-            for (i=0; i<MAC_HASH_SIZE; i++) {
-                mac_table_t tmp_list = {0};
-
-                pthread_rwlock_wrlock(&mac_table[i].lock);
-
-                mac_entry_t *curr = NULL;
-                for (curr = mac_table[i].head; curr != NULL; curr = curr->next) {
-                    if (curr->dpid == sw->dpid) {
-                        if (tmp_list.head == NULL) {
-                            tmp_list.head = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        } else {
-                            tmp_list.tail->r_next = curr;
-                            tmp_list.tail = curr;
-                            curr->r_next = NULL;
-                        }
-                    }
+            for (i=0; i<NUM_MAC_ENTRIES; i++) {
+                if (mac_cache[i].dpid == sw->dpid) {
+                    memset(&mac_cache[i], 0, sizeof(mac_entry_t));
                 }
-
-                clean_up_tmp_list(i, &tmp_list);
-
-                pthread_rwlock_unlock(&mac_table[i].lock);
             }
         }
         break;

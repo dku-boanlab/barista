@@ -63,6 +63,8 @@ int apphdlr_cleanup(int *activated)
  */
 int apphdlr_cli(cli_t *cli, char **args)
 {
+    cli_print(cli, "No CLI support");
+
     return 0;
 }
 
