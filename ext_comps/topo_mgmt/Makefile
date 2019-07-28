@@ -11,14 +11,14 @@ BIN_DIR = ../../bin
 
 CPPFLAGS = $(addprefix -I,$(shell find $(SRC_DIR) -type d))
 
-CFLAGS   = -O2 -Wall -std=gnu99 -D__DISABLE_CLI
-#CFLAGS   = -g -ggdb -Wall -std=gnu99 -D__DISABLE_CLI
-LDFLAGS  = -lpthread -ljansson -lzmq
+CFLAGS   = -O2 -Wall -std=gnu99 -I/usr/include/mysql
+#CFLAGS   = -g -ggdb -Wall -std=gnu99 -I/usr/include/mysql
+LDFLAGS  = -lpthread -ljansson -lzmq -L/usr/lib -lmysqlclient
 
 include $(CONFIG_MK)
 CFLAGS += $(addprefix -D, $(CONFIG))
 
-PROG = conflict
+PROG = topo_mgmt
 
 SRC = $(shell find $(SRC_DIR) -name '*.c')
 OBJ = $(patsubst %.c,%.o,$(notdir $(SRC)))

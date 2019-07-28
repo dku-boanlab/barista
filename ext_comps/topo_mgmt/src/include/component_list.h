@@ -22,10 +22,10 @@
 #define DECLARE_CLI_FUNC(name) \
     extern int name(cli_t *cli, char **args)
 
-DECLARE_MAIN_FUNC(conflict_main);
-DECLARE_HANDLER_FUNC(conflict_handler);
-DECLARE_CLEANUP_FUNC(conflict_cleanup);
-DECLARE_CLI_FUNC(conflict_cli);
+DECLARE_MAIN_FUNC(topo_mgmt_main);
+DECLARE_HANDLER_FUNC(topo_mgmt_handler);
+DECLARE_CLEANUP_FUNC(topo_mgmt_cleanup);
+DECLARE_CLI_FUNC(topo_mgmt_cli);
 
 /** \brief The function pointer of a component */
 struct _compnt_func_t {
@@ -35,6 +35,6 @@ struct _compnt_func_t {
     compnt_cleanup_f cleanup; /**< The cleanup function pointer */
     compnt_cli_f cli; /**< The CLI function pointer */
 } g_components[] = {
-    {"conflict", conflict_main, conflict_handler, conflict_cleanup, conflict_cli},
+    {"topo_mgmt", topo_mgmt_main, topo_mgmt_handler, topo_mgmt_cleanup, topo_mgmt_cli},
 }; /**< The list of function pointers */
 

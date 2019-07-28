@@ -13,7 +13,7 @@ CPPFLAGS = $(addprefix -I,$(shell find $(SRC_DIR) -type d))
 
 CFLAGS   = -O2 -Wall -std=gnu99 -I/usr/include/mysql
 #CFLAGS   = -g -ggdb -Wall -std=gnu99 -I/usr/include/mysql
-LDFLAGS  = -lpthread -ljansson -lzmq -L/usr/lib -lmysqlclient -L/usr/lib64/mysql
+LDFLAGS  = -lpthread -ljansson -lzmq -L/usr/lib -lmysqlclient
 
 include $(CONFIG_MK)
 CFLAGS += $(addprefix -D, $(CONFIG))
