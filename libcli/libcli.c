@@ -1574,7 +1574,12 @@ static void _print(struct cli_def *cli, int print_mode, const char *format, va_l
     int n;
     char *p = NULL;
 
-    if (!cli) return;    // sanity check
+    if (!cli) { // sanity check
+        n = vasprintf(&p, format, ap);
+        printf("%s\r\n", p);
+        if (p) free(p);
+        return;
+    }
 
     n = vasprintf(&p, format, ap);
     if (n < 0) return;

@@ -40,11 +40,11 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
 
             char buf[__CONF_LONG_STR_LEN] = {0};
 
-            sprintf(output, "{'id':%u, 'type': %u, "
-                            "'dpid': %lu, 'port': %u, 'xid': %u, 'buffer_id': %u, 'reason': %u, "
-                            "'proto': %u, 'vlan_id': %u, 'vlan_pcp': %u, 'ip_tos': %u, "
-                            "'src_mac': %lu, 'dst_mac': %lu, 'src_ip': %u, 'dst_ip': %u, 'src_port': %u, 'dst_port': %u, "
-                            "'total_len': %u, 'data': '%s', 'return': %d}",
+            sprintf(output, "{\"id\":%u, \"type\": %u, "
+                            "\"dpid\": %lu, \"port\": %u, \"xid\": %u, \"buffer_id\": %u, \"reason\": %u, "
+                            "\"proto\": %u, \"vlan_id\": %u, \"vlan_pcp\": %u, \"ip_tos\": %u, "
+                            "\"src_mac\": %lu, \"dst_mac\": %lu, \"src_ip\": %u, \"dst_ip\": %u, \"src_port\": %u, \"dst_port\": %u, "
+                            "\"total_len\": %u, \"data\": \"%s\", \"return\": %d}",
                     id, type, in->dpid, in->port, in->xid, in->buffer_id, in->reason, 
                     info->proto, info->vlan_id, info->vlan_pcp, info->ip_tos,
                     mac2int(info->src_mac), mac2int(info->dst_mac), info->src_ip, info->dst_ip, info->src_port, info->dst_port, 
@@ -58,12 +58,12 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
             const flow_t *fl = (const flow_t *)input;
             const pkt_info_t *info = &fl->pkt_info;
 
-            sprintf(output, "{'id':%u, 'type': %u, "
-                            "'dpid': %lu, 'port': %u, 'xid': %u, "
-                            "'cookie': %lu, 'idle_timeout': %u, 'priority': %u, 'reason': %u, 'wildcards': %u, "
-                            "'proto': %u, 'vlan_id': %u, 'vlan_pcp': %u, 'ip_tos': %u, "
-                            "'src_mac': %lu, 'dst_mac': %lu, 'src_ip': %u, 'dst_ip': %u, 'src_port': %u, 'dst_port': %u, "
-                            "'duration_sec': %u, 'duration_nsec': %u, 'pkt_count': %lu, 'byte_count': %lu, 'return': %d}",
+            sprintf(output, "{\"id\":%u, \"type\": %u, "
+                            "\"dpid\": %lu, \"port\": %u, \"xid\": %u, "
+                            "\"cookie\": %lu, \"idle_timeout\": %u, \"priority\": %u, \"reason\": %u, \"wildcards\": %u, "
+                            "\"proto\": %u, \"vlan_id\": %u, \"vlan_pcp\": %u, \"ip_tos\": %u, "
+                            "\"src_mac\": %lu, \"dst_mac\": %lu, \"src_ip\": %u, \"dst_ip\": %u, \"src_port\": %u, \"dst_port\": %u, "
+                            "\"duration_sec\": %u, \"duration_nsec\": %u, \"pkt_count\": %lu, \"byte_count\": %lu, \"return\": %d}",
                     id, type, fl->dpid, fl->port, fl->info.xid, 
                     fl->meta.cookie, fl->meta.idle_timeout, fl->meta.priority, fl->meta.reason, info->wildcards, 
                     info->proto, info->vlan_id, info->vlan_pcp, info->ip_tos, 
@@ -77,9 +77,9 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const port_t *pt = (const port_t *)input;
 
-            sprintf(output, "{'id':%u, 'type': %u, "
-                            "'dpid': %lu, 'port': %u, 'name': '%s', 'hw_addr': %lu, 'config': %u, 'state': %u, "
-                            "'curr': %u, 'advertized': %u, 'supported': %u, 'peer': %u, 'return': %d}",
+            sprintf(output, "{\"id\":%u, \"type\": %u, "
+                            "\"dpid\": %lu, \"port\": %u, \"name\": \"%s\", \"hw_addr\": %lu, \"config\": %u, \"state\": %u, "
+                            "\"curr\": %u, \"advertized\": %u, \"supported\": %u, \"peer\": %u, \"return\": %d}",
                     id, type, 
                     pt->dpid, pt->port, pt->info.name, mac2int(pt->info.hw_addr), pt->info.config, pt->info.state,
                     pt->info.curr, pt->info.advertized, pt->info.supported, pt->info.peer, ret);
@@ -112,9 +112,9 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
 
             char buf[__CONF_LONG_STR_LEN] = {0};
 
-            sprintf(output, "{'id':%u, 'type': %u, "
-                            "'dpid': %lu, 'port': %u, 'xid': %u, 'buffer_id': %u, "
-                            "'total_len': %u, 'data': '%s', 'actions': '%s', 'return': %d}",
+            sprintf(output, "{\"id\":%u, \"type\": %u, "
+                            "\"dpid\": %lu, \"port\": %u, \"xid\": %u, \"buffer_id\": %u, "
+                            "\"total_len\": %u, \"data\": \"%s\", \"actions\": \"%s\", \"return\": %d}",
                     id, type, 
                     out->dpid, out->port, out->xid, out->buffer_id, 
                     out->total_len, (out->total_len) ? base64_encode_w_buffer((const char *)out->data, out->total_len, buf) : "", 
@@ -147,12 +147,12 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
                     strcat(actions, ",");
             }
 
-            sprintf(output, "{'id':%u, 'type': %u, "
-                            "'dpid': %lu, 'port': %u, 'xid': %u, 'buffer_id': %u, "
-                            "'cookie': %lu, 'idle_timeout': %u, 'hard_timeout': %u, 'priority': %u, 'flags': %u, 'wildcards': %u, "
-                            "'proto': %u, 'vlan_id': %u, 'vlan_pcp': %u, 'ip_tos': %u, "
-                            "'src_mac': %lu, 'dst_mac': %lu, 'src_ip': %u, 'dst_ip': %u, 'src_port': %u, 'dst_port': %u, "
-                            "'actions': '%s', 'return': %d}",
+            sprintf(output, "{\"id\":%u, \"type\": %u, "
+                            "\"dpid\": %lu, \"port\": %u, \"xid\": %u, \"buffer_id\": %u, "
+                            "\"cookie\": %lu, \"idle_timeout\": %u, \"hard_timeout\": %u, \"priority\": %u, \"flags\": %u, \"wildcards\": %u, "
+                            "\"proto\": %u, \"vlan_id\": %u, \"vlan_pcp\": %u, \"ip_tos\": %u, "
+                            "\"src_mac\": %lu, \"dst_mac\": %lu, \"src_ip\": %u, \"dst_ip\": %u, \"src_port\": %u, \"dst_port\": %u, "
+                            "\"actions\": \"%s\", \"return\": %d}",
                     id, type, fl->dpid, fl->port, fl->info.xid, fl->info.buffer_id,
                     fl->meta.cookie, fl->meta.idle_timeout, fl->meta.hard_timeout, fl->meta.priority, fl->meta.flags, info->wildcards,
                     info->proto, info->vlan_id, info->vlan_pcp, info->ip_tos,
@@ -167,7 +167,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const switch_t *sw = (const switch_t *)input;
 
-            sprintf(output, "{'id':%u, 'type': %u, 'dpid': %lu, 'remote': %u, 'return': %d}", id, type, sw->dpid, sw->remote, ret);
+            sprintf(output, "{\"id\":%u, \"type\": %u, \"dpid\": %lu, \"remote\": %u, \"return\": %d}", id, type, sw->dpid, sw->remote, ret);
         }
         break;
     case AV_HOST_ADDED:
@@ -175,7 +175,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const host_t *ht = (const host_t *)input;
 
-            sprintf(output, "{'id':%u, 'type': %u, 'dpid': %lu, 'port': %u, 'mac': %lu, 'ip': %u, 'remote': %u, 'return': %d}",
+            sprintf(output, "{\"id\":%u, \"type\": %u, \"dpid\": %lu, \"port\": %u, \"mac\": %lu, \"ip\": %u, \"remote\": %u, \"return\": %d}",
                     id, type, ht->dpid, ht->port, ht->mac, ht->ip, ht->remote, ret);
         }
         break;
@@ -184,8 +184,8 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const port_t *pt = (const port_t *)input;
 
-            sprintf(output, "{'id':%u, 'type': %u, 'src_dpid': %lu, 'src_port': %u, 'dst_dpid': %lu, 'dst_port': %u, "
-                            "'remote': %u, 'return': %d}",
+            sprintf(output, "{\"id\":%u, \"type\": %u, \"src_dpid\": %lu, \"src_port\": %u, \"dst_dpid\": %lu, \"dst_port\": %u, "
+                            "\"remote\": %u, \"return\": %d}",
                     id, type, pt->dpid, pt->port, pt->link.dpid, pt->link.port, pt->remote, ret);
         }
         break;
@@ -215,11 +215,11 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
                     strcat(actions, ",");
             }
 
-            sprintf(output, "{'id':%u, 'type': %u, "
-                            "'dpid': %lu, 'port': %u, 'idle_timeout': %u, 'hard_timeout': %u, 'wildcards': %u, "
-                            "'proto': %u, 'vlan_id': %u, 'vlan_pcp': %u, 'ip_tos': %u, "
-                            "'src_mac': %lu, 'dst_mac': %lu, 'src_ip': %u, 'dst_ip': %u, 'src_port': %u, 'dst_port': %u, "
-                            "'actions': '%s', 'remote': %u, 'return': %d}",
+            sprintf(output, "{\"id\":%u, \"type\": %u, "
+                            "\"dpid\": %lu, \"port\": %u, \"idle_timeout\": %u, \"hard_timeout\": %u, \"wildcards\": %u, "
+                            "\"proto\": %u, \"vlan_id\": %u, \"vlan_pcp\": %u, \"ip_tos\": %u, "
+                            "\"src_mac\": %lu, \"dst_mac\": %lu, \"src_ip\": %u, \"dst_ip\": %u, \"src_port\": %u, \"dst_port\": %u, "
+                            "\"actions\": \"%s\", \"remote\": %u, \"return\": %d}",
                     id, type, fl->dpid, fl->port,
                     fl->meta.idle_timeout, fl->meta.hard_timeout, info->wildcards,
                     info->proto, info->vlan_id, info->vlan_pcp, info->ip_tos,
@@ -237,13 +237,13 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const char *log = (const char *)input;
 
-            sprintf(output, "{'id':%u, 'type': %u, 'msg': '%s', 'return': %d}", id, type, log, ret);
+            sprintf(output, "{\"id\":%u, \"type\": %u, \"msg\": \"%s\", \"return\": %d}", id, type, log, ret);
         }
         break;
 
     }
 
-    return 0;
+    return strlen(output);
 }
 
 /////////////////////////////////////////////////////////////////////

@@ -67,8 +67,7 @@ static int init_app(void)
             strcpy(name, json_string_value(j_name));
         }
 
-        if (strcmp(name, TARGET_APP) != 0)
-            continue;
+        if (strcmp(name, TARGET_APP) != 0) continue;
 
         char args[__CONF_WORD_LEN] = {0};
         json_t *j_args = json_object_get(data, "args");
@@ -87,10 +86,10 @@ static int init_app(void)
             PRINTF("No application name\n");
             json_decref(json);
             return -1;
-        } else {
-            strcpy(app.name, name);
-            app.app_id = hash_func((uint32_t *)&app.name, __HASHING_NAME_LENGTH);
         }
+
+        strcpy(app.name, name);
+        app.app_id = hash_func((uint32_t *)&app.name, __HASHING_NAME_LENGTH);
 
         // set arguments
         strcpy(app.args, args);
@@ -105,11 +104,7 @@ static int init_app(void)
         app.cli = g_applications[0].cli;
 
         // set a type
-        if (strlen(type) == 0) {
-            app.type = APP_GENERAL;
-        } else {
-            app.type = (strcmp(type, "autonomous") == 0) ? APP_AUTO : APP_GENERAL;
-        }
+        app.type = (strcmp(type, "autonomous") == 0) ? APP_AUTO : APP_GENERAL;
 
         pass = TRUE;
 
@@ -118,12 +113,12 @@ static int init_app(void)
 
     json_decref(json);
 
-    if (pass) {
-        app.activated = FALSE;
-    } else {
+    if (!pass) {
         PRINTF("No %s in the given configuration file\n", TARGET_APP);
         return -1;
     }
+
+    app.activated = FALSE;
 
     return 0;
 }
@@ -188,10 +183,12 @@ void (*sigint_func)(int);
 /** \brief Function to handle the SIGINT signal */
 void sigint_handler(int sig)
 {
-    PRINTF("Got a SIGINT signal\n");
+    //PRINTF("Got a SIGINT signal\n");
 
-    deactivate_app();
-    destroy_av_workers(NULL);
+    if (deactivate_app())
+        PRINTF("Failed to destroy %s", app.name);
+
+    destroy_app_event(NULL);
 }
 
 /** \brief The SIGKILL handler definition */
@@ -200,10 +197,12 @@ void (*sigkill_func)(int);
 /** \brief Function to handle the SIGKILL signal */
 void sigkill_handler(int sig)
 {
-    PRINTF("Got a SIGKILL signal\n");
+    //PRINTF("Got a SIGKILL signal\n");
 
-    deactivate_app();
-    destroy_av_workers(NULL);
+    if (deactivate_app())
+        PRINTF("Failed to destroy %s", app.name);
+
+    destroy_app_event(NULL);
 }
 
 /** \brief The SIGTERM handler definition */
@@ -212,10 +211,12 @@ void (*sigterm_func)(int);
 /** \brief Function to handle the SIGTERM signal */
 void sigterm_handler(int sig)
 {
-    PRINTF("Got a SIGTERM signal\n");
+    //PRINTF("Got a SIGTERM signal\n");
 
-    deactivate_app();
-    destroy_av_workers(NULL);
+    if (deactivate_app())
+        PRINTF("Failed to destroy %s", app.name);
+
+    destroy_app_event(NULL);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -236,7 +237,7 @@ int main(int argc, char *argv[])
     }
 
     // init app event handler
-    if (app_event_init(NULL)) {
+    if (init_app_event(NULL)) {
         PRINTF("Failed to initialize the external app event handler\n");
         return -1;
     } else {

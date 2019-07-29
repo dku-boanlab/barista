@@ -97,6 +97,8 @@ static int av_push_msg(app_t *a, uint32_t id, uint16_t type, uint16_t size, cons
         return -1;
     }
 
+    //printf("%s: %s\n", __FUNCTION__, json);
+
     zmq_send(push_sock, json, len, 0);
 
     zmq_close(push_sock);
@@ -128,12 +130,17 @@ static int av_send_msg(app_t *a, uint32_t id, uint16_t type, uint16_t size, cons
         return -1;
     }
 
+    //printf("%s: %s\n", __FUNCTION__, json_in);
+
     zmq_send(req_sock, json_in, len, 0);
 
     char json_out[__MAX_EXT_MSG_SIZE] = {0};
     zmq_recv(req_sock, json_out, __MAX_EXT_MSG_SIZE, 0);
 
+    uint8_t data[__MAX_MSG_SIZE] = {0};
+
     msg_t msg = {0};
+    msg.data = data;
     msg.ret = import_from_json(&msg.id, &msg.type, json_out, msg.data);
 
     if (a->in_perm[type] & APP_WRITE && msg.id == id && msg.type == type)
@@ -233,7 +240,9 @@ static void *pull_app_events(void *null)
         char json[__MAX_EXT_MSG_SIZE] = {0};
 
         if (!av_ctx->av_on) break;
-        else if (zmq_recv(av_pull_sock, json, __MAX_EXT_MSG_SIZE, 0)) continue;
+        else if (zmq_recv(av_pull_sock, json, __MAX_EXT_MSG_SIZE, 0) < 0) continue;
+
+        //printf("%s: %s\n", __FUNCTION__, json);
 
         uint8_t data[__MAX_MSG_SIZE] = {0};
 
@@ -249,7 +258,7 @@ static void *pull_app_events(void *null)
         if (!av_ctx->av_on) break;
     }
 
-    //PRINTF("pull_app_events() is terminated\n");
+    DEBUG("pull_app_events() is terminated\n");
 
     return NULL;
 }
@@ -266,7 +275,9 @@ static void *reply_app_events(void *null)
         char json[__MAX_EXT_MSG_SIZE] = {0};
 
         if (!av_ctx->av_on) break;
-        else if (zmq_recv(av_rep_sock, json, __MAX_EXT_MSG_SIZE, 0)) continue;
+        else if (zmq_recv(av_rep_sock, json, __MAX_EXT_MSG_SIZE, 0) < 0) continue;
+
+        //printf("%s: %s\n", __FUNCTION__, json);
 
         // handshake with external app
         if (json[0] == '#') {
@@ -296,7 +307,7 @@ static void *reply_app_events(void *null)
         if (!av_ctx->av_on) break;
     }
 
-    //PRINTF("reply_app_events() is terminated\n");
+    DEBUG("reply_app_events() is terminated\n");
 
     return NULL;
 }

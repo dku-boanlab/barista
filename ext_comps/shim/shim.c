@@ -87,10 +87,10 @@ static int init_compnt(void)
             PRINTF("No component name\n");
             json_decref(json);
             return -1;
-        } else {
-            strcpy(compnt.name, name);
-            compnt.component_id = hash_func((uint32_t *)&compnt.name, __HASHING_NAME_LENGTH);
         }
+
+        strcpy(compnt.name, name);
+        compnt.component_id = hash_func((uint32_t *)&compnt.name, __HASHING_NAME_LENGTH);
 
         // set arguments
         strcpy(compnt.args, args);
@@ -105,11 +105,7 @@ static int init_compnt(void)
         compnt.cli = g_components[0].cli;
 
         // set a type
-        if (strlen(type) == 0) {
-            compnt.type = COMPNT_GENERAL;
-        } else {
-            compnt.type = (strcmp(type, "autonomous") == 0) ? COMPNT_AUTO : COMPNT_GENERAL;
-        }
+        compnt.type = (strcmp(type, "autonomous") == 0) ? COMPNT_AUTO : COMPNT_GENERAL;
 
         pass = TRUE;
 
@@ -118,12 +114,12 @@ static int init_compnt(void)
 
     json_decref(json);
 
-    if (pass) {
-        compnt.activated = FALSE;
-    } else {
+    if (!pass) {
         PRINTF("No %s in the given configuration file\n", TARGET_COMPNT);
         return -1;
     }
+
+    compnt.activated = FALSE;
 
     return 0;
 }
@@ -186,10 +182,12 @@ void (*sigint_func)(int);
 /** \brief Function to handle the SIGINT signal */
 void sigint_handler(int sig)
 {
-    PRINTF("Got a SIGINT signal\n");
+    //PRINTF("Got a SIGINT signal\n");
 
-    deactivate_compnt();
-    destroy_ev_workers(NULL);
+    if (deactivate_compnt())
+        PRINTF("Failed to destroy %s", compnt.name);
+
+    destroy_event(NULL);
 }
 
 /** \brief The SIGKILL handler definition */
@@ -198,10 +196,12 @@ void (*sigkill_func)(int);
 /** \brief Function to handle the SIGKILL signal */
 void sigkill_handler(int sig)
 {
-    PRINTF("Got a SIGKILL signal\n");
+    //PRINTF("Got a SIGKILL signal\n");
 
-    deactivate_compnt();
-    destroy_ev_workers(NULL);
+    if (deactivate_compnt())
+        PRINTF("Failed to destroy %s", compnt.name);
+
+    destroy_event(NULL);
 }
 
 /** \brief The SIGTERM handler definition */
@@ -210,10 +210,12 @@ void (*sigterm_func)(int);
 /** \brief Function to handle the SIGTERM signal */
 void sigterm_handler(int sig)
 {
-    PRINTF("Got a SIGTERM signal\n");
+    //PRINTF("Got a SIGTERM signal\n");
 
-    deactivate_compnt();
-    destroy_ev_workers(NULL);
+    if (deactivate_compnt())
+        PRINTF("Failed to destroy %s", compnt.name);
+
+    destroy_event(NULL);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -234,7 +236,7 @@ int main(int argc, char *argv[])
     }
 
     // init event handler
-    if (event_init(NULL)) {
+    if (init_event(NULL)) {
         PRINTF("Failed to initialize the external event handler\n");
         return -1;
     } else {

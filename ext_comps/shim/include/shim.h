@@ -10,14 +10,9 @@
 #pragma once
 
 #include "common.h"
-
 #include "event.h"
 #include "component.h"
 #include "component_list.h"
 #include "component_info.h"
-
-#include "str.h"
 #include "hash.h"
-
-#include <signal.h>
-
+#include "str.h"

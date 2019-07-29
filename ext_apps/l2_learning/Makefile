@@ -13,7 +13,7 @@ CPPFLAGS = $(addprefix -I,$(shell find $(SRC_DIR) -type d))
 
 CFLAGS   = -O2 -Wall -std=gnu99 -I/usr/include/mysql
 #CFLAGS   = -g -ggdb -Wall -std=gnu99 -I/usr/include/mysql
-LDFLAGS  = -lpthread -ljansson -lzmq -L/usr/lib -lmysqlclient
+LDFLAGS  = -lpthread -ljansson -lcli -lzmq -L/usr/lib -lmysqlclient
 
 include $(CONFIG_MK)
 CFLAGS += $(addprefix -D, $(CONFIG))
@@ -34,7 +34,7 @@ all: $(PROG)
 $(PROG): $(addprefix $(OBJ_DIR)/,$(OBJ))
 	mkdir -p $(@D)
 	$(CC) -o $@ $^ $(LDFLAGS)
-	mv $(PROG) $(BIN_DIR)
+	cp $(PROG) $(BIN_DIR)
 
 $(OBJ_DIR)/%.o: %.c
 	mkdir -p $(@D)
@@ -48,4 +48,4 @@ $(OBJ_DIR)/.%.dep: %.c $(CONFIG_MK)
 -include $(DEPS_)
 clean:
 	rm -rf $(PROG) $(OBJ_DIR) $(INC_DIR)
-	rm -f $(BIN_DIR)/$(PROG)
+	rm -f $(PROG) $(BIN_DIR)/$(PROG)
