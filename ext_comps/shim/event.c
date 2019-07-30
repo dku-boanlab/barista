@@ -5,7 +5,7 @@
 /**
  * \ingroup compnt_shim
  * @{
- * \defgroup compnt_event Component Event Handler
+ * \defgroup compnt_event External Event Handler
  * \brief Functions to manage events for external components
  * @{
  */
@@ -124,7 +124,7 @@ static int ev_push_msg(uint32_t id, uint16_t type, uint16_t size, const void *in
 }
 
 /**
- * \brief Function to send events to the Barista NOS and receive responses from it
+ * \brief Function to send events to the Barista NOS and receive its responses
  * \param id Component ID
  * \param type Event type
  * \param size The size of the given data
@@ -427,7 +427,7 @@ static int process_events(msg_t *msg)
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to receive events
+ * \brief Function to receive events from the Barista NOS
  * \param null NULL
  */
 static void *pull_events(void *null)
@@ -460,7 +460,7 @@ static void *pull_events(void *null)
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to process requests from external components and reply outputs
+ * \brief Function to process requests from the Barista NOS and reply them
  * \param null NULL
  */
 static void *reply_events(void *null)

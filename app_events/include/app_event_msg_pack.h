@@ -107,7 +107,7 @@ static int av_push_msg(app_t *a, uint32_t id, uint16_t type, uint16_t size, cons
 }
 
 /**
- * \brief Function to send app events to an external application and receive responses from it
+ * \brief Function to send app events to an external application and receive its responses
  * \param a Application context
  * \param id Application ID
  * \param type Application event type
@@ -266,7 +266,7 @@ static void *pull_app_events(void *null)
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to process requests from external applications and reply outputs
+ * \brief Function to handle requests from external applications and reply them
  * \param null NULL
  */
 static void *reply_app_events(void *null)
@@ -279,7 +279,7 @@ static void *reply_app_events(void *null)
 
         //printf("%s: %s\n", __FUNCTION__, json);
 
-        // handshake with external app
+        // handshake with an external appplication
         if (json[0] == '#') {
             if (activate_external_application(json + 1) == 0)
                 strcpy(json, "#{\"return\": 0}");

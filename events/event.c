@@ -39,6 +39,10 @@ void *ev_rep_sock;
 
 /////////////////////////////////////////////////////////////////////
 
+#include "event_msg_pack.h"
+
+/////////////////////////////////////////////////////////////////////
+
 /** \brief Switch related trigger function (non-const) */
 static int sw_rw_raise(uint32_t id, uint16_t type, uint16_t len, switch_t *data);
 /** \brief Port related trigger function (non-const) */
@@ -70,10 +74,6 @@ static int rs_ev_raise(uint32_t id, uint16_t type, uint16_t len, const resource_
 static int tr_ev_raise(uint32_t id, uint16_t type, uint16_t len, const traffic_t *data);
 /** \brief Log related trigger function (const) */
 static int log_ev_raise(uint32_t id, uint16_t type, uint16_t len, const char *data);
-
-/////////////////////////////////////////////////////////////////////
-
-#include "event_msg_pack.h"
 
 // Upstream events //////////////////////////////////////////////////
 
@@ -345,7 +345,7 @@ int init_event(ctx_t *ctx)
 }
 
 /**
- * \brief Function to destroy an event queue
+ * \brief Function to destroy the event handler
  * \param ctx The context of the Barista NOS
  */
 int destroy_event(ctx_t *ctx)

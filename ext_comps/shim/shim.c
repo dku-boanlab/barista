@@ -6,7 +6,7 @@
  * \ingroup framework
  * @{
  * \defgroup compnt_shim External Component Handler
- * \brief Functions to glue the Barista NOS and external components
+ * \brief Functions to glue the Barista NOS and an external component
  * @{
  * \defgroup compnt_load External Component Loader
  * \brief Functions to execute an external component
@@ -67,8 +67,7 @@ static int init_compnt(void)
             strcpy(name, json_string_value(j_name));
         }
 
-        if (strcmp(name, TARGET_COMPNT) != 0)
-            continue;
+        if (strcmp(name, TARGET_COMPNT) != 0) continue;
 
         char args[__CONF_WORD_LEN] = {0};
         json_t *j_args = json_object_get(data, "args");
@@ -221,7 +220,7 @@ void sigterm_handler(int sig)
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to execute an external component
+ * \brief Function to launch an external component
  * \param argc The number of arguments
  * \param argv Arguments
  */

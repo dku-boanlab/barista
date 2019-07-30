@@ -23,7 +23,7 @@
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The app event list to convert an app event string to an app event ID */
-const char av_string[AV_NUM_EVENTS+1][__CONF_WORD_LEN] = {
+const char av_string[__MAX_APP_EVENTS][__CONF_WORD_LEN] = {
     #include "app_event_string.h"
 };
 

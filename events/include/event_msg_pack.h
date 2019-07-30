@@ -107,7 +107,7 @@ static int ev_push_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t size, c
 }
 
 /**
- * \brief Function to send events to an external component and receive responses from it
+ * \brief Function to send events to an external component and receive its responses
  * \param c Component context
  * \param id Component ID
  * \param type Event type
@@ -343,7 +343,7 @@ static void *pull_events(void *null)
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to process requests from components
+ * \brief Function to handle requests from components and reply them
  * \param null NULL
  */
 static void *reply_events(void *null)
@@ -363,7 +363,7 @@ static void *reply_events(void *null)
             else
                 strcpy(json, "#{\"return\": -1}");
 
-            zmq_send(ev_rep_sock, json, strlen(json)+1, 0);
+            zmq_send(ev_rep_sock, json, strlen(json), 0);
 
             continue;
         }

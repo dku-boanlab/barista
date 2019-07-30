@@ -5,7 +5,7 @@
 /**
  * \ingroup app_events
  * @{
- * \defgroup av_json AppEvent-to-JSON convertor
+ * \defgroup av_json AppEvent-to-JSON converter
  * \brief Functions to convert the forms of app events
  * @{
  */

@@ -5,7 +5,7 @@
 /**
  * \ingroup app_shim
  * @{
- * \defgroup app_event Application Event Handler
+ * \defgroup app_event External App Event Handler
  * \brief Functions to manage app events for external applications
  * @{
  */
@@ -125,7 +125,7 @@ static int av_push_msg(uint32_t id, uint16_t type, uint16_t size, const void *in
 
 #if 0
 /**
- * \brief Function to send app events to an external application and receive responses from it
+ * \brief Function to send app events to the Barista NOS and receive its responses
  * \param a Application context
  * \param id Application ID
  * \param type Application event type
@@ -182,6 +182,8 @@ void av_dp_modify_flow(uint32_t id, const flow_t *data) { av_push_msg(id, AV_DP_
 void av_dp_delete_flow(uint32_t id, const flow_t *data) { av_push_msg(id, AV_DP_DELETE_FLOW, sizeof(flow_t), data); }
 
 // Internal events (request-response) ///////////////////////////////
+
+//
 
 // Log events ///////////////////////////////////////////////////////
 
@@ -326,7 +328,7 @@ static int process_app_events(msg_t *msg)
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to receive app events
+ * \brief Function to receive app events from the Barista NOS
  * \param null NULL
  */
 static void *pull_app_events(void *null)
@@ -359,7 +361,7 @@ static void *pull_app_events(void *null)
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to process requests from external applications and reply outputs
+ * \brief Function to handle requests from the Barista NOS and reply them
  * \param null NULL
  */
 static void *reply_app_events(void *null)

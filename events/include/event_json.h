@@ -40,7 +40,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
 
             char buf[__CONF_LONG_STR_LEN] = {0};
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, "
+            sprintf(output, "{\"id\": %u, \"type\": %u, "
                             "\"dpid\": %lu, \"port\": %u, \"xid\": %u, \"buffer_id\": %u, \"reason\": %u, "
                             "\"proto\": %u, \"vlan_id\": %u, \"vlan_pcp\": %u, \"ip_tos\": %u, "
                             "\"src_mac\": %lu, \"dst_mac\": %lu, \"src_ip\": %u, \"dst_ip\": %u, \"src_port\": %u, \"dst_port\": %u, "
@@ -58,7 +58,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
             const flow_t *fl = (const flow_t *)input;
             const pkt_info_t *info = &fl->pkt_info;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, "
+            sprintf(output, "{\"id\": %u, \"type\": %u, "
                             "\"dpid\": %lu, \"port\": %u, \"xid\": %u, "
                             "\"cookie\": %lu, \"idle_timeout\": %u, \"priority\": %u, \"reason\": %u, \"wildcards\": %u, "
                             "\"proto\": %u, \"vlan_id\": %u, \"vlan_pcp\": %u, \"ip_tos\": %u, "
@@ -76,7 +76,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
             const flow_t *fl = (const flow_t *)input;
             const pkt_info_t *info = &fl->pkt_info;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, "
+            sprintf(output, "{\"id\": %u, \"type\": %u, "
                             "\"dpid\": %lu, \"port\": %u, "
                             "\"cookie\": %lu, \"idle_timeout\": %u, \"priority\": %u, \"wildcards\": %u, "
                             "\"proto\": %u, \"vlan_id\": %u, \"vlan_pcp\": %u, \"ip_tos\": %u, "
@@ -93,7 +93,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const flow_t *fl = (const flow_t *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, "
+            sprintf(output, "{\"id\": %u, \"type\": %u, "
                             "\"dpid\": %lu, \"pkt_count\": %lu, \"byte_count\": %lu, \"flow_count\": %u, \"return\": %d}", 
                     id, type, fl->dpid, fl->stat.pkt_count, fl->stat.byte_count, fl->stat.flow_count, ret);
         }
@@ -104,7 +104,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const port_t *pt = (const port_t *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, "
+            sprintf(output, "{\"id\": %u, \"type\": %u, "
                             "\"dpid\": %lu, \"port\": %u, \"name\": \"%s\", \"hw_addr\": %lu, \"config\": %u, \"state\": %u, "
                             "\"curr\": %u, \"advertized\": %u, \"supported\": %u, \"peer\": %u, \"return\": %d}",
                     id, type,
@@ -116,7 +116,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const port_t *pt = (const port_t *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, "
+            sprintf(output, "{\"id\": %u, \"type\": %u, "
                             "\"dpid\": %lu, \"port\": %u, "
                             "\"rx_packets\": %lu, \"rx_bytes\": %lu, \"tx_packets\": %lu, \"tx_bytes\": %lu, \"return\": %d}", 
                     id, type, pt->dpid, pt->port, pt->stat.rx_packets, pt->stat.rx_bytes, pt->stat.tx_packets, pt->stat.tx_bytes, ret);
@@ -149,7 +149,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
 
             char buf[__CONF_LONG_STR_LEN] = {0};
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, "
+            sprintf(output, "{\"id\": %u, \"type\": %u, "
                             "\"dpid\": %lu, \"port\": %u, \"xid\": %u, \"buffer_id\": %u, "
                             "\"total_len\": %u, \"data\": \"%s\", \"actions\": \"%s\", \"return\": %d}",
                     id, type,
@@ -184,7 +184,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
                     strcat(actions, ",");
             }
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, "
+            sprintf(output, "{\"id\": %u, \"type\": %u, "
                             "\"dpid\": %lu, \"port\": %u, \"xid\": %u, \"buffer_id\": %u, "
                             "\"cookie\": %lu, \"idle_timeout\": %u, \"hard_timeout\": %u, \"priority\": %u, \"flags\": %u, \"wildcards\": %u, "
                             "\"proto\": %u, \"vlan_id\": %u, \"vlan_pcp\": %u, \"ip_tos\": %u, "
@@ -202,7 +202,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
             const flow_t *fl = (const flow_t *)input;
             const pkt_info_t *info = &fl->pkt_info;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, "
+            sprintf(output, "{\"id\": %u, \"type\": %u, "
                             "\"dpid\": %lu, \"port\": %u, \"wildcards\": %u, "
                             "\"proto\": %u, \"vlan_id\": %u, \"vlan_pcp\": %u, \"ip_tos\": %u, "
                             "\"src_mac\": %lu, \"dst_mac\": %lu, \"src_ip\": %u, \"dst_ip\": %u, \"src_port\": %u, \"dst_port\": %u, "
@@ -216,14 +216,19 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const flow_t *fl = (const flow_t *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, \"dpid\": %lu, \"return\": %d}", id, type, fl->dpid, ret);
+            sprintf(output, "{\"id\": %u, \"type\": %u, \"dpid\": %lu, \"return\": %d}", id, type, fl->dpid, ret);
+        }
+        break;
+    case EV_DP_MODIFY_PORT:
+        {
+            //TODO
         }
         break;
     case EV_DP_REQUEST_PORT_STATS:
         {
             const port_t *pt = (const port_t *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, \"dpid\": %lu, \"port\": %u, \"return\": %d}", id, type, pt->dpid, pt->port, ret);
+            sprintf(output, "{\"id\": %u, \"type\": %u, \"dpid\": %lu, \"port\": %u, \"return\": %d}", id, type, pt->dpid, pt->port, ret);
         }
         break;
 
@@ -232,21 +237,21 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const switch_t *sw = (const switch_t *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, \"fd\": %u, \"return\": %d}", id, type, sw->conn.fd, ret);
+            sprintf(output, "{\"id\": %u, \"type\": %u, \"fd\": %u, \"return\": %d}", id, type, sw->conn.fd, ret);
         }
         break;
     case EV_SW_GET_FD:
         {
             const switch_t *sw = (const switch_t *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, \"dpid\": %lu, \"return\": %d}", id, type, sw->dpid, ret);
+            sprintf(output, "{\"id\": %u, \"type\": %u, \"dpid\": %lu, \"return\": %d}", id, type, sw->dpid, ret);
         }
         break;
     case EV_SW_GET_XID:
         {
             const switch_t *sw = (const switch_t *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, \"dpid\": %lu, \"fd\": %u, \"return\": %d}", id, type, sw->dpid, sw->conn.fd, ret);
+            sprintf(output, "{\"id\": %u, \"type\": %u, \"dpid\": %lu, \"fd\": %u, \"return\": %d}", id, type, sw->dpid, sw->conn.fd, ret);
         }
         break;
 
@@ -256,7 +261,14 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const switch_t *sw = (const switch_t *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, \"fd\": %u, return: %d}", id, type, sw->conn.fd, ret);
+            sprintf(output, "{\"id\": %u, \"type\": %u, \"fd\": %u, return: %d}", id, type, sw->conn.fd, ret);
+        }
+        break;
+    case EV_SW_ESTABLISHED_CONN:
+        {
+            const switch_t *sw = (const switch_t *)input;
+
+            sprintf(output, "{\"id\": %u, \"type\": %u, \"dpid\": %lu, \"fd\": %u, \"xid\": %u, \"return\": %d}" id, type, sw->dpid, sw->conn.fd, sw->conn.xid, ret);
         }
         break;
     case EV_SW_CONNECTED:
@@ -264,14 +276,14 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const switch_t *sw = (const switch_t *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, \"dpid\": %lu, \"remote\": %u, \"return\": %d}", id, type, sw->dpid, sw->remote, ret);
+            sprintf(output, "{\"id\": %u, \"type\": %u, \"dpid\": %lu, \"remote\": %u, \"return\": %d}", id, type, sw->dpid, sw->remote, ret);
         }
         break;
     case EV_SW_UPDATE_DESC:
         {
             const switch_t *sw = (const switch_t *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, "
+            sprintf(output, "{\"id\": %u, \"type\": %u, "
                             "\"dpid\": %lu, \"mfr_desc\": \"%s\", \"hw_desc\": \"%s\", \"sw_desc\": \"%s\", \"serial_num\": \"%s\", \"dp_desc\": \"%s\", "
                             "\"return\": %d}", 
                     id, type, 
@@ -283,7 +295,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const host_t *ht = (const host_t *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, \"dpid\": %lu, \"port\": %u, \"mac\": %lu, \"ip\": %u, \"remote\": %u, \"return\": %d}",
+            sprintf(output, "{\"id\": %u, \"type\": %u, \"dpid\": %lu, \"port\": %u, \"mac\": %lu, \"ip\": %u, \"remote\": %u, \"return\": %d}",
                     id, type, ht->dpid, ht->port, ht->mac, ht->ip, ht->remote, ret);
         }
         break;
@@ -292,7 +304,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const port_t *pt = (const port_t *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, \"src_dpid\": %lu, \"src_port\": %u, \"dst_dpid\": %lu, \"dst_port\": %u, "
+            sprintf(output, "{\"id\": %u, \"type\": %u, \"src_dpid\": %lu, \"src_port\": %u, \"dst_dpid\": %lu, \"dst_port\": %u, "
                             "\"remote\": %u, \"return\": %d}",
                     id, type, pt->dpid, pt->port, pt->link.dpid, pt->link.port, pt->remote, ret);
         }
@@ -323,7 +335,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
                     strcat(actions, ",");
             }
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, "
+            sprintf(output, "{\"id\": %u, \"type\": %u, "
                             "\"dpid\": %lu, \"port\": %u, \"idle_timeout\": %u, \"hard_timeout\": %u, \"wildcards\": %u, "
                             "\"proto\": %u, \"vlan_id\": %u, \"vlan_pcp\": %u, \"ip_tos\": %u, "
                             "\"src_mac\": %lu, \"dst_mac\": %lu, \"src_ip\": %u, \"dst_ip\": %u, \"src_port\": %u, \"dst_port\": %u, "
@@ -339,14 +351,14 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const resource_t *rs = (const resource_t *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, \"cpu\": %lf, \"mem\": %lf, \"return\": %d}", id, type, rs->cpu, rs->mem, ret);
+            sprintf(output, "{\"id\": %u, \"type\": %u, \"cpu\": %lf, \"mem\": %lf, \"return\": %d}", id, type, rs->cpu, rs->mem, ret);
         }
         break;
     case EV_TR_UPDATE_STATS:
         {
             const traffic_t *tr = (const traffic_t *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, "
+            sprintf(output, "{\"id\": %u, \"type\": %u, "
                             "\"in_pkt_cnt\": %lu, \"in_byte_cnt\": %lu, \"out_pkt_cnt\": %lu, \"out_byte_cnt\": %lu, \"return\": %d}", 
                     id, type, tr->in_pkt_cnt, tr->in_byte_cnt, tr->out_pkt_cnt, tr->out_byte_cnt, ret);
         }
@@ -355,7 +367,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const char *log = (const char *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, \"msg\": \"%s\", \"return\": %d}", id, type, log, ret);
+            sprintf(output, "{\"id\": %u, \"type\": %u, \"msg\": \"%s\", \"return\": %d}", id, type, log, ret);
         }
         break;
 
@@ -368,7 +380,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const char *log = (const char *)input;
 
-            sprintf(output, "{\"id\":%u, \"type\": %u, \"msg\": \"%s\", \"return\": %d}", id, type, log, ret);
+            sprintf(output, "{\"id\": %u, \"type\": %u, \"msg\": \"%s\", \"return\": %d}", id, type, log, ret);
         }
         break;
 
@@ -747,6 +759,11 @@ static int import_from_json(uint32_t *id, uint16_t *type, char *input, void *out
             GET_JSON_VALUE("dpid", fl->dpid);
 
             GET_JSON_VALUE("return", ret);
+        }
+        break;
+    case EV_DP_MODIFY_PORT:
+        {
+            //TODO
         }
         break;
     case EV_DP_REQUEST_PORT_STATS:

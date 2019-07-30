@@ -6,7 +6,7 @@
  * \ingroup util
  * @{
  *
- * \defgroup mac2int MAC address Format Converting Functions
+ * \defgroup mac2int MAC Address Conversion Functions
  * \brief Functions to convert the forms of MAC addresses
  * @{
  */

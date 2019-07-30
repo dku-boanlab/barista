@@ -6,7 +6,7 @@
  * \ingroup framework
  * @{
  * \defgroup app_shim External Application Handler
- * \brief Functions to glue the Barista NOS and external applications
+ * \brief Functions to glue the Barista NOS and an external application
  * @{
  * \defgroup app_load External Application Loader
  * \brief Functions to execute an external application
@@ -222,7 +222,7 @@ void sigterm_handler(int sig)
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to execute an external application
+ * \brief Function to launch an external application
  * \param argc The number of arguments
  * \param argv Arguments
  */

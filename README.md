@@ -17,10 +17,10 @@
 1. Install dependencies
 > $ ./deps.sh
 
-2. Compile the code
+2. Compile the source code of Barista NOS
 > $ make
 
-3. Clean up the code
+3. Clean up the compiled files for Barista NOS
 > $ make clean
 
 # Execution
@@ -44,17 +44,21 @@
 # CLI commands
 - Change a configuration mode
 > Barista> turn on/off
+
 - Load configurations
 > Barista# load
+
 - Start the Barista NOS
 > Barista# start
+
 - Stop the Barista NOS
 > Barista# stop
+
 - More information?
 > Barista> help
 
 # Documents
-- Documents: http://www.sdx4u.net/category/barista
+- Documents: https://www.sdx4u.net/?cat=16
 - Source browser: http://www.sdx4u.net/~barista
 
 # Author

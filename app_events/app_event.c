@@ -39,6 +39,10 @@ void *av_rep_sock;
 
 /////////////////////////////////////////////////////////////////////
 
+#include "app_event_msg_pack.h"
+
+/////////////////////////////////////////////////////////////////////
+
 /** \brief Switch related trigger function (non-const) */
 //static int sw_rw_raise(uint32_t id, uint16_t type, uint16_t len, switch_t *data);
 /** \brief Port related trigger function (non-const) */
@@ -64,10 +68,6 @@ static int pktout_av_raise(uint32_t id, uint16_t type, uint16_t len, const pktou
 static int flow_av_raise(uint32_t id, uint16_t type, uint16_t len, const flow_t *data);
 /** \brief Log related trigger function (const) */
 static int log_av_raise(uint32_t id, uint16_t type, uint16_t len, const char *data);
-
-/////////////////////////////////////////////////////////////////////
-
-#include "app_event_msg_pack.h"
 
 // Upstream events //////////////////////////////////////////////////
 
@@ -96,6 +96,8 @@ void av_dp_modify_flow(uint32_t id, const flow_t *data) { flow_av_raise(id, AV_D
 void av_dp_delete_flow(uint32_t id, const flow_t *data) { flow_av_raise(id, AV_DP_DELETE_FLOW, sizeof(flow_t), data); }
 
 // Internal events (request-response) ///////////////////////////////
+
+//
 
 // Internal events (notification) ///////////////////////////////////
 
@@ -300,7 +302,7 @@ int init_app_event(ctx_t *ctx)
 }
 
 /**
- * \brief Function to destroy an app event queue
+ * \brief Function to destroy the app event handler
  * \param ctx The context of the Barista NOS
  */
 int destroy_app_event(ctx_t *ctx)

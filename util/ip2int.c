@@ -6,7 +6,7 @@
  * \ingroup util
  * @{
  *
- * \defgroup ip2int IP address Format Converting Functions
+ * \defgroup ip2int IP Address Conversion Functions
  * \brief Functions to convert the forms of IP addresses
  * @{
  */
