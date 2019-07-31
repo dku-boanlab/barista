@@ -261,9 +261,9 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             int i, deleted = FALSE;
             for (i=0; i<__MAX_NUM_SWITCHES; i++) {
-                pthread_spin_lock(&sw_lock[i]);
-
                 if (switch_table[i].conn.fd == sw->conn.fd) {
+                    pthread_spin_lock(&sw_lock[i]);
+
                     switch_t out = {0};
                     out.dpid = switch_table[i].dpid;
                     ev_sw_disconnected(SWITCH_MGMT_ID, &out);
@@ -285,8 +285,6 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
                     break;
                 }
-
-                pthread_spin_unlock(&sw_lock[i]);
             }
 
             if (!deleted)
@@ -398,13 +396,12 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             int i;
             for (i=0; i<__MAX_NUM_SWITCHES; i++) {
-                pthread_spin_lock(&sw_lock[i]);
                 if (switch_table[i].conn.fd == sw->conn.fd) {
+                    //pthread_spin_lock(&sw_lock[i]);
                     sw->dpid = switch_table[i].dpid;
-                    pthread_spin_unlock(&sw_lock[i]);
+                    //pthread_spin_unlock(&sw_lock[i]);
                     break;
                 }
-                pthread_spin_unlock(&sw_lock[i]);
             }
         }
         break;
@@ -456,13 +453,12 @@ int switch_mgmt_handler(const event_t *ev, event_out_t *ev_out)
             } else if (sw->conn.fd) {
                 int i;
                 for (i=0; i<__MAX_NUM_SWITCHES; i++) {
-                    pthread_spin_lock(&sw_lock[i]);
                     if (switch_table[i].conn.fd == sw->conn.fd) {
+                        pthread_spin_lock(&sw_lock[i]);
                         sw->conn.xid = switch_table[i].conn.xid++;
                         pthread_spin_unlock(&sw_lock[i]);
                         break;
                     }
-                    pthread_spin_unlock(&sw_lock[i]);
                 }
             }
         }

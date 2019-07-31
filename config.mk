@@ -19,4 +19,5 @@ CONFIG= \
     __MAX_NUM_SWITCHES=128 \
     __MAX_NUM_PORTS=64 \
     \
+    #__ENABLE_CBENCH \
     #__ENABLE_DEBUG \

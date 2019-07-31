@@ -70,6 +70,10 @@ int insert_host_entry(host_t *entry)
  */
 static int add_new_host(const pktin_t *pktin)
 {
+#ifdef __ENABLE_CBENCH
+    return 0;
+#endif /* __ENABLE_CBENCH */
+
     host_key_t hkey = {0};
 
     hkey.ip = pktin->pkt_info.src_ip;
@@ -476,13 +480,12 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             int i;
             for (i=0; i<NUM_HOST_ENTRIES; i++) {
-                pthread_spin_lock(&host_lock[i]);
                 if (host_cache[i].dpid == port->dpid && host_cache[i].port == port->port) {
+                    pthread_spin_lock(&host_lock[i]);
                     memset(&host_cache[i], 0, sizeof(host_t));
                     pthread_spin_unlock(&host_lock[i]);
                     break;
                 }
-                pthread_spin_unlock(&host_lock[i]);
             }
         }
         break;
@@ -528,11 +531,11 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             int i;
             for (i=0; i<NUM_HOST_ENTRIES; i++) {
-                pthread_spin_lock(&host_lock[i]);
                 if (host_cache[i].dpid == sw->dpid) {
+                    pthread_spin_lock(&host_lock[i]);
                     memset(&host_cache[i], 0, sizeof(host_t));
+                    pthread_spin_unlock(&host_lock[i]);
                 }
-                pthread_spin_unlock(&host_lock[i]);
             }
         }
         break;

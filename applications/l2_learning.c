@@ -122,6 +122,11 @@ int insert_mac_entry(mac_entry_t *entry)
  */
 static int l2_learning(const pktin_t *pktin)
 {
+#ifdef __ENABLE_CBENCH
+    send_packet(pktin, PORT_FLOOD);
+    return 0;
+#endif /* __ENABLE_CBENCH */
+
     mac_key_t mkey;
 
     // source check
@@ -506,13 +511,12 @@ int l2_learning_handler(const app_event_t *av, app_event_out_t *av_out)
 
             int i;
             for (i=0; i<NUM_MAC_ENTRIES; i++) {
-                pthread_spin_lock(&mac_lock[i]);
                 if (mac_cache[i].dpid == port->dpid && mac_cache[i].port == port->port) {
+                    pthread_spin_lock(&mac_lock[i]);
                     memset(&mac_cache[i], 0, sizeof(mac_entry_t));
                     pthread_spin_unlock(&mac_lock[i]);
                     break;
                 }
-                pthread_spin_unlock(&mac_lock[i]);
             }
         }
         break;
@@ -530,13 +534,12 @@ int l2_learning_handler(const app_event_t *av, app_event_out_t *av_out)
 
             int i;
             for (i=0; i<NUM_MAC_ENTRIES; i++) {
-                pthread_spin_lock(&mac_lock[i]);
                 if (mac_cache[i].dpid == port->dpid && mac_cache[i].port == port->port) {
+                    pthread_spin_lock(&mac_lock[i]);
                     memset(&mac_cache[i], 0, sizeof(mac_entry_t));
                     pthread_spin_unlock(&mac_lock[i]);
                     break;
                 }
-                pthread_spin_unlock(&mac_lock[i]);
             }
         }
         break;
@@ -554,11 +557,11 @@ int l2_learning_handler(const app_event_t *av, app_event_out_t *av_out)
 
             int i;
             for (i=0; i<NUM_MAC_ENTRIES; i++) {
-                pthread_spin_lock(&mac_lock[i]);
                 if (mac_cache[i].dpid == sw->dpid) {
+                    pthread_spin_lock(&mac_lock[i]);
                     memset(&mac_cache[i], 0, sizeof(mac_entry_t));
+                    pthread_spin_unlock(&mac_lock[i]);
                 }
-                pthread_spin_unlock(&mac_lock[i]);
             }
         }
         break;
@@ -576,11 +579,11 @@ int l2_learning_handler(const app_event_t *av, app_event_out_t *av_out)
 
             int i;
             for (i=0; i<NUM_MAC_ENTRIES; i++) {
-                pthread_spin_lock(&mac_lock[i]);
                 if (mac_cache[i].dpid == sw->dpid) {
+                    pthread_spin_lock(&mac_lock[i]);
                     memset(&mac_cache[i], 0, sizeof(mac_entry_t));
+                    pthread_spin_unlock(&mac_lock[i]);
                 }
-                pthread_spin_unlock(&mac_lock[i]);
             }
         }
         break;

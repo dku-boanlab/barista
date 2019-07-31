@@ -46,8 +46,6 @@ static void clean_buffer(int sock)
         buffer[sock].need = 0;
         buffer[sock].done = 0;
 
-        memset(buffer[sock].head, 0, 4);
-
         if (buffer[sock].data)
             FREE(buffer[sock].data);
     }
@@ -63,117 +61,108 @@ static void clean_buffer(int sock)
  */
 static int msg_proc(int sock, uint8_t *rx_buf, int bytes)
 {
-    buffer_t *b = &buffer[sock];
-
-    int need = b->need;
-    int done = b->done;
-    uint8_t *head = b->head;
-    uint8_t *data = b->data;
+    int need = buffer[sock].need;
+    int done = buffer[sock].done;
 
     int buf_ptr = 0;
     while (bytes > 0) {
-        if (done + need == 0) {
-            if (bytes < 4) { // keep a partial message (less than 4 bytes) in head
-                memmove(head, rx_buf + buf_ptr, bytes);
+        if (0 < done && done < 4) {
+            if (done + bytes < 4) {
+                memmove(buffer[sock].head + done, rx_buf + buf_ptr, bytes);
 
-                need = 4 - bytes;
-                done = bytes;
-
-                bytes -= bytes;
-                buf_ptr += bytes;
-            } else { // >= 4
-                struct ofp_header *ofph = (struct ofp_header *)(rx_buf + buf_ptr);
-                uint16_t len = ntohs(ofph->length);
-
-                if (bytes < len) { // partial packet
-                    data = (uint8_t *)CALLOC(len, sizeof(uint8_t));
-                    memmove(data, rx_buf + buf_ptr, bytes);
-
-                    need = len - bytes;
-                    done = bytes;
-
-                    bytes -= bytes;
-                    buf_ptr += bytes;
-                } else { // bytes >= len, full packet
-                    msg_t msg = {0};
-
-                    msg.fd = sock;
-                    msg.length = len;
-
-                    msg.data = (uint8_t *)CALLOC(len, sizeof(uint8_t));
-                    memmove(msg.data, rx_buf + buf_ptr, len);
-
-                    ev_ofp_msg_in(CONN_ID, &msg);
-
-                    FREE(msg.data);
-
-                    need = 0;
-                    done = 0;
-
-                    bytes -= len;
-                    buf_ptr += len;
-                }
-            }
-        } else if (done + need == 4) {
-            if (done + bytes < 4) { // keep a partial message which is not enough to get the actual length in head
-                memmove(head + done, rx_buf + buf_ptr, bytes);
-
-                need -= bytes;
                 done += bytes;
+                bytes = 0;
 
-                bytes -= bytes;
-                buf_ptr += bytes;
+                break;
             } else {
-                memmove(head + done, rx_buf + buf_ptr, (4 - done));
+                memmove(buffer[sock].head + done, rx_buf + buf_ptr, (4 - done));
 
-                struct ofp_header *ofph = (struct ofp_header *)head;
+                bytes -= (4 - done);
+                buf_ptr += (4 - done);
+
+                struct ofp_header *ofph = (struct ofp_header *)buffer[sock].head;
                 uint16_t len = ntohs(ofph->length);
-
-                data = (uint8_t *)CALLOC(len, sizeof(uint8_t));
-                memmove(data, head, 4);
 
                 need = len - 4;
                 done = 4;
 
-                bytes -= (4 - done);
-                buf_ptr += (4 - done);
+                buffer[sock].data = (uint8_t *)MALLOC(len * sizeof(uint8_t));
+                memmove(buffer[sock].data, buffer[sock].head, 4);
             }
-        } else { // done + need > 4
-            struct ofp_header *ofph = (struct ofp_header *)data;
-            uint16_t len = ntohs(ofph->length);
+        }
 
-            if (need > bytes) { // still not enough
-                memmove(data + done, rx_buf + buf_ptr, bytes);
+        if (need == 0) {
+            struct ofp_header *ofph = (struct ofp_header *)(rx_buf + buf_ptr);
+
+            if (bytes < 4) {
+                memmove(buffer[sock].head, rx_buf + buf_ptr, bytes);
+
+                need = 0;
+                done = bytes;
+
+                bytes = 0;
+            } else {
+                uint16_t len = ntohs(ofph->length);
+
+                if (bytes < len) {
+                    buffer[sock].data = (uint8_t *)MALLOC(len * sizeof(uint8_t));
+                    memmove(buffer[sock].data, rx_buf + buf_ptr, bytes);
+
+                    need = len - bytes;
+                    done = bytes;
+
+                    bytes = 0;
+                } else {
+                    msg_t msg = {0};
+
+                    msg.fd = sock;
+                    msg.length = ntohs(ofph->length);
+                    msg.data = (uint8_t *)(rx_buf + buf_ptr);
+
+                    ev_ofp_msg_in(CONN_ID, &msg);
+
+                    bytes -= len;
+                    buf_ptr += len;
+
+                    need = 0;
+                    done = 0;
+                }
+            }
+        } else {
+            struct ofp_header *ofph = (struct ofp_header *)buffer[sock].data;
+
+            if (need > bytes) {
+                memmove(buffer[sock].data + done, rx_buf + buf_ptr, bytes);
 
                 need -= bytes;
                 done += bytes;
 
-                bytes -= bytes;
-                buf_ptr += bytes;
+                bytes = 0;
             } else {
-                memmove(data + done, rx_buf + buf_ptr, need);
-
                 msg_t msg = {0};
 
                 msg.fd = sock;
-                msg.length = len; 
-                msg.data = data;
-                
+                msg.length = ntohs(ofph->length);
+
+                memmove(buffer[sock].data + done, rx_buf + buf_ptr, need);
+
+                msg.data = buffer[sock].data;
+
                 ev_ofp_msg_in(CONN_ID, &msg);
 
-                FREE(data);
-
-                need = 0;
-                done = 0;
+                FREE(buffer[sock].data);
 
                 bytes -= need;
                 buf_ptr += need;
+
+                need = 0;
+                done = 0;
             }
         }
     }
 
-    b->need = need;
-    b->done = done;
+    buffer[sock].need = need;
+    buffer[sock].done = done;
 
     return bytes;
 }

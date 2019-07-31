@@ -222,16 +222,16 @@ int topo_mgmt_main(int *activated, int argc, char **argv)
     while (*activated) {
         int i;
         for (i=0; i<__MAX_NUM_SWITCHES; i++) {
-            pthread_spin_lock(&topo_lock[i]);
             if (topo[i].dpid) {
+                pthread_spin_lock(&topo_lock[i]);
                 int j;
                 for (j=0; j<__MAX_NUM_PORTS; j++) {
                     if (topo[i].link[j].port) {
                         send_lldp(&topo[i].link[j]);
                     }
                 }
+                pthread_spin_unlock(&topo_lock[i]);
             }
-            pthread_spin_unlock(&topo_lock[i]);
         }
 
         for (i=0; i<__TOPO_MGMT_REQUEST_TIME; i++) {
@@ -435,15 +435,12 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             int idx = sw->dpid % __MAX_NUM_SWITCHES;
             do {
-                pthread_spin_lock(&topo_lock[idx]);
-
                 if (topo[idx].dpid == 0) {
+                    pthread_spin_lock(&topo_lock[idx]);
                     topo[idx].dpid = sw->dpid;
                     pthread_spin_unlock(&topo_lock[idx]);
                     break;
                 }
-
-                pthread_spin_unlock(&topo_lock[idx]);
 
                 idx = (idx + 1) % __MAX_NUM_SWITCHES;
             } while (idx != sw->dpid % __MAX_NUM_SWITCHES);
@@ -458,9 +455,9 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             int idx = sw->dpid % __MAX_NUM_SWITCHES;
             do {
-                pthread_spin_lock(&topo_lock[idx]);
-
                 if (topo[idx].dpid == sw->dpid) {
+                    pthread_spin_lock(&topo_lock[idx]);
+
                     int i;
                     for (i=0; i<__MAX_NUM_PORTS; i++) {
                         port_t *pt = &topo[idx].link[i];
@@ -498,8 +495,6 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                     break;
                 }
 
-                pthread_spin_unlock(&topo_lock[idx]);
-
                 idx = (idx + 1) % __MAX_NUM_SWITCHES;
             } while (idx != sw->dpid % __MAX_NUM_SWITCHES);
         }
@@ -514,9 +509,9 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             int idx = port->dpid % __MAX_NUM_SWITCHES;
             do {
-                pthread_spin_lock(&topo_lock[idx]);
-
                 if (topo[idx].dpid == port->dpid) {
+                    pthread_spin_lock(&topo_lock[idx]);
+
                     int i;
                     for (i=0; i<__MAX_NUM_PORTS; i++) {
                         if (!topo[idx].link[i].port) {
@@ -534,8 +529,6 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                     break;
                 }
 
-                pthread_spin_unlock(&topo_lock[idx]);
-
                 idx = (idx + 1) % __MAX_NUM_SWITCHES;
             } while (idx != port->dpid % __MAX_NUM_SWITCHES);
         }
@@ -550,9 +543,9 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             int idx = port->dpid % __MAX_NUM_SWITCHES;
             do {
-                pthread_spin_lock(&topo_lock[idx]);
-
                 if (topo[idx].dpid == port->dpid) {
+                    pthread_spin_lock(&topo_lock[idx]);
+
                     int i;
                     for (i=0; i<__MAX_NUM_SWITCHES; i++) {
                         port_link_t *link = &topo[idx].link[i].link;
@@ -591,8 +584,6 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                     break;
                 }
 
-                pthread_spin_unlock(&topo_lock[idx]);
-
                 idx = (idx + 1) % __MAX_NUM_SWITCHES;
             } while (idx != port->dpid % __MAX_NUM_SWITCHES);
         }
@@ -606,9 +597,9 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             int idx = port->dpid % __MAX_NUM_SWITCHES;
             do {
-                pthread_spin_lock(&topo_lock[idx]);
-
                 if (topo[idx].dpid == port->dpid) {
+                    pthread_spin_lock(&topo_lock[idx]);
+
                     int i;
                     for (i=0; i<__MAX_NUM_SWITCHES; i++) {
                         port_stat_t *stat = &topo[idx].link[i].stat;
@@ -644,8 +635,6 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
                     break;
                 }
-
-                pthread_spin_unlock(&topo_lock[idx]);
 
                 idx = (idx + 1) % __MAX_NUM_SWITCHES;
             } while (idx != port->port % __MAX_NUM_SWITCHES);
