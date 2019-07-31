@@ -33,15 +33,30 @@ static char hostname[__CONF_SHORT_LEN];
 static int flush_events_in_queue()
 {
     if (num_cluster_events) {
+        database_t cluster_db;
+
+        if (init_database(&cluster_info, &cluster_db)) {
+            LOG_ERROR(CLUSTER_ID, "Failed to connect a cluster database");
+            destroy_database(&cluster_db);
+            return -1;
+        }
+
+        execute_query(&cluster_db, "START TRANSACTION");
+
         int i;
         for (i=0; i<num_cluster_events; i++) {
-            char values[__CONF_LONG_STR_LEN];
-            sprintf(values, "%u, %u, %u, '%s'", 
-                    cluster_events[i].id, cluster_events[i].type, cluster_events[i].length, cluster_events[i].data);
+            char query[__CONF_LONG_STR_LEN];
+            sprintf(query, "insert into cluster_events (EV_ID, EV_TYPE, EV_LENGTH, DATA, INSTANCE) values (%u, %u, %u, '%s', '%s')",
+                    cluster_events[i].id, cluster_events[i].type, cluster_events[i].length, cluster_events[i].data, hostname);
 
-            insert_long_data(&cluster_db, "cluster_events", "EV_ID, EV_TYPE, EV_LENGTH, DATA", values);
-            memset(&cluster_events[i], 0, sizeof(cluster_event_t));
+            execute_query(&cluster_db, query);
         }
+
+        execute_query(&cluster_db, "COMMIT");
+
+        destroy_database(&cluster_db);
+
+        memset(cluster_events, 0, num_cluster_events * sizeof(cluster_event_t));
         num_cluster_events = 0;
     }
 
@@ -54,6 +69,9 @@ static int flush_events_in_queue()
  */
 static int insert_event_data(const event_t *ev)
 {
+    char data[__CLUSTER_EVENT_SIZE];
+    base64_encode_w_buffer((char *)ev->data, ev->length, data);
+
     pthread_spin_lock(&cluster_lock);
 
     if (num_cluster_events == __CLUSTER_BATCH_SIZE)
@@ -62,7 +80,7 @@ static int insert_event_data(const event_t *ev)
     cluster_events[num_cluster_events].id = ev->id;
     cluster_events[num_cluster_events].type = ev->type;
     cluster_events[num_cluster_events].length = ev->length;
-    base64_encode_w_buffer((char *)ev->data, ev->length, cluster_events[num_cluster_events].data);
+    strcpy(cluster_events[num_cluster_events].data, data);
 
     num_cluster_events++;
 
@@ -86,23 +104,28 @@ int cluster_main(int *activated, int argc, char **argv)
     if (hostname[0] == '\0')
         gethostname(hostname, __CONF_SHORT_LEN);
 
-    if (init_database(&cluster_db, "barista_mgmt")) {
-        LOG_ERROR(CLUSTER_ID, "Failed to connect a cluster database");
+    if (get_database_info(&cluster_info, "barista_mgmt")) {
+        LOG_ERROR(CLUSTER_ID, "Failed to get the information of a cluster database");
         return -1;
-    } else {
-        LOG_INFO(CLUSTER_ID, "Connected to a cluster database");
     }
 
-    reset_table(&cluster_db, "cluster_events", FALSE);
+    reset_table(&cluster_info, "cluster_events", FALSE);
 
     num_cluster_events = 0;
     cluster_events = (cluster_event_t *)CALLOC(__CLUSTER_BATCH_SIZE, sizeof(cluster_event_t));
     if (cluster_events == NULL) {
-        PERROR("calloc");
+        LOG_ERROR(CLUSTER_ID, "calloc() failed");
         return -1;
     }
 
     pthread_spin_init(&cluster_lock, PTHREAD_PROCESS_PRIVATE);
+
+    database_t cluster_db;
+
+    if (init_database(&cluster_info, &cluster_db)) {
+        LOG_ERROR(CLUSTER_ID, "Failed to connect a cluster database");
+        destroy_database(&cluster_db);
+    }
 
     activate();
 
@@ -123,9 +146,7 @@ int cluster_main(int *activated, int argc, char **argv)
         char query[__CONF_STR_LEN];
         sprintf(query, "select ID, EV_ID, EV_TYPE, DATA from cluster_events where ID > %lu and INSTANCE != '%s'", event_num, hostname);
 
-        if (execute_query(&cluster_db, query)) {
-            continue;
-        }
+        if (execute_query(&cluster_db, query)) continue;
 
         query_result_t *result = get_query_result(&cluster_db);
         query_row_t row;
@@ -219,6 +240,8 @@ int cluster_main(int *activated, int argc, char **argv)
         }
     }
 
+    destroy_database(&cluster_db);
+
     return 0;
 }
 
@@ -240,13 +263,6 @@ int cluster_cleanup(int *activated)
     pthread_spin_destroy(&cluster_lock);
 
     FREE(cluster_events);
-
-    if (destroy_database(&cluster_db)) {
-        LOG_ERROR(CLUSTER_ID, "Failed to disconnect a cluster database");
-        return -1;
-    } else {
-        LOG_INFO(CLUSTER_ID, "Disconnected from a cluster database");
-    }
 
     return 0;
 }

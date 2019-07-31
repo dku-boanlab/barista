@@ -41,7 +41,7 @@ static int push_msg_into_queue(char *msg)
                 char values[__CONF_STR_LEN];
                 sprintf(values, "'%s'", msgs[i]);
 
-                if (insert_data(&log_db, "logs", "MESSAGE", values)) {
+                if (insert_data(&log_info, "logs", "MESSAGE", values)) {
                     LOG_ERROR(LOG_ID, "insert_data() failed");
                 }
 
@@ -83,7 +83,7 @@ static int push_msgs_into_file(char *msg)
             char values[__CONF_STR_LEN];
             sprintf(values, "'%s'", msgs[i]);
 
-            if (insert_data(&log_db, "logs", "MESSAGE", values)) {
+            if (insert_data(&log_info, "logs", "MESSAGE", values)) {
                 LOG_ERROR(LOG_ID, "insert_data() failed");
             }
 
@@ -112,11 +112,10 @@ static int push_msgs_into_file(char *msg)
  */
 int log_main(int *activated, int argc, char **argv)
 {
-    if (init_database(&log_db, "barista_mgmt")) {
-        PRINTF("Failed to connect a log database\n");
+
+    if (get_database_info(&log_info, "barista_mgmt")) {
+        PRINTF("Failed to get the information of a log database");
         return -1;
-    } else {
-        DEBUG("Connected to a log database\n");
     }
 
     num_msgs = 0;
@@ -175,7 +174,7 @@ int log_main(int *activated, int argc, char **argv)
                     char values[__CONF_STR_LEN];
                     sprintf(values, "'%s'", msgs[i]);
 
-                    if (insert_data(&log_db, "logs", "MESSAGE", values)) {
+                    if (insert_data(&log_info, "logs", "MESSAGE", values)) {
                         LOG_ERROR(LOG_ID, "insert_data() failed");
                     }
 
@@ -226,7 +225,7 @@ int log_cleanup(int *activated)
                 char values[__CONF_STR_LEN];
                 sprintf(values, "'%s'", msgs[i]);
 
-                if (insert_data(&log_db, "logs", "MESSAGE", values)) {
+                if (insert_data(&log_info, "logs", "MESSAGE", values)) {
                     LOG_ERROR(LOG_ID, "insert_data() failed");
                 }
             }
@@ -245,13 +244,6 @@ int log_cleanup(int *activated)
 
     FREE(msgs);
 
-    if (destroy_database(&log_db)) {
-        PRINTF("Failed to disconnect a log database\n");
-        return -1;
-    } else {
-        DEBUG("Disconnected from a log database\n");
-    }
-
     return 0;
 }
 
@@ -262,13 +254,22 @@ int log_cleanup(int *activated)
  */
 static int log_print_messages(cli_t *cli, char *num_lines)
 {
+    database_t log_db;
+
     int nlines = atoi(num_lines);
 
     char query[__CONF_STR_LEN];
     sprintf(query, "select MESSAGE from logs order by id desc limit %d", nlines);
 
+    if (init_database(&log_info, &log_db)) {
+        cli_print(cli, "Failed to connect a log database");
+        destroy_database(&log_db);
+        return -1;
+    }
+
     if (execute_query(&log_db, query)) {
         cli_print(cli, "Failed to read log messages");
+        destroy_database(&log_db);
         return -1;
     }
 
@@ -280,6 +281,8 @@ static int log_print_messages(cli_t *cli, char *num_lines)
     }
 
     release_query_result(result);
+
+    destroy_database(&log_db);
 
     return 0;
 }

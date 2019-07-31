@@ -297,8 +297,11 @@ static void init_workers(void)
     pthread_mutex_init(&queue_mutex, NULL);
     pthread_cond_init(&queue_cond, NULL);
 
-    if (pthread_create(&thread, NULL, &do_tasks, NULL) < 0) {
-        PERROR("pthread_create");
+    int i;
+    for (i=0; i<__NUM_WORKERS; i++) {
+        if (pthread_create(&thread, NULL, &do_tasks, NULL) < 0) {
+            PERROR("pthread_create");
+        }
     }
 }
 
@@ -477,10 +480,13 @@ static int destroy_epoll_env(void)
 
     waitsec(1, 0);
 
-    pthread_mutex_lock(&queue_mutex);
-    push_back(0);
-    pthread_mutex_unlock(&queue_mutex);
-    pthread_cond_signal(&queue_cond);
+    int i;
+    for (i=0; i<__NUM_WORKERS; i++) {
+        pthread_mutex_lock(&queue_mutex);
+        push_back(0);
+        pthread_mutex_unlock(&queue_mutex);
+        pthread_cond_signal(&queue_cond);
+    }
 
     pthread_cond_destroy(&queue_cond);
     pthread_mutex_destroy(&queue_mutex);

@@ -14,6 +14,8 @@ CONFIG= \
     \
     __MAX_META_EVENTS=10 \
     \
+    \__NUM_WORKERS=4 \
+    \
     __MAX_NUM_SWITCHES=128 \
     __MAX_NUM_PORTS=64 \
     \

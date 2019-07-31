@@ -15,8 +15,8 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The database connector for resource_mgmt */
-database_t resource_mgmt_db;
+/** \brief The database information for resource_mgmt */
+db_info_t resource_mgmt_info;
 
 /////////////////////////////////////////////////////////////////////
 

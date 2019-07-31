@@ -15,15 +15,15 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The database connector for switch_mgmt */
-database_t switch_mgmt_db;
+/** \brief The database information for switch_mgmt */
+db_info_t switch_mgmt_info;
 
 /////////////////////////////////////////////////////////////////////
 
 /** \brief Switch table */
 switch_t *switch_table;
 
-/** \brief Lock for switch update */
-pthread_rwlock_t sw_lock;
+/** \brief Locks for switches */
+pthread_spinlock_t sw_lock[__MAX_NUM_SWITCHES];
 
 /////////////////////////////////////////////////////////////////////

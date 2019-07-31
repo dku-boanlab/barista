@@ -30,18 +30,14 @@ static char hostname[__CONF_SHORT_LEN];
 /////////////////////////////////////////////////////////////////////
 
 /**
- * \brief Function to initialize a database connector
- * \param db Database connector
+ * \brief Function to get the information of a target database
+ * \param info Database information
  * \param database Target database
  */
-int init_database(database_t *db, char *database)
+int get_database_info(db_info_t *info, char *database)
 {
     if (hostname[0] == '\0')
         gethostname(hostname, __CONF_SHORT_LEN);
-
-    char userid[__CONF_WORD_LEN];
-    char userpw[__CONF_WORD_LEN];
-    char target_database[__CONF_WORD_LEN];
 
     int found = FALSE;
 
@@ -52,16 +48,17 @@ int init_database(database_t *db, char *database)
         while (fgets(buf, __CONF_STR_LEN-1, fp) != NULL) {
             if (buf[0] == '#') continue;
 
-            sscanf(buf, "%s %s %s", userid, userpw, target_database);
+            sscanf(buf, "%s %s %s", info->userid, info->userpw, info->database);
 
-            if (strcmp(database, target_database) == 0) {
+            if (strcmp(database, info->database) == 0) {
                 found = TRUE;
                 fclose(fp);
                 break;
             }
 
-            memset(userid, 0, __CONF_WORD_LEN);
-            memset(userpw, 0, __CONF_WORD_LEN);
+            memset(info->userid, 0, __CONF_WORD_LEN);
+            memset(info->userpw, 0, __CONF_WORD_LEN);
+            memset(info->database, 0, __CONF_WORD_LEN);
         }
 
         if (!found) {
@@ -73,149 +70,171 @@ int init_database(database_t *db, char *database)
         return -1;
     }
 
-    mysql_init(db);
-
-    if (mysql_real_connect(db, __DB_HOST, userid, userpw, database, __DB_PORT, (char *)NULL, 0) == NULL) {
-        PERROR("mysql_real_connect");
-        PRINTF("Error %u (%s): %s\n", mysql_errno(db), mysql_sqlstate(db), mysql_error(db));
-        mysql_close(db);
-        return -1;
-    }
-
     return 0;
 }
 
-/**
- * \brief Function to close a database connector
- * \param db Database connector
- */
-int destroy_database(database_t *db)
-{
-    mysql_close(db);
-
-    return 0;
-}
+/////////////////////////////////////////////////////////////////////
 
 /**
  * \brief Function to remove all rows in a table
- * \param db Database connector
+ * \param info Database information
  * \param table Target table
  * \param all The flag to delete all data for other instances too
  */
-int reset_table(database_t *db, char *table, int all)
+int reset_table(db_info_t *info, char *table, int all)
 {
+    database_t db;
+
+    mysql_init(&db);
+
+    if (mysql_real_connect(&db, __DB_HOST, info->userid, info->userpw, info->database, __DB_PORT, (char *)NULL, 0) == NULL) {
+        PERROR("mysql_real_connect");
+        PRINTF("Error %u (%s): %s\n", mysql_errno(&db), mysql_sqlstate(&db), mysql_error(&db));
+        mysql_close(&db);
+        return -1;
+    }
+
     char query[__CONF_STR_LEN];
     if (all)
         sprintf(query, "delete from %s", table);
     else
         sprintf(query, "delete from %s where INSTANCE = '%s'", table, hostname);
 
-    if (mysql_query(db, query) != 0) {
+    if (mysql_query(&db, query) != 0) {
         PERROR("mysql_query");
-        PRINTF("Error %u (%s): %s\n", mysql_errno(db), mysql_sqlstate(db), mysql_error(db));
+        PRINTF("Error %u (%s): %s\n", mysql_errno(&db), mysql_sqlstate(&db), mysql_error(&db));
         PRINTF("Query: %s\n", query);
         return -1;
     }
+
+    mysql_close(&db);
 
     return 0;
 }
 
 /**
  * \brief Function to insert data in a table
- * \param db Database connector
+ * \param info Database information
  * \param table Table
  * \param columns Columns (A, B)
  * \param values Values (A, B)
  */
-int insert_data(database_t *db, char *table, char *columns, char *values)
+int insert_data(db_info_t *info, char *table, char *columns, char *values)
 {
+    database_t db;
+
+    mysql_init(&db);
+
+    if (mysql_real_connect(&db, __DB_HOST, info->userid, info->userpw, info->database, __DB_PORT, (char *)NULL, 0) == NULL) {
+        PERROR("mysql_real_connect");
+        PRINTF("Error %u (%s): %s\n", mysql_errno(&db), mysql_sqlstate(&db), mysql_error(&db));
+        mysql_close(&db);
+        return -1;
+    }
+
     char query[__CONF_STR_LEN];
     sprintf(query, "insert into %s (%s, INSTANCE) values (%s, '%s')", table, columns, values, hostname);
 
-    if (mysql_query(db, query) != 0) {
+    if (mysql_query(&db, query) != 0) {
         PERROR("mysql_query");
-        PRINTF("Error %u (%s): %s\n", mysql_errno(db), mysql_sqlstate(db), mysql_error(db));
+        PRINTF("Error %u (%s): %s\n", mysql_errno(&db), mysql_sqlstate(&db), mysql_error(&db));
         PRINTF("Query: %s\n", query);
         return -1;
     }
 
-    return 0;
-}
-
-/**
- * \brief Function to insert long data in a table
- * \param db Database connector
- * \param table Table
- * \param columns Columns (A, B)
- * \param values Values (A, B)
- */
-int insert_long_data(database_t *db, char *table, char *columns, char *values)
-{
-    char query[__CONF_LONG_STR_LEN];
-    sprintf(query, "insert into %s (%s, INSTANCE) values (%s, '%s')", table, columns, values, hostname);
-
-    if (mysql_query(db, query) != 0) {
-        PERROR("mysql_query");
-        PRINTF("Error %u (%s): %s\n", mysql_errno(db), mysql_sqlstate(db), mysql_error(db));
-        PRINTF("Query: %s\n", query);
-        return -1;
-    }
+    mysql_close(&db);
 
     return 0;
 }
 
 /**
  * \brief Function to update data in a table
- * \param db Database connector
+ * \param info Database information
  * \param table Table
  * \param changes Changes (A=B, C=D)
  * \param conditions Conditions (A=B and C=D)
  */
-int update_data(database_t *db, char *table, char *changes, char *conditions)
+int update_data(db_info_t *info, char *table, char *changes, char *conditions)
 {
+    database_t db;
+
+    mysql_init(&db);
+
+    if (mysql_real_connect(&db, __DB_HOST, info->userid, info->userpw, info->database, __DB_PORT, (char *)NULL, 0) == NULL) {
+        PERROR("mysql_real_connect");
+        PRINTF("Error %u (%s): %s\n", mysql_errno(&db), mysql_sqlstate(&db), mysql_error(&db));
+        mysql_close(&db);
+        return -1;
+    }
+
     char query[__CONF_STR_LEN];
     sprintf(query, "update %s set %s where %s and INSTANCE = '%s'", table, changes, conditions, hostname);
 
-    if (mysql_query(db, query) != 0) {
+    if (mysql_query(&db, query) != 0) {
         PERROR("mysql_query");
-        PRINTF("Error %u (%s): %s\n", mysql_errno(db), mysql_sqlstate(db), mysql_error(db));
+        PRINTF("Error %u (%s): %s\n", mysql_errno(&db), mysql_sqlstate(&db), mysql_error(&db));
         PRINTF("Query: %s\n", query);
         return -1;
     }
+
+    mysql_close(&db);
 
     return 0;
 }
 
 /**
  * \brief Function to delete data in a table
- * \param db Database connector
+ * \param info Database information
  * \param table Table
  * \param conditions Conditions (A=B and C=D)
  */
-int delete_data(database_t *db, char *table, char *conditions)
+int delete_data(db_info_t *info, char *table, char *conditions)
 {
+    database_t db;
+
+    mysql_init(&db);
+
+    if (mysql_real_connect(&db, __DB_HOST, info->userid, info->userpw, info->database, __DB_PORT, (char *)NULL, 0) == NULL) {
+        PERROR("mysql_real_connect");
+        PRINTF("Error %u (%s): %s\n", mysql_errno(&db), mysql_sqlstate(&db), mysql_error(&db));
+        mysql_close(&db);
+        return -1;
+    }
+
     char query[__CONF_STR_LEN];
     sprintf(query, "delete from %s where %s and INSTANCE = '%s'", table, conditions, hostname);
 
-    if (mysql_query(db, query) != 0) {
+    if (mysql_query(&db, query) != 0) {
         PERROR("mysql_query");
-        PRINTF("Error %u (%s): %s\n", mysql_errno(db), mysql_sqlstate(db), mysql_error(db));
+        PRINTF("Error %u (%s): %s\n", mysql_errno(&db), mysql_sqlstate(&db), mysql_error(&db));
         PRINTF("Query: %s\n", query);
         return -1;
     }
+
+    mysql_close(&db);
 
     return 0;
 }
 
 /**
  * \brief Function to get data in a table
+ * \param info Database information
  * \param db Database connector
  * \param table Table
  * \param conditions Conditions (A=B and C=D)
  * \param all The flag to look up all data for other instances too
  */
-int select_data(database_t *db, char *table, char *columns, char *conditions, int all)
+int select_data(db_info_t *info, database_t *db, char *table, char *columns, char *conditions, int all)
 {
+    mysql_init(db);
+
+    if (mysql_real_connect(db, __DB_HOST, info->userid, info->userpw, info->database, __DB_PORT, (char *)NULL, 0) == NULL) {
+        PERROR("mysql_real_connect");
+        PRINTF("Error %u (%s): %s\n", mysql_errno(db), mysql_sqlstate(db), mysql_error(db));
+        mysql_close(db);
+        return -1;
+    }
+
     char query[__CONF_STR_LEN];
     if (conditions && all)
         sprintf(query, "select %s from %s where %s", columns, table, conditions);
@@ -232,6 +251,38 @@ int select_data(database_t *db, char *table, char *columns, char *conditions, in
         PRINTF("Query: %s\n", query);
         return -1;
     }
+
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief Function to initialize a database connector
+ * \param info Database information
+ * \param db Database connector
+ */
+int init_database(db_info_t *info, database_t *db)
+{
+    mysql_init(db);
+
+    if (mysql_real_connect(db, __DB_HOST, info->userid, info->userpw, info->database, __DB_PORT, (char *)NULL, 0) == NULL) {
+        PERROR("mysql_real_connect");
+        PRINTF("Error %u (%s): %s\n", mysql_errno(db), mysql_sqlstate(db), mysql_error(db));
+        mysql_close(db);
+        return -1;
+    }
+
+    return 0;
+}
+
+/**
+ * \brief Function to close a database connector
+ * \param db Database connector
+ */
+int destroy_database(database_t *db)
+{
+    mysql_close(db);
 
     return 0;
 }

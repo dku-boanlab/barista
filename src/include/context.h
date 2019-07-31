@@ -15,7 +15,7 @@
 struct _ctx_t {
     // barista
     int autostart; /**< Autostart */
-    database_t storage; /**< Storage connector */
+    db_info_t storage; /**< Storage information */
 
     // event handler
     int ev_on; /**< The running flag of the event handler */

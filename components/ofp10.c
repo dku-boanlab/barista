@@ -1131,7 +1131,7 @@ static int ofp10_aggregate_stats(const flow_t *flow)
  */
 static int ofp10_port_mod(const port_t *port)
 {
-    // no implementation
+    //TODO
 
     return 0;
 }

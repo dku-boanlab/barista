@@ -268,7 +268,7 @@ static int export_to_json(uint32_t id, uint16_t type, const void *input, char *o
         {
             const switch_t *sw = (const switch_t *)input;
 
-            sprintf(output, "{\"id\": %u, \"type\": %u, \"dpid\": %lu, \"fd\": %u, \"xid\": %u, \"return\": %d}" id, type, sw->dpid, sw->conn.fd, sw->conn.xid, ret);
+            sprintf(output, "{\"id\": %u, \"type\": %u, \"dpid\": %lu, \"fd\": %u, \"xid\": %u, \"return\": %d}", id, type, sw->dpid, sw->conn.fd, sw->conn.xid, ret);
         }
         break;
     case EV_SW_CONNECTED:

@@ -61,14 +61,12 @@ int resource_mgmt_main(int *activated, int argc, char **argv)
 
     int num_procs = get_nprocs();
 
-    if (init_database(&resource_mgmt_db, "barista_mgmt")) {
-        LOG_ERROR(RSM_ID, "Failed to connect a resource_mgmt database");
+    if (get_database_info(&resource_mgmt_info, "barista_mgmt")) {
+        LOG_ERROR(RSM_ID, "Failed to get the information of a resource_mgmt database");
         return -1;
-    } else {
-        LOG_INFO(RSM_ID, "Connected to a resource_mgmt database");
     }
 
-    reset_table(&resource_mgmt_db, "resource_mgmt", FALSE);
+    reset_table(&resource_mgmt_info, "resource_mgmt", FALSE);
 
     memset(&resource, 0, sizeof(resource_t));
 
@@ -87,7 +85,7 @@ int resource_mgmt_main(int *activated, int argc, char **argv)
         char values[__CONF_STR_LEN];
         sprintf(values, "%lf, %lf", rs.cpu, rs.mem);
 
-        if (insert_data(&resource_mgmt_db, "resource_mgmt", "CPU, MEM", values)) {
+        if (insert_data(&resource_mgmt_info, "resource_mgmt", "CPU, MEM", values)) {
             LOG_ERROR(RSM_ID, "insert_data() failed");
         }
 
@@ -114,13 +112,6 @@ int resource_mgmt_cleanup(int *activated)
 
     deactivate();
 
-    if (destroy_database(&resource_mgmt_db)) {
-        LOG_ERROR(RSM_ID, "Failed to disconnect a resource_mgmt database");
-        return -1;
-    } else {
-        LOG_INFO(RSM_ID, "Dsiconnected from a resource_mgmt database");
-    }
-
     return 0;
 }
 
@@ -131,6 +122,8 @@ int resource_mgmt_cleanup(int *activated)
  */
 static int resource_stat_summary(cli_t *cli, char *seconds)
 {
+    database_t resource_mgmt_db;
+
     int sec = atoi(seconds) / __RESOURCE_MGMT_MONITOR_TIME;
 
     int cnt = 0;
@@ -139,8 +132,15 @@ static int resource_stat_summary(cli_t *cli, char *seconds)
     char query[__CONF_STR_LEN];
     sprintf(query, "select CPU, MEM from resource_mgmt order by id desc limit %d", sec);
 
+    if (init_database(&resource_mgmt_info, &resource_mgmt_db)) {
+        cli_print(cli, "Failed to connect a resource_mgmt database");
+        destroy_database(&resource_mgmt_db);
+        return -1;
+    }
+
     if (execute_query(&resource_mgmt_db, query)) {
         cli_print(cli, "Failed to read resource usages");
+        destroy_database(&resource_mgmt_db);
         return -1;
     }
 
@@ -155,6 +155,8 @@ static int resource_stat_summary(cli_t *cli, char *seconds)
     }
 
     release_query_result(result);
+
+    destroy_database(&resource_mgmt_db);
 
     rs.cpu /= cnt;
     rs.mem /= cnt;
@@ -178,7 +180,7 @@ int resource_mgmt_cli(cli_t *cli, char **args)
     }
 
     cli_print(cli, "< Available Commands >");
-    cli_print(cli, "  resource_mgmt stat [N minute(s)]");
+    cli_print(cli, "  resource_mgmt stat [N second(s)]");
 
     return 0;
 }

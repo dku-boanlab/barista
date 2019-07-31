@@ -16,13 +16,13 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The database connector for host_mgmt */
-database_t host_mgmt_db;
+/** \brief The database information for host_mgmt */
+db_info_t host_mgmt_info;
 
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The number of hostentries */
-#define NUM_HOST_ENTRIES 4096
+#define NUM_HOST_ENTRIES 8192
 
 /** \brief The structure of a host hash key */
 typedef struct _host_key_t {
@@ -33,5 +33,8 @@ typedef struct _host_key_t {
 
 /** \brief The cache of recently added hosts */
 host_t *host_cache;
+
+/** \brief The locks for host entries */
+pthread_spinlock_t host_lock[NUM_HOST_ENTRIES];
 
 /////////////////////////////////////////////////////////////////////

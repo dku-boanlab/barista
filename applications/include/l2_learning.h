@@ -16,13 +16,13 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The database connector for L2 Learning */
-database_t l2_learning_db;
+/** \brief The database information for L2 Learning */
+db_info_t l2_learning_info;
 
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The number of MAC entries */
-#define NUM_MAC_ENTRIES 4096
+#define NUM_MAC_ENTRIES 8192
 
 /** \brief The structure of a MAC entry */
 typedef struct _mac_entry_t {
@@ -40,5 +40,8 @@ typedef struct _mac_key_t {
 
 /** \brief The cache of recently added hosts */
 mac_entry_t *mac_cache;
+
+/** \brief The locks for MAC entries */
+pthread_spinlock_t mac_lock[NUM_MAC_ENTRIES];
 
 /////////////////////////////////////////////////////////////////////

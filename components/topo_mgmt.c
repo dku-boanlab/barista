@@ -125,10 +125,10 @@ static int send_lldp(port_t *port)
  */
 static int insert_link(uint64_t src_dpid, uint16_t src_port, uint64_t dst_dpid, uint16_t dst_port)
 {
-    pthread_rwlock_rdlock(&topo_lock);
-
     int idx = src_dpid % __MAX_NUM_SWITCHES;
     do {
+        pthread_spin_lock(&topo_lock[idx]);
+
         if (topo[idx].dpid == src_dpid) {
             int i;
             for (i=0; i<__MAX_NUM_PORTS; i++) {
@@ -136,18 +136,14 @@ static int insert_link(uint64_t src_dpid, uint16_t src_port, uint64_t dst_dpid, 
                     port_link_t *link = &topo[idx].link[i].link;
 
                    if (!link->dpid && !link->port) {
-                        pthread_rwlock_unlock(&topo_lock);
-
-                        pthread_rwlock_wrlock(&topo_lock);
-
                         link->dpid = dst_dpid;
                         link->port = dst_port;
 
-                        pthread_rwlock_unlock(&topo_lock);
+                        pthread_spin_unlock(&topo_lock[idx]);
 
                         char values[__CONF_STR_LEN];
                         sprintf(values, "%lu, %u, %lu, %u, 0, 0, 0, 0", src_dpid, src_port, dst_dpid, dst_port);
-                        if (insert_data(&topo_mgmt_db, "topo_mgmt",
+                        if (insert_data(&topo_mgmt_info, "topo_mgmt",
                             "SRC_DPID, SRC_PORT, DST_DPID, DST_PORT, RX_PACKETS, RX_BYTES, TX_PACKETS, TX_BYTES", values)) {
                             LOG_ERROR(TOPO_MGMT_ID, "insert_data() failed");
                             return 0;
@@ -164,11 +160,11 @@ static int insert_link(uint64_t src_dpid, uint16_t src_port, uint64_t dst_dpid, 
 
                         return 1;
                     } else if (link->dpid == dst_dpid && link->port == dst_port) {
-                        pthread_rwlock_unlock(&topo_lock);
+                        pthread_spin_unlock(&topo_lock[idx]);
 
                         return 0;
                     } else {
-                        pthread_rwlock_unlock(&topo_lock);
+                        pthread_spin_unlock(&topo_lock[idx]);
 
                         LOG_WARN(TOPO_MGMT_ID, "Inconsistent link {(%lu, %u) -> (%lu, %u)} -> {(%lu, %u) -> (%lu, %u)}\n",
                                  src_dpid, src_port, link->dpid, link->port, src_dpid, src_port, dst_dpid, dst_port);
@@ -183,10 +179,10 @@ static int insert_link(uint64_t src_dpid, uint16_t src_port, uint64_t dst_dpid, 
             break;
         }
 
+        pthread_spin_unlock(&topo_lock[idx]);
+
         idx = (idx + 1) % __MAX_NUM_SWITCHES;
     } while (idx != src_dpid % __MAX_NUM_SWITCHES);
-
-    pthread_rwlock_unlock(&topo_lock);
 
     return 0;
 }
@@ -203,14 +199,12 @@ int topo_mgmt_main(int *activated, int argc, char **argv)
 {
     LOG_INFO(TOPO_MGMT_ID, "Init - Topology management");
 
-    if (init_database(&topo_mgmt_db, "barista_mgmt")) {
-        LOG_ERROR(TOPO_MGMT_ID, "Failed to connect to a topo_mgmt database");
+    if (get_database_info(&topo_mgmt_info, "barista_mgmt")) {
+        LOG_ERROR(TOPO_MGMT_ID, "Failed to get the information of a topo_mgmt database");
         return -1;
-    } else {
-        LOG_INFO(TOPO_MGMT_ID, "Connected to a topo_mgmt database");
     }
 
-    reset_table(&topo_mgmt_db, "topo_mgmt", FALSE);
+    reset_table(&topo_mgmt_info, "topo_mgmt", FALSE);
 
     topo = (topo_t *)CALLOC(__MAX_NUM_SWITCHES, sizeof(topo_t));
     if (topo == NULL) {
@@ -218,15 +212,17 @@ int topo_mgmt_main(int *activated, int argc, char **argv)
         return -1;
     }
 
-    pthread_rwlock_init(&topo_lock, NULL);
+    int i;
+    for (i=0; i<__MAX_NUM_SWITCHES; i++) {
+        pthread_spin_init(&topo_lock[i], PTHREAD_PROCESS_PRIVATE);
+    }
 
     activate();
 
     while (*activated) {
-        pthread_rwlock_rdlock(&topo_lock);
-
         int i;
         for (i=0; i<__MAX_NUM_SWITCHES; i++) {
+            pthread_spin_lock(&topo_lock[i]);
             if (topo[i].dpid) {
                 int j;
                 for (j=0; j<__MAX_NUM_PORTS; j++) {
@@ -235,9 +231,8 @@ int topo_mgmt_main(int *activated, int argc, char **argv)
                     }
                 }
             }
+            pthread_spin_unlock(&topo_lock[i]);
         }
-
-        pthread_rwlock_unlock(&topo_lock);
 
         for (i=0; i<__TOPO_MGMT_REQUEST_TIME; i++) {
             if (*activated == FALSE) break;
@@ -258,15 +253,12 @@ int topo_mgmt_cleanup(int *activated)
 
     deactivate();
 
-    pthread_rwlock_destroy(&topo_lock);
-    FREE(topo);
-
-    if (destroy_database(&topo_mgmt_db)) {
-        LOG_ERROR(TOPO_MGMT_ID, "Failed to disconnect a topo_mgmt database");
-        return -1;
-    } else {
-        LOG_INFO(TOPO_MGMT_ID, "Disconnected from a topo_mgmt database");
+    int i;
+    for (i=0; i<__MAX_NUM_SWITCHES; i++) {
+        pthread_spin_destroy(&topo_lock[i]);
     }
+
+    FREE(topo);
 
     return 0;
 }
@@ -277,11 +269,13 @@ int topo_mgmt_cleanup(int *activated)
  */
 static int topo_listup(cli_t *cli)
 {
+    database_t topo_mgmt_db;
+
     int cnt = 0;
 
     cli_print(cli, "< Link List >");
 
-    if (select_data(&topo_mgmt_db, "topo_mgmt", "SRC_DPID, SRC_PORT, DST_DPID, DST_PORT, RX_PACKETS, RX_BYTES, TX_PACKETS, TX_BYTES", 
+    if (select_data(&topo_mgmt_info, &topo_mgmt_db, "topo_mgmt", "SRC_DPID, SRC_PORT, DST_DPID, DST_PORT, RX_PACKETS, RX_BYTES, TX_PACKETS, TX_BYTES", 
         NULL, TRUE)) {
         cli_print(cli, "Failed to read the list of links");
         return -1;
@@ -306,6 +300,8 @@ static int topo_listup(cli_t *cli)
 
     release_query_result(result);
 
+    destroy_database(&topo_mgmt_db);
+
     return 0;
 }
 
@@ -316,6 +312,8 @@ static int topo_listup(cli_t *cli)
  */
 static int topo_showup(cli_t *cli, char *dpid_string)
 {
+    database_t topo_mgmt_db;
+
     int cnt = 0;
     uint64_t dpid = strtoull(dpid_string, NULL, 0);
 
@@ -324,7 +322,7 @@ static int topo_showup(cli_t *cli, char *dpid_string)
     char conditions[__CONF_STR_LEN];
     sprintf(conditions, "SRC_DPID = %lu", dpid);
 
-    if (select_data(&topo_mgmt_db, "topo_mgmt", "SRC_DPID, SRC_PORT, DST_DPID, DST_PORT, RX_PACKETS, RX_BYTES, TX_PACKETS, TX_BYTES", 
+    if (select_data(&topo_mgmt_info, &topo_mgmt_db, "topo_mgmt", "SRC_DPID, SRC_PORT, DST_DPID, DST_PORT, RX_PACKETS, RX_BYTES, TX_PACKETS, TX_BYTES", 
         conditions, TRUE)) {
         cli_print(cli, "Failed to read the list of links");
         return -1;
@@ -348,6 +346,8 @@ static int topo_showup(cli_t *cli, char *dpid_string)
     }
 
     release_query_result(result);
+
+    destroy_database(&topo_mgmt_db);
 
     return 0;
 }
@@ -433,19 +433,20 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             if (sw->remote == TRUE) break;
 
-            pthread_rwlock_wrlock(&topo_lock);
-
             int idx = sw->dpid % __MAX_NUM_SWITCHES;
             do {
+                pthread_spin_lock(&topo_lock[idx]);
+
                 if (topo[idx].dpid == 0) {
                     topo[idx].dpid = sw->dpid;
+                    pthread_spin_unlock(&topo_lock[idx]);
                     break;
                 }
 
+                pthread_spin_unlock(&topo_lock[idx]);
+
                 idx = (idx + 1) % __MAX_NUM_SWITCHES;
             } while (idx != sw->dpid % __MAX_NUM_SWITCHES);
-
-            pthread_rwlock_unlock(&topo_lock);
         }
         break;
     case EV_SW_DISCONNECTED:
@@ -455,10 +456,10 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             if (sw->remote == TRUE) break;
 
-            pthread_rwlock_wrlock(&topo_lock);
-
             int idx = sw->dpid % __MAX_NUM_SWITCHES;
             do {
+                pthread_spin_lock(&topo_lock[idx]);
+
                 if (topo[idx].dpid == sw->dpid) {
                     int i;
                     for (i=0; i<__MAX_NUM_PORTS; i++) {
@@ -484,10 +485,12 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                     topo[idx].dpid = 0;
                     topo[idx].remote = FALSE;
 
+                    pthread_spin_unlock(&topo_lock[idx]);
+
                     char conditions[__CONF_STR_LEN];
                     sprintf(conditions, "SRC_DPID = %lu", sw->dpid);
 
-                    if (delete_data(&topo_mgmt_db, "topo_mgmt", conditions)) {
+                    if (delete_data(&topo_mgmt_info, "topo_mgmt", conditions)) {
                         LOG_ERROR(TOPO_MGMT_ID, "delete_data() failed");
                         break;
                     }
@@ -495,10 +498,10 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                     break;
                 }
 
+                pthread_spin_unlock(&topo_lock[idx]);
+
                 idx = (idx + 1) % __MAX_NUM_SWITCHES;
             } while (idx != sw->dpid % __MAX_NUM_SWITCHES);
-
-            pthread_rwlock_unlock(&topo_lock);
         }
         break;
     case EV_DP_PORT_ADDED:
@@ -509,10 +512,10 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
             if (port->remote == TRUE) break;
             else if (port->port > __MAX_NUM_PORTS) break;
 
-            pthread_rwlock_wrlock(&topo_lock);
-
             int idx = port->dpid % __MAX_NUM_SWITCHES;
             do {
+                pthread_spin_lock(&topo_lock[idx]);
+
                 if (topo[idx].dpid == port->dpid) {
                     int i;
                     for (i=0; i<__MAX_NUM_PORTS; i++) {
@@ -526,13 +529,15 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                         }
                     }
 
+                    pthread_spin_unlock(&topo_lock[idx]);
+
                     break;
                 }
 
+                pthread_spin_unlock(&topo_lock[idx]);
+
                 idx = (idx + 1) % __MAX_NUM_SWITCHES;
             } while (idx != port->dpid % __MAX_NUM_SWITCHES);
-
-            pthread_rwlock_unlock(&topo_lock);
         }
         break;
     case EV_DP_PORT_DELETED:
@@ -543,10 +548,10 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
             if (port->remote == TRUE) break;
             else if (port->port > __MAX_NUM_PORTS) break;
 
-            pthread_rwlock_wrlock(&topo_lock);
-
             int idx = port->dpid % __MAX_NUM_SWITCHES;
             do {
+                pthread_spin_lock(&topo_lock[idx]);
+
                 if (topo[idx].dpid == port->dpid) {
                     int i;
                     for (i=0; i<__MAX_NUM_SWITCHES; i++) {
@@ -571,7 +576,7 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                             sprintf(conditions, "SRC_DPID = %lu and SRC_PORT = %u and DST_DPID = %lu and DST_PORT = %u",
                                     out.dpid, out.port, out.link.dpid, out.link.port);
 
-                            if (delete_data(&topo_mgmt_db, "topo_mgmt", conditions)) {
+                            if (delete_data(&topo_mgmt_info, "topo_mgmt", conditions)) {
                                 LOG_ERROR(TOPO_MGMT_ID, "delete_data() failed");
                             }
 
@@ -581,13 +586,15 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                         }
                     }
 
+                    pthread_spin_unlock(&topo_lock[idx]);
+
                     break;
                 }
 
+                pthread_spin_unlock(&topo_lock[idx]);
+
                 idx = (idx + 1) % __MAX_NUM_SWITCHES;
             } while (idx != port->dpid % __MAX_NUM_SWITCHES);
-
-            pthread_rwlock_unlock(&topo_lock);
         }
         break;
     case EV_DP_PORT_STATS:
@@ -597,10 +604,10 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             if (port->remote == TRUE) break;
 
-            pthread_rwlock_wrlock(&topo_lock);
-
             int idx = port->dpid % __MAX_NUM_SWITCHES;
             do {
+                pthread_spin_lock(&topo_lock[idx]);
+
                 if (topo[idx].dpid == port->dpid) {
                     int i;
                     for (i=0; i<__MAX_NUM_SWITCHES; i++) {
@@ -626,20 +633,22 @@ int topo_mgmt_handler(const event_t *ev, event_out_t *ev_out)
                         sprintf(conditions, "SRC_DPID = %lu and SRC_PORT = %u and DST_DPID = %lu and DST_PORT = %u",
                                 port->dpid, port->port, topo[idx].link[i].link.dpid, topo[idx].link[i].link.port);
 
-                        if (update_data(&topo_mgmt_db, "topo_mgmt", changes, conditions)) {
+                        if (update_data(&topo_mgmt_info, "topo_mgmt", changes, conditions)) {
                             LOG_ERROR(TOPO_MGMT_ID, "update_data() failed");
                         }
 
                         break;
                     }
 
+                    pthread_spin_unlock(&topo_lock[idx]);
+
                     break;
                 }
 
+                pthread_spin_unlock(&topo_lock[idx]);
+
                 idx = (idx + 1) % __MAX_NUM_SWITCHES;
             } while (idx != port->port % __MAX_NUM_SWITCHES);
-
-            pthread_rwlock_unlock(&topo_lock);
         }
         break;
     case EV_LINK_ADDED:

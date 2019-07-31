@@ -17,8 +17,8 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The database connector for topo_mgmt */
-database_t topo_mgmt_db;
+/** \brief The database information for topo_mgmt */
+db_info_t topo_mgmt_info;
 
 /////////////////////////////////////////////////////////////////////
 
@@ -32,8 +32,8 @@ typedef struct _topo_t {
 /** \brief Network topology */
 topo_t *topo;
 
-/** \brief Lock for topology update */
-pthread_rwlock_t topo_lock;
+/** \brief Locks for switches */
+pthread_spinlock_t topo_lock[__MAX_NUM_SWITCHES];
 
 /////////////////////////////////////////////////////////////////////
 

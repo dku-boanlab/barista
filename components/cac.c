@@ -23,7 +23,7 @@
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The event list to convert an event string to an event ID */
-const char ev_string[EV_NUM_EVENTS+1][__CONF_WORD_LEN] = {
+const char ev_string[__MAX_EVENTS][__CONF_WORD_LEN] = {
     #include "event_string.h"
 };
 

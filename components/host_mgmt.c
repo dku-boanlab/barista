@@ -24,10 +24,12 @@
 
 int get_host_entry(host_t *entry)
 {
+    database_t host_mgmt_db;
+
     char conditions[__CONF_STR_LEN];
     sprintf(conditions, "IP = %u and MAC = %lu", entry->ip, entry->mac);
 
-    if (select_data(&host_mgmt_db, "host_mgmt", "DPID, PORT", conditions, TRUE)) return -1;
+    if (select_data(&host_mgmt_info, &host_mgmt_db, "host_mgmt", "DPID, PORT", conditions, TRUE)) return -1;
 
     query_result_t *result = get_query_result(&host_mgmt_db);
     query_row_t row;
@@ -38,10 +40,14 @@ int get_host_entry(host_t *entry)
 
         release_query_result(result);
 
+        destroy_database(&host_mgmt_db);
+
         return 0;
     }
 
     release_query_result(result);
+
+    destroy_database(&host_mgmt_db);
 
     return -1;
 }
@@ -51,7 +57,7 @@ int insert_host_entry(host_t *entry)
     char values[__CONF_STR_LEN];
     sprintf(values, "%lu, %u, %lu, %u", entry->dpid, entry->port, entry->mac, entry->ip);
 
-    if (insert_data(&host_mgmt_db, "host_mgmt", "DPID, PORT, MAC, IP", values)) return -1;
+    if (insert_data(&host_mgmt_info, "host_mgmt", "DPID, PORT, MAC, IP", values)) return -1;
 
     return 0;
 }
@@ -71,6 +77,8 @@ static int add_new_host(const pktin_t *pktin)
 
     uint32_t key = hash_func((uint32_t *)&hkey, 4) % NUM_HOST_ENTRIES;
 
+    pthread_spin_lock(&host_lock[key]);
+
     if (host_cache[key].ip != hkey.ip && host_cache[key].mac != hkey.mac) {
         host_t src;
 
@@ -84,6 +92,8 @@ static int add_new_host(const pktin_t *pktin)
             host_cache[key].port = pktin->port;
             host_cache[key].ip = hkey.ip;
             host_cache[key].mac = hkey.mac;
+
+            pthread_spin_unlock(&host_lock[key]);
 
             insert_host_entry(&host_cache[key]);
 
@@ -102,8 +112,12 @@ static int add_new_host(const pktin_t *pktin)
         host_cache[key].ip = hkey.ip;
         host_cache[key].mac = hkey.mac;
 
+        pthread_spin_unlock(&host_lock[key]);
+
         return 0;
     } else if (host_cache[key].ip != hkey.ip && host_cache[key].mac == hkey.mac) {
+        pthread_spin_unlock(&host_lock[key]);
+
         uint8_t m[ETH_ALEN];
         int2mac(hkey.mac, m);
 
@@ -112,6 +126,8 @@ static int add_new_host(const pktin_t *pktin)
 
         return -1;
     } else if (host_cache[key].ip == hkey.ip && host_cache[key].mac != hkey.mac) {
+        pthread_spin_unlock(&host_lock[key]);
+
         uint8_t o[ETH_ALEN], i[ETH_ALEN];
         int2mac(host_cache[key].mac, o);
         int2mac(hkey.mac, i);
@@ -122,6 +138,8 @@ static int add_new_host(const pktin_t *pktin)
 
         return -1;
     }
+
+    pthread_spin_unlock(&host_lock[key]);
 
     return 0;
 }
@@ -138,19 +156,22 @@ int host_mgmt_main(int *activated, int argc, char **argv)
 {
     LOG_INFO(HOST_MGMT_ID, "Init - Host management");
 
-    if (init_database(&host_mgmt_db, "barista_mgmt")) {
-        LOG_ERROR(HOST_MGMT_ID, "Failed to connect a host_mgmt database");
+    if (get_database_info(&host_mgmt_info, "barista_mgmt")) {
+        LOG_ERROR(HOST_MGMT_ID, "Failed to get the information of a host_mgmt database");
         return -1;
-    } else {
-        LOG_INFO(HOST_MGMT_ID, "Connected to a host_mgmt database");
     }
 
-    reset_table(&host_mgmt_db, "host_mgmt", FALSE);
+    reset_table(&host_mgmt_info, "host_mgmt", FALSE);
 
     host_cache = (host_t *)CALLOC(NUM_HOST_ENTRIES, sizeof(host_t));
     if (host_cache == NULL) {
         LOG_ERROR(HOST_MGMT_ID, "calloc() failed");
         return -1;
+    }
+
+    int i;
+    for (i=0; i<NUM_HOST_ENTRIES; i++) {
+        pthread_spin_init(&host_lock[i], PTHREAD_PROCESS_PRIVATE);
     }
 
     activate();
@@ -168,14 +189,12 @@ int host_mgmt_cleanup(int *activated)
 
     deactivate();
 
-    FREE(host_cache);
-
-    if (destroy_database(&host_mgmt_db)) {
-        LOG_ERROR(HOST_MGMT_ID, "Failed to disconnect a host_mgmt database");
-        return -1;
-    } else {
-        LOG_INFO(HOST_MGMT_ID, "Disconnected from a host_mgmt database");
+    int i;
+    for (i=0; i<NUM_HOST_ENTRIES; i++) {
+        pthread_spin_destroy(&host_lock[i]);
     }
+
+    FREE(host_cache);
 
     return 0;
 }
@@ -186,10 +205,13 @@ int host_mgmt_cleanup(int *activated)
  */
 static int host_listup(cli_t *cli)
 {
+    database_t host_mgmt_db;
+
     cli_print(cli, "< Host List >");
 
-    if (select_data(&host_mgmt_db, "host_mgmt", "DPID, PORT, IP, MAC", NULL, TRUE)) {
+    if (select_data(&host_mgmt_info, &host_mgmt_db, "host_mgmt", "DPID, PORT, IP, MAC", NULL, TRUE)) {
         cli_print(cli, "  Failed to execute a query");
+        destroy_database(&host_mgmt_db);
         return -1;
     }
 
@@ -212,6 +234,8 @@ static int host_listup(cli_t *cli)
 
     release_query_result(result);
 
+    destroy_database(&host_mgmt_db);
+
     if (!cnt)
         cli_print(cli, "  No connected host");
 
@@ -225,6 +249,8 @@ static int host_listup(cli_t *cli)
  */
 static int host_showup_switch(cli_t *cli, const char *dpid_str)
 {
+    database_t host_mgmt_db;
+
     uint64_t dpid = strtoull(dpid_str, NULL, 0);
 
     cli_print(cli, "< Hosts connected to Switch [%lu] >", dpid);
@@ -232,8 +258,9 @@ static int host_showup_switch(cli_t *cli, const char *dpid_str)
     char conditions[__CONF_STR_LEN];
     sprintf(conditions, "DPID = %lu", dpid);
 
-    if (select_data(&host_mgmt_db, "host_mgmt", "PORT, IP, MAC", conditions, TRUE)) {
+    if (select_data(&host_mgmt_info, &host_mgmt_db, "host_mgmt", "PORT, IP, MAC", conditions, TRUE)) {
         cli_print(cli, "  Failed to execute a query");
+        destroy_database(&host_mgmt_db);
         return -1;
     }
 
@@ -255,6 +282,8 @@ static int host_showup_switch(cli_t *cli, const char *dpid_str)
 
     release_query_result(result);
 
+    destroy_database(&host_mgmt_db);
+
     if (!cnt)
         cli_print(cli, "  No connected host");
 
@@ -268,6 +297,8 @@ static int host_showup_switch(cli_t *cli, const char *dpid_str)
  */
 static int host_showup_ip(cli_t *cli, const char *ipaddr)
 {
+    database_t host_mgmt_db;
+
     uint32_t ip = ip_addr_int(ipaddr);
 
     cli_print(cli, "< Host [%s] >", ipaddr);
@@ -275,8 +306,9 @@ static int host_showup_ip(cli_t *cli, const char *ipaddr)
     char conditions[__CONF_STR_LEN];
     sprintf(conditions, "IP = %u", ip);
 
-    if (select_data(&host_mgmt_db, "host_mgmt", "DPID, PORT, MAC", conditions, TRUE)) {
+    if (select_data(&host_mgmt_info, &host_mgmt_db, "host_mgmt", "DPID, PORT, MAC", conditions, TRUE)) {
         cli_print(cli, "  Failed to execute a query");
+        destroy_database(&host_mgmt_db);
         return -1;
     }
 
@@ -298,6 +330,8 @@ static int host_showup_ip(cli_t *cli, const char *ipaddr)
 
     release_query_result(result);
 
+    destroy_database(&host_mgmt_db);
+
     if (!cnt)
         cli_print(cli, "  No connected host");
 
@@ -311,6 +345,8 @@ static int host_showup_ip(cli_t *cli, const char *ipaddr)
  */
 static int host_showup_mac(cli_t *cli, const char *macaddr)
 {
+    database_t host_mgmt_db;
+
     uint8_t mac[ETH_ALEN];
     str2mac(macaddr, mac);
 
@@ -321,7 +357,7 @@ static int host_showup_mac(cli_t *cli, const char *macaddr)
     char conditions[__CONF_STR_LEN];
     sprintf(conditions, "MAC = %lu", macval);
 
-    if (select_data(&host_mgmt_db, "host_mgmt", "DPID, PORT, IP", conditions, TRUE)) {
+    if (select_data(&host_mgmt_info, &host_mgmt_db, "host_mgmt", "DPID, PORT, IP", conditions, TRUE)) {
         cli_print(cli, "  Failed to execute a query");
         return -1;
     }
@@ -340,6 +376,8 @@ static int host_showup_mac(cli_t *cli, const char *macaddr)
     }
 
     release_query_result(result);
+
+    destroy_database(&host_mgmt_db);
 
     if (!cnt)
         cli_print(cli, "  No connected host");
@@ -401,10 +439,12 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const port_t *port = ev->port;
 
+            database_t host_mgmt_db;
+
             char conditions[__CONF_STR_LEN];
             sprintf(conditions, "DPID = %lu and PORT = %u", port->dpid, port->port);
 
-            if (select_data(&host_mgmt_db, "host_mgmt", "IP, MAC", conditions, FALSE)) return -1;
+            if (select_data(&host_mgmt_info, &host_mgmt_db, "host_mgmt", "IP, MAC", conditions, FALSE)) return -1;
 
             query_result_t *result = get_query_result(&host_mgmt_db);
             query_row_t row;
@@ -430,14 +470,19 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             release_query_result(result);
 
-            delete_data(&host_mgmt_db, "host_mgmt", conditions);
+            destroy_database(&host_mgmt_db);
+
+            delete_data(&host_mgmt_info, "host_mgmt", conditions);
 
             int i;
             for (i=0; i<NUM_HOST_ENTRIES; i++) {
+                pthread_spin_lock(&host_lock[i]);
                 if (host_cache[i].dpid == port->dpid && host_cache[i].port == port->port) {
                     memset(&host_cache[i], 0, sizeof(host_t));
+                    pthread_spin_unlock(&host_lock[i]);
                     break;
                 }
+                pthread_spin_unlock(&host_lock[i]);
             }
         }
         break;
@@ -446,10 +491,12 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
         {
             const switch_t *sw = ev->sw;
 
+            database_t host_mgmt_db;
+
             char conditions[__CONF_STR_LEN];
             sprintf(conditions, "DPID = %lu", sw->dpid);
 
-            if (select_data(&host_mgmt_db, "host_mgmt", "PORT, IP, MAC", conditions, FALSE)) return -1;
+            if (select_data(&host_mgmt_info, &host_mgmt_db, "host_mgmt", "PORT, IP, MAC", conditions, FALSE)) return -1;
 
             query_result_t *result = get_query_result(&host_mgmt_db);
             query_row_t row;
@@ -475,13 +522,17 @@ int host_mgmt_handler(const event_t *ev, event_out_t *ev_out)
 
             release_query_result(result);
 
-            delete_data(&host_mgmt_db, "host_mgmt", conditions);
+            destroy_database(&host_mgmt_db);
+
+            delete_data(&host_mgmt_info, "host_mgmt", conditions);
 
             int i;
             for (i=0; i<NUM_HOST_ENTRIES; i++) {
+                pthread_spin_lock(&host_lock[i]);
                 if (host_cache[i].dpid == sw->dpid) {
                     memset(&host_cache[i], 0, sizeof(host_t));
                 }
+                pthread_spin_unlock(&host_lock[i]);
             }
         }
         break;

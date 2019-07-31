@@ -32,8 +32,8 @@ int init_storage(ctx_t *ctx)
 {
     st_ctx = ctx;
 
-    if (init_database(&st_ctx->storage, "barista")) {
-        PERROR("init_database() failed");
+    if (get_database_info(&st_ctx->storage, "barista")) {
+        PERROR("get_database_info() failed");
         return -1;
     }
 
@@ -46,11 +46,6 @@ int init_storage(ctx_t *ctx)
  */
 int destroy_storage(ctx_t *ctx)
 {
-    if (destroy_database(&st_ctx->storage)) {
-        PERROR("destroy_database() failed");
-        return -1;
-    }
-
     return 0;
 }
 

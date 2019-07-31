@@ -38,6 +38,7 @@
 #include "mac2int.h"
 #include "ip2int.h"
 
+#include "database.h"
 #include <jansson.h>
 #include "libcli.h"
 #include <mysql.h>

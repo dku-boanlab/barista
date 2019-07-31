@@ -32,14 +32,12 @@ int channel_mgmt_main(int *activated, int argc, char **argv)
 {
     LOG_INFO(CHANNEL_MGMT_ID, "Init - Control channel management");
 
-    if (init_database(&channel_mgmt_db, "barista_mgmt")) {
-        LOG_ERROR(CHANNEL_MGMT_ID, "Failed to connect a channel_mgmt database");
+    if (get_database_info(&channel_mgmt_info, "barista_mgmt")) {
+        LOG_ERROR(CHANNEL_MGMT_ID, "Failed to get the information of a channel_mgmt database");
         return -1;
-    } else {
-        LOG_INFO(CHANNEL_MGMT_ID, "Connected to a channel_mgmt database");
     }
 
-    reset_table(&channel_mgmt_db, "channel_mgmt", FALSE);
+    reset_table(&channel_mgmt_info, "channel_mgmt", FALSE);
 
     memset(&traffic, 0, sizeof(traffic_t));
 
@@ -60,7 +58,7 @@ int channel_mgmt_main(int *activated, int argc, char **argv)
         char values[__CONF_STR_LEN];
         sprintf(values, "%lu, %lu, %lu, %lu", tr.in_pkt_cnt, tr.in_byte_cnt, tr.out_pkt_cnt, tr.out_byte_cnt);
 
-        if (insert_data(&channel_mgmt_db, "channel_mgmt", "IN_PKT_CNT, IN_BYTE_CNT, OUT_PKT_CNT, OUT_BYTE_CNT", values)) {
+        if (insert_data(&channel_mgmt_info, "channel_mgmt", "IN_PKT_CNT, IN_BYTE_CNT, OUT_PKT_CNT, OUT_BYTE_CNT", values)) {
             LOG_ERROR(CHANNEL_MGMT_ID, "insert_data() failed");
         }
 
@@ -88,13 +86,6 @@ int channel_mgmt_cleanup(int *activated)
 
     pthread_spin_destroy(&tr_lock);
 
-    if (destroy_database(&channel_mgmt_db)) {
-        LOG_INFO(CHANNEL_MGMT_ID, "Failed to disconnect a channel_mgmt database");
-        return -1;
-    } else {
-        LOG_INFO(CHANNEL_MGMT_ID, "Disconnected from a channel_mgmt database");
-    }
-
     return 0;
 }
 
@@ -105,6 +96,8 @@ int channel_mgmt_cleanup(int *activated)
  */
 static int traffic_stat_summary(cli_t *cli, char *seconds)
 {
+    database_t channel_mgmt_db;
+
     int sec = atoi(seconds) / __CHANNEL_MGMT_MONITOR_TIME;
 
     int cnt = 0;
@@ -113,8 +106,15 @@ static int traffic_stat_summary(cli_t *cli, char *seconds)
     char query[__CONF_STR_LEN];
     sprintf(query, "select IN_PKT_CNT, IN_BYTE_CNT, OUT_PKT_CNT, OUT_BYTE_CNT from channel_mgmt order by id desc limit %d", sec);
 
+    if (init_database(&channel_mgmt_info, &channel_mgmt_db)) {
+        cli_print(cli, "Failed to connect a channel_mgmt database");
+        destroy_database(&channel_mgmt_db);
+        return -1;
+    }
+
     if (execute_query(&channel_mgmt_db, query)) {
         cli_print(cli, "Failed to read the statistics of the control channel");
+        destroy_database(&channel_mgmt_db);
         return -1;
     }
 
@@ -131,6 +131,8 @@ static int traffic_stat_summary(cli_t *cli, char *seconds)
     }
 
     release_query_result(result);
+
+    destroy_database(&channel_mgmt_db);
     
     double in_pkt_cnt = tr.in_pkt_cnt * 1.0 / sec;
     double in_byte_cnt = tr.in_byte_cnt * 1.0 / sec;
@@ -166,7 +168,7 @@ int channel_mgmt_cli(cli_t *cli, char **args)
     }
 
     cli_print(cli, "< Available Commands >");
-    cli_print(cli, "  channel_mgmt stat [N minute(s)]");
+    cli_print(cli, "  channel_mgmt stat [N second(s)]");
 
     return 0;
 }

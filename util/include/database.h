@@ -12,16 +12,27 @@
 #include "common.h"
 #include "str.h"
 
-int init_database(database_t *db, char *database);
+/////////////////////////////////////////////////////////////////////
+
+/** \brief The structure of database information */
+typedef struct _db_info_t {
+    char userid[__CONF_WORD_LEN];
+    char userpw[__CONF_WORD_LEN];
+    char database[__CONF_WORD_LEN];
+} db_info_t;
+
+/////////////////////////////////////////////////////////////////////
+
+int get_database_info(db_info_t *info, char *database);
+
+int reset_table(db_info_t *info, char *table, int all);
+int insert_data(db_info_t *info, char *table, char *columns, char *values);
+int update_data(db_info_t *info, char *table, char *changes, char *conditions);
+int delete_data(db_info_t *info, char *table, char *conditions);
+int select_data(db_info_t *info, database_t *db, char *table, char *columns, char *conditions, int all);
+
+int init_database(db_info_t *info, database_t *db);
 int destroy_database(database_t *db);
-
-int reset_table(database_t *db, char *table, int all);
-int insert_data(database_t *db, char *table, char *columns, char *values);
-int insert_long_data(database_t *db, char *table, char *columns, char *values);
-int update_data(database_t *db, char *table, char *changes, char *conditions);
-int delete_data(database_t *db, char *table, char *conditions);
-int select_data(database_t *db, char *table, char *columns, char *conditions, int all);
-
 int execute_query(database_t *db, char *query);
 query_result_t *get_query_result(database_t *db);
 query_row_t fetch_query_row(query_result_t *result);
