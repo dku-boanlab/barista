@@ -31,6 +31,11 @@ sudo apt-get -y install mariadb-client libmariadbclient-dev
 sudo systemctl enable mysql
 sudo systemctl start mysql
 
+# required databases
+cd schemes
+./create_tables.sh
+cd ..
+
 # dependency => libcli
 cd libcli
 ./compile.sh
