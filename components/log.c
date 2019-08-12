@@ -114,7 +114,7 @@ int log_main(int *activated, int argc, char **argv)
 {
 
     if (get_database_info(&log_info, "barista_mgmt")) {
-        PRINTF("Failed to get the information of a log database");
+        PRINTF("Failed to get the information of a log database\n");
         return -1;
     }
 

@@ -58,7 +58,11 @@
 /* ==== Barista NOS ==== */
 
 /** \brief The default CLI access address */
+#ifdef __ENABLE_DOCKER
+#define __CLI_HOST "0.0.0.0"
+#else
 #define __CLI_HOST "127.0.0.1"
+#endif
 
 /** \brief The default CLI port */
 #define __CLI_PORT 8000
@@ -67,22 +71,42 @@
 #define __CLI_MAX_CONNECTIONS 10
 
 /** \brief The default database access address */
+#ifdef __ENABLE_DOCKER
+#define __DB_HOST "backend"
+#else
 #define __DB_HOST "127.0.0.1"
+#endif
 
 /** \brief The default database port */
 #define __DB_PORT 3306
 
 /** \brief The default pulling address for external events */
+#ifdef __ENABLE_DOCKER
+#define __EXT_COMP_PULL_ADDR "tcp://barista:5001"
+#else
 #define __EXT_COMP_PULL_ADDR "tcp://127.0.0.1:5001"
+#endif
 
 /** \brief The default replying address for external events */
+#ifdef __ENABLE_DOCKER
+#define __EXT_COMP_REPLY_ADDR "tcp://barista:5002"
+#else
 #define __EXT_COMP_REPLY_ADDR "tcp://127.0.0.1:5002"
+#endif
 
 /** \brief The default pulling address for external app events */
+#ifdef __ENABLE_DOCKER
+#define __EXT_APP_PULL_ADDR "tcp://barista:6001"
+#else
 #define __EXT_APP_PULL_ADDR "tcp://127.0.0.1:6001"
+#endif
 
 /** \brief The default replying address for external app events */
+#ifdef __ENABLE_DOCKER
+#define __EXT_APP_REPLY_ADDR "tcp://barista:6002"
+#else
 #define __EXT_APP_REPLY_ADDR "tcp://127.0.0.1:6002"
+#endif
 
 /** \brief The number of characters to be used to generate IDs */
 #define __HASHING_NAME_LENGTH 8

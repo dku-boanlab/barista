@@ -107,6 +107,10 @@ static int av_push_msg(uint32_t id, uint16_t type, uint16_t size, const void *in
     char json[__MAX_EXT_MSG_SIZE] = {0};
     int len = export_to_json(id, type, input, json, 0);
 
+#ifdef __ENABLE_CBENCH
+    waitsec(0, 1000L * 1000L);
+#endif
+
     void *push_sock = zmq_socket(av_push_ctx, ZMQ_PUSH);
 
     if (zmq_connect(push_sock, __EXT_APP_PULL_ADDR)) {
@@ -140,6 +144,10 @@ static int av_send_msg(uint32_t id, uint16_t type, uint16_t size, const void *in
 
     char json_in[__MAX_EXT_MSG_SIZE] = {0};
     int len = export_to_json(id, type, input, json_in, 0);
+
+#ifdef __ENABLE_CBENCH
+    waitsec(0, 1000L * 1000L);
+#endif
 
     void *req_sock = zmq_socket(av_req_ctx, ZMQ_REQ);
 
@@ -414,10 +422,23 @@ int init_app_event(ctx_t *ctx)
     av_pull_ctx = zmq_ctx_new();
     av_pull_sock = zmq_socket(av_pull_ctx, ZMQ_PULL);
 
+#ifdef __ENABLE_DOCKER
+    char host[__CONF_WORD_LEN];
+    char port[__CONF_SHORT_LEN];
+
+    sscanf(TARGET_APP_PULL_ADDR, "tcp://%[^':']:%[^':']", host, port);
+    sprintf(host, "tcp://0.0.0.0:%s", port);
+
+    if (zmq_bind(av_pull_sock, host)) {
+        PERROR("zmq_bind");
+        return -1;
+    }
+#else
     if (zmq_bind(av_pull_sock, TARGET_APP_PULL_ADDR)) {
         PERROR("zmq_bind");
         return -1;
     }
+#endif
 
     int timeout = 1000;
     zmq_setsockopt(av_pull_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
@@ -436,10 +457,20 @@ int init_app_event(ctx_t *ctx)
     av_rep_ctx = zmq_ctx_new();
     av_rep_sock = zmq_socket(av_rep_ctx, ZMQ_REP);
 
+#ifdef __ENABLE_DOCKER
+    sscanf(TARGET_APP_REPLY_ADDR, "tcp://%[^':']:%[^':']", host, port);
+    sprintf(host, "tcp://0.0.0.0:%s", port);
+
+    if (zmq_bind(av_rep_sock, host)) {
+        PERROR("zmq_bind");
+        return -1;
+    }
+#else
     if (zmq_bind(av_rep_sock, TARGET_APP_REPLY_ADDR)) {
         PERROR("zmq_bind");
         return -1;
     }
+#endif
 
     zmq_setsockopt(av_rep_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
 

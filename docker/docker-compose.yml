@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  backend:
+    image: mariadb:latest
+    restart: unless-stopped
+    command: --init-file /schemes/barista.sql
+    volumes:
+      - ../schemes/barista.sql:/schemes/barista.sql
+    environment:
+      - MYSQL_ROOT_USER=root
+      - MYSQL_ROOT_PASSWORD=barista
+
+  barista:
+    image: sdx4u/barista-base
+    restart: unless-stopped
+    depends_on:
+      - backend
+    volumes:
+      - ../bin:/barista/bin
+      - ./barista.sh:/barista/barista.sh
+      - ./wait-for-it.sh:/wait-for-it.sh
+    ports:
+      - 6633:6633
+      - 8000:8000
+    entrypoint: ["/barista/barista.sh"]
+
+  l2_learning:
+    image: sdx4u/barista-base
+    restart: unless-stopped
+    depends_on:
+      - barista
+    volumes:
+      - ../bin:/barista/bin
+      - ./l2_learning.sh:/barista/l2_learning.sh
+      - ./wait-for-it.sh:/wait-for-it.sh
+    entrypoint: ["/barista/l2_learning.sh"]

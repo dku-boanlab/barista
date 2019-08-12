@@ -16,7 +16,7 @@
 # Compilation
 1. Install dependencies
 > $ ./deps.sh  
-> After setting 'root' password, please update 'secret/db_password.txt' as well
+> After setting 'root' password, please update 'bin/secret/db_password.txt' as well
 
 2. Compile the source code of Barista NOS
 > $ make
