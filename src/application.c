@@ -163,7 +163,7 @@ int app_event_list(cli_t *cli)
         else {
             char buf[__CONF_STR_LEN] = {0};
 
-            cli_buffer(buf, "  %s: ", app_event_string[i]);
+            cli_buffer(buf, "  %2d) %s: ", i+1, app_event_string[i]);
 
             for (j=0; j<app_ctx->av_num[i]; j++) {
                 app_t *app = app_ctx->av_list[i][j];
