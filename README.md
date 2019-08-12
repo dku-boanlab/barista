@@ -30,8 +30,7 @@
 > $ cd benchmark/cbench  
 > $ ./setup.sh real  
 > $ cd ~/barista  
-> $ vi config.mk  
-> Uncommet '__ENABLE_CBENCH'  
+> $ vi config.mk (uncommet '__ENABLE_CBENCH')  
 > $ make
 
 # Execution
