@@ -52,16 +52,16 @@
 > (default ID: admin, default PW: password)  
 
 # CLI commands
-- Change a configuration mode
-> Barista> turn on/off
+- Change the current mode to a privilegd mode
+> Barista> turn on
 
-- Load configurations
+- Load configurations (privileged mode)
 > Barista# load
 
-- Start the Barista NOS
+- Start the Barista NOS (privileged mode)
 > Barista# start
 
-- Stop the Barista NOS
+- Stop the Barista NOS (privileged mode)
 > Barista# stop
 
 - More information?
