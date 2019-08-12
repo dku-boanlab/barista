@@ -16,12 +16,23 @@
 # Compilation
 1. Install dependencies
 > $ ./deps.sh
+> After setting 'root' password, please update 'secret/db_password.txt' as well
 
 2. Compile the source code of Barista NOS
 > $ make
 
 3. Clean up the compiled files for Barista NOS
 > $ make clean
+
+4. Measure the performance of Barista NOS with Cbench
+> $ cd
+> $ git clone https://github.com/sdx4u/benchmark
+> $ cd benchmark/cbench
+> $ ./setup.sh real
+> $ cd ~/barista
+> $ vi config.mk
+> Uncommet '__ENABLE_CBENCH'
+> $ make
 
 # Execution
 - Run the Barista NOS
