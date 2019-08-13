@@ -15,6 +15,15 @@ sudo apt-get -y install doxygen global flex bison cmake libav-tools
 # dependency => zeromq
 sudo apt-get -y install libzmq3-dev
 
+# dependency => libcli
+cd libcli
+./compile.sh
+
+read -p "Do you want to install MariaDB here (y/N)?"
+if [ "$REPLY" != "y" ]; then
+    exit
+fi
+
 # dependency => mariadb
 . /etc/os-release
 sudo apt-get -y install software-properties-common
@@ -35,7 +44,3 @@ sudo systemctl start mysql
 cd schemes
 ./create_tables.sh
 cd ..
-
-# dependency => libcli
-cd libcli
-./compile.sh
