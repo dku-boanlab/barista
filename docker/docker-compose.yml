@@ -35,3 +35,15 @@ services:
       - ./wait-for-it.sh:/wait-for-it.sh
     network_mode: host
     entrypoint: ["/barista/l2_learning.sh"]
+
+  rbac:
+    image: sdx4u/barista-base
+    restart: unless-stopped
+    depends_on:
+      - barista
+    volumes:
+      - ../bin:/barista/bin
+      - ./rbac.sh:/barista/rbac.sh
+      - ./wait-for-it.sh:/wait-for-it.sh
+    network_mode: host
+    entrypoint: ["/barista/rbac.sh"]
