@@ -93,7 +93,7 @@ static int av_push_msg(app_t *a, uint32_t id, uint16_t type, uint16_t size, cons
     int len = export_to_json(id, type, input, json, 0);
 
 #ifdef __ENABLE_SLOW_ZMQ
-    waitsec(0, 1000L * 1000L);
+    waitsec(0, 100000);
 #endif
 
     void *push_sock = zmq_socket(a->push_ctx, ZMQ_PUSH);
@@ -130,7 +130,7 @@ static int av_send_msg(app_t *a, uint32_t id, uint16_t type, uint16_t size, cons
     int len = export_to_json(id, type, input, json_in, 0);
 
 #ifdef __ENABLE_SLOW_ZMQ
-    waitsec(0, 1000L * 1000L);
+    waitsec(0, 100000);
 #endif
 
     void *req_sock = zmq_socket(a->req_ctx, ZMQ_REQ);
