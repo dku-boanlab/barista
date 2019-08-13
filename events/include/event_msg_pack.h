@@ -57,6 +57,8 @@ static int activate_external_component(char *msg)
             if (strcmp(ev_ctx->compnt_list[i]->name, name) == 0) {
                 compnt_t *compnt = ev_ctx->compnt_list[i];
 
+                if (compnt->site == COMPNT_INTERNAL) return -1;
+
                 compnt->activated = TRUE;
 
                 json_decref(json);
@@ -90,7 +92,7 @@ static int ev_push_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t size, c
     char json[__MAX_EXT_MSG_SIZE] = {0};
     int len = export_to_json(id, type, input, json, 0);
 
-#ifdef __ENABLE_CBENCH
+#ifdef __ENABLE_SLOW_ZMQ
     waitsec(0, 1000L * 1000L);
 #endif
 
@@ -127,7 +129,7 @@ static int ev_send_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t size, c
     char json_in[__MAX_EXT_MSG_SIZE] = {0};
     int len = export_to_json(id, type, input, json_in, 0);
 
-#ifdef __ENABLE_CBENCH
+#ifdef __ENABLE_SLOW_ZMQ
     waitsec(0, 1000L * 1000L);
 #endif
 

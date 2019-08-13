@@ -1,7 +1,11 @@
 #!/bin/bash
 
-# wait for backend
-/wait-for-it.sh barista:6011
+READY=1
+while [ $READY -ne 0 ];
+do
+    /wait-for-it.sh 127.0.0.1:6633 -t 1 -q
+    READY=`echo $?`
+done
 
 # move to the base directory of Barista NOS
 cd /barista/bin

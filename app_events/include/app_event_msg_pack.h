@@ -57,6 +57,8 @@ static int activate_external_application(char *msg)
             if (strcmp(av_ctx->app_list[i]->name, name) == 0) {
                 app_t *app = av_ctx->app_list[i];
 
+                if (app->site == APP_INTERNAL) return -1;
+
                 app->activated = TRUE;
 
                 json_decref(json);
@@ -90,7 +92,7 @@ static int av_push_msg(app_t *a, uint32_t id, uint16_t type, uint16_t size, cons
     char json[__MAX_EXT_MSG_SIZE] = {0};
     int len = export_to_json(id, type, input, json, 0);
 
-#ifdef __ENABLE_CBENCH
+#ifdef __ENABLE_SLOW_ZMQ
     waitsec(0, 1000L * 1000L);
 #endif
 
@@ -127,7 +129,7 @@ static int av_send_msg(app_t *a, uint32_t id, uint16_t type, uint16_t size, cons
     char json_in[__MAX_EXT_MSG_SIZE] = {0};
     int len = export_to_json(id, type, input, json_in, 0);
 
-#ifdef __SLOW_INPUT
+#ifdef __ENABLE_SLOW_ZMQ
     waitsec(0, 1000L * 1000L);
 #endif
 

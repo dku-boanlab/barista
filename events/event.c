@@ -308,23 +308,10 @@ int init_event(ctx_t *ctx)
         ev_pull_ctx = zmq_ctx_new();
         ev_pull_sock = zmq_socket(ev_pull_ctx, ZMQ_PULL);
 
-#ifdef __ENABLE_DOCKER
-        char host[__CONF_WORD_LEN];
-        char port[__CONF_SHORT_LEN];
-
-        sscanf(__EXT_COMP_PULL_ADDR, "tcp://%[^':']:%[^':']", host, port);
-        sprintf(host, "tcp://0.0.0.0:%s", port);
-
-        if (zmq_bind(ev_pull_sock, host)) {
-            PERROR("zmq_bind");
-            return -1;
-        }
-#else
         if (zmq_bind(ev_pull_sock, __EXT_COMP_PULL_ADDR)) {
             PERROR("zmq_bind");
             return -1;
         }
-#endif
 
         int timeout = 1000;
         zmq_setsockopt(ev_pull_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
@@ -339,20 +326,10 @@ int init_event(ctx_t *ctx)
         ev_rep_ctx = zmq_ctx_new();
         ev_rep_sock = zmq_socket(ev_rep_ctx, ZMQ_REP);
 
-#ifdef __ENABLE_DOCKER
-        sscanf(__EXT_COMP_REPLY_ADDR, "tcp://%[^':']:%[^':']", host, port);
-        sprintf(host, "tcp://0.0.0.0:%s", port);
-
-        if (zmq_bind(ev_rep_sock, host)) {
-            PERROR("zmq_bind");
-            return -1;
-        }
-#else
         if (zmq_bind(ev_rep_sock, __EXT_COMP_REPLY_ADDR)) {
             PERROR("zmq_bind");
             return -1;
         }
-#endif
 
         zmq_setsockopt(ev_rep_sock, ZMQ_RCVTIMEO, &timeout, sizeof(int));
 

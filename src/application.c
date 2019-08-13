@@ -148,7 +148,7 @@ int app_event_list(cli_t *cli)
 
     cli_print(cli, "< Application Event List >");
 
-    int i, j;
+    int i, j, cnt = 0;
     for (i=0; i<AV_ALL_INTSTREAM; i++) {
         if (strcmp(app_event_string[i], "AV_NONE") == 0)
             continue;
@@ -163,7 +163,7 @@ int app_event_list(cli_t *cli)
         else {
             char buf[__CONF_STR_LEN] = {0};
 
-            cli_buffer(buf, "  %2d) %s: ", i+1, app_event_string[i]);
+            cli_buffer(buf, "  %2d) %s: ", ++cnt, app_event_string[i]);
 
             for (j=0; j<app_ctx->av_num[i]; j++) {
                 app_t *app = app_ctx->av_list[i][j];

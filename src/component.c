@@ -140,7 +140,7 @@ int event_list(cli_t *cli)
 
     cli_print(cli, "< Event List >");
 
-    int i;
+    int i, j, cnt = 0;
     for (i=0; i<EV_ALL_INTSTREAM; i++) {
         if (strcmp(event_string[i], "EV_NONE") == 0)
             continue;
@@ -155,9 +155,8 @@ int event_list(cli_t *cli)
         else {
             char buf[__CONF_STR_LEN] = {0};
 
-            cli_buffer(buf, "  %2d) %s: ", i+1, event_string[i]);
+            cli_buffer(buf, "  %2d) %s: ", ++cnt, event_string[i]);
 
-            int j;
             for (j=0; j<compnt_ctx->ev_num[i]; j++) {
                 compnt_t *compnt = compnt_ctx->ev_list[i][j];
                 if (compnt->status == COMPNT_ENABLED) {

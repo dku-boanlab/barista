@@ -7,6 +7,7 @@ services:
     command: --init-file /schemes/barista.sql
     volumes:
       - ../schemes/barista.sql:/schemes/barista.sql
+    network_mode: host
     environment:
       - MYSQL_ROOT_USER=root
       - MYSQL_ROOT_PASSWORD=barista
@@ -20,9 +21,7 @@ services:
       - ../bin:/barista/bin
       - ./barista.sh:/barista/barista.sh
       - ./wait-for-it.sh:/wait-for-it.sh
-    ports:
-      - 6633:6633
-      - 8000:8000
+    network_mode: host
     entrypoint: ["/barista/barista.sh"]
 
   l2-learning:
