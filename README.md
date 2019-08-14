@@ -16,7 +16,8 @@
 # Compilation
 1. Install dependencies
 > $ ./deps.sh  
-> After setting 'root' password, please update 'bin/secret/db_password.txt' as well
+> Enter 'yes' when asking for the installation of MariaDB  
+> After setting 'root' password for MariaDB, update 'bin/secret/db_password.txt' as well
 
 2. Compile the source code of Barista NOS
 > $ make
@@ -69,7 +70,7 @@
 
 # Documents
 - Documents: https://www.sdx4u.net/?cat=16
-- Source browser: http://www.sdx4u.net/~barista
+- Source browser: http://www.sdx4u.net/~barista/
 
 # Author
 - Jaehyun Nam <namjh@kaist.ac.kr>
