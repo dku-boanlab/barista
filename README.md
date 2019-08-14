@@ -49,7 +49,7 @@
 > $ ./barista -b
 
 - Connect the CLI of the Barista NOS
-> $ telnet localhost 8000 (default port)
+> $ telnet localhost 8000 (default port)  
 > (default ID: admin, default PW: password)  
 
 # CLI commands
