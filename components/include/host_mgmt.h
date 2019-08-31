@@ -21,7 +21,7 @@ db_info_t host_mgmt_info;
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of hostentries */
+/** \brief The number of host entries */
 #define NUM_HOST_ENTRIES 8192
 
 /** \brief The structure of a host hash key */

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+sleep 5
+
 READY=1
 while [ $READY -ne 0 ];
 do

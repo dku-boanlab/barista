@@ -101,10 +101,6 @@ typedef struct _switch_stat_t {
     uint64_t pkt_count; /**< Packet count */
     uint64_t byte_count; /**< Byte count */
     uint32_t flow_count; /**< Flow count */
-
-    uint64_t old_pkt_count; /**< Previous packet count */
-    uint64_t old_byte_count; /**< Previous byte count */
-    uint32_t old_flow_count; /**< Previous flow count */
 } switch_stat_t;
 
 /** \brief The structure of a switch */

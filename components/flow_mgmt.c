@@ -29,7 +29,9 @@
  */
 static int add_flow(flow_table_t *list, const flow_t *flow)
 {
-    int ret = TRUE;
+#ifdef __ENABLE_CBENCH
+    return 0;
+#endif /* __ENABLE_CBENCH */
 
     pthread_spin_lock(&list->lock);
 
@@ -37,7 +39,6 @@ static int add_flow(flow_table_t *list, const flow_t *flow)
     while (curr != NULL) {
         if (FLOW_COMPARE(curr, flow)) {
             curr->insert_time = time(NULL);
-            ret = FALSE;
             break;
         }
 
@@ -46,9 +47,12 @@ static int add_flow(flow_table_t *list, const flow_t *flow)
 
     pthread_spin_unlock(&list->lock);
 
-    if (ret) {
+    if (curr == NULL) {
         flow_t *new = flow_dequeue();
-        if (new == NULL) return FALSE;
+        if (new == NULL) {
+            LOG_ERROR(FLOW_MGMT_ID, "flow_dequeue() failed");
+            return -1;
+        }
 
         new->dpid = flow->dpid;
         new->port = flow->port;
@@ -75,18 +79,13 @@ static int add_flow(flow_table_t *list, const flow_t *flow)
             list->tail = new;
         }
 
-        num_flows++;
-
         pthread_spin_unlock(&list->lock);
 
-        if (new->remote == FALSE) {
-            flow_t out;
-            memmove(&out, new, sizeof(flow_t));
-            ev_flow_added(FLOW_MGMT_ID, &out);
-        }
+        if (new->remote == FALSE)
+            ev_flow_added(FLOW_MGMT_ID, new);
     }
 
-    return ret;
+    return 0;
 }
 
 /**
@@ -96,49 +95,7 @@ static int add_flow(flow_table_t *list, const flow_t *flow)
  */
 static int modify_flow(flow_table_t *list, const flow_t *flow)
 {
-    int ret = TRUE;
-
-    pthread_spin_lock(&list->lock);
-
-    flow_t *curr = list->head;
-    while (curr != NULL) {
-        if (FLOW_COMPARE(curr, flow)) {
-            ret = FALSE;
-            break;
-        }
-
-        curr = curr->next;
-    }
-
-    if (!ret) {
-        curr->dpid = flow->dpid;
-        curr->port = flow->port;
-
-        curr->remote = flow->remote;
-        curr->insert_time = time(NULL);
-
-        curr->meta.idle_timeout = flow->meta.idle_timeout;
-        curr->meta.hard_timeout = flow->meta.hard_timeout;
-
-        memmove(&curr->match, &flow->match, sizeof(pkt_info_t));
-
-        curr->num_actions = flow->num_actions;
-        memmove(curr->action, flow->action, sizeof(action_t) * curr->num_actions);
-
-        curr->prev = curr->next = curr->r_next = NULL;
-
-        pthread_spin_unlock(&list->lock);
-
-        if (curr->remote == FALSE) {
-            flow_t out;
-            memmove(&out, curr, sizeof(flow_t));
-            ev_flow_modified(FLOW_MGMT_ID, &out);
-        }
-    } else {
-        pthread_spin_unlock(&list->lock);
-    }
-
-    return ret;
+    return 0;
 }
 
 /**
@@ -155,51 +112,53 @@ static int delete_flow(flow_table_t *list, const flow_t *flow)
     flow_t *curr = list->head;
     while (curr != NULL) {
         if (FLOW_COMPARE(curr, flow)) {
-            if (tmp_list.head == NULL) {
-                tmp_list.head = curr;
-                tmp_list.tail = curr;
-                curr->r_next = NULL;
-            } else {
-                tmp_list.tail->r_next = curr;
-                tmp_list.tail = curr;
-                curr->r_next = NULL;
-            }
-        }
+            flow_t *tmp = curr;
 
-        curr = curr->next;
+            curr = curr->next;
+
+            if (tmp->prev != NULL && tmp->next != NULL) {
+                tmp->prev->next = tmp->next;
+                tmp->next->prev = tmp->prev;
+            } else if (tmp->prev == NULL && tmp->next != NULL) {
+                list->head = tmp->next;
+                tmp->next->prev = NULL;
+            } else if (tmp->prev != NULL && tmp->next == NULL) {
+                list->tail = tmp->prev;
+                tmp->prev->next = NULL;
+            } else if (tmp->prev == NULL && tmp->next == NULL) {
+                list->head = NULL;
+                list->tail = NULL;
+            }
+
+            if (tmp_list.head == NULL) {
+                tmp_list.head = tmp;
+                tmp_list.tail = tmp;
+                tmp->prev = NULL;
+                tmp->next = NULL;
+            } else {
+                tmp_list.tail->next = tmp;
+                tmp->prev = tmp_list.tail;
+                tmp_list.tail = tmp;
+                tmp->next = NULL;
+            }
+        } else {
+            curr = curr->next;
+        }
     }
+
+    pthread_spin_unlock(&list->lock);
 
     curr = tmp_list.head;
     while (curr != NULL) {
         flow_t *tmp = curr;
 
-        curr = curr->r_next;
-
-        if (tmp->prev != NULL && tmp->next != NULL) {
-            tmp->prev->next = tmp->next;
-            tmp->next->prev = tmp->prev;
-        } else if (tmp->prev == NULL && tmp->next != NULL) {
-            list->head = tmp->next;
-            tmp->next->prev = NULL;
-        } else if (tmp->prev != NULL && tmp->next == NULL) {
-            list->tail = tmp->prev;
-            tmp->prev->next = NULL;
-        } else if (tmp->prev == NULL && tmp->next == NULL) {
-            list->head = NULL;
-            list->tail = NULL;
-        }
-
-        num_flows--;
-
-        tmp->prev = tmp->next = tmp->r_next = NULL;
+        curr = curr->next;
 
         if (tmp->remote == FALSE)
             ev_flow_deleted(FLOW_MGMT_ID, tmp);
 
         flow_enqueue(tmp);
     }
-
-    pthread_spin_unlock(&list->lock);
 
     return 0;
 }
@@ -218,51 +177,53 @@ static int delete_all_flows(flow_table_t *list, const uint64_t dpid)
     flow_t *curr = list->head;
     while (curr != NULL) {
         if (curr->dpid == dpid) {
-            if (tmp_list.head == NULL) {
-                tmp_list.head = curr;
-                tmp_list.tail = curr;
-                curr->r_next = NULL;
-            } else {
-                tmp_list.tail->r_next = curr;
-                tmp_list.tail = curr;
-                curr->r_next = NULL;
-            }
-        }
+            flow_t *tmp = curr;
 
-        curr = curr->next;
+            curr = curr->next;
+
+            if (tmp->prev != NULL && tmp->next != NULL) {
+                tmp->prev->next = tmp->next;
+                tmp->next->prev = tmp->prev;
+            } else if (tmp->prev == NULL && tmp->next != NULL) {
+                list->head = tmp->next;
+                tmp->next->prev = NULL;
+            } else if (tmp->prev != NULL && tmp->next == NULL) {
+                list->tail = tmp->prev;
+                tmp->prev->next = NULL;
+            } else if (tmp->prev == NULL && tmp->next == NULL) {
+                list->head = NULL;
+                list->tail = NULL;
+            }
+
+            if (tmp_list.head == NULL) {
+                tmp_list.head = tmp;
+                tmp_list.tail = tmp;
+                tmp->prev = NULL;
+                tmp->next = NULL;
+            } else {
+                tmp_list.tail->next = tmp;
+                tmp->prev = tmp_list.tail;
+                tmp_list.tail = tmp;
+                tmp->next = NULL;
+            }
+        } else {
+            curr = curr->next;
+        }
     }
+
+    pthread_spin_unlock(&list->lock);
 
     curr = tmp_list.head;
     while (curr != NULL) {
         flow_t *tmp = curr;
 
-        curr = curr->r_next;
-
-        if (tmp->prev != NULL && tmp->next != NULL) {
-            tmp->prev->next = tmp->next;
-            tmp->next->prev = tmp->prev;
-        } else if (tmp->prev == NULL && tmp->next != NULL) {
-            list->head = tmp->next;
-            tmp->next->prev = NULL;
-        } else if (tmp->prev != NULL && tmp->next == NULL) {
-            list->tail = tmp->prev;
-            tmp->prev->next = NULL;
-        } else if (tmp->prev == NULL && tmp->next == NULL) {
-            list->head = NULL;
-            list->tail = NULL;
-        }
-
-        num_flows--;
-
-        tmp->prev = tmp->next = tmp->r_next = NULL;
+        curr = curr->next;
 
         if (tmp->remote == FALSE)
             ev_flow_deleted(FLOW_MGMT_ID, tmp);
 
         flow_enqueue(tmp);
     }
-
-    pthread_spin_unlock(&list->lock);
 
     return 0;
 }
@@ -281,7 +242,6 @@ static int update_flow(flow_table_t *list, const flow_t *flow)
         if (FLOW_COMPARE(curr, flow)) {
             curr->stat.pkt_count += flow->stat.pkt_count;
             curr->stat.byte_count += flow->stat.byte_count;
-
             break;
         }
 
@@ -296,9 +256,7 @@ static int update_flow(flow_table_t *list, const flow_t *flow)
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The running flag for flow management */
-int flow_mgmt_on;
-
-/////////////////////////////////////////////////////////////////////
+int timeout_thread_on;
 
 /**
  * \brief Function to find and delete expired flows
@@ -306,66 +264,70 @@ int flow_mgmt_on;
  */
 void *timeout_thread(void *arg)
 {
-    while (flow_mgmt_on) {
+    while (timeout_thread_on) {
         time_t current_time = time(NULL);
 
         int i;
-        for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
+        for (i=0; i<__MAX_NUM_SWITCHES; i++) {
             flow_table_t tmp_list = {0};
 
             pthread_spin_lock(&flow_table[i].lock);
 
             flow_t *curr = flow_table[i].head;
             while (curr != NULL) {
-                if ((current_time - curr->insert_time) > curr->meta.hard_timeout + 10) {
-                    if (tmp_list.head == NULL) {
-                        tmp_list.head = curr;
-                        tmp_list.tail = curr;
-                        curr->r_next = NULL;
-                    } else {
-                        tmp_list.tail->r_next = curr;
-                        tmp_list.tail = curr;
-                        curr->r_next = NULL;
+                if ((current_time - curr->insert_time) > curr->meta.hard_timeout + 2) {
+                    flow_t *tmp = curr;
+
+                    curr = curr->next;
+
+                    if (tmp->prev != NULL && tmp->next != NULL) {
+                        tmp->prev->next = tmp->next;
+                        tmp->next->prev = tmp->prev;
+                    } else if (tmp->prev == NULL && tmp->next != NULL) {
+                        flow_table[i].head = tmp->next;
+                        tmp->next->prev = NULL;
+                    } else if (tmp->prev != NULL && tmp->next == NULL) {
+                        flow_table[i].tail = tmp->prev;
+                        tmp->prev->next = NULL;
+                    } else if (tmp->prev == NULL && tmp->next == NULL) {
+                        flow_table[i].head = NULL;
+                        flow_table[i].tail = NULL;
                     }
 
-                    num_flows--;
-                }
+                    if (tmp_list.head == NULL) {
+                        tmp_list.head = tmp;
+                        tmp_list.tail = tmp;
+                        tmp->prev = NULL;
+                        tmp->next = NULL;
+                    } else {
+                        tmp_list.tail->next = tmp;
+                        tmp->prev = tmp_list.tail;
+                        tmp_list.tail = tmp;
+                        tmp->next = NULL;
+                    }
+                } else {
+                    ev_dp_request_flow_stats(FLOW_MGMT_ID, curr);
 
-                curr = curr->next;
+                    curr = curr->next;
+                }
             }
+
+            pthread_spin_unlock(&flow_table[i].lock);
 
             curr = tmp_list.head;
             while (curr != NULL) {
                 flow_t *tmp = curr;
 
-                curr = curr->r_next;
-
-                if (tmp->prev != NULL && tmp->next != NULL) {
-                    tmp->prev->next = tmp->next;
-                    tmp->next->prev = tmp->prev;
-                } else if (tmp->prev == NULL && tmp->next != NULL) {
-                    flow_table[i].head = tmp->next;
-                    tmp->next->prev = NULL;
-                } else if (tmp->prev != NULL && tmp->next == NULL) {
-                    flow_table[i].tail = tmp->prev;
-                    tmp->prev->next = NULL;
-                } else if (tmp->prev == NULL && tmp->next == NULL) {
-                    flow_table[i].head = NULL;
-                    flow_table[i].tail = NULL;
-                }
-
-                tmp->prev = tmp->next = tmp->r_next = NULL;
+                curr = curr->next;
 
                 if (tmp->remote == FALSE)
                     ev_flow_deleted(FLOW_MGMT_ID, tmp);
 
                 flow_enqueue(tmp);
             }
-
-            pthread_spin_unlock(&flow_table[i].lock);
         }
 
-        waitsec(1, 0);
+        waitsec(FLOW_MGMT_UPDATE_TIME, 0);
     }
 
     return NULL;
@@ -383,17 +345,16 @@ int flow_mgmt_main(int *activated, int argc, char **argv)
 {
     LOG_INFO(FLOW_MGMT_ID, "Init - Flow management");
 
-    flow_mgmt_on = TRUE;
+    timeout_thread_on = TRUE;
 
-    num_flows = 0;
-    flow_table = (flow_table_t *)CALLOC(__DEFAULT_TABLE_SIZE, sizeof(flow_table_t));
+    flow_table = (flow_table_t *)CALLOC(__MAX_NUM_SWITCHES, sizeof(flow_table_t));
     if (flow_table == NULL) {
         LOG_ERROR(FLOW_MGMT_ID, "calloc() failed");
         return -1;
     }
 
     int i;
-    for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
+    for (i=0; i<__MAX_NUM_SWITCHES; i++) {
         pthread_spin_init(&flow_table[i].lock, PTHREAD_PROCESS_PRIVATE);
     }
 
@@ -419,12 +380,12 @@ int flow_mgmt_cleanup(int *activated)
 
     deactivate();
 
-    flow_mgmt_on = FALSE;
+    timeout_thread_on = FALSE;
 
     waitsec(1, 0);
 
     int i;
-    for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
+    for (i=0; i<__MAX_NUM_SWITCHES; i++) {
         pthread_spin_lock(&flow_table[i].lock);
 
         flow_t *curr = flow_table[i].head;
@@ -451,86 +412,14 @@ int flow_mgmt_cleanup(int *activated)
  */
 static int flow_listup(cli_t *cli)
 {
-    int i, cnt = 0;
+    int cnt = 0;
 
     cli_print(cli, "<Flow Tables>");
-    cli_print(cli, "  The total number of flows: %d", num_flows);
 
-    for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-        pthread_spin_lock(&flow_table[i].lock);
+    //TODO
 
-        flow_t *curr = flow_table[i].head;
-        while (curr != NULL) {
-            char proto[__CONF_SHORT_LEN];
-
-            if (curr->match.proto & PROTO_ARP)
-                strcpy(proto, "ARP");
-            else if (curr->match.proto & PROTO_LLDP)
-                strcpy(proto, "LLDP");
-            else if (curr->match.proto & PROTO_DHCP)
-                strcpy(proto, "DHCP");
-            if (curr->match.proto & PROTO_TCP)
-                strcpy(proto, "TCP");
-            else if (curr->match.proto & PROTO_UDP)
-                strcpy(proto, "UDP");
-            else if (curr->match.proto & PROTO_ICMP)
-                strcpy(proto, "ICMP");
-            else if (curr->match.proto & PROTO_IPV4)
-                strcpy(proto, "IPv4");
-            else
-                strcpy(proto, "Unknown");
-
-            if (curr->match.proto & PROTO_ICMP) {
-                cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
-                               "    src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
-                               "    vlan: %u, vlan_pcp: %u, %s, src_ip: %s, dst_ip: %s, icmp_type: %u, icmp_code: %u\n"
-                               "    # of actions: %d, pkt_count: %lu, byte_count: %lu", 
-                          ++cnt, (curr->remote == TRUE) ? "Remote" : "Local", 
-                          curr->dpid, curr->meta.idle_timeout, curr->meta.hard_timeout, curr->port, 
-                          curr->match.src_mac[0], curr->match.src_mac[1], curr->match.src_mac[2], curr->match.src_mac[3], curr->match.src_mac[4], curr->match.src_mac[5], 
-                          curr->match.dst_mac[0], curr->match.dst_mac[1], curr->match.dst_mac[2], curr->match.dst_mac[3], curr->match.dst_mac[4], curr->match.dst_mac[5], 
-                          curr->match.vlan_id, curr->match.vlan_pcp, proto, ip_addr_str(curr->match.src_ip), ip_addr_str(curr->match.dst_ip),
-                          curr->match.icmp_type, curr->match.icmp_code, curr->num_actions, curr->stat.pkt_count, curr->stat.byte_count);
-            } else if (curr->match.proto & PROTO_TCP || curr->match.proto & PROTO_UDP || curr->match.proto & PROTO_DHCP) {
-                cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
-                               "    src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
-                               "    vlan: %u, vlan_pcp: %u, %s, src_ip: %s, dst_ip: %s, src_port: %u, dst_port: %u\n"
-                               "    # of actions: %d, pkt_count: %lu, byte_count: %lu", 
-                          ++cnt, (curr->remote == TRUE) ? "Remote" : "Local", 
-                          curr->dpid, curr->meta.idle_timeout, curr->meta.hard_timeout, curr->port, 
-                          curr->match.src_mac[0], curr->match.src_mac[1], curr->match.src_mac[2], curr->match.src_mac[3], curr->match.src_mac[4], curr->match.src_mac[5], 
-                          curr->match.dst_mac[0], curr->match.dst_mac[1], curr->match.dst_mac[2], curr->match.dst_mac[3], curr->match.dst_mac[4], curr->match.dst_mac[5], 
-                          curr->match.vlan_id, curr->match.vlan_pcp, proto, ip_addr_str(curr->match.src_ip), ip_addr_str(curr->match.dst_ip),
-                          curr->match.src_port, curr->match.dst_port, curr->num_actions, curr->stat.pkt_count, curr->stat.byte_count);
-            } else if (curr->match.proto & PROTO_IPV4) {
-                cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
-                          "     src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
-                          "     vlan: %u, vlan_pcp: %u, %s, src_ip: %s, dst_ip: %s\n"
-                          "     # of actions: %d, pkt_count: %lu, byte_count: %lu", 
-                          ++cnt, (curr->remote == TRUE) ? "Remote" : "Local",
-                          curr->dpid, curr->meta.idle_timeout, curr->meta.hard_timeout, curr->port, 
-                          curr->match.src_mac[0], curr->match.src_mac[1], curr->match.src_mac[2], curr->match.src_mac[3], curr->match.src_mac[4], curr->match.src_mac[5], 
-                          curr->match.dst_mac[0], curr->match.dst_mac[1], curr->match.dst_mac[2], curr->match.dst_mac[3], curr->match.dst_mac[4], curr->match.dst_mac[5], 
-                          curr->match.vlan_id, curr->match.vlan_pcp, proto, ip_addr_str(curr->match.src_ip), ip_addr_str(curr->match.dst_ip),
-                          curr->num_actions, curr->stat.pkt_count, curr->stat.byte_count);
-            } else {
-                cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
-                               "     src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
-                               "     vlan: %u, vlan_pcp: %u, %s\n"
-                               "     # of actions: %d, pkt_count: %lu, byte_count: %lu",
-                          ++cnt, (curr->remote == TRUE) ? "Remote" : "Local",
-                          curr->dpid, curr->meta.idle_timeout, curr->meta.hard_timeout, curr->port,
-                          curr->match.src_mac[0], curr->match.src_mac[1], curr->match.src_mac[2], curr->match.src_mac[3], curr->match.src_mac[4], curr->match.src_mac[5],
-                          curr->match.dst_mac[0], curr->match.dst_mac[1], curr->match.dst_mac[2], curr->match.dst_mac[3], curr->match.dst_mac[4], curr->match.dst_mac[5],
-                          curr->match.vlan_id, curr->match.vlan_pcp, proto,
-                          curr->num_actions, curr->stat.pkt_count, curr->stat.byte_count);
-            }
-
-            curr = curr->next;
-        }
-
-        pthread_spin_unlock(&flow_table[i].lock);
-    }
+    if (!cnt)
+        cli_print(cli, "  No flow");
 
     return 0;
 }
@@ -542,92 +431,13 @@ static int flow_listup(cli_t *cli)
  */
 static int flow_showup(cli_t *cli, char *dpid_str)
 {
-    int i, cnt = 0;
+    int cnt = 0;
 
     uint64_t dpid = strtoull(dpid_str, NULL, 0);
 
     cli_print(cli, "<Flow Table for Switch [%lu]>", dpid);
 
-    for (i=0; i<__DEFAULT_TABLE_SIZE; i++) {
-        pthread_spin_lock(&flow_table[i].lock);
-
-        flow_t *curr = flow_table[i].head;
-        while (curr != NULL) {
-            if (curr->dpid != dpid) {
-                curr = curr->next;
-                continue;
-            }
-
-            char proto[__CONF_SHORT_LEN];
-
-            if (curr->match.proto & PROTO_ARP)
-                strcpy(proto, "ARP");
-            else if (curr->match.proto & PROTO_LLDP)
-                strcpy(proto, "LLDP");
-            else if (curr->match.proto & PROTO_DHCP)
-                strcpy(proto, "DHCP");
-            if (curr->match.proto & PROTO_TCP)
-                strcpy(proto, "TCP");
-            else if (curr->match.proto & PROTO_UDP)
-                strcpy(proto, "UDP");
-            else if (curr->match.proto & PROTO_ICMP)
-                strcpy(proto, "ICMP");
-            else if (curr->match.proto & PROTO_IPV4)
-                strcpy(proto, "IPv4");
-            else
-                strcpy(proto, "Unknown");
-
-            if (curr->match.proto & PROTO_ICMP) {
-                cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
-                               "    src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
-                               "    vlan: %u, vlan_pcp: %u, %s, src_ip: %s, dst_ip: %s, icmp_type: %u, icmp_code: %u\n"
-                               "    # of actions: %d, pkt_count: %lu, byte_count: %lu",
-                          ++cnt, (curr->remote == TRUE) ? "Remote" : "Local",
-                          curr->dpid, curr->meta.idle_timeout, curr->meta.hard_timeout, curr->port,
-                          curr->match.src_mac[0], curr->match.src_mac[1], curr->match.src_mac[2], curr->match.src_mac[3], curr->match.src_mac[4], curr->match.src_mac[5],
-                          curr->match.dst_mac[0], curr->match.dst_mac[1], curr->match.dst_mac[2], curr->match.dst_mac[3], curr->match.dst_mac[4], curr->match.dst_mac[5],
-                          curr->match.vlan_id, curr->match.vlan_pcp, proto, ip_addr_str(curr->match.src_ip), ip_addr_str(curr->match.dst_ip),
-                          curr->match.icmp_type, curr->match.icmp_code, curr->num_actions, curr->stat.pkt_count, curr->stat.byte_count);
-            } else if (curr->match.proto & PROTO_TCP || curr->match.proto & PROTO_UDP || curr->match.proto & PROTO_DHCP) {
-                cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
-                               "    src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
-                               "    vlan: %u, vlan_pcp: %u, %s, src_ip: %s, dst_ip: %s, src_port: %u, dst_port: %u\n"
-                               "    # of actions: %d, pkt_count: %lu, byte_count: %lu",
-                          ++cnt, (curr->remote == TRUE) ? "Remote" : "Local",
-                          curr->dpid, curr->meta.idle_timeout, curr->meta.hard_timeout, curr->port,
-                          curr->match.src_mac[0], curr->match.src_mac[1], curr->match.src_mac[2], curr->match.src_mac[3], curr->match.src_mac[4], curr->match.src_mac[5],
-                          curr->match.dst_mac[0], curr->match.dst_mac[1], curr->match.dst_mac[2], curr->match.dst_mac[3], curr->match.dst_mac[4], curr->match.dst_mac[5],
-                          curr->match.vlan_id, curr->match.vlan_pcp, proto, ip_addr_str(curr->match.src_ip), ip_addr_str(curr->match.dst_ip),
-                          curr->match.src_port, curr->match.dst_port, curr->num_actions, curr->stat.pkt_count, curr->stat.byte_count);
-            } else if (curr->match.proto & PROTO_IPV4) {
-                cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
-                          "     src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
-                          "     vlan: %u, vlan_pcp: %u, %s, src_ip: %s, dst_ip: %s\n"
-                          "     # of actions: %d, pkt_count: %lu, byte_count: %lu",
-                          ++cnt, (curr->remote == TRUE) ? "Remote" : "Local",
-                          curr->dpid, curr->meta.idle_timeout, curr->meta.hard_timeout, curr->port,
-                          curr->match.src_mac[0], curr->match.src_mac[1], curr->match.src_mac[2], curr->match.src_mac[3], curr->match.src_mac[4], curr->match.src_mac[5],
-                          curr->match.dst_mac[0], curr->match.dst_mac[1], curr->match.dst_mac[2], curr->match.dst_mac[3], curr->match.dst_mac[4], curr->match.dst_mac[5],
-                          curr->match.vlan_id, curr->match.vlan_pcp, proto, ip_addr_str(curr->match.src_ip), ip_addr_str(curr->match.dst_ip),
-                          curr->num_actions, curr->stat.pkt_count, curr->stat.byte_count);
-            } else {
-                cli_print(cli, "  Flow #%d\n    %s, DPID: %lu, idle_timeout: %u, hard_timeout: %u, in_port: %u,\n"
-                               "     src_mac: %02x:%02x:%02x:%02x:%02x:%02x, dst_mac: %02x:%02x:%02x:%02x:%02x:%02x,\n"
-                               "     vlan: %u, vlan_pcp: %u, %s\n"
-                               "     # of actions: %d, pkt_count: %lu, byte_count: %lu",
-                          ++cnt, (curr->remote == TRUE) ? "Remote" : "Local",
-                          curr->dpid, curr->meta.idle_timeout, curr->meta.hard_timeout, curr->port,
-                          curr->match.src_mac[0], curr->match.src_mac[1], curr->match.src_mac[2], curr->match.src_mac[3], curr->match.src_mac[4], curr->match.src_mac[5],
-                          curr->match.dst_mac[0], curr->match.dst_mac[1], curr->match.dst_mac[2], curr->match.dst_mac[3], curr->match.dst_mac[4], curr->match.dst_mac[5],
-                          curr->match.vlan_id, curr->match.vlan_pcp, proto,
-                          curr->num_actions, curr->stat.pkt_count, curr->stat.byte_count);
-            }
-
-            curr = curr->next;
-        }
-
-        pthread_spin_unlock(&flow_table[i].lock);
-    }
+    //TODO
 
     if (!cnt)
         cli_print(cli, "  No flow");

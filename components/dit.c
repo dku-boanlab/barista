@@ -73,12 +73,10 @@ int dit_handler(const event_t *ev, event_out_t *ev_out)
 
     if (ev_out->checksum == 0) {
         ev_out->checksum = checksum;
-    } else {
-        if (ev_out->checksum != checksum) {
-            LOG_WARN(DIT_ID, "Modified internal message (ev->id: %u, ev->type: %u, old: %x, curr: %x)", 
-                     ev->id, ev->type, ev_out->checksum, checksum);
-            return -1;
-        }
+    } else if (ev_out->checksum != checksum) {
+        LOG_WARN(DIT_ID, "Modified internal message (ev->id: %u, ev->type: %u, old: %x, curr: %x)", 
+                 ev->id, ev->type, ev_out->checksum, checksum);
+        return -1;
     }
 
     return 0;

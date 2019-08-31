@@ -92,10 +92,6 @@ static int ev_push_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t size, c
     char json[__MAX_EXT_MSG_SIZE] = {0};
     int len = export_to_json(id, type, input, json, 0);
 
-#ifdef __ENABLE_SLOW_ZMQ
-    waitsec(0, 100000);
-#endif
-
     void *push_sock = zmq_socket(c->push_ctx, ZMQ_PUSH);
 
     if (zmq_connect(push_sock, c->push_addr)) {
@@ -128,10 +124,6 @@ static int ev_send_msg(compnt_t *c, uint32_t id, uint16_t type, uint16_t size, c
 
     char json_in[__MAX_EXT_MSG_SIZE] = {0};
     int len = export_to_json(id, type, input, json_in, 0);
-
-#ifdef __ENABLE_SLOW_ZMQ
-    waitsec(0, 100000);
-#endif
 
     void *req_sock = zmq_socket(c->req_ctx, ZMQ_REQ);
 

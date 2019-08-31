@@ -14,14 +14,6 @@
 /** \brief The number of pre-allocated flow entries used in flow_mgmt */
 #define FLOW_PRE_ALLOC 8192
 
-/** \brief The structure of a flow table */
-typedef struct _flow_table_t {
-    flow_t *head; /**< The head pointer */
-    flow_t *tail; /**< The tail pointer */
-
-    pthread_spinlock_t lock; /**< The lock for management */
-} flow_table_t;
-
 /** \brief The structure of a flow pool */
 typedef struct _flow_queue_t {
     int size; /**< The size of entries */

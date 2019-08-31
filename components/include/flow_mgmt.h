@@ -18,16 +18,21 @@
 
 /////////////////////////////////////////////////////////////////////
 
-/** \brief The number of flows */
-int num_flows;
+/** \brief The structure of a flow table */
+typedef struct _flow_table_t {
+    flow_t *head; /**< The head pointer */
+    flow_t *tail; /**< The tail pointer */
+
+    pthread_spinlock_t lock; /**< The lock for management */
+} flow_table_t;
 
 /** \brief Flow tables */
 flow_table_t *flow_table;
 
 /** \brief Key for table lookup */
-#define FLOW_KEY(a) (a->dpid % __DEFAULT_TABLE_SIZE)
+#define FLOW_KEY(a) (a->dpid % __MAX_NUM_SWITCHES)
 
-/** \brief The request time (second) for flow statistics collection */
-#define FLOW_MGMT_REQUEST_TIME 5
+/** \brief The time (second) to update flow states (e.g., statistics) */
+#define FLOW_MGMT_UPDATE_TIME 5
 
 /////////////////////////////////////////////////////////////////////
