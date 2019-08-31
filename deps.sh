@@ -18,11 +18,7 @@ sudo apt-get -y install libzmq3-dev
 # dependency => libcli
 cd libcli
 ./compile.sh
-
-read -p "Do you want to install MariaDB here (y/N)?"
-if [ "$REPLY" != "y" ]; then
-    exit
-fi
+cd ..
 
 # dependency => mariadb
 . /etc/os-release
@@ -33,10 +29,17 @@ if [ "$VERSION_ID" == "14.04" ]; then
 elif [ "$VERSION_ID" == "16.04" ]; then
     sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xf1656f24c74cd1d8
     sudo add-apt-repository 'deb http://ftp.osuosl.org/pub/mariadb/repo/10.0/ubuntu xenial main'
+elif [ "$VERSION_ID" == "18.04" ]; then
+    apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
+    add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://ftp.kaist.ac.kr/mariadb/repo/10.4/ubuntu bionic main'
 fi
 sudo apt-get update
-sudo apt-get -y install mariadb-galera-server
 sudo apt-get -y install mariadb-client libmariadbclient-dev
+read -p "Do you want to install MariaDB here (y/N)?"
+if [ "$REPLY" != "y" ]; then
+    exit
+fi
+sudo apt-get -y install mariadb-galera-server
 sudo systemctl enable mysql
 sudo systemctl start mysql
 
