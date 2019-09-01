@@ -11,6 +11,6 @@ done
 cd /barista/bin
 
 # run rbac application
-./rbac
+./rbac docker
 
 echo "RBAC application is terminated"

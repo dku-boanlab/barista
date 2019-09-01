@@ -1473,7 +1473,11 @@ int component_load(cli_t *cli, ctx_t *ctx)
             compnt->site = COMPNT_INTERNAL;
         } else {
             if (strcmp(site, "external") == 0)
+#ifndef __ENABLE_CBENCH
                 compnt->site = COMPNT_EXTERNAL;
+#else /* __ENABLE_CBENCH */
+                compnt->site = COMPNT_INTERNAL;
+#endif /* __ENABLE_CBENCH */
             else
                 compnt->site = COMPNT_INTERNAL;
         }

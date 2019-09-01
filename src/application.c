@@ -1378,7 +1378,11 @@ int application_load(cli_t *cli, ctx_t *ctx)
             app->site = APP_INTERNAL;
         } else {
             if (strcmp(site, "external") == 0)
+#ifndef __ENABLE_CBENCH
                 app->site = APP_EXTERNAL;
+#else /* __ENABLE_CBENCH */
+                app->site = APP_INTERNAL;
+#endif /* __ENABLE_CBENCH */
             else
                 app->site = APP_INTERNAL;
         }

@@ -81,6 +81,12 @@ static int init_app(void)
             strcpy(type, json_string_value(j_type));
         }
 
+        char site[__CONF_WORD_LEN] = {0};
+        json_t *j_site = json_object_get(data, "site");
+        if (json_is_string(j_site)) {
+            strcpy(site, json_string_value(j_site));
+        }
+
         // set the application name
         if (strlen(name) == 0) {
             PRINTF("No application name\n");
@@ -96,6 +102,20 @@ static int init_app(void)
         str2args(app.args, &app.argc, &app.argv[1], __CONF_ARGC);
         app.argc++;
         app.argv[0] = app.name;
+
+        // set a site
+        if (strlen(site) == 0) {
+            app.site = APP_INTERNAL;
+        } else {
+            if (strcmp(site, "external") == 0)
+#ifndef __ENABLE_CBENCH
+                app.site = APP_EXTERNAL;
+#else /* __ENABLE_CBENCH */
+                app.site = APP_INTERNAL;
+#endif /* __ENABLE_CBENCH */
+            else
+                app.site = APP_INTERNAL;
+        }
 
         // set functions
         app.main = g_applications[0].main;
@@ -234,6 +254,15 @@ int main(int argc, char *argv[])
         return -1;
     } else {
         PRINTF("Initialized %s\n", TARGET_APP);
+    }
+
+    if (app.site != APP_EXTERNAL) {
+        if (argc == 2 && strcmp(argv[1], "docker") == 0) {
+            while (1) waitsec(1, 0);
+        }
+
+        PRINTF("Terminated %s\n", TARGET_APP);
+        return 0;
     }
 
     // init app event handler

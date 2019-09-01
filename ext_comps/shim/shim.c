@@ -81,6 +81,12 @@ static int init_compnt(void)
             strcpy(type, json_string_value(j_type));
         }
 
+        char site[__CONF_WORD_LEN] = {0};
+        json_t *j_site = json_object_get(data, "site");
+        if (json_is_string(j_site)) {
+            strcpy(site, json_string_value(j_site));
+        }
+
         // set the component name
         if (strlen(name) == 0) {
             PRINTF("No component name\n");
@@ -96,6 +102,20 @@ static int init_compnt(void)
         str2args(compnt.args, &compnt.argc, &compnt.argv[1], __CONF_ARGC);
         compnt.argc++;
         compnt.argv[0] = compnt.name;
+
+        // set a site
+        if (strlen(site) == 0) {
+            compnt.site = COMPNT_INTERNAL;
+        } else {
+            if (strcmp(site, "external") == 0)
+#ifndef __ENABLE_CBENCH
+                compnt.site = COMPNT_EXTERNAL;
+#else /* __ENABLE_CBENCH */
+                compnt.site = COMPNT_INTERNAL;
+#endif /* __ENABLE_CBENCH */
+            else
+                compnt.site = COMPNT_INTERNAL;
+        }
 
         // set functions
         compnt.main = g_components[0].main;
@@ -232,6 +252,15 @@ int main(int argc, char *argv[])
         return -1;
     } else {
         PRINTF("Initialized %s\n", TARGET_COMPNT);
+    }
+
+    if (compnt.site != COMPNT_EXTERNAL) {
+        if (argc == 2 && strcmp(argv[1], "docker") == 0) {
+            while (1) waitsec(1, 0);
+        }
+
+        PRINTF("Terminated %s\n", TARGET_COMPNT);
+        return 0;
     }
 
     // init event handler

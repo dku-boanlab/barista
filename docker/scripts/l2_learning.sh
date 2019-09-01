@@ -11,6 +11,6 @@ done
 cd /barista/bin
 
 # run L2 learning application
-./l2_learning
+./l2_learning docker
 
 echo "L2 learning application is terminated"
