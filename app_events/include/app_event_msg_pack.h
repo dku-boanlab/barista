@@ -57,10 +57,8 @@ static int activate_external_application(char *msg)
             if (strcmp(av_ctx->app_list[i]->name, name) == 0) {
                 app_t *app = av_ctx->app_list[i];
 
-                if (app->site == APP_INTERNAL)
-                    return -1;
-
-                app->activated = TRUE;
+                if (app->site == APP_EXTERNAL)
+                    app->activated = TRUE;
 
                 json_decref(json);
 

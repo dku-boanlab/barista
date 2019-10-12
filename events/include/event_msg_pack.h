@@ -57,9 +57,8 @@ static int activate_external_component(char *msg)
             if (strcmp(ev_ctx->compnt_list[i]->name, name) == 0) {
                 compnt_t *compnt = ev_ctx->compnt_list[i];
 
-                if (compnt->site == COMPNT_INTERNAL) return -1;
-
-                compnt->activated = TRUE;
+                if (compnt->site == COMPNT_EXTERNAL)
+                    compnt->activated = TRUE;
 
                 json_decref(json);
 
