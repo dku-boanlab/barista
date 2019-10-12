@@ -25,6 +25,9 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, FUNC_TYPE *data)
         av_out.type = type;
         av_out.length = len;
 
+        if (API_monitor_enabled)
+            clock_gettime(CLOCK_REALTIME, &av_out.time);
+
         av_out.FUNC_DATA = data;
 
         av_ctx->num_app_events[type]++;

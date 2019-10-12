@@ -20,6 +20,7 @@ typedef struct _app_event_t {
     const uint32_t id; /**< Application ID */
     const uint16_t type; /**< App event type */
     const uint16_t length; /**< Data length */
+    const struct timespec time; /**< Triggered time */
 
     // body
     union {
@@ -43,6 +44,7 @@ typedef struct _app_event_out_t {
     uint32_t id; /**< Application ID */
     uint16_t type; /**< App event type */
     uint16_t length; /**< Data length */
+    struct timespec time; /**< Triggered time */
 
     // body
     union {

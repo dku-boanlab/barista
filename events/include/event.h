@@ -21,6 +21,7 @@ typedef struct _event_t {
     const uint16_t type; /**< Event type */
     const uint16_t length; /**< Data length */
     const uint32_t checksum; /**< Checksum */
+    const struct timespec time; /**< Triggered time */
 
     // body
     union {
@@ -50,6 +51,7 @@ typedef struct _event_out_t {
     uint16_t type; /**< Event type */
     uint16_t length; /**< Data length */
     uint32_t checksum; /**< Checksum */
+    struct timespec time; /**< Triggered time */
 
     // body
     union {

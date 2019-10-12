@@ -26,6 +26,9 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, FUNC_TYPE *data)
         ev_out.length = len;
         ev_out.checksum = 0;
 
+        if (API_monitor_enabled)
+            clock_gettime(CLOCK_REALTIME, &ev_out.time);
+
         ev_out.FUNC_DATA = data;
 
         ev_ctx->num_events[type]++;
