@@ -140,7 +140,7 @@ static int traffic_stat_summary(cli_t *cli, char *seconds)
     double out_pkt_cnt = tr.out_pkt_cnt * 1.0 / sec;
     double out_byte_cnt = tr.out_byte_cnt * 1.0 / sec;
 
-    cli_print(cli, "< Traffic Statistics for %d seconds >", sec * __CHANNEL_MGMT_MONITOR_TIME);
+    cli_print(cli, "< Traffic Statistics for the last %d seconds >", sec * __CHANNEL_MGMT_MONITOR_TIME);
     cli_print(cli, "  - Cumulative values");
     cli_print(cli, "    Inbound packet count : %lu packets", tr.in_pkt_cnt);
     cli_print(cli, "    Inbound byte count   : %lu bytes", tr.in_byte_cnt);

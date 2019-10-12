@@ -24,6 +24,9 @@
 /** \brief The context of the Barista NOS */
 ctx_t *app_ctx;
 
+/** \brief The flag to enable the CBENCH mode */
+int cbench_enabled;
+
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The number of base applications */
@@ -1192,6 +1195,10 @@ int application_load(cli_t *cli, ctx_t *ctx)
         app_ctx = ctx;
     }
 
+    const char *CBENCH = getenv("CBENCH");
+    if (CBENCH != NULL && strcmp(CBENCH, "CBENCH") == 0)
+        cbench_enabled = TRUE;
+
     cli_print(cli, "Application configuration file: %s", ctx->app_conf_file);
 
     if (access(ctx->app_conf_file, F_OK)) {
@@ -1377,14 +1384,14 @@ int application_load(cli_t *cli, ctx_t *ctx)
         if (strlen(site) == 0) {
             app->site = APP_INTERNAL;
         } else {
-            if (strcmp(site, "external") == 0)
-#ifndef __ENABLE_CBENCH
-                app->site = APP_EXTERNAL;
-#else /* __ENABLE_CBENCH */
+            if (strcmp(site, "external") == 0) {
+                if (!cbench_enabled)
+                    app->site = APP_EXTERNAL;
+                else
+                    app->site = APP_INTERNAL;
+            } else {
                 app->site = APP_INTERNAL;
-#endif /* __ENABLE_CBENCH */
-            else
-                app->site = APP_INTERNAL;
+            }
         }
         cli_print(cli, "     Site: %s", site);
 

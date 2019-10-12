@@ -26,15 +26,6 @@
 3. Clean up the compiled files for Barista NOS
 > $ make clean
 
-4. Measure the performance of Barista NOS with Cbench
-> $ cd  
-> $ git clone https://github.com/sdx4u/benchmark  
-> $ cd benchmark/cbench  
-> $ ./setup.sh real  
-> $ cd ~/barista  
-> $ sed -i 's/#__ENABLE_CBENCH/__ENABLE_CBENCH/g' config.mk  
-> $ make
-
 # Execution
 - Run the Barista NOS
 > $ cd bin  

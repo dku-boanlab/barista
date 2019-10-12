@@ -10,6 +10,7 @@
 #pragma once
 
 #define TARGET_APP "l2_learning"
+#define TARGET_APP_ID 153576300
 
 #define TARGET_APP_PULL_ADDR "tcp://127.0.0.1:6011"
 #define TARGET_APP_REPLY_ADDR "tcp://127.0.0.1:6012"

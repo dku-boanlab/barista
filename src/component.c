@@ -24,6 +24,9 @@
 /** \brief The context of the Barista NOS */
 ctx_t *compnt_ctx;
 
+/** \brief The flag to enable the CBENCH mode */
+int cbench_enabled;
+
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The event list to convert an event string to an event ID */
@@ -1287,6 +1290,10 @@ int component_load(cli_t *cli, ctx_t *ctx)
         compnt_ctx = ctx;
     }
 
+    const char *CBENCH = getenv("CBENCH");
+    if (CBENCH != NULL && strcmp(CBENCH, "CBENCH") == 0)
+        cbench_enabled = TRUE;
+
     cli_print(cli, "Component configuration file: %s", ctx->conf_file);
 
     if (access(ctx->conf_file, F_OK)) {
@@ -1472,14 +1479,14 @@ int component_load(cli_t *cli, ctx_t *ctx)
         if (strlen(site) == 0) {
             compnt->site = COMPNT_INTERNAL;
         } else {
-            if (strcmp(site, "external") == 0)
-#ifndef __ENABLE_CBENCH
-                compnt->site = COMPNT_EXTERNAL;
-#else /* __ENABLE_CBENCH */
+            if (strcmp(site, "external") == 0) {
+                if (!cbench_enabled)
+                    compnt->site = COMPNT_EXTERNAL;
+                else
+                    compnt->site = COMPNT_INTERNAL;
+            } else {
                 compnt->site = COMPNT_INTERNAL;
-#endif /* __ENABLE_CBENCH */
-            else
-                compnt->site = COMPNT_INTERNAL;
+            }
         }
         cli_print(cli, "     Site: %s", site);
 

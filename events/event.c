@@ -23,6 +23,9 @@
 /** \brief The context of the Barista NOS */
 static ctx_t *ev_ctx;
 
+/** \brief The flag to enable API monitoring */
+int API_monitor_enabled;
+
 /////////////////////////////////////////////////////////////////////
 
 /** \brief MQ context to pull events */
@@ -290,6 +293,10 @@ static void *meta_events(void *null)
 int init_event(ctx_t *ctx)
 {
     ev_ctx = ctx;
+
+    const char *API_monitor = getenv("API_monitor");
+    if (API_monitor != NULL && strcmp(API_monitor, "API_monitor") == 0)
+        API_monitor_enabled = TRUE;
 
     if (ev_ctx->ev_on == FALSE) {
         pthread_t thread;

@@ -92,15 +92,15 @@ DECLARE_HANDLER_FUNC(dit_handler);
 DECLARE_CLEANUP_FUNC(dit_cleanup);
 DECLARE_CLI_FUNC(dit_cli);
 
-DECLARE_MAIN_FUNC(ofp10_veri_main);
-DECLARE_HANDLER_FUNC(ofp10_veri_handler);
-DECLARE_CLEANUP_FUNC(ofp10_veri_cleanup);
-DECLARE_CLI_FUNC(ofp10_veri_cli);
-
 DECLARE_MAIN_FUNC(conflict_main);
 DECLARE_HANDLER_FUNC(conflict_handler);
 DECLARE_CLEANUP_FUNC(conflict_cleanup);
 DECLARE_CLI_FUNC(conflict_cli);
+
+DECLARE_MAIN_FUNC(event_monitor_main);
+DECLARE_HANDLER_FUNC(event_monitor_handler);
+DECLARE_CLEANUP_FUNC(event_monitor_cleanup);
+DECLARE_CLI_FUNC(event_monitor_cli);
 
 /** \brief The function pointer of a component */
 struct _compnt_func_t {
@@ -124,7 +124,7 @@ struct _compnt_func_t {
     {"cluster", cluster_main, cluster_handler, cluster_cleanup, cluster_cli},
     {"cac", cac_main, cac_handler, cac_cleanup, cac_cli},
     {"dit", dit_main, dit_handler, dit_cleanup, dit_cli},
-    {"ofp10_veri", ofp10_veri_main, ofp10_veri_handler, ofp10_veri_cleanup, ofp10_veri_cli},
     {"conflict", conflict_main, conflict_handler, conflict_cleanup, conflict_cli},
+    {"event_monitor", event_monitor_main, event_monitor_handler, event_monitor_cleanup, event_monitor_cli},
 }; /**< The list of function pointers */
 

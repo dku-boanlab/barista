@@ -22,6 +22,11 @@
 
 /////////////////////////////////////////////////////////////////////
 
+/* The flag to enable the CBENCH mode */
+int cbench_enabled;
+
+/////////////////////////////////////////////////////////////////////
+
 /**
  * \brief Function to conduct an output action into the data plane
  * \param pktin Pktin message
@@ -122,10 +127,10 @@ int insert_mac_entry(mac_entry_t *entry)
  */
 static int l2_learning(const pktin_t *pktin)
 {
-#ifdef __ENABLE_CBENCH
-    send_packet(pktin, PORT_FLOOD);
-    return 0;
-#endif /* __ENABLE_CBENCH */
+    if (cbench_enabled) {
+        send_packet(pktin, PORT_FLOOD);
+        return 0;
+    }
 
     mac_key_t mkey;
 
@@ -216,6 +221,10 @@ static int l2_learning(const pktin_t *pktin)
 int l2_learning_main(int *activated, int argc, char **argv)
 {
     ALOG_INFO(L2_LEARNING_ID, "Init - L2 learning");
+
+    const char* CBENCH = getenv("CBENCH");
+    if (CBENCH != NULL && strcmp(CBENCH, "CBENCH") == 0)
+        cbench_enabled = TRUE;
 
     if (get_database_info(&l2_learning_info, "l2_learning")) {
         ALOG_ERROR(L2_LEARNING_ID, "Failed to get the information of a l2_learning database");

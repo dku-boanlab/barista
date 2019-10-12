@@ -95,7 +95,7 @@ static int init_app(void)
         }
 
         strcpy(app.name, name);
-        app.app_id = hash_func((uint32_t *)&app.name, __HASHING_NAME_LENGTH);
+        app.app_id = TARGET_APP_ID;
 
         // set arguments
         strcpy(app.args, args);

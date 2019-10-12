@@ -22,6 +22,11 @@
 
 /////////////////////////////////////////////////////////////////////
 
+/* The flag to enable the CBENCH mode */
+int cbench_enabled;
+
+/////////////////////////////////////////////////////////////////////
+
 int get_host_entry(host_t *entry)
 {
     database_t host_mgmt_db;
@@ -70,9 +75,8 @@ int insert_host_entry(host_t *entry)
  */
 static int add_new_host(const pktin_t *pktin)
 {
-#ifdef __ENABLE_CBENCH
-    return 0;
-#endif /* __ENABLE_CBENCH */
+    if (cbench_enabled)
+        return 0;
 
     host_key_t hkey = {0};
 
@@ -159,6 +163,10 @@ static int add_new_host(const pktin_t *pktin)
 int host_mgmt_main(int *activated, int argc, char **argv)
 {
     LOG_INFO(HOST_MGMT_ID, "Init - Host management");
+
+    const char *CBENCH = getenv("CBENCH");
+    if (CBENCH != NULL && strcmp(CBENCH, "CBENCH") == 0)
+        cbench_enabled = TRUE;
 
     if (get_database_info(&host_mgmt_info, "barista_mgmt")) {
         LOG_ERROR(HOST_MGMT_ID, "Failed to get the information of a host_mgmt database");

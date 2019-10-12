@@ -22,6 +22,9 @@ services:
       - ./scripts/barista.sh:/barista/barista.sh
       - ./scripts/wait-for-it.sh:/wait-for-it.sh
     network_mode: host
+    environment:
+      - API_monitor=$API_monitor
+      - CBENCH=$CBENCH
     entrypoint: ["/barista/barista.sh"]
 
   l2-learning:
@@ -34,6 +37,8 @@ services:
       - ./scripts/l2_learning.sh:/barista/l2_learning.sh
       - ./scripts/wait-for-it.sh:/wait-for-it.sh
     network_mode: host
+    environment:
+      - CBENCH=$CBENCH
     entrypoint: ["/barista/l2_learning.sh"]
 
   rbac:

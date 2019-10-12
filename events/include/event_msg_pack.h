@@ -70,6 +70,8 @@ static int activate_external_component(char *msg)
         }
     }
 
+    LOG_INFO(0, "Blocked the connection of an unauthorized component (%u, %s)", id, name);
+
     json_decref(json);
 
     return -1;

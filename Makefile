@@ -39,6 +39,8 @@ $(PROG): $(addprefix $(OBJ_DIR)/,$(OBJ))
 	mv $(PROG) $(BIN_DIR)
 	@cd ext_apps/l2_learning; make
 	@cd ext_apps/rbac; make
+	@cd ext_apps/benign_app; make
+	@cd ext_apps/malicious_app; make
 
 $(OBJ_DIR)/%.o: %.c
 	mkdir -p $(@D)
@@ -54,3 +56,5 @@ clean:
 	rm -rf $(BIN_DIR)/$(PROG) $(BIN_DIR)/core $(LOG_DIR)/* $(TMP_DIR)/* $(OBJ_DIR) G*
 	@cd ext_apps/l2_learning; make clean
 	@cd ext_apps/rbac; make clean
+	@cd ext_apps/benign_app; make clean
+	@cd ext_apps/malicious_app; make clean

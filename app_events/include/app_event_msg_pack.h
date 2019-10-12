@@ -57,7 +57,8 @@ static int activate_external_application(char *msg)
             if (strcmp(av_ctx->app_list[i]->name, name) == 0) {
                 app_t *app = av_ctx->app_list[i];
 
-                if (app->site == APP_INTERNAL) return -1;
+                if (app->site == APP_INTERNAL)
+                    return -1;
 
                 app->activated = TRUE;
 
@@ -69,6 +70,8 @@ static int activate_external_application(char *msg)
             }
         }
     }
+
+    ALOG_WARN(0, "Blocked the connection of an unauthorized application (%u, %s)", id, name);
 
     json_decref(json);
 

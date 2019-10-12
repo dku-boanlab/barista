@@ -95,7 +95,7 @@ static int init_compnt(void)
         }
 
         strcpy(compnt.name, name);
-        compnt.component_id = hash_func((uint32_t *)&compnt.name, __HASHING_NAME_LENGTH);
+        compnt.component_id = TARGET_COMPNT_ID;
 
         // set arguments
         strcpy(compnt.args, args);

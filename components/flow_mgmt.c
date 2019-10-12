@@ -22,6 +22,11 @@
 
 /////////////////////////////////////////////////////////////////////
 
+/* The flag to enable the CBENCH mode */
+int cbench_enabled;
+
+/////////////////////////////////////////////////////////////////////
+
 /**
  * \brief Function to add a flow
  * \param list Flow table mapped to a datapath ID
@@ -29,9 +34,8 @@
  */
 static int add_flow(flow_table_t *list, const flow_t *flow)
 {
-#ifdef __ENABLE_CBENCH
-    return 0;
-#endif /* __ENABLE_CBENCH */
+    if (cbench_enabled)
+        return 0;
 
     pthread_spin_lock(&list->lock);
 
@@ -344,6 +348,10 @@ void *timeout_thread(void *arg)
 int flow_mgmt_main(int *activated, int argc, char **argv)
 {
     LOG_INFO(FLOW_MGMT_ID, "Init - Flow management");
+
+    const char *CBENCH = getenv("CBENCH");
+    if (CBENCH != NULL && strcmp(CBENCH, "CBENCH") == 0)
+        cbench_enabled = TRUE;
 
     timeout_thread_on = TRUE;
 

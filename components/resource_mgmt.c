@@ -161,7 +161,7 @@ static int resource_stat_summary(cli_t *cli, char *seconds)
     rs.cpu /= cnt;
     rs.mem /= cnt;
 
-    cli_print(cli, "< Resource Usages for %d seconds >", sec * __RESOURCE_MGMT_MONITOR_TIME);
+    cli_print(cli, "< Resource Usages for the last %d seconds >", sec * __RESOURCE_MGMT_MONITOR_TIME);
     cli_print(cli, "  CPU: %.2f %%, MEM: %.2f %%", rs.cpu, rs.mem);
 
     return 0;
