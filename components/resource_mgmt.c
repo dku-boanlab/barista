@@ -68,11 +68,11 @@ int resource_mgmt_main(int *activated, int argc, char **argv)
 
     reset_table(&resource_mgmt_info, "resource_mgmt", FALSE);
 
-    memset(&resource, 0, sizeof(resource_t));
-
     activate();
 
     while (*activated) {
+        memset(&resource, 0, sizeof(resource_t));
+
         int i;
         for (i=0; i<__RESOURCE_MGMT_MONITOR_TIME; i++) {
             if (*activated == FALSE) break;
@@ -96,9 +96,6 @@ int resource_mgmt_main(int *activated, int argc, char **argv)
         }
 
         ev_rs_update_usage(RSM_ID, &rs);
-
-        resource.cpu = 0.0;
-        resource.mem = 0.0;
     }
 
     return 0;

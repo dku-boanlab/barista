@@ -24,8 +24,7 @@ db_info_t resource_mgmt_info;
 resource_t resource;
 
 /** \brief Command to get CPU and memory usages */
-//char cmd[] = "ps -p $(pgrep -x barista) -o %cpu,%mem 2> /dev/null | tail -n 1";
-char cmd[] = "top -b -n 1 | grep `pgrep -x barista` | awk '{print $9 \" \" $10}' 2> /dev/null";
+char cmd[] = "top -b -n 1 | grep `pgrep -x barista` | awk '{print $9 \" \" $10}' 2> /dev/null | tail -n 1";
 
 /////////////////////////////////////////////////////////////////////
 
