@@ -30,6 +30,6 @@ char cmd[] = "top -b -n 1 | grep `pgrep -x barista` | awk '{print $9 \" \" $10}'
 /////////////////////////////////////////////////////////////////////
 
 /** \brief The monitoring time (second) per resource usage */
-#define __RESOURCE_MGMT_MONITOR_TIME 10
+#define __RESOURCE_MGMT_MONITOR_TIME 1
 
 /////////////////////////////////////////////////////////////////////

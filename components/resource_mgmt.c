@@ -28,7 +28,7 @@
  */
 static int monitor_resources(resource_t *rs)
 {
-    resource_t rs_temp;
+    resource_t rs_temp = {0.0, 0.0};
 
     FILE *pp = popen(cmd, "r");
     if (pp != NULL) {
@@ -73,11 +73,17 @@ int resource_mgmt_main(int *activated, int argc, char **argv)
     activate();
 
     while (*activated) {
+        int i;
+        for (i=0; i<__RESOURCE_MGMT_MONITOR_TIME; i++) {
+            if (*activated == FALSE) break;
+            else waitsec(1, 0);
+            monitor_resources(&resource);
+        }
+
         resource_t rs;
 
-        memmove(&rs, &resource, sizeof(resource_t));
-
-        rs.cpu /= num_procs;
+        rs.cpu = resource.cpu / num_procs;
+        rs.mem = resource.mem;
 
         rs.cpu /= __RESOURCE_MGMT_MONITOR_TIME;
         rs.mem /= __RESOURCE_MGMT_MONITOR_TIME;
@@ -91,12 +97,8 @@ int resource_mgmt_main(int *activated, int argc, char **argv)
 
         ev_rs_update_usage(RSM_ID, &rs);
 
-        int i;
-        for (i=0; i<__RESOURCE_MGMT_MONITOR_TIME; i++) {
-            if (*activated == FALSE) break;
-            else waitsec(1, 0);
-            monitor_resources(&resource);
-        }
+        resource.cpu = 0.0;
+        resource.mem = 0.0;
     }
 
     return 0;
@@ -127,7 +129,7 @@ static int resource_stat_summary(cli_t *cli, char *seconds)
     int sec = atoi(seconds) / __RESOURCE_MGMT_MONITOR_TIME;
 
     int cnt = 0;
-    resource_t rs = {0.0};
+    resource_t rs = {0.0, 0.0};
 
     char query[__CONF_STR_LEN];
     sprintf(query, "select CPU, MEM from resource_mgmt order by id desc limit %d", sec);
