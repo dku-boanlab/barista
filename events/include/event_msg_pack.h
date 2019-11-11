@@ -79,11 +79,9 @@ static int activate_external_component(char *msg)
     }
 
     LOG_WARN(0, "Blocked the connection of an unauthorized component");
-    LOG_WARN(0, " - Registered Key: %u", ev_ctx->compnt_list[i]->component_id);
-    LOG_WARN(0, " - Registered configuration: %s", ev_ctx->compnt_list[i]->name);
     LOG_WARN(0, " - Given Key: %u", id);
     LOG_WARN(0, " - Given configuration: %s", name);
-    LOG_WARN(0, " - Reason: The key of the given component is not matched with the registered one.");
+    LOG_WARN(0, " - Reason: There is no matched key with the given component's one.");
 
     json_decref(json);
 
