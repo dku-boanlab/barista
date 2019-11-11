@@ -65,9 +65,9 @@ static int activate_external_application(char *msg)
                 return 0;
             } else {
                 ALOG_WARN(0, "Blocked the connection of an unauthorized application");
-                ALOG_WARN(0, " - Registered Key: %u", av_ctx->app_list[i]->app_id);
+                ALOG_WARN(0, " - Registered key: %u", av_ctx->app_list[i]->app_id);
                 ALOG_WARN(0, " - Registered configuration: %s", av_ctx->app_list[i]->name);
-                ALOG_WARN(0, " - Given Key: %u", id);
+                ALOG_WARN(0, " - Given key: %u", id);
                 ALOG_WARN(0, " - Given configuration: %s", name);
                 ALOG_WARN(0, " - Reason: The configuration of the given application is not matched with the registered one.");
 
@@ -79,7 +79,7 @@ static int activate_external_application(char *msg)
     }
 
     ALOG_WARN(0, "Blocked the connection of an unauthorized application");
-    ALOG_WARN(0, " - Given Key: %u", id);
+    ALOG_WARN(0, " - Given key: %u", id);
     ALOG_WARN(0, " - Given configuration: %s", name);
     ALOG_WARN(0, " - Reason: There is no matched key with the given application's one.");
 
