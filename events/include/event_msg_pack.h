@@ -65,7 +65,7 @@ static int activate_external_component(char *msg)
                 return 0;
             } else {
                 LOG_WARN(0, "Blocked the connection of an unauthorized component");
-                LOG_WRRN(0, " - Registered Key: %u", ev_ctx->compnt_list[i]->component_id);
+                LOG_WARN(0, " - Registered Key: %u", ev_ctx->compnt_list[i]->component_id);
                 LOG_WARN(0, " - Registered configuration: %s", ev_ctx->compnt_list[i]->name);
                 LOG_WARN(0, " - Given Key: %u", id);
                 LOG_WARN(0, " - Given configuration: %s", name);
@@ -79,7 +79,7 @@ static int activate_external_component(char *msg)
     }
 
     LOG_WARN(0, "Blocked the connection of an unauthorized component");
-    LOG_WRRN(0, " - Registered Key: %u", ev_ctx->compnt_list[i]->component_id);
+    LOG_WARN(0, " - Registered Key: %u", ev_ctx->compnt_list[i]->component_id);
     LOG_WARN(0, " - Registered configuration: %s", ev_ctx->compnt_list[i]->name);
     LOG_WARN(0, " - Given Key: %u", id);
     LOG_WARN(0, " - Given configuration: %s", name);
