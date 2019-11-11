@@ -64,12 +64,26 @@ static int activate_external_component(char *msg)
 
                 return 0;
             } else {
-                break;
+                LOG_WARN(0, "Blocked the connection of an unauthorized component");
+                LOG_WRRN(0, " - Registered Key: %u", ev_ctx->compnt_list[i]->component_id);
+                LOG_WARN(0, " - Registered configuration: %s", ev_ctx->compnt_list[i]->name);
+                LOG_WARN(0, " - Given Key: %u", id);
+                LOG_WARN(0, " - Given configuration: %s", name);
+                LOG_WARN(0, " - Reason: The configuration of the given component is not matched with the registered one.");
+
+                json_decref(json);
+
+                return -1;
             }
         }
     }
 
-    LOG_INFO(0, "Blocked the connection of an unauthorized component (%u, %s)", id, name);
+    LOG_WARN(0, "Blocked the connection of an unauthorized component");
+    LOG_WRRN(0, " - Registered Key: %u", ev_ctx->compnt_list[i]->component_id);
+    LOG_WARN(0, " - Registered configuration: %s", ev_ctx->compnt_list[i]->name);
+    LOG_WARN(0, " - Given Key: %u", id);
+    LOG_WARN(0, " - Given configuration: %s", name);
+    LOG_WARN(0, " - Reason: The key of the given component is not matched with the registered one.");
 
     json_decref(json);
 
