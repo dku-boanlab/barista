@@ -1540,7 +1540,7 @@ int application_load(cli_t *cli, ctx_t *ctx)
                         in_perm_val |= APP_READ;
                     else if (in_perm[n] == 'w')
                         in_perm_val |= APP_WRITE;
-                    else if (perm[l] == 'x')
+                    else if (perm[n] == 'x')
                         in_perm_val |= APP_EXECUTE;
                 }
 

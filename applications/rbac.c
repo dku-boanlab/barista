@@ -227,7 +227,7 @@ static int verify_app_role(uint32_t id, uint16_t type)
         if (app_to_role[i].id == id) {
             if (app_to_role[i].role == APP_BASE) return 0;
             else if (role_to_event[app_to_role[i].role].event[type] == TRUE) return 0;
-            else return -1;
+            else return 1;
         }
     }
 
