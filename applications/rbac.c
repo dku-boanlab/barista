@@ -77,13 +77,13 @@ static int load_app_roles(char *conf_file)
     for (i=0; i<json_array_size(json); i++) {
         json_t *data = json_array_get(json, i);
 
-        char name[__CONF_WORD_LEN];
+        char name[__CONF_WORD_LEN] = {0};
         json_t *j_name = json_object_get(data, "name");
         if (json_is_string(j_name)) {
             strcpy(name, json_string_value(j_name));
         }
 
-        char role[__CONF_WORD_LEN];
+        char role[__CONF_WORD_LEN] = {0};
         json_t *j_role = json_object_get(data, "role");
         if (json_is_string(j_role)) {
             strcpy(role, json_string_value(j_role));
@@ -159,7 +159,7 @@ static int load_events_for_roles(char *role_file)
     for (i=0; i<json_array_size(json); i++) {
         json_t *data = json_array_get(json, i);
 
-        char name[__CONF_WORD_LEN];
+        char name[__CONF_WORD_LEN] = {0};
         json_t *j_name = json_object_get(data, "name");
         if (json_is_string(j_name)) {
             strcpy(name, json_string_value(j_name));

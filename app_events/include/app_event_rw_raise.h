@@ -16,6 +16,22 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, FUNC_TYPE *data)
 
     if (av_list == NULL) return -1;
 
+    // outbound check
+    int i, j, pass = 0;
+    for (i=0; i<av_ctx->num_apps; i++) {
+        app_t *app = av_ctx->app_list[i];
+        if (app->id == id) {
+            for (j=0; j<app->out_num; j++) {
+                if (app->out_list[j] == type) {
+                    pass = 1;
+                    break;
+                }
+            }
+            if (pass) break;
+        }
+    }
+    if (!pass) return -1;
+
     // only for request-response events
     if (AV_ALL_DOWNSTREAM < type && type < AV_WRT_INTSTREAM) {
         app_event_out_t av_out;
