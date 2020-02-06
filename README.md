@@ -62,7 +62,6 @@
 
 # Documents
 - Documents: https://www.sdx4u.net/?cat=16
-- Source browser: http://www.sdx4u.net/~barista/
 
 # Author
 - Jaehyun Nam <namjh@kaist.ac.kr>
