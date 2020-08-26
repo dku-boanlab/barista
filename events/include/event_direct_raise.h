@@ -16,19 +16,18 @@ static int FUNC_NAME(uint32_t id, uint16_t type, uint16_t len, const FUNC_TYPE *
 
     if (ev_list == NULL) return -1;
 
-    // outbound check
+    // outbound check:
+    // investigate whether the given event type belongs to the component's outbound events
     int i, j, pass = 0;
     for (i=0; i<ev_ctx->num_compnts; i++) {
         compnt_t *compnt = ev_ctx->compnt_list[i];
-        if (compnt->id == id) {
-            for (j=0; j<compnt->out_num; j++) {
-                if (compnt->out_list[j] == type) {
-                    pass = 1;
-                    break;
-                }
+        for (j=0; j<compnt->out_num; j++) {
+            if (compnt->out_list[j] == type) {
+                pass = 1;
+                break;
             }
-            if (pass) break;
         }
+        if (pass) break;
     }
     if (!pass) return -1;
 
