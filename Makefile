@@ -53,7 +53,7 @@ $(OBJ_DIR)/.%.dep: %.c $(CONFIG_MK)
 	mv $(PROG) $(BIN_DIR)
 
 clean:
-	rm -rf $(BIN_DIR)/$(PROG) $(BIN_DIR)/core $(LOG_DIR)/* $(TMP_DIR)/* $(OBJ_DIR) G*
+	rm -rf $(BIN_DIR)/$(PROG) $(BIN_DIR)/core $(LOG_DIR)/*.log $(TMP_DIR)/* $(OBJ_DIR) G*
 	@cd ext_apps/l2_learning; make clean
 	@cd ext_apps/rbac; make clean
 	@cd ext_apps/benign_app; make clean
