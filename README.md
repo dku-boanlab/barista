@@ -26,7 +26,7 @@
 3. Clean up the compiled files for Barista NOS
 > $ make clean
 
-# Execution
+# Execution (monolithic-kernel mode)
 - Run the Barista NOS
 > $ cd bin  
 > $ ./barista
@@ -42,7 +42,18 @@
 
 - Connect the CLI of the Barista NOS
 > $ telnet localhost 8000 (default port)  
-> (default ID: admin, default PW: password)  
+> (default ID: admin, default PW: password)
+>
+
+# Execution (micro-kernel mode)
+
+- Set up Docker environments
+> $ ./docker_setup.sh
+
+- Run the Barista Docker containers
+> $ cd dockers; ./start.sh
+
+Default barista applications (i.e., base, l2_learning, rbac) will be running on individual Docker containers. 
 
 # CLI commands
 - Change the current mode to a privilegd mode
