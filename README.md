@@ -71,8 +71,5 @@ Default barista applications (i.e., base, l2_learning, rbac) will be running on 
 - More information?
 > Barista> help
 
-# Documents
-- Documents: https://www.sdx4u.net/?cat=16
-
 # Author
 - Jaehyun Nam <namjh@kaist.ac.kr>
