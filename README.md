@@ -1,6 +1,5 @@
 # Introduction
 - Barista: An Event-centric Composable NOS for Software-Defined Networks (SDN Controller)
-- Version: 2.0 (Latte)
 
 # Notification
 - If you find any bugs or have any questions, please send an e-mail to us.
