@@ -47,7 +47,7 @@
 # Execution (micro-kernel mode)
 
 - Set up Docker environments
-> $ ./docker_setup.sh
+> $ ./docker.sh
 
 - Run the Barista Docker containers
 > $ cd dockers; ./start.sh
