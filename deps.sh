@@ -35,7 +35,7 @@ else
 fi
 
 sudo apt-get update
-sudo apt-get -y install mariadb-client libmariadbclient-dev
+#sudo apt-get -y install mariadb-client libmariadbclient-dev
 
 read -p "Do you want to install MariaDB here (y/N)?"
 if [ "$REPLY" != "y" ]; then
