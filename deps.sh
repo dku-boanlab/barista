@@ -12,7 +12,7 @@ sudo apt-get -y install build-essential
 sudo apt-get -y install libjansson4 libjansson-dev
 
 # dependency => doxygen, flex, bison, cmake
-sudo apt-get -y install doxygen global flex bison cmake libav-tools
+sudo apt-get -y install doxygen global flex bison cmake #libav-tools
 
 # dependency => zeromq
 sudo apt-get -y install libzmq3-dev
@@ -30,8 +30,8 @@ elif [ "$VERSION_ID" == "16.04" ]; then
     sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xf1656f24c74cd1d8
     sudo add-apt-repository "deb http://ftp.kaist.ac.kr/mariadb/repo/10.0/ubuntu xenial main"
 else
-    apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
-    add-apt-repository "deb [arch=amd64,arm64,ppc64el] http://ftp.kaist.ac.kr/mariadb/repo/10.4/ubuntu $(lsb_release -cs) main"
+    sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
+    sudo add-apt-repository "deb [arch=amd64,arm64,ppc64el] http://ftp.kaist.ac.kr/mariadb/repo/10.4/ubuntu $(lsb_release -cs) main"
 fi
 
 sudo apt-get update
