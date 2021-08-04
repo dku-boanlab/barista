@@ -42,8 +42,8 @@ static int send_packet(const pktin_t *pktin, uint16_t port)
     out.action[0].type = ACTION_OUTPUT;
     out.action[0].port = port;
 
-    out.total_len = pktin->total_len;
-    memmove(&out.data, pktin->data, pktin->total_len); // memcpy, memmove
+    out.total_len = pktin->total_len;                  // Since OVS 2.7, ovs switches do not buffer packets,
+    memmove(&out.data, pktin->data, pktin->total_len); // so, a packet-out msg should contain data
     av_dp_send_packet(L2_LEARNING_ID, &out);
 
     return 0;
